@@ -33,6 +33,8 @@ pub struct PlayerInput {
     pub control: PlayerControl,
     /// The player control input from the last fixed update
     pub previous_control: PlayerControl,
+    /// The editor inputs the player is making, if any.
+    pub editor_input: Option<EditorInput>,
 }
 
 /// Player control input state
@@ -54,4 +56,50 @@ pub struct PlayerControl {
 
     pub slide_pressed: bool,
     pub slide_just_pressed: bool,
+}
+
+/// The editor inputs that a player may make.
+#[derive(Clone, Debug)]
+pub enum EditorInput {
+    /// Spawn an element onto the map.
+    SpawnElement {
+        /// The handle to the element that is being spawned.
+        handle: Handle<ElementMeta>,
+        /// The translation to spawn the element with.
+        translation: Vec2,
+        /// The map layer index to spawn the element on.
+        layer: u8,
+    },
+    MoveEntity {
+        /// The entity to move.
+        entity: Entity,
+        /// The amount to move the entity.
+        pos: Vec2,
+    },
+    DeleteEntity {
+        /// The entity to delete.
+        entity: Entity,
+    },
+    /// Create a new layer
+    CreateLayer {
+        /// The name of the layer.
+        id: String,
+    },
+    /// Update the tilemap of a layer.
+    SetTilemap {
+        /// The layer index of the layer to update.
+        layer: u8,
+        /// The handle to the tilemap to use or [`None`] to clear the tilemap.
+        handle: Option<Handle<Atlas>>,
+    },
+    SetTile {
+        /// The layer index of the layer to update
+        layer: u8,
+        /// The position of the tile to set
+        pos: UVec2,
+        /// The index in the tilemap to set the tile, or [`None`] to delete the tile.
+        tilemap_tile_idx: Option<usize>,
+        /// The tile collision kind
+        collision: TileCollisionKind,
+    },
 }

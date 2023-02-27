@@ -68,7 +68,7 @@ fn update(
             current_spawner.0 += 1;
             current_spawner.0 %= spawn_points.len().max(1);
 
-            let mut spawn_point = *spawn_points.get(current_spawner.0).unwrap();
+            let Some(mut spawn_point) = spawn_points.get(current_spawner.0).copied() else { return };
 
             // Make sure each player spawns at a different z level
             spawn_point.z += i as f32 * 0.1;

@@ -36,12 +36,12 @@ pub struct DamageRegionOwner(pub Entity);
 /// System that will eliminate players that are intersecting with a damage region.
 fn kill_players_in_damage_region(
     entities: Res<Entities>,
+    mut commands: Commands,
     player_indexes: Comp<PlayerIdx>,
     transforms: Comp<Transform>,
     damage_regions: Comp<DamageRegion>,
     damage_region_owners: Comp<DamageRegionOwner>,
     bodies: Comp<KinematicBody>,
-    mut player_events: ResMut<PlayerEvents>,
 ) {
     for (player_ent, (_idx, transform, body)) in
         entities.iter_with((&player_indexes, &transforms, &bodies))
@@ -59,7 +59,10 @@ fn kill_players_in_damage_region(
 
             let damage_rect = damage_region.collider_rect(transform.translation);
             if player_rect.overlaps(&damage_rect) {
-                player_events.kill(player_ent);
+                commands.add(PlayerCommand::kill(
+                    player_ent,
+                    Some(transform.translation.xy()),
+                ));
             }
         }
     }

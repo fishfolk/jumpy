@@ -23,22 +23,39 @@ players:
   - player/skins/orcy/orcy.player.yaml
 
 stable_maps:
-  - map/levels/level1.map.yaml
-  - map/levels/level2.map.yaml
-  - map/levels/level3.map.yaml
-  - map/levels/level4.map.yaml
+  - map/levels/level_1.map.yaml
+  - map/levels/level_2.map.yaml
+  - map/levels/level_3.map.yaml
+  - map/levels/level_4.map.yaml
+  - map/levels/level_5.map.yaml
+  - map/levels/level_6.map.yaml
+  - map/levels/level_7.map.yaml
+  - map/levels/level_8.map.yaml
+  - map/levels/level_9.map.yaml
+  - map/levels/level_10.map.yaml
+  - map/levels/level_11.map.yaml
+  - map/levels/level_12.map.yaml
+  - map/levels/level_13.map.yaml
 
-experimental_maps:
-  # - map/levels/lev01.map.json # Renamed to Level 1
-  - map/levels/lev02.map.json
-  - map/levels/lev03.map.json
-  # - map/levels/lev04.map.json # Renamed to Level 4
-  - map/levels/lev05.map.json
-  - map/levels/lev06.map.json
-  # - map/levels/lev07.map.json # Renamed to Level 3
-  - map/levels/zyrafa01.map.json
-  - map/levels/zyrafa02.map.json
-  - map/levels/zyrafa03.map.json
-  - map/levels/zyrafa04.map.json
-  - map/levels/zyrafa05.map.json
-  # - map/levels/zyrafa06.map.json # Renamed to Level 2
+map_tilesets:
+  - map/resources/default_tileset.atlas.yaml
+  - map/resources/ground_rock.atlas.yaml
+  - map/resources/ground_wood.atlas.yaml
+  - map/resources/ground_metal.atlas.yaml
+  - map/resources/ship_decorations.atlas.yaml
+
+map_elements:
+  - elements/decoration/anemones/anemones.element.yaml
+  - elements/decoration/seaweed/seaweed.element.yaml
+  - elements/environment/crab/crab.element.yaml
+  - elements/environment/player_spawner/player_spawner.element.yaml
+  - elements/environment/sproinger/sproinger.element.yaml
+  - elements/item/crate/crate.element.yaml
+  - elements/item/grenade/grenade.element.yaml
+  - elements/item/kick_bomb/kick_bomb.element.yaml
+  - elements/item/mine/mine.element.yaml
+  - elements/item/musket/musket.element.yaml
+  - elements/item/stomp_boots/stomp_boots.element.yaml
+  - elements/item/sword/sword.element.yaml
+
+experimental_maps: []

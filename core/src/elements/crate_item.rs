@@ -10,14 +10,11 @@ pub fn install(session: &mut GameSession) {
 
 #[derive(Clone, TypeUlid)]
 #[ulid = "01GREP3MZXY4A14PQ8GRKS0RVY"]
-struct IdleCrate {
-    spawner: Entity,
-}
+struct IdleCrate;
 
 #[derive(Clone, TypeUlid)]
 #[ulid = "01GREP80RJSH9T9MWC88CG2G03"]
 struct ThrownCrate {
-    spawner: Entity,
     owner: Entity,
     age: f32,
     crate_break_state: u8,
@@ -36,7 +33,8 @@ fn hydrate_crates(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
-    mut respawn_points: CompMut<MapRespawnPoint>,
+    mut item_throws: CompMut<ItemThrow>,
+    mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -56,6 +54,7 @@ fn hydrate_crates(
         let BuiltinElementKind::Crate{
             atlas,
             body_size,
+            throw_velocity,
             bounciness,
             ..
         } = &element_meta.builtin else{
@@ -66,9 +65,10 @@ fn hydrate_crates(
 
         let entity = entities.create();
         items.insert(entity, Item);
-        idle_crates.insert(entity, IdleCrate { spawner });
+        idle_crates.insert(entity, IdleCrate);
+        item_throws.insert(entity, ItemThrow::strength(*throw_velocity));
         atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-        respawn_points.insert(entity, MapRespawnPoint(transform.translation));
+        respawn_points.insert(entity, DehydrateOutOfBounds(spawner));
         transforms.insert(entity, transform);
         element_handles.insert(entity, element_handle.clone());
         hydrated.insert(entity, MapElementHydrated);
@@ -92,29 +92,23 @@ fn update_idle_crates(
     entities: Res<Entities>,
     element_handles: Comp<ElementHandle>,
     element_assets: BevyAssets<ElementMeta>,
-    mut transforms: CompMut<Transform>,
-    mut idle_crates: CompMut<IdleCrate>,
-    mut sprites: CompMut<AtlasSprite>,
-    mut bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
-    mut items_dropped: CompMut<ItemDropped>,
+    mut idle_crates: CompMut<IdleCrate>,
+    mut bodies: CompMut<KinematicBody>,
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut player_layers: CompMut<PlayerLayers>,
     player_inventories: PlayerInventories,
     mut commands: Commands,
-    mut player_events: ResMut<PlayerEvents>,
 ) {
-    for (entity, (crate_item, element_handle)) in
+    for (entity, (_idle_crate, element_handle)) in
         entities.iter_with((&mut idle_crates, &element_handles))
     {
-        let spawner = crate_item.spawner;
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
         };
 
         let BuiltinElementKind::Crate{
             grab_offset,
-            throw_velocity,
             fin_anim,
             ..
         } = &element_meta.builtin else {
@@ -142,35 +136,13 @@ fn update_idle_crates(
 
             if items_used.get(entity).is_some() {
                 items_used.remove(entity);
-                player_events.set_inventory(player, None);
-                attachments.remove(entity);
-
-                let player_velocity = bodies.get(player).unwrap().velocity;
-                let player_sprite = sprites.get_mut(player).unwrap();
-                let player_translation = transforms.get(player).unwrap().translation;
-
-                let body = bodies.get_mut(entity).unwrap();
-
-                let horizontal_flip_factor = if player_sprite.flip_x {
-                    Vec2::new(-1.0, 1.0)
-                } else {
-                    Vec2::ONE
-                };
-
-                body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-                body.is_deactivated = false;
-
-                let transform = transforms.get_mut(entity).unwrap();
-                transform.translation =
-                    player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
-
+                commands.add(PlayerCommand::set_inventory(player, None));
                 commands.add(
                     move |mut idle: CompMut<IdleCrate>, mut thrown: CompMut<ThrownCrate>| {
                         idle.remove(entity);
                         thrown.insert(
                             entity,
                             ThrownCrate {
-                                spawner,
                                 owner: player,
                                 age: 0.0,
                                 was_colliding: false,
@@ -180,37 +152,6 @@ fn update_idle_crates(
                     },
                 );
             }
-        }
-
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-
-            let player_translation = transforms.get(player).unwrap().translation;
-            let player_sprite = sprites.get_mut(player).unwrap();
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
-
-            body.is_deactivated = false;
-            body.is_spawning = true;
-
-            let horizontal_flip_factor = if player_sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-
-            if player_velocity != Vec2::ZERO {
-                body.velocity =
-                    *throw_velocity / 5.0 * horizontal_flip_factor + player_velocity / 5.0;
-            }
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }
@@ -225,18 +166,19 @@ fn update_thrown_crates(
     mut atlas_sprites: CompMut<AtlasSprite>,
     players: Comp<PlayerIdx>,
     collision_world: CollisionWorld,
-    mut player_events: ResMut<PlayerEvents>,
     mut bodies: CompMut<KinematicBody>,
     mut audio_events: ResMut<AudioEvents>,
     transforms: Comp<Transform>,
+    spawners: Comp<DehydrateOutOfBounds>,
 ) {
-    for (entity, (mut thrown_crate, element_handle, transform, atlas_sprite, body)) in entities
-        .iter_with((
+    for (entity, (mut thrown_crate, element_handle, transform, atlas_sprite, body, spawner)) in
+        entities.iter_with((
             &mut thrown_crates,
             &element_handles,
             &transforms,
             &mut atlas_sprites,
             &mut bodies,
+            &spawners,
         ))
     {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -300,7 +242,10 @@ fn update_thrown_crates(
             .collect::<Vec<_>>();
 
         for player_entity in &colliding_with_players {
-            player_events.kill(*player_entity);
+            commands.add(PlayerCommand::kill(
+                *player_entity,
+                Some(transform.translation.xy()),
+            ));
         }
 
         if !colliding_with_players.is_empty()
@@ -308,13 +253,14 @@ fn update_thrown_crates(
             || thrown_crate.crate_break_state >= 4
             || body.velocity.length_squared() < 0.1
         {
-            hydrated.remove(thrown_crate.spawner);
+            hydrated.remove(**spawner);
 
             let breaking_anim_frames = *breaking_anim_frames;
             let breaking_anim_fps = *breaking_anim_fps;
             let atlas = breaking_atlas.clone();
 
             audio_events.play(break_sound.clone(), *break_sound_volume);
+
             commands.add(
                 move |mut entities: ResMut<Entities>,
                       mut transforms: CompMut<Transform>,

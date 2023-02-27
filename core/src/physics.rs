@@ -124,6 +124,8 @@ fn update_kinematic_bodies(
     mut collision_world: CollisionWorld,
     mut transforms: CompMut<Transform>,
 ) {
+    puffin::profile_function!();
+
     collision_world.update(&transforms);
     for (entity, body) in entities.iter_with(&mut bodies) {
         if body.is_deactivated {
@@ -134,6 +136,8 @@ fn update_kinematic_bodies(
         }
 
         if body.has_mass {
+            puffin::profile_scope!("Shove objects out of walls");
+
             // Shove objects out of walls
             loop {
                 let mut transform = transforms.get(entity).copied().unwrap();
@@ -195,12 +199,16 @@ fn update_kinematic_bodies(
             collision_world.descent(entity);
         }
 
-        if collision_world.move_horizontal(&mut transforms, entity, body.velocity.x) {
-            body.velocity.x *= -body.bounciness;
-        }
+        {
+            puffin::profile_scope!("move body");
 
-        if collision_world.move_vertical(&mut transforms, entity, body.velocity.y) {
-            body.velocity.y *= -body.bounciness;
+            if collision_world.move_horizontal(&mut transforms, entity, body.velocity.x) {
+                body.velocity.x *= -body.bounciness;
+            }
+
+            if collision_world.move_vertical(&mut transforms, entity, body.velocity.y) {
+                body.velocity.y *= -body.bounciness;
+            }
         }
 
         // Check ground collision
@@ -263,6 +271,8 @@ fn apply_rotation(
     is_on_ground: bool,
     collider_shape: ColliderShape,
 ) {
+    puffin::profile_function!();
+
     let mut angle = transform.rotation.to_euler(EulerRot::XYZ).2;
 
     if is_on_ground {

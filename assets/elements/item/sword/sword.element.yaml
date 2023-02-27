@@ -1,5 +1,7 @@
 name: Sword
 category: Weapons
+editor:
+  grab_size: [70, 20]
 builtin: !Sword
   atlas: ./sword.atlas.yaml
   sound: ./sword.ogg
@@ -12,5 +14,5 @@ builtin: !Sword
   angular_velocity: -0.04
   can_rotate: true
   bounciness: 0.32
-  throw_velocity: [1.5, 6]
+  throw_velocity: 9
   cooldown_frames: 22

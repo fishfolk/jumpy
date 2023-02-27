@@ -27,7 +27,8 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
-    mut respawn_points: CompMut<MapRespawnPoint>,
+    mut item_throws: CompMut<ItemThrow>,
+    mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -50,6 +51,8 @@ fn hydrate(
             body_size,
             can_rotate,
             bounciness,
+            throw_velocity,
+            angular_velocity,
             ..
         } = &element_meta.builtin
         {
@@ -57,6 +60,10 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
+            item_throws.insert(
+                entity,
+                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+            );
             muskets.insert(
                 entity,
                 Musket {
@@ -65,7 +72,7 @@ fn hydrate(
                 },
             );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-            respawn_points.insert(entity, MapRespawnPoint(transform.translation));
+            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
             hydrated.insert(entity, MapElementHydrated);
@@ -94,7 +101,7 @@ fn update(
     mut muskets: CompMut<Musket>,
     mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
-    mut transforms: CompMut<Transform>,
+    transforms: CompMut<Transform>,
     mut audio_events: ResMut<AudioEvents>,
     mut player_layers: CompMut<PlayerLayers>,
 
@@ -116,12 +123,8 @@ fn update(
             shoot_frames,
             shoot_lifetime,
             cooldown_in_ms,
-
             fin_anim,
             grab_offset,
-            throw_velocity,
-            angular_velocity,
-
             bullet_meta,
             shoot_sound,
             empty_shoot_sound,
@@ -241,41 +244,9 @@ fn update(
         }
 
         // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-
+        if items_dropped.get(entity).is_some() {
             // reload gun
             musket.ammo = *max_ammo;
-
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
-            let player_sprite = sprites.get_mut(player).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
-
-            let horizontal_flip_factor = if player_sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-
-            if player_velocity != Vec2::ZERO {
-                body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-                body.angular_velocity =
-                    *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
-            }
-
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }

@@ -1,4 +1,4 @@
-name: Sword
+name: Stomp Boots
 category: Weapons
 builtin: !StompBoots
   map_icon: ./stomp_boots_icon.atlas.yaml

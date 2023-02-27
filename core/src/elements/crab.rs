@@ -105,7 +105,7 @@ fn hydrate(
                 AnimatedSprite {
                     fps: *fps,
                     repeat: true,
-                    frames: (*start_frame..*end_frame).collect(),
+                    frames: (*start_frame..=*end_frame).collect(),
                     ..default()
                 },
             );
@@ -119,6 +119,7 @@ fn update_crabs(
     player_indexes: Comp<PlayerIdx>,
     mut crabs: CompMut<CrabCritter>,
     mut sprites: CompMut<AtlasSprite>,
+    mut animated_sprites: CompMut<AnimatedSprite>,
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     element_handles: Comp<ElementHandle>,
@@ -130,6 +131,7 @@ fn update_crabs(
         };
 
         let BuiltinElementKind::Crab {
+            fps,
             run_speed,
             walk_speed,
             comfortable_spawn_distance,
@@ -230,18 +232,22 @@ fn update_crabs(
 
         let body = bodies.get_mut(entity).unwrap();
         let sprite = sprites.get_mut(entity).unwrap();
+        let animated_sprite = animated_sprites.get_mut(entity).unwrap();
 
         match &crab.state {
             CrabState::Paused => {
+                animated_sprite.fps = 0.0;
                 body.velocity.x = 0.0;
             }
             CrabState::Walking { left } => {
+                animated_sprite.fps = *fps;
                 sprite.flip_x = *left;
 
                 let direction = if *left { -1.0 } else { 1.0 };
                 body.velocity.x = *walk_speed * direction;
             }
             CrabState::Fleeing { scared_of } => {
+                animated_sprite.fps *= 2.0;
                 let scared_of_pos = get_scared_of_pos(*scared_of);
                 let direction = (pos.x - scared_of_pos.x).signum();
                 body.velocity.x = direction * *run_speed;

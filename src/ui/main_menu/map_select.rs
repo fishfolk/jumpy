@@ -89,6 +89,9 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                     &params.core.experimental_maps,
                                 ),
                             ] {
+                                if map_handles.is_empty() {
+                                    continue;
+                                }
                                 ui.add_space(bigger_text_style.size / 2.0);
                                 ui.themed_label(bigger_text_style, section_title);
 
@@ -98,7 +101,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                     let map_meta = params
                                         .map_assets
                                         .get(&map_handle.get_bevy_handle())
-                                        .unwrap();
+                                        .expect("Error loading map");
                                     ui.add_space(ui.spacing().item_spacing.y);
 
                                     let mut button =
@@ -126,7 +129,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                         });
                                         params.session_manager.start(GameSessionInfo {
                                             meta: params.core.0.clone(),
-                                            map: map_handle.clone(),
+                                            map_meta: map_meta.clone(),
                                             player_info,
                                         });
                                         params

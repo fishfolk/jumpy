@@ -425,7 +425,7 @@
                                 MapTileMeta {
                                     pos: UVec2::new(x, y),
                                     idx: tile.idx <span class="kw">as </span>u32,
-                                    jump_through: collision == TileCollisionKind::JUMP_THROUGH,
+                                    collision,
                                 }
                             })
                         })

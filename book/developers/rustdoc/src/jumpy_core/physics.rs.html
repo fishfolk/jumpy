@@ -431,7 +431,7 @@
             </span><span class="kw">loop </span>{
                 <span class="kw">let </span><span class="kw-2">mut </span>transform = transforms.get(entity).copied().unwrap();
 
-                <span class="kw">if </span>collision_world.tile_collision(transform, body.shape) != TileCollisionKind::SOLID
+                <span class="kw">if </span>collision_world.tile_collision(transform, body.shape) != TileCollisionKind::Solid
                 {
                     <span class="kw">break</span>;
                 }
@@ -510,8 +510,8 @@
 
             <span class="kw">let </span>tile = collision_world.tile_collision(transform, body.shape);
 
-            <span class="kw">let </span>on_jump_through_tile = tile == TileCollisionKind::JUMP_THROUGH;
-            body.is_on_ground = tile != TileCollisionKind::EMPTY
+            <span class="kw">let </span>on_jump_through_tile = tile == TileCollisionKind::JumpThrough;
+            body.is_on_ground = tile != TileCollisionKind::Empty
                 &amp;&amp; !collision_world.get_collider(entity).seen_wood
                 &amp;&amp; !(on_jump_through_tile &amp;&amp; body.fall_through);
             body.is_on_platform = body.is_on_ground &amp;&amp; on_jump_through_tile;

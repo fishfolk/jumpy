@@ -1403,6 +1403,64 @@
 <a href="#1402" id="1402">1402</a>
 <a href="#1403" id="1403">1403</a>
 <a href="#1404" id="1404">1404</a>
+<a href="#1405" id="1405">1405</a>
+<a href="#1406" id="1406">1406</a>
+<a href="#1407" id="1407">1407</a>
+<a href="#1408" id="1408">1408</a>
+<a href="#1409" id="1409">1409</a>
+<a href="#1410" id="1410">1410</a>
+<a href="#1411" id="1411">1411</a>
+<a href="#1412" id="1412">1412</a>
+<a href="#1413" id="1413">1413</a>
+<a href="#1414" id="1414">1414</a>
+<a href="#1415" id="1415">1415</a>
+<a href="#1416" id="1416">1416</a>
+<a href="#1417" id="1417">1417</a>
+<a href="#1418" id="1418">1418</a>
+<a href="#1419" id="1419">1419</a>
+<a href="#1420" id="1420">1420</a>
+<a href="#1421" id="1421">1421</a>
+<a href="#1422" id="1422">1422</a>
+<a href="#1423" id="1423">1423</a>
+<a href="#1424" id="1424">1424</a>
+<a href="#1425" id="1425">1425</a>
+<a href="#1426" id="1426">1426</a>
+<a href="#1427" id="1427">1427</a>
+<a href="#1428" id="1428">1428</a>
+<a href="#1429" id="1429">1429</a>
+<a href="#1430" id="1430">1430</a>
+<a href="#1431" id="1431">1431</a>
+<a href="#1432" id="1432">1432</a>
+<a href="#1433" id="1433">1433</a>
+<a href="#1434" id="1434">1434</a>
+<a href="#1435" id="1435">1435</a>
+<a href="#1436" id="1436">1436</a>
+<a href="#1437" id="1437">1437</a>
+<a href="#1438" id="1438">1438</a>
+<a href="#1439" id="1439">1439</a>
+<a href="#1440" id="1440">1440</a>
+<a href="#1441" id="1441">1441</a>
+<a href="#1442" id="1442">1442</a>
+<a href="#1443" id="1443">1443</a>
+<a href="#1444" id="1444">1444</a>
+<a href="#1445" id="1445">1445</a>
+<a href="#1446" id="1446">1446</a>
+<a href="#1447" id="1447">1447</a>
+<a href="#1448" id="1448">1448</a>
+<a href="#1449" id="1449">1449</a>
+<a href="#1450" id="1450">1450</a>
+<a href="#1451" id="1451">1451</a>
+<a href="#1452" id="1452">1452</a>
+<a href="#1453" id="1453">1453</a>
+<a href="#1454" id="1454">1454</a>
+<a href="#1455" id="1455">1455</a>
+<a href="#1456" id="1456">1456</a>
+<a href="#1457" id="1457">1457</a>
+<a href="#1458" id="1458">1458</a>
+<a href="#1459" id="1459">1459</a>
+<a href="#1460" id="1460">1460</a>
+<a href="#1461" id="1461">1461</a>
+<a href="#1462" id="1462">1462</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
@@ -1437,15 +1495,37 @@
     <span class="kw">pub </span>context_click_pos: <span class="prelude-ty">Option</span>&lt;Vec2&gt;,
 }
 
-<span class="attr">#[derive(Resource, Default)]
+<span class="attr">#[derive(Resource)]
 </span><span class="kw">struct </span>EditorState {
     <span class="kw">pub </span>cursor: EditorCursor,
     <span class="kw">pub </span>current_layer_idx: usize,
     <span class="kw">pub </span>current_tilemap_tile: usize,
+    <span class="kw">pub </span>current_collision: TileCollisionKind,
     <span class="kw">pub </span>current_tool: EditorTool,
     <span class="kw">pub </span>camera: EditorCameraPos,
     <span class="comment">// pub hidden_layers: HashSet&lt;usize&gt;,
 </span>}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>EditorState {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            cursor: Default::default(),
+            current_layer_idx: Default::default(),
+            current_tilemap_tile: Default::default(),
+            current_collision: TileCollisionKind::Solid,
+            current_tool: Default::default(),
+            camera: Default::default(),
+        }
+    }
+}
+
+<span class="kw">fn </span>tile_collision_color(collision: TileCollisionKind) -&gt; egui::Color32 {
+    <span class="kw">match </span>collision {
+        TileCollisionKind::Solid =&gt; egui::Color32::LIGHT_GRAY.linear_multiply(<span class="number">0.68</span>),
+        TileCollisionKind::JumpThrough =&gt; egui::Color32::GOLD,
+        <span class="kw">_ </span>=&gt; egui::Color32::BLACK,
+    }
+}
 
 <span class="attr">#[derive(Clone, Copy)]
 </span><span class="kw">struct </span>EditorCameraPos {
@@ -1471,6 +1551,7 @@
     <span class="attr">#[default]
     </span>Element,
     Tile,
+    Collision,
 }
 
 <span class="kw">impl </span>EditorTool {
@@ -1478,6 +1559,7 @@
         <span class="kw">match </span><span class="self">self </span>{
             EditorTool::Element =&gt; egui::CursorIcon::Default,
             EditorTool::Tile =&gt; egui::CursorIcon::Crosshair,
+            EditorTool::Collision =&gt; egui::CursorIcon::Default,
         }
     }
 }
@@ -1795,10 +1877,11 @@
         <span class="kw">let </span><span class="kw-2">mut </span>params: EditorLeftToolbar = state.get_mut(world);
         <span class="kw">let </span>icons = <span class="kw-2">&amp;</span>params.game.ui_theme.editor.icons;
         <span class="kw">let </span>width = ui.available_width();
-        <span class="kw">for </span>tool <span class="kw">in </span>[EditorTool::Element, EditorTool::Tile] {
+        <span class="kw">for </span>tool <span class="kw">in </span>[EditorTool::Element, EditorTool::Tile, EditorTool::Collision] {
             <span class="kw">let </span>(image, hover_text) = <span class="kw">match </span>tool {
                 EditorTool::Element =&gt; (<span class="kw-2">&amp;</span>icons.elements, params.localization.get(<span class="string">&quot;elements&quot;</span>)),
                 EditorTool::Tile =&gt; (<span class="kw-2">&amp;</span>icons.tiles, params.localization.get(<span class="string">&quot;tiles&quot;</span>)),
+                EditorTool::Collision =&gt; (<span class="kw-2">&amp;</span>icons.collisions, params.localization.get(<span class="string">&quot;collisions&quot;</span>)),
             };
             ui.add_space(ui.spacing().window_margin.top);
 
@@ -1974,6 +2057,37 @@
                     </span>});
                 }
             });
+        }
+
+        <span class="comment">// Collision section
+        </span><span class="kw">if </span>params.state.current_tool == EditorTool::Collision
+            || params.state.current_tool == EditorTool::Tile
+        {
+            ui.separator();
+            ui.horizontal(|ui| {
+                ui.label(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;collision&quot;</span>));
+            });
+            ui.separator();
+
+            <span class="kw">for </span>(collision, label) <span class="kw">in </span>[
+                (TileCollisionKind::Solid, params.localization.get(<span class="string">&quot;solid&quot;</span>)),
+                (
+                    TileCollisionKind::JumpThrough,
+                    params.localization.get(<span class="string">&quot;jump-through&quot;</span>),
+                ),
+                (TileCollisionKind::Empty, params.localization.get(<span class="string">&quot;empty&quot;</span>)),
+            ] {
+                <span class="kw">let </span>color = tile_collision_color(collision);
+                <span class="kw">let </span>icon_width = ui.spacing().icon_width;
+                <span class="kw">let </span>icon_height = icon_width;
+                <span class="kw">let </span>icon_size = egui::vec2(icon_width, icon_height);
+                ui.horizontal(|ui| {
+                    <span class="kw">let </span>(rect, _response) = ui.allocate_exact_size(icon_size, egui::Sense::hover());
+                    <span class="kw">let </span>painter = ui.painter_at(rect);
+                    painter.circle_filled(rect.center(), icon_size.x / <span class="number">3.5</span>, color);
+                    ui.selectable_value(<span class="kw-2">&amp;mut </span>params.state.current_collision, collision, label);
+                });
+            }
         }
 
         <span class="comment">// Tilemap section
@@ -2521,72 +2635,74 @@
                         <span class="kw">if </span>response.dragged_by(egui::PointerButton::Primary)
                             &amp;&amp; !ui.input().modifiers.command
                         {
-                            <span class="kw">if </span>!ui.input().modifiers.shift {
-                                <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::SetTile {
-                                    layer: params.state.current_layer_idx <span class="kw">as </span>u8,
-                                    pos: tile_xy,
-                                    tilemap_tile_idx: <span class="prelude-val">Some</span>(params.state.current_tilemap_tile),
-                                    collision: TileCollisionKind::SOLID,
-                                });
-                            } <span class="kw">else </span>{
-                                <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::SetTile {
-                                    layer: params.state.current_layer_idx <span class="kw">as </span>u8,
-                                    pos: tile_xy,
-                                    tilemap_tile_idx: <span class="prelude-val">None</span>,
-                                    collision: TileCollisionKind::SOLID,
-                                });
-                            }
+                            <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::SetTile {
+                                layer: params.state.current_layer_idx <span class="kw">as </span>u8,
+                                pos: tile_xy,
+                                tilemap_tile_idx: <span class="prelude-val">Some</span>(params.state.current_tilemap_tile),
+                                collision: params.state.current_collision,
+                            });
+                        } <span class="kw">else if </span>response.dragged_by(egui::PointerButton::Secondary) {
+                            <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::SetTile {
+                                layer: params.state.current_layer_idx <span class="kw">as </span>u8,
+                                pos: tile_xy,
+                                tilemap_tile_idx: <span class="prelude-val">None</span>,
+                                collision: params.state.current_collision,
+                            });
                         }
-
-                        response.context_menu(|ui| {
-                            <span class="attr">#[derive(Clone)]
-                            </span><span class="kw">struct </span>ClickedTile {
-                                tile_xy: UVec2,
-                            }
-
-                            <span class="kw">let </span>data_id = egui::Id::new(<span class="string">&quot;tile_context_menu&quot;</span>);
-
-                            <span class="kw">if </span>ui.input().pointer.secondary_clicked() {
-                                ui.data().insert_temp(data_id, ClickedTile { tile_xy });
-                            }
-                            <span class="kw">let </span>ClickedTile { tile_xy } = ui.data().get_temp(data_id).unwrap();
-
-                            <span class="kw">if let </span><span class="prelude-val">Some</span>(tile) = map.layers[params.state.current_layer_idx]
-                                .tiles
-                                .iter()
-                                .find(|x| x.pos == tile_xy)
-                            {
-                                <span class="kw">let </span><span class="kw-2">mut </span>jump_through = tile.jump_through;
-                                <span class="kw">let </span>tilemap_tile_idx = tile.idx <span class="kw">as </span>usize;
-                                <span class="kw">if </span>ui
-                                    .checkbox(
-                                        <span class="kw-2">&amp;mut </span>jump_through,
-                                        <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;jump-through&quot;</span>),
-                                    )
-                                    .clicked()
-                                {
-                                    <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::SetTile {
-                                        layer: params.state.current_layer_idx <span class="kw">as </span>u8,
-                                        pos: tile_xy,
-                                        tilemap_tile_idx: <span class="prelude-val">Some</span>(tilemap_tile_idx),
-                                        collision: <span class="kw">if </span>jump_through {
-                                            TileCollisionKind::JUMP_THROUGH
-                                        } <span class="kw">else </span>{
-                                            TileCollisionKind::SOLID
-                                        },
-                                    });
-                                }
-
-                                <span class="kw">if </span>ui.button(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;close&quot;</span>)).clicked() {
-                                    ui.close_menu();
-                                }
-                            } <span class="kw">else </span>{
-                                ui.close_menu();
-                            }
-                        });
                     }
                 };
-            }
+
+            <span class="comment">// Collision tool
+            </span>} <span class="kw">else if </span>params.state.current_tool == EditorTool::Collision {
+                <span class="attr">#[allow(clippy::unnecessary_operation)] </span><span class="comment">// false alarm
+                </span><span class="kw">for </span>tile <span class="kw">in </span><span class="kw-2">&amp;</span>map.layers[params.state.current_layer_idx].tiles {
+                    <span class="kw">let </span>tile_xy = tile.pos;
+                    <span class="kw">let </span>tile_pos = tile_xy.as_vec2() * map.tile_size;
+                    <span class="kw">let </span><span class="prelude-val">Some</span>(ndc) = camera
+                            .world_to_ndc(
+                                <span class="kw-2">&amp;</span>(<span class="kw-2">*</span>camera_transform).into(),
+                                tile_pos.extend(<span class="number">0.0</span>)
+                            ) <span class="kw">else </span>{ <span class="kw">continue</span>; };
+
+                    <span class="kw">let </span>ndc = (ndc + <span class="number">1.0</span>) / <span class="number">2.0</span>;
+                    <span class="kw">let </span>bottom_left =
+                        egui::pos2(window_size.x * ndc.x, window_size.y - window_size.y * ndc.y);
+                    <span class="kw">let </span>size = egui::vec2(map.tile_size.x, map.tile_size.y) / ppp;
+                    <span class="kw">let </span>top_right = egui::pos2(bottom_left.x + size.x, bottom_left.y - size.y);
+                    <span class="kw">let </span>rect = egui::Rect::from_two_pos(bottom_left, top_right);
+
+                    <span class="kw">if </span>!map_response_rect.intersects(rect) {
+                        <span class="kw">continue</span>;
+                    }
+
+                    <span class="kw">if </span>tile.collision != TileCollisionKind::Empty {
+                        <span class="kw">let </span><span class="kw-2">mut </span>painter = ui.painter_at(map_response_rect);
+                        painter.set_clip_rect(map_response_rect);
+                        painter.rect_stroke(
+                            rect.expand(-<span class="number">1.0</span>),
+                            <span class="number">0.5</span>,
+                            (<span class="number">2.0</span>, tile_collision_color(tile.collision)),
+                        );
+                    }
+
+                    <span class="kw">if </span>ui.input().pointer.primary_down()
+                        &amp;&amp; ui
+                            .input()
+                            .pointer
+                            .hover_pos()
+                            .map(|pos| rect.contains(pos))
+                            .unwrap_or(<span class="bool-val">false</span>)
+                        &amp;&amp; !ui.input().modifiers.command
+                    {
+                        <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::SetTile {
+                            layer: params.state.current_layer_idx <span class="kw">as </span>u8,
+                            pos: tile_xy,
+                            tilemap_tile_idx: <span class="prelude-val">Some</span>(tile.idx <span class="kw">as </span>usize),
+                            collision: params.state.current_collision,
+                        });
+                    }
+                }
+            };
 
         <span class="comment">// If there is no current map
         </span>} <span class="kw">else </span>{

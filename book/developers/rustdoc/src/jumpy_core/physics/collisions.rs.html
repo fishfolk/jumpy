@@ -889,13 +889,6 @@
 <a href="#888" id="888">888</a>
 <a href="#889" id="889">889</a>
 <a href="#890" id="890">890</a>
-<a href="#891" id="891">891</a>
-<a href="#892" id="892">892</a>
-<a href="#893" id="893">893</a>
-<a href="#894" id="894">894</a>
-<a href="#895" id="895">895</a>
-<a href="#896" id="896">896</a>
-<a href="#897" id="897">897</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Collision detection implementation.
 
 </span><span class="kw">use </span>::bevy::utils::{HashMap, HashSet};
@@ -1175,24 +1168,17 @@
 }
 
 <span class="doccomment">/// The kind of collision that a map tile has.
-///
-/// The integer value should come from one of the associated constants.
-///
-/// &gt; **TODO:** Evaluate putting this in a normal enum. If I ( zicklag ) remember correctly, I
-/// &gt; didn&#39;t use an enum to make scripting easier, but I don&#39;t know that this actually helps.
-</span><span class="attr">#[derive(Default, PartialEq, Eq, Clone, Copy, Debug, TypeUlid)]
+</span><span class="attr">#[derive(Default, PartialEq, Eq, Clone, Copy, Debug, TypeUlid, Serialize, Deserialize)]
 #[ulid = <span class="string">&quot;01GNF746HB9N9GE9E2KG4X7X4K&quot;</span>]
-#[repr(transparent)]
-</span><span class="kw">pub struct </span>TileCollisionKind(<span class="kw">pub </span>u8);
-
-<span class="kw">impl </span>TileCollisionKind {
-    <span class="doccomment">/// The tile has no collision.
-    </span><span class="kw">pub const </span>EMPTY: TileCollisionKind = TileCollisionKind(<span class="number">0</span>);
-    <span class="doccomment">/// The tile is solid.
-    </span><span class="kw">pub const </span>SOLID: TileCollisionKind = TileCollisionKind(<span class="number">1</span>);
-    <span class="doccomment">/// The tile may be jumped/dropped through.
-    </span><span class="kw">pub const </span>JUMP_THROUGH: TileCollisionKind = TileCollisionKind(<span class="number">2</span>);
+#[repr(u8)]
+</span><span class="kw">pub enum </span>TileCollisionKind {
+    <span class="attr">#[default]
+    </span>Empty,
+    Solid,
+    JumpThrough,
 }
+
+<span class="kw">impl </span>BonesBevyAssetLoad <span class="kw">for </span>TileCollisionKind {}
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; CollisionWorld&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// Updates the collision world with the entity&#39;s actual transforms.
@@ -1423,7 +1409,7 @@
             .collision_cache
             .get(entity)
             .iter()
-            .any(|x| <span class="self">self</span>.tile_collision_kinds.get(<span class="kw-2">*</span>x) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>TileCollisionKind::JUMP_THROUGH))
+            .any(|x| <span class="self">self</span>.tile_collision_kinds.get(<span class="kw-2">*</span>x) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>TileCollisionKind::JumpThrough))
         {
             <span class="kw">let </span>collider = <span class="self">self</span>.colliders.get_mut(entity).unwrap();
             collider.descent = <span class="bool-val">true</span>;
@@ -1510,7 +1496,7 @@
                     };
 
                     <span class="comment">// Ignore jump-through tiles if we have already seen wood
-                    </span>!(collider.seen_wood &amp;&amp; <span class="kw-2">*</span>tile_kind == TileCollisionKind::JUMP_THROUGH)
+                    </span>!(collider.seen_wood &amp;&amp; <span class="kw-2">*</span>tile_kind == TileCollisionKind::JumpThrough)
                 }),
             );
 
@@ -1528,17 +1514,17 @@
                 <span class="kw">let </span>tile_kind = <span class="kw-2">*</span><span class="self">self</span>.tile_collision_kinds.get(ent).unwrap();
 
                 <span class="comment">// collider wants to go down and collided with jumpthrough tile
-                </span><span class="kw">if </span>tile_kind == TileCollisionKind::JUMP_THROUGH &amp;&amp; collider.descent {
+                </span><span class="kw">if </span>tile_kind == TileCollisionKind::JumpThrough &amp;&amp; collider.descent {
                     collider.seen_wood = <span class="bool-val">true</span>;
                 }
                 <span class="comment">// collider wants to go up and encoutered jumpthrough obstace
-                </span><span class="kw">if </span>tile_kind == TileCollisionKind::JUMP_THROUGH &amp;&amp; dy &gt; <span class="number">0.0 </span>{
+                </span><span class="kw">if </span>tile_kind == TileCollisionKind::JumpThrough &amp;&amp; dy &gt; <span class="number">0.0 </span>{
                     collider.seen_wood = <span class="bool-val">true</span>;
                     collider.descent = <span class="bool-val">true</span>;
                 }
 
                 <span class="comment">// If we hit a solid block, or a jumpthrough tile that we aren&#39;t falling through
-                </span><span class="kw">if </span>!(tile_kind == TileCollisionKind::JUMP_THROUGH
+                </span><span class="kw">if </span>!(tile_kind == TileCollisionKind::JumpThrough
                     &amp;&amp; (collider.descent || dy &gt; <span class="number">0.0 </span>|| collider.seen_wood))
                 {
                     <span class="comment">// Indicate we ran into something and stop processing
@@ -1572,7 +1558,7 @@
                     <span class="kw-2">&amp;**</span>shape,
                     rapier::QueryFilter::new().predicate(<span class="kw-2">&amp;</span>|_handle, collider| {
                         <span class="kw">let </span>ent = RapierUserData::entity(collider.user_data);
-                        <span class="self">self</span>.tile_collision_kinds.get(ent) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>TileCollisionKind::JUMP_THROUGH)
+                        <span class="self">self</span>.tile_collision_kinds.get(ent) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>TileCollisionKind::JumpThrough)
                     }),
                 )
                 .is_some();
@@ -1641,7 +1627,7 @@
                     };
 
                         <span class="comment">// Ignore jump-through tiles if we have already seen wood.
-                        </span>!(collider.seen_wood &amp;&amp; <span class="kw-2">*</span>tile_kind == TileCollisionKind::JUMP_THROUGH)
+                        </span>!(collider.seen_wood &amp;&amp; <span class="kw-2">*</span>tile_kind == TileCollisionKind::JumpThrough)
                     }),
                 )
             };
@@ -1660,7 +1646,7 @@
                 <span class="kw">let </span>tile_kind = <span class="kw-2">*</span><span class="self">self</span>.tile_collision_kinds.get(ent).unwrap();
 
                 <span class="comment">// If we ran into a jump-through tile, go through it and continue casting
-                </span><span class="kw">if </span>tile_kind == TileCollisionKind::JUMP_THROUGH {
+                </span><span class="kw">if </span>tile_kind == TileCollisionKind::JumpThrough {
                     collider.seen_wood = <span class="bool-val">true</span>;
                     collider.descent = <span class="bool-val">true</span>;
 
@@ -1697,7 +1683,7 @@
                     <span class="kw-2">&amp;**</span>shape,
                     rapier::QueryFilter::new().predicate(<span class="kw-2">&amp;</span>|_handle, collider| {
                         <span class="kw">let </span>ent = RapierUserData::entity(collider.user_data);
-                        <span class="self">self</span>.tile_collision_kinds.get(ent) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>TileCollisionKind::JUMP_THROUGH)
+                        <span class="self">self</span>.tile_collision_kinds.get(ent) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>TileCollisionKind::JumpThrough)
                     }),
                 )
                 .is_some();
@@ -1720,7 +1706,7 @@
     /// &gt; perfectly lined up along the edge of a tile, but `tile_collision_point` won&#39;t.
     </span><span class="attr">#[allow(unused)]
     </span><span class="kw">pub fn </span>solid_at(<span class="kw-2">&amp;</span><span class="self">self</span>, pos: Vec2) -&gt; bool {
-        <span class="self">self</span>.tile_collision_point(pos) == TileCollisionKind::SOLID
+        <span class="self">self</span>.tile_collision_point(pos) == TileCollisionKind::Solid
     }
 
     <span class="doccomment">/// Returns the tile collision at the given point.
@@ -1747,7 +1733,7 @@
             }
         }
 
-        TileCollisionKind::EMPTY
+        TileCollisionKind::Empty
     }
 
     <span class="doccomment">/// Get the [`TileCollisionKind`] of the first tile detected colliding with the `shape` at the

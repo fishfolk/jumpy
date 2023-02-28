@@ -137,6 +137,9 @@ ui_theme:
       tiles:
         image: ui/editor/Tile.png
         image_size: [64, 64]
+      collisions:
+        image: ui/editor/PointerAndMap.png
+        image_size: [64, 64]
       select:
         image: ui/editor/Cursor.png
         image_size: [64, 64]

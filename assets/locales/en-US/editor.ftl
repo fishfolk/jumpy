@@ -23,11 +23,18 @@ name = Name
 grid-size = Grid Size
 copy-to-clipboard = Copy to Clipboard
 
-none = None
-jump-through = Jump Through
 
 tilemap = Tilemap
 tilemap-path = Tilemap Path
+
+collision = Collision
+collisions = Collisions
+
+none = None
+
+jump-through = Jump Through
+empty = Empty
+solid = Solid
 
 open-map = Open Map
 no-map-loaded = No map loaded

@@ -32,14 +32,36 @@ struct EditorCursor {
     pub context_click_pos: Option<Vec2>,
 }
 
-#[derive(Resource, Default)]
+#[derive(Resource)]
 struct EditorState {
     pub cursor: EditorCursor,
     pub current_layer_idx: usize,
     pub current_tilemap_tile: usize,
+    pub current_collision: TileCollisionKind,
     pub current_tool: EditorTool,
     pub camera: EditorCameraPos,
     // pub hidden_layers: HashSet<usize>,
+}
+
+impl Default for EditorState {
+    fn default() -> Self {
+        Self {
+            cursor: Default::default(),
+            current_layer_idx: Default::default(),
+            current_tilemap_tile: Default::default(),
+            current_collision: TileCollisionKind::Solid,
+            current_tool: Default::default(),
+            camera: Default::default(),
+        }
+    }
+}
+
+fn tile_collision_color(collision: TileCollisionKind) -> egui::Color32 {
+    match collision {
+        TileCollisionKind::Solid => egui::Color32::LIGHT_GRAY.linear_multiply(0.68),
+        TileCollisionKind::JumpThrough => egui::Color32::GOLD,
+        _ => egui::Color32::BLACK,
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -66,6 +88,7 @@ enum EditorTool {
     #[default]
     Element,
     Tile,
+    Collision,
 }
 
 impl EditorTool {
@@ -73,6 +96,7 @@ impl EditorTool {
         match self {
             EditorTool::Element => egui::CursorIcon::Default,
             EditorTool::Tile => egui::CursorIcon::Crosshair,
+            EditorTool::Collision => egui::CursorIcon::Default,
         }
     }
 }
@@ -390,10 +414,11 @@ impl<'w, 's> WidgetSystem for EditorLeftToolbar<'w, 's> {
         let mut params: EditorLeftToolbar = state.get_mut(world);
         let icons = &params.game.ui_theme.editor.icons;
         let width = ui.available_width();
-        for tool in [EditorTool::Element, EditorTool::Tile] {
+        for tool in [EditorTool::Element, EditorTool::Tile, EditorTool::Collision] {
             let (image, hover_text) = match tool {
                 EditorTool::Element => (&icons.elements, params.localization.get("elements")),
                 EditorTool::Tile => (&icons.tiles, params.localization.get("tiles")),
+                EditorTool::Collision => (&icons.collisions, params.localization.get("collisions")),
             };
             ui.add_space(ui.spacing().window_margin.top);
 
@@ -569,6 +594,37 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                     });
                 }
             });
+        }
+
+        // Collision section
+        if params.state.current_tool == EditorTool::Collision
+            || params.state.current_tool == EditorTool::Tile
+        {
+            ui.separator();
+            ui.horizontal(|ui| {
+                ui.label(&params.localization.get("collision"));
+            });
+            ui.separator();
+
+            for (collision, label) in [
+                (TileCollisionKind::Solid, params.localization.get("solid")),
+                (
+                    TileCollisionKind::JumpThrough,
+                    params.localization.get("jump-through"),
+                ),
+                (TileCollisionKind::Empty, params.localization.get("empty")),
+            ] {
+                let color = tile_collision_color(collision);
+                let icon_width = ui.spacing().icon_width;
+                let icon_height = icon_width;
+                let icon_size = egui::vec2(icon_width, icon_height);
+                ui.horizontal(|ui| {
+                    let (rect, _response) = ui.allocate_exact_size(icon_size, egui::Sense::hover());
+                    let painter = ui.painter_at(rect);
+                    painter.circle_filled(rect.center(), icon_size.x / 3.5, color);
+                    ui.selectable_value(&mut params.state.current_collision, collision, label);
+                });
+            }
         }
 
         // Tilemap section
@@ -1116,72 +1172,74 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                         if response.dragged_by(egui::PointerButton::Primary)
                             && !ui.input().modifiers.command
                         {
-                            if !ui.input().modifiers.shift {
-                                **params.editor_input = Some(EditorInput::SetTile {
-                                    layer: params.state.current_layer_idx as u8,
-                                    pos: tile_xy,
-                                    tilemap_tile_idx: Some(params.state.current_tilemap_tile),
-                                    collision: TileCollisionKind::SOLID,
-                                });
-                            } else {
-                                **params.editor_input = Some(EditorInput::SetTile {
-                                    layer: params.state.current_layer_idx as u8,
-                                    pos: tile_xy,
-                                    tilemap_tile_idx: None,
-                                    collision: TileCollisionKind::SOLID,
-                                });
-                            }
+                            **params.editor_input = Some(EditorInput::SetTile {
+                                layer: params.state.current_layer_idx as u8,
+                                pos: tile_xy,
+                                tilemap_tile_idx: Some(params.state.current_tilemap_tile),
+                                collision: params.state.current_collision,
+                            });
+                        } else if response.dragged_by(egui::PointerButton::Secondary) {
+                            **params.editor_input = Some(EditorInput::SetTile {
+                                layer: params.state.current_layer_idx as u8,
+                                pos: tile_xy,
+                                tilemap_tile_idx: None,
+                                collision: params.state.current_collision,
+                            });
                         }
-
-                        response.context_menu(|ui| {
-                            #[derive(Clone)]
-                            struct ClickedTile {
-                                tile_xy: UVec2,
-                            }
-
-                            let data_id = egui::Id::new("tile_context_menu");
-
-                            if ui.input().pointer.secondary_clicked() {
-                                ui.data().insert_temp(data_id, ClickedTile { tile_xy });
-                            }
-                            let ClickedTile { tile_xy } = ui.data().get_temp(data_id).unwrap();
-
-                            if let Some(tile) = map.layers[params.state.current_layer_idx]
-                                .tiles
-                                .iter()
-                                .find(|x| x.pos == tile_xy)
-                            {
-                                let mut jump_through = tile.jump_through;
-                                let tilemap_tile_idx = tile.idx as usize;
-                                if ui
-                                    .checkbox(
-                                        &mut jump_through,
-                                        &params.localization.get("jump-through"),
-                                    )
-                                    .clicked()
-                                {
-                                    **params.editor_input = Some(EditorInput::SetTile {
-                                        layer: params.state.current_layer_idx as u8,
-                                        pos: tile_xy,
-                                        tilemap_tile_idx: Some(tilemap_tile_idx),
-                                        collision: if jump_through {
-                                            TileCollisionKind::JUMP_THROUGH
-                                        } else {
-                                            TileCollisionKind::SOLID
-                                        },
-                                    });
-                                }
-
-                                if ui.button(&params.localization.get("close")).clicked() {
-                                    ui.close_menu();
-                                }
-                            } else {
-                                ui.close_menu();
-                            }
-                        });
                     }
                 };
-            }
+
+            // Collision tool
+            } else if params.state.current_tool == EditorTool::Collision {
+                #[allow(clippy::unnecessary_operation)] // false alarm
+                for tile in &map.layers[params.state.current_layer_idx].tiles {
+                    let tile_xy = tile.pos;
+                    let tile_pos = tile_xy.as_vec2() * map.tile_size;
+                    let Some(ndc) = camera
+                            .world_to_ndc(
+                                &(*camera_transform).into(),
+                                tile_pos.extend(0.0)
+                            ) else { continue; };
+
+                    let ndc = (ndc + 1.0) / 2.0;
+                    let bottom_left =
+                        egui::pos2(window_size.x * ndc.x, window_size.y - window_size.y * ndc.y);
+                    let size = egui::vec2(map.tile_size.x, map.tile_size.y) / ppp;
+                    let top_right = egui::pos2(bottom_left.x + size.x, bottom_left.y - size.y);
+                    let rect = egui::Rect::from_two_pos(bottom_left, top_right);
+
+                    if !map_response_rect.intersects(rect) {
+                        continue;
+                    }
+
+                    if tile.collision != TileCollisionKind::Empty {
+                        let mut painter = ui.painter_at(map_response_rect);
+                        painter.set_clip_rect(map_response_rect);
+                        painter.rect_stroke(
+                            rect.expand(-1.0),
+                            0.5,
+                            (2.0, tile_collision_color(tile.collision)),
+                        );
+                    }
+
+                    if ui.input().pointer.primary_down()
+                        && ui
+                            .input()
+                            .pointer
+                            .hover_pos()
+                            .map(|pos| rect.contains(pos))
+                            .unwrap_or(false)
+                        && !ui.input().modifiers.command
+                    {
+                        **params.editor_input = Some(EditorInput::SetTile {
+                            layer: params.state.current_layer_idx as u8,
+                            pos: tile_xy,
+                            tilemap_tile_idx: Some(tile.idx as usize),
+                            collision: params.state.current_collision,
+                        });
+                    }
+                }
+            };
 
         // If there is no current map
         } else {

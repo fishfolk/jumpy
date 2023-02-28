@@ -63,7 +63,7 @@ pub struct MapTileMeta {
     pub pos: UVec2,
     pub idx: u32,
     #[serde(default)]
-    pub jump_through: bool,
+    pub collision: TileCollisionKind,
 }
 
 impl MapMeta {

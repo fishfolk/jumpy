@@ -88,7 +88,15 @@ fn handle_editor_input(
                         if let Some(ent) = tile_layer.get(pos) {
                             if let Some(idx) = tilemap_tile_idx.as_ref() {
                                 tiles.get_mut(ent).unwrap().idx = *idx;
-                                tile_collisions.insert(ent, *collision);
+
+                                // TODO: technically setting the collision to empty should be
+                                // equivalent to removing the component, but it isn't working like
+                                // that right now.
+                                if *collision != TileCollisionKind::Empty {
+                                    tile_collisions.insert(ent, *collision);
+                                } else {
+                                    tile_collisions.remove(ent);
+                                }
                             } else {
                                 entities.kill(ent);
                                 tile_layer.set(pos, None);
@@ -103,7 +111,15 @@ fn handle_editor_input(
                                     ..default()
                                 },
                             );
-                            tile_collisions.insert(ent, *collision);
+
+                            // TODO: technically setting the collision to empty should be
+                            // equivalent to removing the component, but it isn't working like
+                            // that right now.
+                            if *collision != TileCollisionKind::Empty {
+                                tile_collisions.insert(ent, *collision);
+                            } else {
+                                tile_collisions.remove(ent);
+                            }
                         }
 
                         commands.add(move |mut collision_world: CollisionWorld| {

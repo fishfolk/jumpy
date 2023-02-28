@@ -213,7 +213,7 @@ fn update_thrown_crates(
                 ColliderShape::Rectangle {
                     size: vec2(width, height),
                 },
-            ) != TileCollisionKind::EMPTY
+            ) != TileCollisionKind::Empty
         };
 
         if colliding_with_tile && !thrown_crate.was_colliding {

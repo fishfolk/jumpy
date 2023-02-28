@@ -31,11 +31,17 @@ pub struct UiThemeEditorIcons {
     pub elements: ImageMeta,
     pub tiles: ImageMeta,
     pub select: ImageMeta,
+    pub collisions: ImageMeta,
 }
 
 impl UiThemeEditorIcons {
-    pub fn as_mut_list(&mut self) -> [&mut ImageMeta; 3] {
-        [&mut self.elements, &mut self.select, &mut self.tiles]
+    pub fn as_mut_list(&mut self) -> [&mut ImageMeta; 4] {
+        [
+            &mut self.elements,
+            &mut self.select,
+            &mut self.tiles,
+            &mut self.collisions,
+        ]
     }
 }
 

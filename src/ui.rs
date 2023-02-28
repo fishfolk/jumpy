@@ -180,6 +180,7 @@ fn handle_menu_input(
     mut egui_inputs: ResMut<bevy_egui::EguiRenderInputContainer>,
     adjacencies: Res<WidgetAdjacencies>,
     mut egui_ctx: ResMut<bevy_egui::EguiContext>,
+    editor_state: Res<CurrentState<GameEditorState>>,
 ) {
     let input = input.single();
 
@@ -204,6 +205,16 @@ fn handle_menu_input(
             _ => true,
         });
         return;
+    }
+
+    // TODO: This might not be the best way to do this, but here we prevent spacebar presses from
+    // comming to Egui while the editor is visible. This is to prevent you pressing spacebar to jump
+    // the player and inadvertently clicking a button and closing the map, losing your work.
+    if editor_state.0 == GameEditorState::Visible {
+        events.retain(|event| match event {
+            egui::Event::Key { key, .. } => key != &egui::Key::Space,
+            _ => true,
+        });
     }
 
     if input.just_pressed(MenuAction::Confirm) {

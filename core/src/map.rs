@@ -154,14 +154,7 @@ fn spawn_map(
                     ..default()
                 },
             );
-            tile_collisions.insert(
-                tile_ent,
-                if tile_meta.jump_through {
-                    TileCollisionKind::JUMP_THROUGH
-                } else {
-                    TileCollisionKind::SOLID
-                },
-            );
+            tile_collisions.insert(tile_ent, tile_meta.collision);
         }
         let layer_ent = entities.create();
         spawned_map_layer_metas.insert(layer_ent, SpawnedMapLayerMeta { layer_idx });

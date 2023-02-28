@@ -188,7 +188,7 @@ impl GameSession {
                                 MapTileMeta {
                                     pos: UVec2::new(x, y),
                                     idx: tile.idx as u32,
-                                    jump_through: collision == TileCollisionKind::JUMP_THROUGH,
+                                    collision,
                                 }
                             })
                         })

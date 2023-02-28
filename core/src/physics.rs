@@ -142,7 +142,7 @@ fn update_kinematic_bodies(
             loop {
                 let mut transform = transforms.get(entity).copied().unwrap();
 
-                if collision_world.tile_collision(transform, body.shape) != TileCollisionKind::SOLID
+                if collision_world.tile_collision(transform, body.shape) != TileCollisionKind::Solid
                 {
                     break;
                 }
@@ -221,8 +221,8 @@ fn update_kinematic_bodies(
 
             let tile = collision_world.tile_collision(transform, body.shape);
 
-            let on_jump_through_tile = tile == TileCollisionKind::JUMP_THROUGH;
-            body.is_on_ground = tile != TileCollisionKind::EMPTY
+            let on_jump_through_tile = tile == TileCollisionKind::JumpThrough;
+            body.is_on_ground = tile != TileCollisionKind::Empty
                 && !collision_world.get_collider(entity).seen_wood
                 && !(on_jump_through_tile && body.fall_through);
             body.is_on_platform = body.is_on_ground && on_jump_through_tile;

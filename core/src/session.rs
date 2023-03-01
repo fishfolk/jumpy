@@ -19,8 +19,8 @@ pub struct GameSession {
 pub struct GameSessionInfo {
     /// The core metadata.
     pub meta: Arc<CoreMeta>,
-    /// The selected map
-    pub map: Handle<MapMeta>,
+    /// Metadata for the selected map.
+    pub map_meta: MapMeta,
     /// The player selections.
     pub player_info: [Option<Handle<PlayerMeta>>; MAX_PLAYERS],
 }
@@ -49,7 +49,9 @@ impl GameSession {
         // Initialize bevy world resource with an empty bevy world
         session.world.init_resource::<BevyWorld>();
         // Set the map
-        session.world.insert_resource(MapHandle(info.map));
+        session
+            .world
+            .insert_resource(LoadedMap(Arc::new(info.map_meta)));
 
         // Set player initial character selections
         let player_inputs = session.world.resource::<PlayerInputs>();
@@ -87,6 +89,8 @@ impl GameSession {
 
     /// Run a single simulation frame
     pub fn advance(&mut self, bevy_world: &mut ::bevy::prelude::World) {
+        puffin::profile_function!();
+
         // Update the window resource
         let window_resource = self.world.resource::<Window>();
         let bevy_windows = bevy_world.resource::<::bevy::window::Windows>();
@@ -103,6 +107,8 @@ impl GameSession {
             world_resource.0 = Some(scratch_world);
         }
         for stage in &mut self.stages.stages {
+            let stage_name = stage.name();
+            puffin::profile_scope!("Run Stage", stage_name);
             stage.run(&mut self.world).unwrap();
         }
 
@@ -110,7 +116,7 @@ impl GameSession {
         let time_resource = self.world.resource::<Time>();
         time_resource
             .borrow_mut()
-            .advance_exact(std::time::Duration::from_secs_f32(crate::FPS));
+            .advance_exact(std::time::Duration::from_secs_f32(1.0 / crate::FPS));
 
         self.world.maintain();
 
@@ -122,6 +128,98 @@ impl GameSession {
             std::mem::swap(bevy_world, &mut scratch_world);
             self.scratch_world = Some(scratch_world);
         }
+
+        // Clear editor input from player inputs
+        {
+            let player_inputs = self.world.resource::<PlayerInputs>();
+            let mut player_inputs = player_inputs.borrow_mut();
+            for input in &mut player_inputs.players {
+                input.editor_input = None;
+            }
+        }
+    }
+
+    /// Export the current map metadata by scanning the world entities. This means that the export
+    /// will include any modifications to the map made at runtime ( most likely by the editor ).
+    pub fn export_map(&self) -> MapMeta {
+        let export_system =
+            move |map_meta: Res<SpawnedMapMeta>,
+                  entities: Res<Entities>,
+                  tile_layers: Comp<TileLayer>,
+                  spawned_map_layer_metas: Comp<SpawnedMapLayerMeta>,
+                  tile_collisions: Comp<TileCollisionKind>,
+                  tiles: Comp<Tile>,
+                  transforms: Comp<Transform>,
+                  element_handles: Comp<ElementHandle>| {
+                let mut layers = map_meta
+                    .layer_names
+                    .iter()
+                    .map(|name| MapLayerMeta {
+                        id: name.clone(),
+                        tilemap: default(),
+                        tiles: default(),
+                        elements: default(),
+                    })
+                    .collect::<Vec<_>>();
+
+                // Export the tile layers
+                for (_ent, (tile_layer, layer_meta)) in
+                    entities.iter_with((&tile_layers, &spawned_map_layer_metas))
+                {
+                    let layer_idx = layer_meta.layer_idx;
+                    let layer = &mut layers[layer_idx];
+                    if tile_layer.atlas.path == AssetPath::default() {
+                        // Skip layers with dummy atlases
+                        continue;
+                    }
+                    layer.tilemap = Some(tile_layer.atlas.clone());
+                    layer.tiles = tile_layer
+                        .tiles
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(i, ent)| {
+                            ent.map(|ent| {
+                                let collision =
+                                    tile_collisions.get(ent).copied().unwrap_or_default();
+                                let tile = tiles.get(ent).unwrap();
+                                let i = i as u32;
+                                let y = i / map_meta.grid_size.x;
+                                let x = i - (y * map_meta.grid_size.x);
+                                MapTileMeta {
+                                    pos: UVec2::new(x, y),
+                                    idx: tile.idx as u32,
+                                    collision,
+                                }
+                            })
+                        })
+                        .collect();
+                }
+
+                // Export the entity layers
+                for (_ent, (element_handle, transform, layer_meta)) in
+                    entities.iter_with((&element_handles, &transforms, &spawned_map_layer_metas))
+                {
+                    let layer_idx = layer_meta.layer_idx;
+                    let layer = &mut layers[layer_idx];
+
+                    layer.elements.push(ElementSpawn {
+                        pos: transform.translation.truncate(),
+                        element: element_handle.0.clone(),
+                    });
+                }
+
+                // Return complete map metadata
+                Ok(MapMeta {
+                    name: map_meta.name.to_string(),
+                    background: (*map_meta.background).clone(),
+                    background_color: map_meta.background_color,
+                    grid_size: map_meta.grid_size,
+                    tile_size: map_meta.tile_size,
+                    layers,
+                })
+            };
+
+        self.world.run_initialized_system(export_system).unwrap()
     }
 
     /// Snapshot the world state

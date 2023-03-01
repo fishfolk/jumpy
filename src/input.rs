@@ -17,3 +17,7 @@ pub enum PlayerAction {
     Grab,
     Slide,
 }
+
+/// Bevy resource containing the editor action to perform for this frame.
+#[derive(Resource, Default, Deref, DerefMut)]
+pub struct CurrentEditorInput(Option<jumpy_core::input::EditorInput>);

@@ -12,6 +12,7 @@ mod prelude;
 pub mod bevy_prelude {
     pub use {
         crate::{
+            input::EditorInput,
             metadata::*,
             session::{GameSession, GameSessionInfo},
             MAX_PLAYERS,
@@ -25,6 +26,7 @@ pub mod bullet;
 pub mod camera;
 pub mod damage;
 pub mod debug;
+pub mod editor;
 pub mod elements;
 pub mod input;
 pub mod item;
@@ -56,5 +58,7 @@ pub fn install_modules(session: &mut session::GameSession) {
     random::install(session);
     debug::install(session);
     attachment::install(session);
+    item::install(session);
     bullet::install(session);
+    editor::install(session);
 }

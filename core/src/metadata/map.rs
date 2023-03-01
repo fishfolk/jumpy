@@ -1,5 +1,6 @@
 use super::*;
-#[derive(BonesBevyAsset, Serialize, Deserialize, Clone, TypeUlid, Debug)]
+
+#[derive(BonesBevyAsset, Serialize, Deserialize, Clone, TypeUlid, Debug, Default)]
 #[ulid = "01GP264BT87MAAHMEK52Y5P7BW"]
 #[asset_id = "map"]
 #[serde(deny_unknown_fields)]
@@ -41,31 +42,11 @@ pub struct ParallaxLayerMeta {
 #[serde(deny_unknown_fields)]
 pub struct MapLayerMeta {
     pub id: String,
-    pub kind: MapLayerKind,
-    #[asset(deserialize_only)]
-    #[serde(skip)]
-    pub entity: Option<Entity>,
-}
-
-#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[serde(rename_all = "snake_case")]
-pub enum MapLayerKind {
-    Tile(MapTileLayer),
-    Element(ElementLayer),
-}
-
-#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
-#[serde(deny_unknown_fields)]
-pub struct MapTileLayer {
-    pub tilemap: Handle<Atlas>,
-    pub has_collision: bool,
+    #[serde(default)]
+    pub tilemap: Option<Handle<Atlas>>,
+    #[serde(default)]
     pub tiles: Vec<MapTileMeta>,
-}
-
-#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
-#[serde(deny_unknown_fields)]
-pub struct ElementLayer {
+    #[serde(default)]
     pub elements: Vec<ElementSpawn>,
 }
 
@@ -82,5 +63,17 @@ pub struct MapTileMeta {
     pub pos: UVec2,
     pub idx: u32,
     #[serde(default)]
-    pub jump_through: bool,
+    pub collision: TileCollisionKind,
+}
+
+impl MapMeta {
+    /// Checks if the given position is out of the bounds of the map.
+    pub fn is_out_of_bounds(&self, pos: &Vec3) -> bool {
+        const KILL_ZONE_BORDER: f32 = 500.0;
+        let map_width = self.grid_size.x as f32 * self.tile_size.x;
+        let left_kill_zone = -KILL_ZONE_BORDER;
+        let right_kill_zone = map_width + KILL_ZONE_BORDER;
+        let bottom_kill_zone = -KILL_ZONE_BORDER;
+        pos.x < left_kill_zone || pos.x > right_kill_zone || pos.y < bottom_kill_zone
+    }
 }

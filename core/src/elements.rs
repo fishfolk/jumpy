@@ -18,12 +18,25 @@ pub mod sword;
 #[ulid = "01GP42Q5GCY5Y4JC7SQ1YRHYKN"]
 pub struct MapElementHydrated;
 
+/// Component that contains the [`Entity`] to de-hydrate when the entity with this component is out
+/// of the [`LoadedMap`] bounds.
+///
+/// This is useful for map elements that spawn items: when the item falls off the map, it should
+/// de-hydrate it's spawner, so that the spawner will re-spawn the item in it's default state.
+#[derive(Clone, TypeUlid, Deref, DerefMut)]
+#[ulid = "01GP9NY0Y50Y2A8M4A7E9NN8VE"]
+pub struct DehydrateOutOfBounds(pub Entity);
+
 /// Component containing an element's metadata handle.
 #[derive(Clone, TypeUlid, Deref, DerefMut, Default)]
 #[ulid = "01GP421CHN323T2614F19PA5E9"]
 pub struct ElementHandle(pub Handle<ElementMeta>);
 
 pub fn install(session: &mut GameSession) {
+    session
+        .stages
+        .add_system_to_stage(CoreStage::First, handle_out_of_bounds_items);
+
     decoration::install(session);
     player_spawner::install(session);
     sproinger::install(session);
@@ -36,4 +49,22 @@ pub fn install(session: &mut GameSession) {
     stomp_boots::install(session);
     crate_item::install(session);
     slippery_seaweed::install(session);
+}
+
+fn handle_out_of_bounds_items(
+    mut commands: Commands,
+    mut hydrated: CompMut<MapElementHydrated>,
+    entities: ResMut<Entities>,
+    transforms: CompMut<Transform>,
+    spawners: Comp<DehydrateOutOfBounds>,
+    map: Res<LoadedMap>,
+) {
+    for (item_ent, (transform, spawner)) in entities.iter_with((&transforms, &spawners)) {
+        if map.is_out_of_bounds(&transform.translation) {
+            hydrated.remove(**spawner);
+            commands.add(move |mut entities: ResMut<Entities>| {
+                entities.kill(item_ent);
+            });
+        }
+    }
 }

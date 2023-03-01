@@ -124,6 +124,8 @@ fn update_kinematic_bodies(
     mut collision_world: CollisionWorld,
     mut transforms: CompMut<Transform>,
 ) {
+    puffin::profile_function!();
+
     collision_world.update(&transforms);
     for (entity, body) in entities.iter_with(&mut bodies) {
         if body.is_deactivated {
@@ -134,11 +136,13 @@ fn update_kinematic_bodies(
         }
 
         if body.has_mass {
+            puffin::profile_scope!("Shove objects out of walls");
+
             // Shove objects out of walls
             loop {
                 let mut transform = transforms.get(entity).copied().unwrap();
 
-                if collision_world.tile_collision(transform, body.shape) != TileCollisionKind::SOLID
+                if collision_world.tile_collision(transform, body.shape) != TileCollisionKind::Solid
                 {
                     break;
                 }
@@ -159,10 +163,11 @@ fn update_kinematic_bodies(
                     (false, false, false, false) => {
                         // For some reason the `tile_collision` test did detect a collision, but
                         // `solid_at` did not detect a collision at any of the corners of the aabb.
-                        panic!(
+                        warn!(
                             "Collision test error resulting in physics \
                             body stuck in wall at {rect:?}",
                         );
+                        break;
                     }
                     // Check for collisions on each side of the rectangle
                     (false, false, _, _) => transform.translation.y += 1.0,
@@ -195,12 +200,16 @@ fn update_kinematic_bodies(
             collision_world.descent(entity);
         }
 
-        if collision_world.move_horizontal(&mut transforms, entity, body.velocity.x) {
-            body.velocity.x *= -body.bounciness;
-        }
+        {
+            puffin::profile_scope!("move body");
 
-        if collision_world.move_vertical(&mut transforms, entity, body.velocity.y) {
-            body.velocity.y *= -body.bounciness;
+            if collision_world.move_horizontal(&mut transforms, entity, body.velocity.x) {
+                body.velocity.x *= -body.bounciness;
+            }
+
+            if collision_world.move_vertical(&mut transforms, entity, body.velocity.y) {
+                body.velocity.y *= -body.bounciness;
+            }
         }
 
         // Check ground collision
@@ -212,8 +221,8 @@ fn update_kinematic_bodies(
 
             let tile = collision_world.tile_collision(transform, body.shape);
 
-            let on_jump_through_tile = tile == TileCollisionKind::JUMP_THROUGH;
-            body.is_on_ground = tile != TileCollisionKind::EMPTY
+            let on_jump_through_tile = tile == TileCollisionKind::JumpThrough;
+            body.is_on_ground = tile != TileCollisionKind::Empty
                 && !collision_world.get_collider(entity).seen_wood
                 && !(on_jump_through_tile && body.fall_through);
             body.is_on_platform = body.is_on_ground && on_jump_through_tile;
@@ -263,6 +272,8 @@ fn apply_rotation(
     is_on_ground: bool,
     collider_shape: ColliderShape,
 ) {
+    puffin::profile_function!();
+
     let mut angle = transform.rotation.to_euler(EulerRot::XYZ).2;
 
     if is_on_ground {

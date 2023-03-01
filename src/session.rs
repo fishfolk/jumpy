@@ -1,3 +1,5 @@
+use bevy::{ecs::schedule::ShouldRun, utils::Instant};
+
 use crate::prelude::*;
 
 pub struct JumpySessionPlugin;
@@ -13,6 +15,7 @@ impl Plugin for JumpySessionPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::<Session>::with_sync_time(false))
             .add_plugin(jumpy_core::metadata::JumpyCoreAssetsPlugin)
+            .init_resource::<CurrentEditorInput>()
             .add_stage_before(
                 CoreStage::Update,
                 SessionStage::Update,
@@ -29,8 +32,39 @@ impl Plugin for JumpySessionPlugin {
                             .run_in_state(InGameState::Playing),
                     )
                     .with_system(play_sounds)
-                    .with_run_criteria(FixedTimestep::step(1.0 / jumpy_core::FPS as f64)),
+                    .with_run_criteria(fixed_timestep),
             );
+    }
+}
+
+fn fixed_timestep(
+    mut accumulator: Local<f64>,
+    mut loop_start: Local<Option<Instant>>,
+    time: Res<Time>,
+) -> ShouldRun {
+    const STEP: f64 = 1.0 / jumpy_core::FPS as f64;
+    let delta = time.delta_seconds_f64();
+    if loop_start.is_none() {
+        *accumulator += delta;
+    }
+
+    if *accumulator >= STEP {
+        let start = loop_start.get_or_insert_with(Instant::now);
+
+        let loop_too_long = (Instant::now() - *start).as_secs_f64() > STEP;
+
+        if loop_too_long {
+            warn!("Frame took too long: couldn't keep up with fixed update.");
+            *accumulator = 0.0;
+            *loop_start = None;
+            ShouldRun::No
+        } else {
+            *accumulator -= STEP;
+            ShouldRun::YesAndCheckAgain
+        }
+    } else {
+        *loop_start = None;
+        ShouldRun::No
     }
 }
 
@@ -69,15 +103,6 @@ impl<'w, 's> SessionManager<'w, 's> {
         }
     }
 
-    pub fn map_handle(&self) -> Option<Handle<MapMeta>> {
-        self.session.as_ref().map(|session| {
-            let map_handle = session.world.resource::<jumpy_core::map::MapHandle>();
-            let map_handle = map_handle.borrow();
-
-            map_handle.get_bevy_handle()
-        })
-    }
-
     /// Stop a game session
     pub fn stop(&mut self) {
         self.commands.remove_resource::<Session>();
@@ -108,12 +133,19 @@ fn ensure_2_players(session: Option<ResMut<Session>>, core_meta: Res<CoreMetaArc
 fn update_input(
     session: Option<ResMut<Session>>,
     player_input_collectors: Query<(&PlayerInputCollector, &ActionState<PlayerAction>)>,
+    mut current_editor_input: ResMut<CurrentEditorInput>,
 ) {
     let Some(mut session) = session else {
         return;
     };
 
+    let mut editor_input = current_editor_input.take();
+
     session.update_input(|inputs| {
+        // TODO: Properly handle which player is taking the editor input, which is important in
+        // networked multiplayer.
+        inputs.players[0].editor_input = editor_input.take();
+
         for (player_idx, action_state) in &player_input_collectors {
             let control = &mut inputs.players[player_idx.0].control;
 

@@ -206,6 +206,7 @@ impl_system_param! {
 
         tile_layers: Comp<'a, TileLayer>,
         tile_collision_kinds: Comp<'a, TileCollisionKind>,
+        spawned_map_layer_metas: Comp<'a, SpawnedMapLayerMeta>,
     }
 }
 
@@ -276,24 +277,17 @@ impl RapierUserData {
 }
 
 /// The kind of collision that a map tile has.
-///
-/// The integer value should come from one of the associated constants.
-///
-/// > **TODO:** Evaluate putting this in a normal enum. If I ( zicklag ) remember correctly, I
-/// > didn't use an enum to make scripting easier, but I don't know that this actually helps.
-#[derive(Default, PartialEq, Eq, Clone, Copy, Debug, TypeUlid)]
+#[derive(Default, PartialEq, Eq, Clone, Copy, Debug, TypeUlid, Serialize, Deserialize)]
 #[ulid = "01GNF746HB9N9GE9E2KG4X7X4K"]
-#[repr(transparent)]
-pub struct TileCollisionKind(pub u8);
-
-impl TileCollisionKind {
-    /// The tile has no collision.
-    pub const EMPTY: TileCollisionKind = TileCollisionKind(0);
-    /// The tile is solid.
-    pub const SOLID: TileCollisionKind = TileCollisionKind(1);
-    /// The tile may be jumped/dropped through.
-    pub const JUMP_THROUGH: TileCollisionKind = TileCollisionKind(2);
+#[repr(u8)]
+pub enum TileCollisionKind {
+    #[default]
+    Empty,
+    Solid,
+    JumpThrough,
 }
+
+impl BonesBevyAssetLoad for TileCollisionKind {}
 
 impl<'a> CollisionWorld<'a> {
     /// Updates the collision world with the entity's actual transforms.
@@ -308,6 +302,8 @@ impl<'a> CollisionWorld<'a> {
         Tq: QueryItem,
         Tq::Iter: Iterator<Item = &'b Transform>,
     {
+        puffin::profile_function!();
+
         self.sync_colliders(transforms);
 
         let RapierContext {
@@ -342,6 +338,7 @@ impl<'a> CollisionWorld<'a> {
                 to_delete.push(handle);
             }
         }
+
         for body_handle in to_delete {
             rigid_body_set.remove(
                 body_handle,
@@ -354,16 +351,25 @@ impl<'a> CollisionWorld<'a> {
         }
 
         // Update the collision pipeline
-        collision_pipeline.step(
-            0.0,
-            broad_phase,
-            narrow_phase,
-            rigid_body_set,
-            collider_set,
-            Some(query_pipeline),
-            &(),
-            &collision_cache,
-        )
+        {
+            puffin::profile_scope!("Collision Pipeline Step");
+            collision_pipeline.step(
+                0.0,
+                broad_phase,
+                narrow_phase,
+                rigid_body_set,
+                collider_set,
+                None,
+                &(),
+                &collision_cache,
+            );
+        }
+
+        // Update the query pipeline
+        {
+            puffin::profile_scope!("Query Pipeline Update");
+            query_pipeline.update(rigid_body_set, collider_set);
+        }
     }
 
     /// Sync the transforms and attributes ( like `disabled` ) of the colliders. ( Does not update
@@ -373,6 +379,8 @@ impl<'a> CollisionWorld<'a> {
         Tq: QueryItem,
         Tq::Iter: Iterator<Item = &'b Transform>,
     {
+        puffin::profile_function!();
+
         let RapierContext {
             rigid_body_set,
             collider_set,
@@ -419,18 +427,36 @@ impl<'a> CollisionWorld<'a> {
         }
     }
 
-    /// Update the collisions for map tiles.
+    /// Update all of the map tile collisions.
     ///
-    /// This should only be called when the map tiles have been changed, which should be relatively
-    /// uncommon.
+    /// You should only need to call this when spawning or otherwise completely rebuilding the map
+    /// layout.
     pub fn update_tiles(&mut self) {
+        self.update_tiles_with_filter(|_, _| true);
+    }
+
+    /// Update the collision for the tile with the given layer index and map grid position.
+    pub fn update_tile(&mut self, layer_idx: usize, pos: UVec2) {
+        self.update_tiles_with_filter(|idx, p| layer_idx == idx && pos == p);
+    }
+
+    /// Update the collisions for map tiles that pass the given filter.
+    ///
+    /// The filter is a function that takes the layer index and the tile position as an argument.
+    pub fn update_tiles_with_filter<F>(&mut self, mut filter: F)
+    where
+        F: FnMut(usize, UVec2) -> bool,
+    {
         let RapierContext {
             rigid_body_set,
             collider_set,
             collider_shape_cache,
             ..
         } = &mut *self.ctx;
-        for (entity, layer) in self.entities.iter_with(&self.tile_layers) {
+        for (_, (layer, meta)) in self
+            .entities
+            .iter_with((&self.tile_layers, &self.spawned_map_layer_metas))
+        {
             let bones_shape = ColliderShape::Rectangle {
                 size: layer.tile_size,
             };
@@ -438,7 +464,12 @@ impl<'a> CollisionWorld<'a> {
 
             for x in 0..layer.grid_size.x {
                 for y in 0..layer.grid_size.y {
-                    let Some(tile_ent) = layer.get(uvec2(x, y)) else {
+                    let pos = uvec2(x, y);
+                    if !filter(meta.layer_idx, pos) {
+                        continue;
+                    };
+
+                    let Some(tile_ent) = layer.get(pos) else {
                         continue;
                     };
                     let collider_x = x as f32 * layer.tile_size.x + layer.tile_size.x / 2.0;
@@ -447,7 +478,7 @@ impl<'a> CollisionWorld<'a> {
                     // Get or create a collider for the tile
                     let handle = self
                         .tile_rapier_handles
-                        .get(entity)
+                        .get(tile_ent)
                         .map(|x| **x)
                         .unwrap_or_else(|| {
                             let body_handle = rigid_body_set.insert(
@@ -487,7 +518,7 @@ impl<'a> CollisionWorld<'a> {
             .collision_cache
             .get(entity)
             .iter()
-            .any(|x| self.tile_collision_kinds.get(*x) == Some(&TileCollisionKind::JUMP_THROUGH))
+            .any(|x| self.tile_collision_kinds.get(*x) == Some(&TileCollisionKind::JumpThrough))
         {
             let collider = self.colliders.get_mut(entity).unwrap();
             collider.descent = true;
@@ -530,6 +561,8 @@ impl<'a> CollisionWorld<'a> {
         entity: Entity,
         mut dy: f32,
     ) -> bool {
+        puffin::profile_function!();
+
         let RapierContext {
             query_pipeline,
             collider_set,
@@ -572,7 +605,7 @@ impl<'a> CollisionWorld<'a> {
                     };
 
                     // Ignore jump-through tiles if we have already seen wood
-                    !(collider.seen_wood && *tile_kind == TileCollisionKind::JUMP_THROUGH)
+                    !(collider.seen_wood && *tile_kind == TileCollisionKind::JumpThrough)
                 }),
             );
 
@@ -590,17 +623,17 @@ impl<'a> CollisionWorld<'a> {
                 let tile_kind = *self.tile_collision_kinds.get(ent).unwrap();
 
                 // collider wants to go down and collided with jumpthrough tile
-                if tile_kind == TileCollisionKind::JUMP_THROUGH && collider.descent {
+                if tile_kind == TileCollisionKind::JumpThrough && collider.descent {
                     collider.seen_wood = true;
                 }
                 // collider wants to go up and encoutered jumpthrough obstace
-                if tile_kind == TileCollisionKind::JUMP_THROUGH && dy > 0.0 {
+                if tile_kind == TileCollisionKind::JumpThrough && dy > 0.0 {
                     collider.seen_wood = true;
                     collider.descent = true;
                 }
 
                 // If we hit a solid block, or a jumpthrough tile that we aren't falling through
-                if !(tile_kind == TileCollisionKind::JUMP_THROUGH
+                if !(tile_kind == TileCollisionKind::JumpThrough
                     && (collider.descent || dy > 0.0 || collider.seen_wood))
                 {
                     // Indicate we ran into something and stop processing
@@ -620,26 +653,29 @@ impl<'a> CollisionWorld<'a> {
         transform.translation.y += movement - if collided { 0.1 * dy.signum() } else { 0.0 };
 
         // Final check, if we are out of woods after the move - reset wood flags
-        let is_in_jump_through = query_pipeline
-            .intersection_with_shape(
-                rigid_body_set,
-                collider_set,
-                &(
-                    transform.translation.truncate(),
-                    transform.rotation.to_euler(EulerRot::XYZ).2,
+        {
+            puffin::profile_scope!("out of woods check");
+            let is_in_jump_through = query_pipeline
+                .intersection_with_shape(
+                    rigid_body_set,
+                    collider_set,
+                    &(
+                        transform.translation.truncate(),
+                        transform.rotation.to_euler(EulerRot::XYZ).2,
+                    )
+                        .into(),
+                    &**shape,
+                    rapier::QueryFilter::new().predicate(&|_handle, collider| {
+                        let ent = RapierUserData::entity(collider.user_data);
+                        self.tile_collision_kinds.get(ent) == Some(&TileCollisionKind::JumpThrough)
+                    }),
                 )
-                    .into(),
-                &**shape,
-                rapier::QueryFilter::new().predicate(&|_handle, collider| {
-                    let ent = RapierUserData::entity(collider.user_data);
-                    self.tile_collision_kinds.get(ent) == Some(&TileCollisionKind::JUMP_THROUGH)
-                }),
-            )
-            .is_some();
+                .is_some();
 
-        if !is_in_jump_through {
-            collider.seen_wood = false;
-            collider.descent = false;
+            if !is_in_jump_through {
+                collider.seen_wood = false;
+                collider.descent = false;
+            }
         }
 
         collided
@@ -653,6 +689,8 @@ impl<'a> CollisionWorld<'a> {
         entity: Entity,
         mut dx: f32,
     ) -> bool {
+        puffin::profile_function!();
+
         let RapierContext {
             query_pipeline,
             collider_set,
@@ -679,26 +717,29 @@ impl<'a> CollisionWorld<'a> {
         let collided = 'collision: loop {
             // Do a shape cast in the direction of movement
             let velocity = rapier::Vector::new(dx, 0.0);
-            let collision = query_pipeline.cast_shape(
-                rigid_body_set,
-                collider_set,
-                &position,
-                &velocity,
-                &**shape,
-                1.0,
-                true,
-                rapier::QueryFilter::new().predicate(&|_handle, rapier_collider| {
-                    let ent = RapierUserData::entity(rapier_collider.user_data);
+            let collision = {
+                puffin::profile_scope!("cast shape");
+                query_pipeline.cast_shape(
+                    rigid_body_set,
+                    collider_set,
+                    &position,
+                    &velocity,
+                    &**shape,
+                    1.0,
+                    true,
+                    rapier::QueryFilter::new().predicate(&|_handle, rapier_collider| {
+                        let ent = RapierUserData::entity(rapier_collider.user_data);
 
-                    let Some(tile_kind) = self.tile_collision_kinds.get(ent) else {
+                        let Some(tile_kind) = self.tile_collision_kinds.get(ent) else {
                         // Ignore non-tile collisions
                         return false;
                     };
 
-                    // Ignore jump-through tiles if we have already seen wood.
-                    !(collider.seen_wood && *tile_kind == TileCollisionKind::JUMP_THROUGH)
-                }),
-            );
+                        // Ignore jump-through tiles if we have already seen wood.
+                        !(collider.seen_wood && *tile_kind == TileCollisionKind::JumpThrough)
+                    }),
+                )
+            };
 
             if let Some((handle, toi)) = collision {
                 let ent = RapierUserData::entity(collider_set.get(handle).unwrap().user_data);
@@ -714,7 +755,7 @@ impl<'a> CollisionWorld<'a> {
                 let tile_kind = *self.tile_collision_kinds.get(ent).unwrap();
 
                 // If we ran into a jump-through tile, go through it and continue casting
-                if tile_kind == TileCollisionKind::JUMP_THROUGH {
+                if tile_kind == TileCollisionKind::JumpThrough {
                     collider.seen_wood = true;
                     collider.descent = true;
 
@@ -737,26 +778,29 @@ impl<'a> CollisionWorld<'a> {
         transform.translation.x += movement - if collided { 0.1 * dx.signum() } else { 0.0 };
 
         // Final check, if we are out of woods after the move - reset wood flags
-        let is_in_jump_through = query_pipeline
-            .intersection_with_shape(
-                rigid_body_set,
-                collider_set,
-                &(
-                    transform.translation.truncate(),
-                    transform.rotation.to_euler(EulerRot::XYZ).2,
+        {
+            puffin::profile_scope!("out of woods check");
+            let is_in_jump_through = query_pipeline
+                .intersection_with_shape(
+                    rigid_body_set,
+                    collider_set,
+                    &(
+                        transform.translation.truncate(),
+                        transform.rotation.to_euler(EulerRot::XYZ).2,
+                    )
+                        .into(),
+                    &**shape,
+                    rapier::QueryFilter::new().predicate(&|_handle, collider| {
+                        let ent = RapierUserData::entity(collider.user_data);
+                        self.tile_collision_kinds.get(ent) == Some(&TileCollisionKind::JumpThrough)
+                    }),
                 )
-                    .into(),
-                &**shape,
-                rapier::QueryFilter::new().predicate(&|_handle, collider| {
-                    let ent = RapierUserData::entity(collider.user_data);
-                    self.tile_collision_kinds.get(ent) == Some(&TileCollisionKind::JUMP_THROUGH)
-                }),
-            )
-            .is_some();
+                .is_some();
 
-        if !is_in_jump_through {
-            collider.seen_wood = false;
-            collider.descent = false;
+            if !is_in_jump_through {
+                collider.seen_wood = false;
+                collider.descent = false;
+            }
         }
 
         collided
@@ -771,7 +815,7 @@ impl<'a> CollisionWorld<'a> {
     /// > perfectly lined up along the edge of a tile, but `tile_collision_point` won't.
     #[allow(unused)]
     pub fn solid_at(&self, pos: Vec2) -> bool {
-        self.tile_collision_point(pos) == TileCollisionKind::SOLID
+        self.tile_collision_point(pos) == TileCollisionKind::Solid
     }
 
     /// Returns the tile collision at the given point.
@@ -798,7 +842,7 @@ impl<'a> CollisionWorld<'a> {
             }
         }
 
-        TileCollisionKind::EMPTY
+        TileCollisionKind::Empty
     }
 
     /// Get the [`TileCollisionKind`] of the first tile detected colliding with the `shape` at the

@@ -64,8 +64,8 @@ fn use_drop_or_grab_items(
     collision_world: &CollisionWorld,
     items: &Comp<Item>,
     held_items: &[Entity],
-    player_events: &mut PlayerEvents,
     audio_events: &mut AudioEvents,
+    commands: &mut Commands,
 ) {
     // If we are grabbing
     if control.grab_just_pressed {
@@ -84,7 +84,7 @@ fn use_drop_or_grab_items(
             // Grab the first item we are touching
             if let Some(item) = colliders.get(0) {
                 // Add the item to the player inventory
-                player_events.set_inventory(player_ent, Some(*item));
+                commands.add(PlayerCommand::set_inventory(player_ent, Some(*item)));
 
                 // Play grab sound
                 audio_events.play(meta.sounds.grab.clone(), meta.sounds.grab_volume);
@@ -93,7 +93,7 @@ fn use_drop_or_grab_items(
         // If we are already carrying an item
         } else {
             // Drop it
-            player_events.set_inventory(player_ent, None);
+            commands.add(PlayerCommand::set_inventory(player_ent, None));
 
             // Play drop sound
             audio_events.play(meta.sounds.drop.clone(), meta.sounds.drop_volume);
@@ -102,6 +102,6 @@ fn use_drop_or_grab_items(
 
     // If we are using an item
     if control.shoot_just_pressed && inventory.is_some() {
-        player_events.use_item(player_ent);
+        commands.add(PlayerCommand::use_item(player_ent));
     }
 }

@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 use crate::{item::ItemGrabbed, physics::KinematicBody, prelude::*};
 
 mod state;
@@ -13,7 +11,6 @@ pub fn install(session: &mut GameSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::First, hydrate_players)
-        .add_system_to_stage(CoreStage::PostUpdate, handle_player_events)
         .add_system_to_stage(CoreStage::PostUpdate, play_itemless_fin_animations)
         .add_system_to_stage(CoreStage::PostUpdate, player_facial_animations)
         .add_system_to_stage(CoreStage::Last, update_player_layers);
@@ -99,145 +96,113 @@ impl Emote {
 /// This usually means their death animation is playing, and they are about to be de-spawned.
 #[derive(Clone, TypeUlid)]
 #[ulid = "01GP49AK25A8S9G2GYNAVE4PTN"]
-pub struct PlayerKilled;
-
-/// Resource containing the player event queue.
-#[derive(Clone, TypeUlid, Debug, Default)]
-#[ulid = "01GP49AK25A8S9G2GYNAVE4PTN"]
-pub struct PlayerEvents {
-    pub queue: VecDeque<PlayerEvent>,
-}
-
-impl PlayerEvents {
-    /// Send a player event.
-    pub fn send(&mut self, event: PlayerEvent) {
-        self.queue.push_back(event);
-    }
-
-    #[inline]
-    pub fn set_inventory(&mut self, player: Entity, item: Option<Entity>) {
-        self.queue
-            .push_back(PlayerEvent::SetInventory { player, item })
-    }
-
-    #[inline]
-    pub fn use_item(&mut self, player: Entity) {
-        self.queue.push_back(PlayerEvent::UseItem { player })
-    }
-
-    #[inline]
-    pub fn kill(&mut self, player: Entity) {
-        self.queue.push_back(PlayerEvent::Kill { player })
-    }
-
-    #[inline]
-    pub fn despawn(&mut self, player: Entity) {
-        self.queue.push_back(PlayerEvent::Despawn { player })
-    }
+pub struct PlayerKilled {
+    pub hit_from: Option<Vec2>,
 }
 
 /// Events that can be used to trigger player actions, such as killing, setting inventory, etc.
 #[derive(Clone, Debug)]
-pub enum PlayerEvent {
+pub struct PlayerCommand;
+
+impl PlayerCommand {
     /// Kill a player.
     ///
     /// > **Note:** This doesn't despawn the player, it just puts the player into it's death animation.
-    Kill { player: Entity },
-    /// Despawn a player.
-    ///
-    /// > **Note:** This is different than the [`Kill`][Self::Kill] event in that it immediately
-    /// > removes the player from the world, while [`Kill`][Self::Kill] will usually cause the
-    /// > player to enter the death animation.
-    /// >
-    /// > [`Despawn`][Self::Despawn] is usually sent at the end of the player death animation.
-    Despawn { player: Entity },
-    /// Set the player's inventory
-    SetInventory {
-        player: Entity,
-        item: Option<Entity>,
-    },
-    /// Have the player use the item they are carrying, if any.
-    UseItem { player: Entity },
-}
+    pub fn kill(player: Entity, hit_from: Option<Vec2>) -> System {
+        (move |mut players_killed: CompMut<PlayerKilled>,
+               mut items_dropped: CompMut<ItemDropped>,
+               mut inventories: CompMut<Inventory>,
+               player_indexes: Comp<PlayerIdx>| {
+            if players_killed.contains(player) {
+                // No need to kill him again
+                return;
+            }
 
-fn handle_player_events(
-    mut entities: ResMut<Entities>,
-    mut player_events: ResMut<PlayerEvents>,
-    mut players_killed: CompMut<PlayerKilled>,
-    mut items_grabbed: CompMut<ItemGrabbed>,
-    mut items_dropped: CompMut<ItemDropped>,
-    mut items_used: CompMut<ItemUsed>,
-    mut inventories: CompMut<Inventory>,
-    attachments: Comp<Attachment>,
-    player_indexes: Comp<PlayerIdx>,
-    player_layers: Comp<PlayerLayers>,
-) {
-    while let Some(event) = player_events.queue.pop_front() {
-        match event {
-            PlayerEvent::Kill { player } => {
-                if players_killed.contains(player) {
-                    // No need to kill him again
-                    continue;
-                }
-
-                let Some(idx) = player_indexes.get(player) else {
+            let Some(idx) = player_indexes.get(player) else {
                     // Not a player, just ignore it.
                     warn!("Tried to kill non-player entity.");
-                    continue;
+                    return;
                 };
 
-                debug!("Killing player: {}", idx.0);
+            debug!("Killing player: {}", idx.0);
 
-                // Drop any items the player was carrying
-                player_events
-                    .queue
-                    .push_front(PlayerEvent::SetInventory { player, item: None });
-
-                players_killed.insert(player, PlayerKilled);
+            // Drop any items the player was carrying
+            let inventory = inventories.get(player).cloned().unwrap_or_default();
+            if let Some(item) = inventory.0 {
+                items_dropped.insert(item, ItemDropped { player });
             }
-            PlayerEvent::Despawn { player } => {
-                if player_indexes.contains(player) {
-                    entities
-                        .iter_with(&attachments)
-                        .filter(|(_, attachment)| attachment.entity == player)
-                        .map(|(entity, _)| entity)
-                        .collect::<Vec<_>>()
-                        .iter()
-                        .for_each(|entity| {
-                            entities.kill(*entity);
-                        });
-                    let layers = player_layers.get(player).unwrap();
-                    entities.kill(layers.fin_ent);
-                    entities.kill(layers.face_ent);
-                    entities.kill(player);
-                } else {
-                    warn!("Tried to despawn non-player entity.");
-                }
-            }
-            PlayerEvent::SetInventory { player, item } => {
-                let inventory = inventories.get(player).cloned().unwrap_or_default();
 
-                // If there was a previous item, drop it
-                if let Some(item) = inventory.0 {
-                    items_dropped.insert(item, ItemDropped { player });
-                }
+            // Update the inventory
+            inventories.insert(player, Inventory(None));
 
-                // If there is a new item, grab it
-                if let Some(item) = item {
-                    items_grabbed.insert(item, ItemGrabbed);
-                }
+            players_killed.insert(player, PlayerKilled { hit_from });
+        })
+        .system()
+    }
+    /// Despawn a player.
+    ///
+    /// > **Note:** This is different than the [`kill`][Self::kill] event in that it immediately
+    /// > removes the player from the world, while [`kill`][Self::kill] will usually cause the
+    /// > player to enter the death animation.
+    /// >
+    /// > [`despawn`][Self::despawn] is usually sent at the end of the player death animation.
+    pub fn despawn(player: Entity) -> System {
+        (move |mut entities: ResMut<Entities>,
+               attachments: Comp<Attachment>,
+               player_indexes: Comp<PlayerIdx>,
+               player_layers: Comp<PlayerLayers>| {
+            if player_indexes.contains(player) {
+                entities
+                    .iter_with(&attachments)
+                    .filter(|(_, attachment)| attachment.entity == player)
+                    .map(|(entity, _)| entity)
+                    .collect::<Vec<_>>()
+                    .iter()
+                    .for_each(|entity| {
+                        entities.kill(*entity);
+                    });
+                let layers = player_layers.get(player).unwrap();
+                entities.kill(layers.fin_ent);
+                entities.kill(layers.face_ent);
+                entities.kill(player);
+            } else {
+                warn!("Tried to despawn non-player entity.");
+            }
+        })
+        .system()
+    }
+    /// Set the player's inventory
+    pub fn set_inventory(player: Entity, item: Option<Entity>) -> System {
+        (move |mut items_grabbed: CompMut<ItemGrabbed>,
+               mut items_dropped: CompMut<ItemDropped>,
+               mut inventories: CompMut<Inventory>| {
+            let inventory = inventories.get(player).cloned().unwrap_or_default();
 
-                // Update the inventory
-                inventories.insert(player, Inventory(item));
+            // If there was a previous item, drop it
+            if let Some(item) = inventory.0 {
+                items_dropped.insert(item, ItemDropped { player });
             }
-            PlayerEvent::UseItem { player } => {
-                // If the player has an item
-                if let Some(item) = inventories.get(player).and_then(|x| x.0) {
-                    // Use it
-                    items_used.insert(item, ItemUsed);
-                }
+
+            // If there is a new item, grab it
+            if let Some(item) = item {
+                items_grabbed.insert(item, ItemGrabbed);
             }
-        }
+
+            // Update the inventory
+            inventories.insert(player, Inventory(item));
+        })
+        .system()
+    }
+    /// Have the player use the item they are carrying, if any.
+    pub fn use_item(player: Entity) -> System {
+        (move |mut items_used: CompMut<ItemUsed>, inventories: CompMut<Inventory>| {
+            // If the player has an item
+            if let Some(item) = inventories.get(player).and_then(|x| x.0) {
+                // Use it
+                items_used.insert(item, ItemUsed);
+            }
+        })
+        .system()
     }
 }
 

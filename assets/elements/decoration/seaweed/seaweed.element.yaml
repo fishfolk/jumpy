@@ -1,6 +1,8 @@
 name: Seaweed
 category: Decorations
-editor_size: [48, 51]
+editor:
+  grab_size: [40, 51]
+  show_name: false
 builtin: !AnimatedDecoration
   start_frame: 0
   end_frame: 4

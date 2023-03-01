@@ -10,20 +10,18 @@ pub fn install(session: &mut GameSession) {
 
 #[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = "01GQ0ZWBNA8HZRXYKZXCT05CXT"]
-pub struct IdleKickBomb {
-    spawner: Entity,
-}
+pub struct IdleKickBomb;
 
 #[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = "01GQ0ZWFYZSHJPESPY9QPSTARR"]
 pub struct LitKickBomb {
     age: f32,
-    spawner: Entity,
 }
 
 fn hydrate(
     game_meta: Res<CoreMetaArc>,
     mut items: CompMut<Item>,
+    mut item_throws: CompMut<ItemThrow>,
     mut entities: ResMut<Entities>,
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
@@ -33,7 +31,7 @@ fn hydrate(
     mut hydrated: CompMut<MapElementHydrated>,
     mut element_handles: CompMut<ElementHandle>,
     mut animated_sprites: CompMut<AnimatedSprite>,
-    mut respawn_points: CompMut<MapRespawnPoint>,
+    mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -55,6 +53,8 @@ fn hydrate(
             body_diameter,
             can_rotate,
             bounciness,
+            throw_velocity,
+            angular_velocity,
             ..
         } = &element_meta.builtin
         {
@@ -62,14 +62,13 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
-            idle_bombs.insert(
+            item_throws.insert(
                 entity,
-                IdleKickBomb {
-                    spawner: spawner_ent,
-                },
+                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
             );
+            idle_bombs.insert(entity, IdleKickBomb);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-            respawn_points.insert(entity, MapRespawnPoint(transform.translation));
+            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
             hydrated.insert(entity, MapElementHydrated);
@@ -95,34 +94,28 @@ fn hydrate(
 fn update_idle_kick_bombs(
     entities: Res<Entities>,
     mut commands: Commands,
-    mut sprites: CompMut<AtlasSprite>,
     player_inventories: PlayerInventories,
     mut bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
-    mut transforms: CompMut<Transform>,
     mut audio_events: ResMut<AudioEvents>,
     element_handles: Comp<ElementHandle>,
     mut idle_bombs: CompMut<IdleKickBomb>,
     element_assets: BevyAssets<ElementMeta>,
-    mut items_dropped: CompMut<ItemDropped>,
     mut animated_sprites: CompMut<AnimatedSprite>,
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut player_layers: CompMut<PlayerLayers>,
 ) {
-    for (entity, (kick_bomb, element_handle)) in
+    for (entity, (_kick_bomb, element_handle)) in
         entities.iter_with((&mut idle_bombs, &element_handles))
     {
-        let spawner = kick_bomb.spawner;
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
         };
 
         let BuiltinElementKind::KickBomb {
             grab_offset,
-            angular_velocity,
             fuse_sound,
             fuse_sound_volume,
-            throw_velocity,
             fin_anim,
             ..
         } = &element_meta.builtin else {
@@ -161,45 +154,13 @@ fn update_idle_kick_bombs(
                 animated_sprite.frames = Arc::from([3, 4, 5]);
                 animated_sprite.repeat = true;
                 animated_sprite.fps = 8.0;
-                body.angular_velocity = *angular_velocity;
                 commands.add(
                     move |mut idle: CompMut<IdleKickBomb>, mut lit: CompMut<LitKickBomb>| {
                         idle.remove(entity);
-                        lit.insert(entity, LitKickBomb { spawner, age: 0.0 });
+                        lit.insert(entity, LitKickBomb { age: 0.0 });
                     },
                 );
             }
-        }
-
-        // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
-            let player_sprite = sprites.get_mut(player).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
-
-            let horizontal_flip_factor = if player_sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-            body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity =
-                *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
-
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }
@@ -212,19 +173,20 @@ fn update_lit_kick_bombs(
     collision_world: CollisionWorld,
     player_indexes: Comp<PlayerIdx>,
     mut audio_events: ResMut<AudioEvents>,
+    mut trauma_events: ResMut<CameraTraumaEvents>,
     mut lit_grenades: CompMut<LitKickBomb>,
     mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
-    mut items_dropped: CompMut<ItemDropped>,
     mut hydrated: CompMut<MapElementHydrated>,
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut player_layers: CompMut<PlayerLayers>,
     player_inventories: PlayerInventories,
     mut transforms: CompMut<Transform>,
     mut commands: Commands,
+    spawners: Comp<DehydrateOutOfBounds>,
 ) {
-    for (entity, (kick_bomb, element_handle)) in
-        entities.iter_with((&mut lit_grenades, &element_handles))
+    for (entity, (kick_bomb, element_handle, spawner)) in
+        entities.iter_with((&mut lit_grenades, &element_handles, &spawners))
     {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
@@ -232,10 +194,9 @@ fn update_lit_kick_bombs(
 
         let BuiltinElementKind::KickBomb {
             grab_offset,
-            angular_velocity,
             explosion_sound,
             explosion_volume,
-            throw_velocity,
+            kick_velocity,
             fuse_time,
             damage_region_lifetime,
             damage_region_size,
@@ -251,7 +212,6 @@ fn update_lit_kick_bombs(
         };
 
         kick_bomb.age += 1.0 / crate::FPS;
-        let spawner = kick_bomb.spawner;
 
         let mut should_explode = false;
         // If the item is being held
@@ -291,58 +251,29 @@ fn update_lit_kick_bombs(
             let player_standing_left = player_translation.x <= translation.x;
 
             if body.velocity.x == 0.0 {
-                body.velocity = *throw_velocity;
+                body.velocity = *kick_velocity;
                 if player_sprite.flip_x {
                     body.velocity.x *= -1.0;
                 }
             } else if player_standing_left && !player_sprite.flip_x {
-                body.velocity.x = throw_velocity.x;
-                body.velocity.y = throw_velocity.y;
+                body.velocity.x = kick_velocity.x;
+                body.velocity.y = kick_velocity.y;
             } else if !player_standing_left && player_sprite.flip_x {
-                body.velocity.x = -throw_velocity.x;
-                body.velocity.y = throw_velocity.y;
+                body.velocity.x = -kick_velocity.x;
+                body.velocity.y = kick_velocity.y;
             } else if kick_bomb.age >= *arm_delay {
                 should_explode = true;
             }
-        }
-
-        // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
-            let player_sprite = sprites.get_mut(player).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
-
-            let horizontal_flip_factor = if player_sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-            body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity =
-                *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
-
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
 
         // If it's time to explode
         if kick_bomb.age >= *fuse_time || should_explode {
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
+            trauma_events.send(7.5);
+
             // Cause the item to respawn by un-hydrating it's spawner.
-            hydrated.remove(spawner);
+            hydrated.remove(**spawner);
             let mut explosion_transform = *transforms.get(entity).unwrap();
             explosion_transform.translation.z += 1.0;
 

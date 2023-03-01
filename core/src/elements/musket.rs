@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::prelude::*;
 
 pub fn install(session: &mut GameSession) {
@@ -11,7 +13,7 @@ pub fn install(session: &mut GameSession) {
 #[ulid = "01GQWRRV9HV52X9JAYYF1AFFS7"]
 pub struct Musket {
     pub ammo: usize,
-    pub cooldown_frame: usize,
+    pub cooldown: Timer,
 }
 
 fn hydrate(
@@ -25,7 +27,8 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
-    mut respawn_points: CompMut<MapRespawnPoint>,
+    mut item_throws: CompMut<ItemThrow>,
+    mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -48,6 +51,8 @@ fn hydrate(
             body_size,
             can_rotate,
             bounciness,
+            throw_velocity,
+            angular_velocity,
             ..
         } = &element_meta.builtin
         {
@@ -55,15 +60,19 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
+            item_throws.insert(
+                entity,
+                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+            );
             muskets.insert(
                 entity,
                 Musket {
                     ammo: *max_ammo,
-                    cooldown_frame: 0,
+                    cooldown: Timer::new(Duration::from_millis(0), TimerMode::Once),
                 },
             );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-            respawn_points.insert(entity, MapRespawnPoint(transform.translation));
+            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
             hydrated.insert(entity, MapElementHydrated);
@@ -90,16 +99,17 @@ fn update(
     element_assets: BevyAssets<ElementMeta>,
 
     mut muskets: CompMut<Musket>,
+    transforms: CompMut<Transform>,
     mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
-    mut transforms: CompMut<Transform>,
     mut audio_events: ResMut<AudioEvents>,
     mut player_layers: CompMut<PlayerLayers>,
 
     player_inventories: PlayerInventories,
     mut items_used: CompMut<ItemUsed>,
+    items_dropped: CompMut<ItemDropped>,
     mut attachments: CompMut<PlayerBodyAttachment>,
-    mut items_dropped: CompMut<ItemDropped>,
+    time: Res<Time>,
 ) {
     for (entity, (musket, element_handle)) in entities.iter_with((&mut muskets, &element_handles)) {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -112,16 +122,11 @@ fn update(
             shoot_atlas,
             shoot_frames,
             shoot_lifetime,
-
-
+            cooldown,
             fin_anim,
             grab_offset,
-            throw_velocity,
-            angular_velocity,
-
             bullet_meta,
             shoot_sound,
-            cooldown_frames,
             empty_shoot_sound,
             shoot_sound_volume,
             empty_shoot_sound_volume,
@@ -130,7 +135,7 @@ fn update(
             unreachable!();
         };
 
-        musket.cooldown_frame += 1;
+        musket.cooldown.tick(time.delta());
 
         // If the item is being held
         if let Some(inventory) = player_inventories
@@ -156,11 +161,10 @@ fn update(
 
             // If the item is being used
             let item_used = items_used.get(entity).is_some();
-            let can_fire = musket.cooldown_frame >= *cooldown_frames;
             if item_used {
                 items_used.remove(entity);
             }
-            if item_used && can_fire {
+            if item_used && musket.cooldown.finished() {
                 // Empty
                 if musket.ammo.eq(&0) {
                     audio_events.play(empty_shoot_sound.clone(), *empty_shoot_sound_volume);
@@ -168,7 +172,7 @@ fn update(
                 }
 
                 // Reset fire cooldown and subtract ammo
-                musket.cooldown_frame = 0;
+                musket.cooldown = Timer::new(*cooldown, TimerMode::Once);
                 musket.ammo = musket.ammo.saturating_sub(1).clamp(0, musket.ammo);
                 audio_events.play(shoot_sound.clone(), *shoot_sound_volume);
 
@@ -238,41 +242,9 @@ fn update(
         }
 
         // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-
+        if items_dropped.get(entity).is_some() {
             // reload gun
             musket.ammo = *max_ammo;
-
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
-            let player_sprite = sprites.get_mut(player).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
-
-            let horizontal_flip_factor = if player_sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-
-            if player_velocity != Vec2::ZERO {
-                body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-                body.angular_velocity =
-                    *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
-            }
-
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }

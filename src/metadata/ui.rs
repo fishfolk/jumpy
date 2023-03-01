@@ -28,19 +28,19 @@ pub struct UiThemeEditor {
 #[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct UiThemeEditorIcons {
+    pub elements: ImageMeta,
+    pub tiles: ImageMeta,
     pub select: ImageMeta,
-    pub spawn: ImageMeta,
-    pub tile: ImageMeta,
-    pub erase: ImageMeta,
+    pub collisions: ImageMeta,
 }
 
 impl UiThemeEditorIcons {
     pub fn as_mut_list(&mut self) -> [&mut ImageMeta; 4] {
         [
+            &mut self.elements,
             &mut self.select,
-            &mut self.spawn,
-            &mut self.tile,
-            &mut self.erase,
+            &mut self.tiles,
+            &mut self.collisions,
         ]
     }
 }

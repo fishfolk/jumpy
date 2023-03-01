@@ -84,7 +84,6 @@ fn update(
 
     player_indexes: Comp<PlayerIdx>,
     collision_world: CollisionWorld,
-    mut player_events: ResMut<PlayerEvents>,
     mut transforms: CompMut<Transform>,
     mut bullets: CompMut<Bullet>,
     mut audio_events: ResMut<AudioEvents>,
@@ -121,7 +120,7 @@ fn update(
             .filter(|&x| player_indexes.contains(x))
             .for_each(|player| {
                 hit_player = true;
-                player_events.kill(player);
+                commands.add(PlayerCommand::kill(player, Some(position.translation.xy())));
             });
 
         // check solid tile collisions
@@ -130,7 +129,7 @@ fn update(
             ColliderShape::Circle {
                 diameter: *body_diameter,
             },
-        ) != TileCollisionKind::EMPTY;
+        ) != TileCollisionKind::Empty;
 
         // Bullet hit something
         if hit_player || hit_solid {

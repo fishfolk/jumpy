@@ -105,6 +105,10 @@
 <a href="#104" id="104">104</a>
 <a href="#105" id="105">105</a>
 <a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub use </span>stage::<span class="kw-2">*</span>;
@@ -154,6 +158,10 @@
     <span class="macro">add_state_module!</span>(session, midair);
     <span class="macro">add_state_module!</span>(session, walk);
     <span class="macro">add_state_module!</span>(session, dead);
+
+    session
+        .stages
+        .add_system_to_stage(CoreStage::PreUpdate, incapacitated::handle_player_state);
 }
 
 <span class="kw">fn </span>update_player_state_age(entities: Res&lt;Entities&gt;, <span class="kw-2">mut </span>player_states: CompMut&lt;PlayerState&gt;) {

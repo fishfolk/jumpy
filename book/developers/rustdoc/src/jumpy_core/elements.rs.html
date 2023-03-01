@@ -67,6 +67,8 @@
 <a href="#66" id="66">66</a>
 <a href="#67" id="67">67</a>
 <a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub mod </span>crab;
@@ -77,6 +79,7 @@
 <span class="kw">pub mod </span>mine;
 <span class="kw">pub mod </span>musket;
 <span class="kw">pub mod </span>player_spawner;
+<span class="kw">pub mod </span>slippery_seaweed;
 <span class="kw">pub mod </span>sproinger;
 <span class="kw">pub mod </span>stomp_boots;
 <span class="kw">pub mod </span>sword;
@@ -116,6 +119,7 @@
     musket::install(session);
     stomp_boots::install(session);
     crate_item::install(session);
+    slippery_seaweed::install(session);
 }
 
 <span class="kw">fn </span>handle_out_of_bounds_items(

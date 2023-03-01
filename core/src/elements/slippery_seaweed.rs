@@ -61,3 +61,22 @@ fn hydrate(
         }
     }
 }
+
+pub fn update(
+    entities: Res<Entities>,
+    slippery_seaweeds: CompMut<SlipperySeaweed>,
+    collision_world: CollisionWorld,
+    mut player_states: CompMut<PlayerState>,
+) {
+    for (seaweed_ent, _) in entities.iter_with(&slippery_seaweeds) {
+        for (p_ent, state) in entities.iter_with(&mut player_states) {
+            if collision_world
+                .actor_collisions(p_ent)
+                .contains(&seaweed_ent)
+            {
+                state.current = key!("core::incapacitated");
+                continue;
+            }
+        }
+    }
+}

@@ -1,27 +1,7 @@
 use super::*;
-use crate::player::slippery_seaweed::SlipperySeaweed;
 
-pub const ID: Key = key!("core::incapacitaded");
+pub const ID: Key = key!("core::incapacitated");
 const SLOWING_SPEED: f32 = 0.3;
-
-pub fn player_state_transition(
-    entities: Res<Entities>,
-    slippery_seaweeds: CompMut<SlipperySeaweed>,
-    collision_world: CollisionWorld,
-    mut player_states: CompMut<PlayerState>,
-) {
-    for (seaweed_ent, _) in entities.iter_with(&slippery_seaweeds) {
-        for (p_ent, state) in entities.iter_with(&mut player_states) {
-            if collision_world
-                .actor_collisions(p_ent)
-                .contains(&seaweed_ent)
-            {
-                state.current = ID;
-                continue;
-            }
-        }
-    }
-}
 
 pub fn handle_player_state(
     entities: Res<Entities>,
@@ -31,7 +11,6 @@ pub fn handle_player_state(
     player_inputs: Res<PlayerInputs>,
     atlas_sprites: Comp<AtlasSprite>,
     mut animations: CompMut<AnimationBankSprite>,
-    mut player_events: ResMut<PlayerEvents>,
     mut bodies: CompMut<KinematicBody>,
 ) {
     for (player_ent, (state, animation, body, player_idx, atlas_sprite)) in entities.iter_with((
@@ -56,7 +35,7 @@ pub fn handle_player_state(
             0 => {
                 // TODO find right animation
                 animation.current = key!("rise");
-                player_events.set_inventory(player_ent, None);
+                PlayerCommand::set_inventory(player_ent, None);
 
                 if body.velocity.x.abs() < meta.stats.walk_speed {
                     body.velocity.x = 5. * if atlas_sprite.flip_x { -1.0f32 } else { 1.0 };

@@ -542,21 +542,29 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                         ui.add_space(ui.spacing().item_spacing.x);
 
                         let row_rect = ui.max_rect();
+                        let mut response = ui.allocate_rect(row_rect, egui::Sense::click());
 
-                        let hovered = ui
-                            .input()
-                            .pointer
-                            .hover_pos()
-                            .map(|pos| row_rect.contains(pos))
-                            .unwrap_or(false);
-                        let active = hovered && ui.input().pointer.primary_down();
+                        response = response.context_menu(|ui| {
+                            params.state.current_layer_idx = i;
+                            if ui
+                                .button(&format!("🗑 {}", params.localization.get("delete-layer")))
+                                .clicked()
+                            {
+                                **params.editor_input =
+                                    Some(EditorInput::DeleteLayer { layer: i as u8 });
+                                ui.close_menu();
+                            }
+                        });
+
+                        let hovered = response.hovered();
+                        let active = hovered && response.is_pointer_button_down_on();
                         let highlighted = hovered || params.state.current_layer_idx == i;
-                        let clicked = ui.input().pointer.primary_released() && hovered;
+                        let clicked = response.clicked();
 
                         if highlighted {
                             ui.painter().rect_filled(
                                 row_rect,
-                                0.0,
+                                2.0,
                                 if active {
                                     ui.visuals().widgets.active.bg_stroke.color
                                 } else {
@@ -569,10 +577,98 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                             params.state.current_layer_idx = i;
                         }
 
-                        ui.vertical(|ui| {
-                            ui.set_width(width * 0.8);
-                            ui.add_space(ui.spacing().interact_size.y * 0.2);
-                            ui.label(&layer.id);
+                        ui.allocate_ui_at_rect(row_rect.expand2(egui::vec2(-4.0, 0.0)), |ui| {
+                            ui.vertical(|ui| {
+                                ui.set_width(width * 0.8);
+                                ui.add_space(ui.spacing().interact_size.y * 0.2);
+
+                                #[derive(Clone)]
+                                struct EditingLayerName {
+                                    name: String,
+                                }
+                                let edit_data = ui.data().get_temp::<EditingLayerName>(response.id);
+                                if let Some(mut data) = edit_data {
+                                    let output =
+                                        egui::TextEdit::singleline(&mut data.name).show(ui);
+                                    output.response.request_focus();
+                                    if output.cursor_range.is_none() {
+                                        use egui::text::{CCursor, CCursorRange};
+                                        let mut new_state = output.state;
+                                        new_state.set_ccursor_range(Some(CCursorRange::two(
+                                            CCursor::new(0),
+                                            CCursor::new(data.name.len()),
+                                        )));
+                                        egui::TextEdit::store_state(
+                                            ui.ctx(),
+                                            output.response.id,
+                                            new_state,
+                                        );
+                                    }
+                                    if ui.input().key_pressed(egui::Key::Enter) {
+                                        ui.data().remove::<EditingLayerName>(response.id);
+                                        **params.editor_input = Some(EditorInput::RenameLayer {
+                                            layer: i as u8,
+                                            name: data.name,
+                                        });
+                                    } else if ui.input().key_pressed(egui::Key::Escape)
+                                        || output.response.clicked_elsewhere()
+                                    {
+                                        ui.data().remove::<EditingLayerName>(response.id);
+                                    } else {
+                                        ui.data().insert_temp(response.id, data);
+                                    }
+                                } else {
+                                    ui.label(&layer.id);
+                                    if response.double_clicked() {
+                                        ui.data().insert_temp(
+                                            response.id,
+                                            EditingLayerName {
+                                                name: layer.id.clone(),
+                                            },
+                                        );
+                                    }
+                                }
+                            });
+
+                            ui.scope(|ui| {
+                                ui.set_enabled(i > 0);
+                                // Up button
+                                if ui
+                                    .button("⏶")
+                                    .on_hover_text(params.localization.get("move-up"))
+                                    .clicked()
+                                {
+                                    if params.state.current_layer_idx == i {
+                                        params.state.current_layer_idx = i - 1;
+                                    } else if params.state.current_layer_idx == i - 1 {
+                                        params.state.current_layer_idx = i;
+                                    }
+                                    **params.editor_input = Some(EditorInput::MoveLayer {
+                                        layer: i as u8,
+                                        down: false,
+                                    });
+                                }
+                            });
+
+                            // Down button
+                            ui.scope(|ui| {
+                                ui.set_enabled(i < map.layers.len() - 1);
+                                if ui
+                                    .button("⏷")
+                                    .on_hover_text(params.localization.get("move-down"))
+                                    .clicked()
+                                {
+                                    if params.state.current_layer_idx == i {
+                                        params.state.current_layer_idx = i + 1;
+                                    } else if params.state.current_layer_idx == i + 1 {
+                                        params.state.current_layer_idx = i;
+                                    }
+                                    **params.editor_input = Some(EditorInput::MoveLayer {
+                                        layer: i as u8,
+                                        down: true,
+                                    });
+                                }
+                            });
                         });
 
                         // ui.vertical_centered(|ui| {
@@ -687,6 +783,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
 
                 // Render the tilemap
                 if let Some(tilemap) = tilemap {
+                    ui.add_space(ui.spacing().item_spacing.y);
                     let info = params.tilesets.0.get(&tilemap.path).unwrap();
 
                     let aspect = info.size.y / info.size.x;
@@ -1216,27 +1313,35 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                         let mut painter = ui.painter_at(map_response_rect);
                         painter.set_clip_rect(map_response_rect);
                         painter.rect_stroke(
-                            rect.expand(-1.0),
-                            0.5,
-                            (2.0, tile_collision_color(tile.collision)),
+                            rect.expand(-1.0 / ppp),
+                            0.0,
+                            (2.0 / ppp, tile_collision_color(tile.collision)),
                         );
                     }
 
-                    if ui.input().pointer.primary_down()
-                        && ui
-                            .input()
-                            .pointer
-                            .hover_pos()
-                            .map(|pos| rect.contains(pos))
-                            .unwrap_or(false)
+                    if ui
+                        .input()
+                        .pointer
+                        .hover_pos()
+                        .map(|pos| rect.contains(pos))
+                        .unwrap_or(false)
                         && !ui.input().modifiers.command
                     {
-                        **params.editor_input = Some(EditorInput::SetTile {
-                            layer: params.state.current_layer_idx as u8,
-                            pos: tile_xy,
-                            tilemap_tile_idx: Some(tile.idx as usize),
-                            collision: params.state.current_collision,
-                        });
+                        if ui.input().pointer.primary_down() {
+                            **params.editor_input = Some(EditorInput::SetTile {
+                                layer: params.state.current_layer_idx as u8,
+                                pos: tile_xy,
+                                tilemap_tile_idx: Some(tile.idx as usize),
+                                collision: params.state.current_collision,
+                            });
+                        } else if ui.input().pointer.secondary_down() {
+                            **params.editor_input = Some(EditorInput::SetTile {
+                                layer: params.state.current_layer_idx as u8,
+                                pos: tile_xy,
+                                tilemap_tile_idx: Some(tile.idx as usize),
+                                collision: TileCollisionKind::Empty,
+                            });
+                        }
                     }
                 }
             };

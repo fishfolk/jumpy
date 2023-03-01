@@ -119,4 +119,7 @@ pub enum EditorInput {
         /// The tile collision kind
         collision: TileCollisionKind,
     },
+    RenameMap {
+        name: String,
+    },
 }

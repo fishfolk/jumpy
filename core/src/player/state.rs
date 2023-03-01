@@ -50,8 +50,7 @@ pub fn install(session: &mut GameSession) {
 
     session
         .stages
-        .add_system_to_stage(CoreStage::PreUpdate, incapacitated::handle_player_state)
-        .add_system_to_stage(PlayerStateStage, slippery_seaweed::update);
+        .add_system_to_stage(CoreStage::PreUpdate, incapacitated::handle_player_state);
 }
 
 fn update_player_state_age(entities: Res<Entities>, mut player_states: CompMut<PlayerState>) {

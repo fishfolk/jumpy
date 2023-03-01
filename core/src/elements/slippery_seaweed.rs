@@ -3,7 +3,8 @@ use crate::prelude::*;
 pub fn install(session: &mut GameSession) {
     session
         .stages
-        .add_system_to_stage(CoreStage::PreUpdate, hydrate);
+        .add_system_to_stage(CoreStage::PreUpdate, hydrate)
+        .add_system_to_stage(PlayerStateStage, update);
 }
 
 #[derive(Clone, Debug, TypeUlid, Default)]

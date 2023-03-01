@@ -8,6 +8,7 @@ pub mod kick_bomb;
 pub mod mine;
 pub mod musket;
 pub mod player_spawner;
+pub mod slippery_seaweed;
 pub mod sproinger;
 pub mod stomp_boots;
 pub mod sword;
@@ -47,6 +48,7 @@ pub fn install(session: &mut GameSession) {
     musket::install(session);
     stomp_boots::install(session);
     crate_item::install(session);
+    slippery_seaweed::install(session);
 }
 
 fn handle_out_of_bounds_items(

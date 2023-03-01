@@ -1,0 +1,8 @@
+name: Slippery Seaweed
+category: Gameplay
+builtin: !SlipperySeaweed
+  atlas: ./slippery_seaweed.atlas.yaml
+  body_size: [8, 8]
+  start_frame: 0
+  end_frame: 4
+  fps: 6

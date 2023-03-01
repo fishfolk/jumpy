@@ -47,6 +47,10 @@ pub fn install(session: &mut GameSession) {
     add_state_module!(session, midair);
     add_state_module!(session, walk);
     add_state_module!(session, dead);
+
+    session
+        .stages
+        .add_system_to_stage(CoreStage::PreUpdate, incapacitated::handle_player_state);
 }
 
 fn update_player_state_age(entities: Res<Entities>, mut player_states: CompMut<PlayerState>) {

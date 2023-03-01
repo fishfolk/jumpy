@@ -1,4 +1,4 @@
-use crate::ui::pause_menu::PauseMenuPage;
+use crate::{editor::UserMapStorage, ui::pause_menu::PauseMenuPage};
 
 use super::*;
 
@@ -15,6 +15,7 @@ pub struct MapSelectMenu<'w, 's> {
     commands: Commands<'w, 's>,
     localization: Res<'w, Localization>,
     map_assets: Res<'w, Assets<MapMeta>>,
+    storage: ResMut<'w, Storage>,
 }
 
 impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
@@ -145,6 +146,40 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                         //         TargetClient::All,
                                         //     );
                                         // }
+                                    }
+                                }
+
+                                let user_maps: Option<UserMapStorage> =
+                                    params.storage.get(UserMapStorage::STORAGE_KEY);
+                                if let Some(user_maps) = user_maps {
+                                    ui.add_space(bigger_text_style.size / 2.0);
+                                    ui.themed_label(
+                                        bigger_text_style,
+                                        &params.localization.get("user-maps"),
+                                    );
+
+                                    let mut maps =
+                                        user_maps.0.clone().into_iter().collect::<Vec<_>>();
+                                    maps.sort_by(|a, b| a.0.cmp(&b.0));
+
+                                    for (name, map_meta) in maps {
+                                        ui.add_space(ui.spacing().item_spacing.y);
+                                        let button =
+                                            BorderedButton::themed(small_button_style, &name)
+                                                .show(ui);
+                                        if button.clicked() {
+                                            params.session_manager.start(GameSessionInfo {
+                                                meta: params.core.0.clone(),
+                                                map_meta,
+                                                player_info: default(),
+                                            });
+                                            params
+                                                .commands
+                                                .insert_resource(NextState(EngineState::InGame));
+                                            params
+                                                .commands
+                                                .insert_resource(NextState(InGameState::Playing));
+                                        };
                                     }
                                 }
                             }

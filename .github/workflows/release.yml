@@ -3,7 +3,7 @@ name: 🚀 Release
 on:
   schedule:
     # Run every night
-    - cron: "0 0 * * *"
+    - cron: "0 4 * * *"
   workflow_dispatch:
   push:
     tags:

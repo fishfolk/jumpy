@@ -253,4 +253,11 @@ pub enum BuiltinElementKind {
         shoot_sound: Handle<AudioSource>,
         empty_shoot_sound: Handle<AudioSource>,
     },
+    SlipperySeaweed {
+        atlas: Handle<Atlas>,
+        start_frame: usize,
+        end_frame: usize,
+        fps: f32,
+        body_size: Vec2,
+    },
 }

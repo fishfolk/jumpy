@@ -85,6 +85,23 @@ pub enum EditorInput {
         /// The name of the layer.
         id: String,
     },
+    /// Rename a map layer.
+    RenameLayer {
+        /// The index of the layer to rename.
+        layer: u8,
+        /// The new name of the layer.
+        name: String,
+    },
+    DeleteLayer {
+        layer: u8,
+    },
+    /// Move a layer up or down.
+    MoveLayer {
+        /// The layer to move
+        layer: u8,
+        /// Whether or not to move the layer down. If false, move the layer up.
+        down: bool,
+    },
     /// Update the tilemap of a layer.
     SetTilemap {
         /// The layer index of the layer to update.
@@ -101,5 +118,8 @@ pub enum EditorInput {
         tilemap_tile_idx: Option<usize>,
         /// The tile collision kind
         collision: TileCollisionKind,
+    },
+    RenameMap {
+        name: String,
     },
 }

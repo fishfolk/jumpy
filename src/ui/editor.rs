@@ -56,6 +56,13 @@ impl Default for EditorState {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Default, Deref, DerefMut)]
+pub struct UserMapStorage(pub HashMap<String, MapMeta>);
+
+impl UserMapStorage {
+    pub const STORAGE_KEY: &str = "user_maps";
+}
+
 fn tile_collision_color(collision: TileCollisionKind) -> egui::Color32 {
     match collision {
         TileCollisionKind::Solid => egui::Color32::LIGHT_GRAY.linear_multiply(0.68),
@@ -235,6 +242,7 @@ struct EditorTopBar<'w, 's> {
     camera: CameraQuery<'w, 's>,
     clipboard: ResMut<'w, bevy_egui::EguiClipboard>,
     map_export: Res<'w, EditorMapExport>,
+    storage: ResMut<'w, Storage>,
 }
 
 impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
@@ -308,7 +316,6 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                             .commands
                             .insert_resource(NextState(GameEditorState::Hidden));
                     }
-
                     if ui.button(&params.localization.get("export")).clicked() {
                         *params.show_map_export_window = true;
                     }
@@ -327,6 +334,19 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                         params
                             .commands
                             .insert_resource(NextState(InGameState::Playing));
+                    }
+                    if ui.button(&params.localization.get("save")).clicked()
+                        || (ui.input().key_down(egui::Key::S) && ui.input().modifiers.command)
+                    {
+                        if let Some(map) = params.map_export.0.as_ref() {
+                            let mut user_maps: UserMapStorage = params
+                                .storage
+                                .get(UserMapStorage::STORAGE_KEY)
+                                .unwrap_or_default();
+                            user_maps.insert(map.name.clone(), map.clone());
+                            params.storage.set(UserMapStorage::STORAGE_KEY, &user_maps);
+                            params.storage.save();
+                        }
                     }
                 });
             });
@@ -487,14 +507,24 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                 .resizable(false);
 
             table.body(|mut body| {
-                body.row(row_height, |mut row| {
-                    row.col(|ui| {
-                        ui.label(&params.localization.get("name"));
+                if let Some(map) = params.map_export.0.as_ref() {
+                    body.row(row_height, |mut row| {
+                        row.col(|ui| {
+                            ui.label(&params.localization.get("name"));
+                        });
+                        row.col(|ui| {
+                            let mut name = map.name.clone();
+                            egui::TextEdit::singleline(&mut name)
+                                .desired_width(ui.available_width() * 0.9)
+                                .show(ui);
+
+                            if name != map.name {
+                                **params.editor_input = Some(EditorInput::RenameMap { name });
+                            }
+                        });
                     });
-                    row.col(|ui| {
-                        ui.label(map_meta.map(|map| map.name.as_str()).unwrap_or(""));
-                    });
-                });
+                }
+
                 body.row(row_height, |mut row| {
                     row.col(|ui| {
                         ui.label(&params.localization.get("grid-size"));
@@ -542,21 +572,29 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                         ui.add_space(ui.spacing().item_spacing.x);
 
                         let row_rect = ui.max_rect();
+                        let mut response = ui.allocate_rect(row_rect, egui::Sense::click());
 
-                        let hovered = ui
-                            .input()
-                            .pointer
-                            .hover_pos()
-                            .map(|pos| row_rect.contains(pos))
-                            .unwrap_or(false);
-                        let active = hovered && ui.input().pointer.primary_down();
+                        response = response.context_menu(|ui| {
+                            params.state.current_layer_idx = i;
+                            if ui
+                                .button(&format!("🗑 {}", params.localization.get("delete-layer")))
+                                .clicked()
+                            {
+                                **params.editor_input =
+                                    Some(EditorInput::DeleteLayer { layer: i as u8 });
+                                ui.close_menu();
+                            }
+                        });
+
+                        let hovered = response.hovered();
+                        let active = hovered && response.is_pointer_button_down_on();
                         let highlighted = hovered || params.state.current_layer_idx == i;
-                        let clicked = ui.input().pointer.primary_released() && hovered;
+                        let clicked = response.clicked();
 
                         if highlighted {
                             ui.painter().rect_filled(
                                 row_rect,
-                                0.0,
+                                2.0,
                                 if active {
                                     ui.visuals().widgets.active.bg_stroke.color
                                 } else {
@@ -569,10 +607,98 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                             params.state.current_layer_idx = i;
                         }
 
-                        ui.vertical(|ui| {
-                            ui.set_width(width * 0.8);
-                            ui.add_space(ui.spacing().interact_size.y * 0.2);
-                            ui.label(&layer.id);
+                        ui.allocate_ui_at_rect(row_rect.expand2(egui::vec2(-4.0, 0.0)), |ui| {
+                            ui.vertical(|ui| {
+                                ui.set_width(width * 0.8);
+                                ui.add_space(ui.spacing().interact_size.y * 0.2);
+
+                                #[derive(Clone)]
+                                struct EditingLayerName {
+                                    name: String,
+                                }
+                                let edit_data = ui.data().get_temp::<EditingLayerName>(response.id);
+                                if let Some(mut data) = edit_data {
+                                    let output =
+                                        egui::TextEdit::singleline(&mut data.name).show(ui);
+                                    output.response.request_focus();
+                                    if output.cursor_range.is_none() {
+                                        use egui::text::{CCursor, CCursorRange};
+                                        let mut new_state = output.state;
+                                        new_state.set_ccursor_range(Some(CCursorRange::two(
+                                            CCursor::new(0),
+                                            CCursor::new(data.name.len()),
+                                        )));
+                                        egui::TextEdit::store_state(
+                                            ui.ctx(),
+                                            output.response.id,
+                                            new_state,
+                                        );
+                                    }
+                                    if ui.input().key_pressed(egui::Key::Enter) {
+                                        ui.data().remove::<EditingLayerName>(response.id);
+                                        **params.editor_input = Some(EditorInput::RenameLayer {
+                                            layer: i as u8,
+                                            name: data.name,
+                                        });
+                                    } else if ui.input().key_pressed(egui::Key::Escape)
+                                        || output.response.clicked_elsewhere()
+                                    {
+                                        ui.data().remove::<EditingLayerName>(response.id);
+                                    } else {
+                                        ui.data().insert_temp(response.id, data);
+                                    }
+                                } else {
+                                    ui.label(&layer.id);
+                                    if response.double_clicked() {
+                                        ui.data().insert_temp(
+                                            response.id,
+                                            EditingLayerName {
+                                                name: layer.id.clone(),
+                                            },
+                                        );
+                                    }
+                                }
+                            });
+
+                            ui.scope(|ui| {
+                                ui.set_enabled(i > 0);
+                                // Up button
+                                if ui
+                                    .button("⏶")
+                                    .on_hover_text(params.localization.get("move-up"))
+                                    .clicked()
+                                {
+                                    if params.state.current_layer_idx == i {
+                                        params.state.current_layer_idx = i - 1;
+                                    } else if params.state.current_layer_idx == i - 1 {
+                                        params.state.current_layer_idx = i;
+                                    }
+                                    **params.editor_input = Some(EditorInput::MoveLayer {
+                                        layer: i as u8,
+                                        down: false,
+                                    });
+                                }
+                            });
+
+                            // Down button
+                            ui.scope(|ui| {
+                                ui.set_enabled(i < map.layers.len() - 1);
+                                if ui
+                                    .button("⏷")
+                                    .on_hover_text(params.localization.get("move-down"))
+                                    .clicked()
+                                {
+                                    if params.state.current_layer_idx == i {
+                                        params.state.current_layer_idx = i + 1;
+                                    } else if params.state.current_layer_idx == i + 1 {
+                                        params.state.current_layer_idx = i;
+                                    }
+                                    **params.editor_input = Some(EditorInput::MoveLayer {
+                                        layer: i as u8,
+                                        down: true,
+                                    });
+                                }
+                            });
                         });
 
                         // ui.vertical_centered(|ui| {
@@ -687,6 +813,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
 
                 // Render the tilemap
                 if let Some(tilemap) = tilemap {
+                    ui.add_space(ui.spacing().item_spacing.y);
                     let info = params.tilesets.0.get(&tilemap.path).unwrap();
 
                     let aspect = info.size.y / info.size.x;
@@ -825,6 +952,7 @@ struct EditorCentralPanel<'w, 's> {
     editor_input: ResMut<'w, CurrentEditorInput>,
     camera: CameraQuery<'w, 's>,
     map: Res<'w, EditorMapExport>,
+    storage: ResMut<'w, Storage>,
 }
 
 struct MapCreateInfo {
@@ -1216,27 +1344,35 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                         let mut painter = ui.painter_at(map_response_rect);
                         painter.set_clip_rect(map_response_rect);
                         painter.rect_stroke(
-                            rect.expand(-1.0),
-                            0.5,
-                            (2.0, tile_collision_color(tile.collision)),
+                            rect.expand(-1.0 / ppp),
+                            0.0,
+                            (2.0 / ppp, tile_collision_color(tile.collision)),
                         );
                     }
 
-                    if ui.input().pointer.primary_down()
-                        && ui
-                            .input()
-                            .pointer
-                            .hover_pos()
-                            .map(|pos| rect.contains(pos))
-                            .unwrap_or(false)
+                    if ui
+                        .input()
+                        .pointer
+                        .hover_pos()
+                        .map(|pos| rect.contains(pos))
+                        .unwrap_or(false)
                         && !ui.input().modifiers.command
                     {
-                        **params.editor_input = Some(EditorInput::SetTile {
-                            layer: params.state.current_layer_idx as u8,
-                            pos: tile_xy,
-                            tilemap_tile_idx: Some(tile.idx as usize),
-                            collision: params.state.current_collision,
-                        });
+                        if ui.input().pointer.primary_down() {
+                            **params.editor_input = Some(EditorInput::SetTile {
+                                layer: params.state.current_layer_idx as u8,
+                                pos: tile_xy,
+                                tilemap_tile_idx: Some(tile.idx as usize),
+                                collision: params.state.current_collision,
+                            });
+                        } else if ui.input().pointer.secondary_down() {
+                            **params.editor_input = Some(EditorInput::SetTile {
+                                layer: params.state.current_layer_idx as u8,
+                                pos: tile_xy,
+                                tilemap_tile_idx: Some(tile.idx as usize),
+                                collision: TileCollisionKind::Empty,
+                            });
+                        }
                     }
                 }
             };
@@ -1291,6 +1427,8 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
             // ui.set_height(params.game.camera_height as f32 * 0.6);
             ui.vertical_centered_justified(|ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
+                    ui.heading(params.localization.get("builtin-maps"));
+
                     #[allow(clippy::unnecessary_to_owned)] // False alarm
                     for map_handle in params
                         .core_meta
@@ -1310,8 +1448,49 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                                 player_info: default(),
                             });
                             *params.show_map_open = false;
-                            // TODO: center camera.
                         }
+                    }
+
+                    let user_maps: Option<UserMapStorage> =
+                        params.storage.get(UserMapStorage::STORAGE_KEY);
+                    ui.heading(params.localization.get("user-maps"));
+                    if let Some(mut user_maps) = user_maps {
+                        let mut maps = user_maps.0.clone().into_iter().collect::<Vec<_>>();
+                        maps.sort_by(|a, b| a.0.cmp(&b.0));
+
+                        if maps.is_empty() {
+                            ui.label(params.localization.get("none"));
+                        }
+
+                        for (name, map_meta) in maps {
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
+                                if ui
+                                    .button("🗑")
+                                    .on_hover_text(params.localization.get("delete"))
+                                    .clicked()
+                                {
+                                    user_maps.remove(&name);
+                                    params.storage.set(UserMapStorage::STORAGE_KEY, &user_maps);
+                                    params.storage.save();
+                                }
+                                if ui
+                                    .add(
+                                        egui::Button::new(&name)
+                                            .min_size(egui::vec2(ui.available_width(), 0.0)),
+                                    )
+                                    .clicked()
+                                {
+                                    params.session_manager.start(GameSessionInfo {
+                                        meta: params.core_meta.0.clone(),
+                                        map_meta: map_meta.clone(),
+                                        player_info: default(),
+                                    });
+                                    *params.show_map_open = false;
+                                };
+                            });
+                        }
+                    } else {
+                        ui.label(params.localization.get("none"));
                     }
                 });
             });

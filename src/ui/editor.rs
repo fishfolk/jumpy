@@ -56,6 +56,13 @@ impl Default for EditorState {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Default, Deref, DerefMut)]
+pub struct UserMapStorage(pub HashMap<String, MapMeta>);
+
+impl UserMapStorage {
+    pub const STORAGE_KEY: &str = "user_maps";
+}
+
 fn tile_collision_color(collision: TileCollisionKind) -> egui::Color32 {
     match collision {
         TileCollisionKind::Solid => egui::Color32::LIGHT_GRAY.linear_multiply(0.68),
@@ -235,6 +242,7 @@ struct EditorTopBar<'w, 's> {
     camera: CameraQuery<'w, 's>,
     clipboard: ResMut<'w, bevy_egui::EguiClipboard>,
     map_export: Res<'w, EditorMapExport>,
+    storage: ResMut<'w, Storage>,
 }
 
 impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
@@ -308,7 +316,6 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                             .commands
                             .insert_resource(NextState(GameEditorState::Hidden));
                     }
-
                     if ui.button(&params.localization.get("export")).clicked() {
                         *params.show_map_export_window = true;
                     }
@@ -327,6 +334,19 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                         params
                             .commands
                             .insert_resource(NextState(InGameState::Playing));
+                    }
+                    if ui.button(&params.localization.get("save")).clicked()
+                        || (ui.input().key_down(egui::Key::S) && ui.input().modifiers.command)
+                    {
+                        if let Some(map) = params.map_export.0.as_ref() {
+                            let mut user_maps: UserMapStorage = params
+                                .storage
+                                .get(UserMapStorage::STORAGE_KEY)
+                                .unwrap_or_default();
+                            user_maps.insert(map.name.clone(), map.clone());
+                            params.storage.set(UserMapStorage::STORAGE_KEY, &user_maps);
+                            params.storage.save();
+                        }
                     }
                 });
             });
@@ -487,14 +507,24 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                 .resizable(false);
 
             table.body(|mut body| {
-                body.row(row_height, |mut row| {
-                    row.col(|ui| {
-                        ui.label(&params.localization.get("name"));
+                if let Some(map) = params.map_export.0.as_ref() {
+                    body.row(row_height, |mut row| {
+                        row.col(|ui| {
+                            ui.label(&params.localization.get("name"));
+                        });
+                        row.col(|ui| {
+                            let mut name = map.name.clone();
+                            egui::TextEdit::singleline(&mut name)
+                                .desired_width(ui.available_width() * 0.9)
+                                .show(ui);
+
+                            if name != map.name {
+                                **params.editor_input = Some(EditorInput::RenameMap { name });
+                            }
+                        });
                     });
-                    row.col(|ui| {
-                        ui.label(map_meta.map(|map| map.name.as_str()).unwrap_or(""));
-                    });
-                });
+                }
+
                 body.row(row_height, |mut row| {
                     row.col(|ui| {
                         ui.label(&params.localization.get("grid-size"));
@@ -922,6 +952,7 @@ struct EditorCentralPanel<'w, 's> {
     editor_input: ResMut<'w, CurrentEditorInput>,
     camera: CameraQuery<'w, 's>,
     map: Res<'w, EditorMapExport>,
+    storage: ResMut<'w, Storage>,
 }
 
 struct MapCreateInfo {
@@ -1396,6 +1427,8 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
             // ui.set_height(params.game.camera_height as f32 * 0.6);
             ui.vertical_centered_justified(|ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
+                    ui.heading(params.localization.get("builtin-maps"));
+
                     #[allow(clippy::unnecessary_to_owned)] // False alarm
                     for map_handle in params
                         .core_meta
@@ -1415,8 +1448,49 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                                 player_info: default(),
                             });
                             *params.show_map_open = false;
-                            // TODO: center camera.
                         }
+                    }
+
+                    let user_maps: Option<UserMapStorage> =
+                        params.storage.get(UserMapStorage::STORAGE_KEY);
+                    ui.heading(params.localization.get("user-maps"));
+                    if let Some(mut user_maps) = user_maps {
+                        let mut maps = user_maps.0.clone().into_iter().collect::<Vec<_>>();
+                        maps.sort_by(|a, b| a.0.cmp(&b.0));
+
+                        if maps.is_empty() {
+                            ui.label(params.localization.get("none"));
+                        }
+
+                        for (name, map_meta) in maps {
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
+                                if ui
+                                    .button("🗑")
+                                    .on_hover_text(params.localization.get("delete"))
+                                    .clicked()
+                                {
+                                    user_maps.remove(&name);
+                                    params.storage.set(UserMapStorage::STORAGE_KEY, &user_maps);
+                                    params.storage.save();
+                                }
+                                if ui
+                                    .add(
+                                        egui::Button::new(&name)
+                                            .min_size(egui::vec2(ui.available_width(), 0.0)),
+                                    )
+                                    .clicked()
+                                {
+                                    params.session_manager.start(GameSessionInfo {
+                                        meta: params.core_meta.0.clone(),
+                                        map_meta: map_meta.clone(),
+                                        player_info: default(),
+                                    });
+                                    *params.show_map_open = false;
+                                };
+                            });
+                        }
+                    } else {
+                        ui.label(params.localization.get("none"));
                     }
                 });
             });

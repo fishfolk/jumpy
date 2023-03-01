@@ -211,6 +211,9 @@ fn handle_editor_input(
                         }
                     }
                 }
+                EditorInput::RenameMap { name } => {
+                    spawned_map_meta.name = name.clone().into();
+                }
             }
         }
     }

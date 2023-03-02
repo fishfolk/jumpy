@@ -262,6 +262,20 @@
 <a href="#261" id="261">261</a>
 <a href="#262" id="262">262</a>
 <a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -362,6 +376,20 @@
         end_frame: usize,
         fps: f32,
         atlas: Handle&lt;Atlas&gt;,
+    },
+    FishSchool {
+        kinds: Vec&lt;Handle&lt;Atlas&gt;&gt;,
+        <span class="doccomment">/// The default and most-likely to ocurr number of fish in a school
+        </span>base_count: u32,
+        <span class="doccomment">/// The ammount greater or less than the base number of fish that may spawn
+        </span>count_variation: u32,
+        <span class="doccomment">/// The distance from the spawn point on each axis that the individual fish in the school will be
+        /// initially spawned within
+        </span>spawn_range: f32,
+        <span class="doccomment">/// The distance that the fish wish to stay within the center of their school
+        </span>school_size: f32,
+        <span class="comment">// The distance a collider must be for the fish to run away
+        </span>flee_range: f32,
     },
     <span class="doccomment">/// A crab roaming on the ocean floor
     </span>Crab {

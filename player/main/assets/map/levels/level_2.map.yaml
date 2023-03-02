@@ -785,26 +785,6 @@ layers:
           - 120.0
           - 89.5
         element: /elements/decoration/anemones/anemones.element.yaml
-      - pos:
-          - 222.6668
-          - 127.5
-        element: /elements/environment/fish_school/fish_school.element.yaml
-      - pos:
-          - 446.0
-          - 185.5
-        element: /elements/environment/fish_school/fish_school.element.yaml
-      - pos:
-          - 891.3332
-          - 241.5
-        element: /elements/environment/fish_school/fish_school.element.yaml
-      - pos:
-          - 712.0001
-          - 73.5
-        element: /elements/environment/crab/crab.element.yaml
-      - pos:
-          - 480.0
-          - 263.5
-        element: /elements/environment/crab/crab.element.yaml
   - id: items
     tilemap: null
     tiles: []
@@ -853,6 +833,30 @@ layers:
           - 256.0
           - 79.0
         element: /elements/item/grenade/grenade.element.yaml
+  - id: critters
+    tilemap: null
+    tiles: []
+    elements:
+      - pos:
+          - 439.0
+          - 135.0
+        element: /elements/environment/fish_school/fish_school.element.yaml
+      - pos:
+          - 488.0
+          - 263.5
+        element: /elements/environment/crab/crab.element.yaml
+      - pos:
+          - 893.0
+          - 237.0
+        element: /elements/environment/fish_school/fish_school.element.yaml
+      - pos:
+          - 219.0
+          - 109.0
+        element: /elements/environment/fish_school/fish_school.element.yaml
+      - pos:
+          - 696.0
+          - 71.5
+        element: /elements/environment/crab/crab.element.yaml
   - id: spawners
     tilemap: null
     tiles: []

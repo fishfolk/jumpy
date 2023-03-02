@@ -128,6 +128,14 @@ pub enum BuiltinElementKind {
         timer_delay_max: u8,
         atlas: Handle<Atlas>,
     },
+    Urchin {
+        image: Handle<Image>,
+        body_diameter: f32,
+        hit_speed: f32,
+        gravity: f32,
+        bounciness: f32,
+        spin: f32,
+    },
     /// This is a sproinger
     Sproinger {
         atlas: Handle<Atlas>,

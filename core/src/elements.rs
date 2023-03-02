@@ -13,6 +13,7 @@ pub mod slippery_seaweed;
 pub mod sproinger;
 pub mod stomp_boots;
 pub mod sword;
+pub mod urchin;
 
 /// Marker component added to map elements that have been hydrated.
 #[derive(Clone, TypeUlid)]
@@ -39,6 +40,7 @@ pub fn install(session: &mut GameSession) {
         .add_system_to_stage(CoreStage::First, handle_out_of_bounds_items);
 
     decoration::install(session);
+    urchin::install(session);
     player_spawner::install(session);
     sproinger::install(session);
     sword::install(session);

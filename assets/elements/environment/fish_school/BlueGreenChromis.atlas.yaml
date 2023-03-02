@@ -1,0 +1,4 @@
+image: ./BlueGreenChromis.png
+tile_size: [22, 11]
+rows: 1
+columns: 4

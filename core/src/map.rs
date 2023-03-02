@@ -71,7 +71,7 @@ pub struct SpawnedMapLayerMeta {
 /// The map navigation graph resource.
 #[derive(Clone, Debug, Deref, DerefMut, TypeUlid, Default)]
 #[ulid = "01GQWP4QG11NBVX3M289TXAK6W"]
-pub struct NavGraph(pub Option<Arc<NavGraphInner>>);
+pub struct NavGraph(pub Arc<NavGraphInner>);
 
 /// The inner graph type of [`NavGraph`].
 pub type NavGraphInner = petgraph::graphmap::DiGraphMap<NavNode, NavGraphEdge>;
@@ -80,7 +80,7 @@ pub type NavGraphInner = petgraph::graphmap::DiGraphMap<NavNode, NavGraphEdge>;
 ///
 /// This is merely a wrapper around [`UVec2`] to add an [`Ord`] implementation.
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash, Deref, DerefMut)]
-pub struct NavNode(pub UVec2);
+pub struct NavNode(pub IVec2);
 
 impl NavNode {
     /// Calculates the Pythagorean distance between two nodes.
@@ -91,51 +91,28 @@ impl NavNode {
     }
 
     pub fn right(&self) -> NavNode {
-        NavNode(self.0 + uvec2(1, 0))
+        NavNode(self.0 + ivec2(1, 0))
     }
 
     pub fn above(&self) -> NavNode {
-        NavNode(self.0 + uvec2(0, 1))
+        NavNode(self.0 + ivec2(0, 1))
     }
 
-    pub fn left(&self) -> Option<NavNode> {
-        if self.0.x > 0 {
-            Some(NavNode(self.0 - uvec2(1, 0)))
-        } else {
-            None
-        }
+    pub fn left(&self) -> NavNode {
+        NavNode(self.0 - ivec2(1, 0))
     }
 
-    pub fn below(&self) -> Option<NavNode> {
-        if self.0.y > 0 {
-            Some(NavNode(self.0 - uvec2(0, 1)))
-        } else {
-            None
-        }
-    }
-
-    pub fn below_left(&self) -> Option<NavNode> {
-        self.left().and_then(|x| x.below())
-    }
-
-    pub fn below_right(&self) -> Option<NavNode> {
-        self.below().map(|x| x.right())
-    }
-
-    pub fn above_left(&self) -> Option<NavNode> {
-        self.left().map(|x| x.above())
-    }
-
-    pub fn above_right(&self) -> NavNode {
-        self.right().above()
+    pub fn below(&self) -> NavNode {
+        NavNode(self.0 - ivec2(0, 1))
     }
 }
-impl From<UVec2> for NavNode {
-    fn from(v: UVec2) -> Self {
+
+impl From<IVec2> for NavNode {
+    fn from(v: IVec2) -> Self {
         Self(v)
     }
 }
-impl From<NavNode> for UVec2 {
+impl From<NavNode> for IVec2 {
     fn from(v: NavNode) -> Self {
         v.0
     }
@@ -218,7 +195,7 @@ fn spawn_map(
     **clear_color = map.background_color.0;
 
     // Load the navigation graph
-    nav_graph.0 = Some(create_nav_graph(&map));
+    nav_graph.0 = create_nav_graph(&map);
 
     // Spawn parallax backgrounds
     for layer in &map.background.layers {
@@ -311,41 +288,43 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
     let mut graph = NavGraphInner::default();
 
     // Initialize set of traversable tiles, assuming all tiles are traversable
-    let mut semi_solids = HashSet::default();
-    for x in 0..meta.grid_size.x {
-        for y in 0..meta.grid_size.y {
-            graph.add_node(NavNode(uvec2(x, y)));
+    for x in 0..meta.grid_size.x as i32 {
+        for y in 0..meta.grid_size.y as i32 {
+            graph.add_node(NavNode(ivec2(x, y)));
         }
     }
-    // Find all solid tiles and remove them from the traversable tiles list
+
+    // Find all solid tiles and remove them from the traversable tiles list, while also recording
+    // the jump-through tiles.
+    let mut semi_solids = HashSet::default();
     for layer in &meta.layers {
         for tile in &layer.tiles {
             if tile.collision == TileCollisionKind::JumpThrough {
-                semi_solids.insert(NavNode(tile.pos));
+                semi_solids.insert(NavNode(tile.pos.as_ivec2()));
             } else {
-                graph.remove_node(NavNode(tile.pos));
+                graph.remove_node(NavNode(tile.pos.as_ivec2()));
             }
         }
     }
 
     // Calculate possible movements from every node
     macro_rules! is_solid {
-        ($node:ident) => {
+        ($node:expr) => {
             !graph.contains_node($node) || semi_solids.contains(&$node)
         };
     }
 
     for node in graph.nodes().collect::<Vec<_>>() {
         // walk left or right along the ground
-        let has_ground = node.below().map(|x| is_solid!(x)).unwrap_or_default()
-            || node.below_left().map(|x| is_solid!(x)).unwrap_or_default()
-            || node.below_right().map(|x| is_solid!(x)).unwrap_or_default();
+        let has_ground = is_solid!(node.below());
+        let maybe_has_ground =
+            has_ground || is_solid!(node.below().left()) || is_solid!(node.below().right());
 
         /////////////////
         // Grounded
         /////////////////
 
-        if has_ground {
+        if maybe_has_ground {
             // Moving Right
             let right = node.right();
             if graph.contains_node(right) {
@@ -365,90 +344,164 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
             }
 
             // Moving Left
-            if let Some(left) = node.left() {
-                if graph.contains_node(left) {
-                    graph.add_edge(
-                        node,
-                        left,
-                        NavGraphEdge {
-                            inputs: [PlayerControl {
-                                moving: true,
-                                move_direction: vec2(-1.0, 0.0),
-                                ..default()
-                            }]
-                            .into(),
-                            distance: node.distance(&left),
-                        },
-                    );
-                }
+            let left = node.left();
+            if graph.contains_node(left) {
+                graph.add_edge(
+                    node,
+                    left,
+                    NavGraphEdge {
+                        inputs: [PlayerControl {
+                            moving: true,
+                            move_direction: vec2(-1.0, 0.0),
+                            ..default()
+                        }]
+                        .into(),
+                        distance: node.distance(&left),
+                    },
+                );
             }
+        }
 
+        if has_ground {
             /////////////////
             // JUMPING
             /////////////////
             let above1 = node.above();
             let above2 = above1.above();
             let above3 = above2.above();
+            let contains_above1 = graph.contains_node(above1);
+            let contains_above2 = graph.contains_node(above2);
+            let contains_above3 = graph.contains_node(above3);
 
-            // let above_l = above3.left();
-            // let above_r = above3.right();
+            if contains_above1 {
+                // Jump staight up
+                graph.add_edge(
+                    node,
+                    above1,
+                    NavGraphEdge {
+                        inputs: [PlayerControl {
+                            jump_just_pressed: true,
+                            jump_pressed: true,
+                            ..default()
+                        }]
+                        .into(),
+                        distance: node.distance(&above1),
+                    },
+                );
+            }
+            if contains_above2 {
+                // Jump staight up
+                graph.add_edge(
+                    node,
+                    above2,
+                    NavGraphEdge {
+                        inputs: [PlayerControl {
+                            jump_just_pressed: true,
+                            jump_pressed: true,
+                            ..default()
+                        }]
+                        .into(),
+                        distance: node.distance(&above2),
+                    },
+                );
+            }
+            if contains_above3 {
+                // Jump staight up
+                graph.add_edge(
+                    node,
+                    above2,
+                    NavGraphEdge {
+                        inputs: [PlayerControl {
+                            jump_just_pressed: true,
+                            jump_pressed: true,
+                            ..default()
+                        }]
+                        .into(),
+                        distance: node.distance(&above3),
+                    },
+                );
+            }
 
-            if graph.contains_node(above1) && graph.contains_node(above2) {
-                let contains_above = graph.contains_node(above3);
-                // let contains_above_r = graph.contains_node(above_r);
-                // let contains_above_l = above_l.map(|x| graph.contains_node(x)).unwrap_or_default();
+            // Jump up and left
+            let above3l = above3.left().left();
+            if graph.contains_node(above3l) && contains_above2 && contains_above3 {
+                graph.add_edge(
+                    node,
+                    above3l,
+                    NavGraphEdge {
+                        inputs: [PlayerControl {
+                            move_direction: vec2(-1.0, 0.0),
+                            jump_just_pressed: true,
+                            jump_pressed: true,
+                            ..default()
+                        }]
+                        .into(),
+                        distance: node.distance(&above3l),
+                    },
+                );
+            }
+            let above3l3 = above3.left().left().left();
+            if graph.contains_node(above3l3)
+                && graph.contains_node(above3.left())
+                && graph.contains_node(above3.left().left())
+                && contains_above2
+                && contains_above3
+            {
+                graph.add_edge(
+                    node,
+                    above3l3,
+                    NavGraphEdge {
+                        inputs: [PlayerControl {
+                            move_direction: vec2(-1.0, 0.0),
+                            jump_just_pressed: true,
+                            jump_pressed: true,
+                            ..default()
+                        }]
+                        .into(),
+                        distance: node.distance(&above3l3),
+                    },
+                );
+            }
 
-                if contains_above {
-                    // Jump staight up
-                    graph.add_edge(
-                        node,
-                        above3,
-                        NavGraphEdge {
-                            inputs: [PlayerControl {
-                                jump_just_pressed: true,
-                                jump_pressed: true,
-                                ..default()
-                            }]
-                            .into(),
-                            distance: node.distance(&above3),
-                        },
-                    );
-                }
-
-                // // Jump Right
-                // if graph.contains_node(above_r) {
-                //     graph.add_edge(
-                //         node,
-                //         above3,
-                //         NavGraphEdge {
-                //             inputs: [PlayerControl {
-                //                 move_direction: vec2(1.0, 0.0),
-                //                 jump_just_pressed: true,
-                //                 jump_pressed: true,
-                //                 ..default()
-                //             }]
-                //             .into(),
-                //             distance: node.distance(&above_r),
-                //         },
-                //     );
-                // }
-                // // Jump up and left
-                // else if above_l.map(|x| graph.contains_node(x)).unwrap_or_default() {
-                // graph.add_edge(
-                //     node,
-                //     above3,
-                //     NavGraphEdge {
-                //         inputs: [PlayerControl {
-                //             move_direction: vec2(-1.0, 0.0),
-                //             jump_just_pressed: true,
-                //             jump_pressed: true,
-                //             ..default()
-                //         }]
-                //         .into(),
-                //         distance: node.distance(&above_l.unwrap()),
-                //     },
-                // );
-                // }
+            // Jump up and right
+            let above3r = above3.right().right();
+            if graph.contains_node(above3r) && contains_above2 && contains_above3 {
+                graph.add_edge(
+                    node,
+                    above3r,
+                    NavGraphEdge {
+                        inputs: [PlayerControl {
+                            move_direction: vec2(1.0, 0.0),
+                            jump_just_pressed: true,
+                            jump_pressed: true,
+                            ..default()
+                        }]
+                        .into(),
+                        distance: node.distance(&above3r),
+                    },
+                );
+            }
+            let above3r3 = above3.right().right().right();
+            if graph.contains_node(above3r3)
+                && graph.contains_node(above3.right())
+                && graph.contains_node(above3.right().right())
+                && contains_above2
+                && contains_above3
+            {
+                graph.add_edge(
+                    node,
+                    above3r3,
+                    NavGraphEdge {
+                        inputs: [PlayerControl {
+                            move_direction: vec2(1.0, 0.0),
+                            jump_just_pressed: true,
+                            jump_pressed: true,
+                            ..default()
+                        }]
+                        .into(),
+                        distance: node.distance(&above3r3),
+                    },
+                );
             }
         }
 
@@ -457,142 +510,191 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
         /////////////////
 
         // Fall straight down
-        if let Some(below) = node.below() {
-            if graph.contains_node(below) {
-                if semi_solids.contains(&below) {
-                    graph.add_edge(
-                        node,
-                        below,
-                        NavGraphEdge {
-                            inputs: [
-                                PlayerControl {
-                                    move_direction: vec2(0.0, -1.0),
-                                    jump_just_pressed: true,
-                                    jump_pressed: true,
-                                    ..default()
-                                },
-                                PlayerControl {
-                                    move_direction: vec2(0.0, -1.0),
-                                    jump_pressed: true,
-                                    ..default()
-                                },
-                                PlayerControl::default(),
-                                PlayerControl::default(),
-                            ]
-                            .into(),
-                            distance: node.distance(&below),
-                        },
-                    );
-                } else {
-                    graph.add_edge(
-                        node,
-                        below,
-                        NavGraphEdge {
-                            inputs: [PlayerControl::default()].into(),
-                            distance: node.distance(&below),
-                        },
-                    );
-                }
+        let below = node.below();
+        if graph.contains_node(below) {
+            if semi_solids.contains(&below) {
+                graph.add_edge(
+                    node,
+                    below,
+                    NavGraphEdge {
+                        inputs: [
+                            PlayerControl {
+                                move_direction: vec2(0.0, -1.0),
+                                jump_just_pressed: true,
+                                jump_pressed: true,
+                                ..default()
+                            },
+                            default(),
+                            default(),
+                            default(),
+                            default(),
+                        ]
+                        .into(),
+                        distance: node.distance(&below),
+                    },
+                );
+            } else {
+                graph.add_edge(
+                    node,
+                    below,
+                    NavGraphEdge {
+                        inputs: [PlayerControl::default()].into(),
+                        distance: node.distance(&below),
+                    },
+                );
             }
         }
 
         // Fall diagonally down right
-        if let Some(below_right) = node.below_right() {
-            if graph.contains_node(below_right) {
-                if semi_solids.contains(&below_right) {
-                    graph.add_edge(
-                        node,
-                        below_right,
-                        NavGraphEdge {
-                            inputs: [
-                                PlayerControl {
-                                    move_direction: vec2(1.0, -1.0),
-                                    jump_just_pressed: true,
-                                    jump_pressed: true,
-                                    ..default()
-                                },
-                                PlayerControl {
-                                    move_direction: vec2(1.0, -1.0),
-                                    jump_pressed: true,
-                                    ..default()
-                                },
-                                PlayerControl {
-                                    move_direction: vec2(1.0, 0.0),
-                                    ..default()
-                                },
-                                PlayerControl {
-                                    move_direction: vec2(1.0, 0.0),
-                                    ..default()
-                                },
-                            ]
-                            .into(),
-                            distance: node.distance(&below_right),
-                        },
-                    );
-                } else {
-                    graph.add_edge(
-                        node,
-                        below_right,
-                        NavGraphEdge {
-                            inputs: [PlayerControl {
+        let below_right = node.below().right();
+        if graph.contains_node(below_right) {
+            if semi_solids.contains(&below_right) {
+                graph.add_edge(
+                    node,
+                    below_right,
+                    NavGraphEdge {
+                        inputs: [
+                            PlayerControl {
+                                move_direction: vec2(1.0, -1.0),
+                                jump_just_pressed: true,
+                                jump_pressed: true,
+                                ..default()
+                            },
+                            PlayerControl {
+                                move_direction: vec2(1.0, -1.0),
+                                jump_pressed: true,
+                                ..default()
+                            },
+                            PlayerControl {
                                 move_direction: vec2(1.0, 0.0),
                                 ..default()
-                            }]
-                            .into(),
-                            distance: node.distance(&below_right),
-                        },
-                    );
-                }
+                            },
+                            PlayerControl {
+                                move_direction: vec2(1.0, 0.0),
+                                ..default()
+                            },
+                        ]
+                        .into(),
+                        distance: node.distance(&below_right),
+                    },
+                );
+            } else {
+                graph.add_edge(
+                    node,
+                    below_right,
+                    NavGraphEdge {
+                        inputs: [PlayerControl {
+                            move_direction: vec2(1.0, 0.0),
+                            ..default()
+                        }]
+                        .into(),
+                        distance: node.distance(&below_right),
+                    },
+                );
             }
         }
         // Fall diagonally down left
-        if let Some(left) = node.below_left() {
-            if graph.contains_node(left) {
-                if semi_solids.contains(&left) {
-                    graph.add_edge(
-                        node,
-                        left,
-                        NavGraphEdge {
-                            inputs: [
-                                PlayerControl {
-                                    move_direction: vec2(-1.0, -1.0),
-                                    jump_just_pressed: true,
-                                    jump_pressed: true,
-                                    ..default()
-                                },
-                                PlayerControl {
-                                    move_direction: vec2(-1.0, -1.0),
-                                    jump_pressed: true,
-                                    ..default()
-                                },
-                                PlayerControl {
-                                    move_direction: vec2(-1.0, 0.0),
-                                    ..default()
-                                },
-                                PlayerControl {
-                                    move_direction: vec2(-1.0, 0.0),
-                                    ..default()
-                                },
-                            ]
-                            .into(),
-                            distance: node.distance(&left),
-                        },
-                    );
-                } else {
-                    graph.add_edge(
-                        node,
-                        left,
-                        NavGraphEdge {
-                            inputs: [PlayerControl {
+        let below_left = node.below().left();
+        if graph.contains_node(below_left) {
+            if semi_solids.contains(&below_left) {
+                graph.add_edge(
+                    node,
+                    below_left,
+                    NavGraphEdge {
+                        inputs: [
+                            PlayerControl {
+                                move_direction: vec2(-1.0, -1.0),
+                                jump_just_pressed: true,
+                                jump_pressed: true,
+                                ..default()
+                            },
+                            PlayerControl {
+                                move_direction: vec2(-1.0, -1.0),
+                                jump_pressed: true,
+                                ..default()
+                            },
+                            PlayerControl {
                                 move_direction: vec2(-1.0, 0.0),
                                 ..default()
-                            }]
-                            .into(),
-                            distance: node.distance(&left),
-                        },
-                    );
-                }
+                            },
+                            PlayerControl {
+                                move_direction: vec2(-1.0, 0.0),
+                                ..default()
+                            },
+                        ]
+                        .into(),
+                        distance: node.distance(&below_left),
+                    },
+                );
+            } else {
+                graph.add_edge(
+                    node,
+                    below_left,
+                    NavGraphEdge {
+                        inputs: [PlayerControl {
+                            move_direction: vec2(-1.0, 0.0),
+                            ..default()
+                        }]
+                        .into(),
+                        distance: node.distance(&below_left),
+                    },
+                );
             }
+        }
+
+        // Slow fall right
+        let far_right_below = node.right().right().right().right().below();
+        let path = [
+            node.right(),
+            node.right().right(),
+            node.right().right().right(),
+            node.right().right().right().right(),
+            far_right_below,
+        ];
+        if path.iter().all(|x| graph.contains_node(*x)) {
+            graph.add_edge(
+                node,
+                far_right_below,
+                NavGraphEdge {
+                    inputs: std::iter::repeat(PlayerControl {
+                        move_direction: vec2(1.0, 0.0),
+                        jump_pressed: true,
+                        ..default()
+                    })
+                    .take(20)
+                    .collect(),
+                    // Bias against using this move because it doesn't always work, by adding an
+                    // extra distance.
+                    distance: node.distance(&far_right_below) + 1.0,
+                },
+            );
+        }
+        // Slow fall left
+        let far_left_below = node.left().left().left().left().below();
+        let path = [
+            node.left(),
+            node.left().left(),
+            node.left().left().left(),
+            node.left().left().left().left(),
+            far_left_below,
+        ];
+        if path.iter().all(|x| graph.contains_node(*x)) {
+            graph.add_edge(
+                node,
+                far_left_below,
+                NavGraphEdge {
+                    inputs: std::iter::repeat(PlayerControl {
+                        move_direction: vec2(-1.0, 0.0),
+                        jump_pressed: true,
+                        ..default()
+                    })
+                    .take(20)
+                    .collect(),
+                    // Bias against using this move because it doesn't always work, by adding an
+                    // extra distance.
+                    distance: node.distance(&far_left_below) + 1.0,
+                },
+            );
         }
     }
 

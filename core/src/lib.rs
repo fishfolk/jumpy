@@ -14,7 +14,7 @@ pub mod bevy_prelude {
         crate::{
             input::EditorInput,
             metadata::*,
-            session::{GameSession, GameSessionInfo},
+            session::{GameSession, GameSessionInfo, GameSessionPlayerInfo},
             MAX_PLAYERS,
         },
         bones_lib::prelude as bones,

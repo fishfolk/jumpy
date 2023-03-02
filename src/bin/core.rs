@@ -1,10 +1,16 @@
+//! This binary isn't actually used in the game, but can be useful for debugging.
+//!
+//! It is a demonstration of the minimal code required to run Jumpy core.
+
 use std::sync::Arc;
 
 use bevy::{prelude::*, time::FixedTimestep};
 use bevy_kira_audio::prelude::*;
 use bones_bevy_renderer::*;
 
-use jumpy_core::{bevy_prelude::*, metadata::JumpyCoreAssetsPlugin};
+use jumpy_core::{
+    bevy_prelude::*, metadata::JumpyCoreAssetsPlugin, session::GameSessionPlayerInfo,
+};
 
 #[cfg(not(target_arch = "wasm32"))]
 #[global_allocator]
@@ -88,8 +94,14 @@ fn load(
             .unwrap()
             .clone(),
         player_info: [
-            Some(meta.players[0].clone()),
-            Some(meta.players[0].clone()),
+            Some(GameSessionPlayerInfo {
+                handle: meta.players[0].clone(),
+                is_ai: false,
+            }),
+            Some(GameSessionPlayerInfo {
+                handle: meta.players[0].clone(),
+                is_ai: true,
+            }),
             None,
             None,
         ],

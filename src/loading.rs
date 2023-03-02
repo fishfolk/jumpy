@@ -20,7 +20,7 @@ impl Plugin for JumpyLoadingPlugin {
         app.add_startup_system(setup).add_system(
             load_game
                 .run_in_state(EngineState::LoadingGameData)
-                .run_if(assets_loaded),
+                .run_if(core_assets_loaded),
         );
 
         // Configure hot reload
@@ -34,31 +34,75 @@ impl Plugin for JumpyLoadingPlugin {
     }
 }
 
-/// Run criteria that waits until the game assets have loaded.
-fn assets_loaded(all_assets: Res<AllAssets>, asset_server: Res<AssetServer>) -> bool {
-    let load_progress = asset_server.get_group_load_state(all_assets.0.iter().map(|x| x.id));
+/// Run criteria that waits until the necessary core assets have loaded.
+///
+/// Not all the assets need to be loaded, just the ones we need immediately for the menu load, the
+/// rest will be loading while the menu is running, in the background.
+fn core_assets_loaded(
+    game_handle: Res<GameMetaHandle>,
+    game_assets: Res<Assets<GameMeta>>,
+    core_assets: Res<Assets<CoreMeta>>,
+    player_assets: Res<Assets<PlayerMeta>>,
+    atlas_assets: Res<Assets<TextureAtlas>>,
+) -> bool {
+    // The game asset
+    let Some(game) = game_assets.get(&game_handle) else {
+        return false;
+    };
+    // The core asset
+    let Some(core) = core_assets.get(&game.core.inner) else {
+        return false;
+    };
 
-    match load_progress {
-        bevy::asset::LoadState::Loading => false,
-        bevy::asset::LoadState::Loaded => true,
-        state => {
-            error!("Unexpected asset load state: {state:?}");
-            // Continue, even though some things may not work.
-            true
+    // Egui assets
+    //
+    // The assets below must be loaded because they are used during the game load process for
+    // getting egui textures for images that need to be displayed in egui. If we add new egui
+    // textures to the load process we need to make sure they are loaded here.
+
+    // The player assets
+    for player in &core.players {
+        let Some(player) = player_assets.get(&player.get_bevy_handle()) else {
+            return false;
+        };
+
+        // The player atlases ( needed for the player selection screen )
+        if atlas_assets
+            .get(&player.layers.body.atlas.get_bevy_handle_untyped().typed())
+            .is_none()
+        {
+            return false;
+        }
+        if atlas_assets
+            .get(&player.layers.fin.atlas.get_bevy_handle_untyped().typed())
+            .is_none()
+        {
+            return false;
+        }
+        if atlas_assets
+            .get(&player.layers.face.atlas.get_bevy_handle_untyped().typed())
+            .is_none()
+        {
+            return false;
         }
     }
+    // The map tilesets
+    for tileset_handle in &core.map_tilesets {
+        if atlas_assets
+            .get(&tileset_handle.get_bevy_handle_untyped().typed())
+            .is_none()
+        {
+            return false;
+        }
+    }
+
+    true
 }
 
 #[derive(Component)]
 pub struct PlayerInputCollector(pub usize);
 
-/// Resource that stores the handle for every asset in the asset dir. Used to wait until all the
-/// assets have finished loading before starting the game.
-#[derive(Resource)]
-pub struct AllAssets(Vec<HandleUntyped>);
-
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Spawn the menu input collector
+fn setup(mut commands: Commands) {
     commands.spawn((
         Name::new("Menu Input Collector"),
         InputManagerBundle {
@@ -66,10 +110,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
     ));
-
-    // Load the whole asset dir and store it in `AllAssets` for so we can wait for them to finish
-    // loading.
-    commands.insert_resource(AllAssets(asset_server.load_folder("").unwrap()))
 }
 
 /// System param used to load and hot reload the game
@@ -263,6 +303,9 @@ impl<'w, 's> GameLoader<'w, 's> {
             );
         }
         commands.insert_resource(MapTilesetEguiTextures(map_tileset_egui_textures));
+
+        // NOTE: If you add more egui texture loading to this phase you need to make sure they are
+        // loaded in the `core_assets_loaded` function.
     }
 
     // Run checks to see if we should skip running the system

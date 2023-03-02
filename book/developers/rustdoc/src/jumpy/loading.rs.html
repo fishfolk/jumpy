@@ -371,18 +371,6 @@
 <a href="#370" id="370">370</a>
 <a href="#371" id="371">371</a>
 <a href="#372" id="372">372</a>
-<a href="#373" id="373">373</a>
-<a href="#374" id="374">374</a>
-<a href="#375" id="375">375</a>
-<a href="#376" id="376">376</a>
-<a href="#377" id="377">377</a>
-<a href="#378" id="378">378</a>
-<a href="#379" id="379">379</a>
-<a href="#380" id="380">380</a>
-<a href="#381" id="381">381</a>
-<a href="#382" id="382">382</a>
-<a href="#383" id="383">383</a>
-<a href="#384" id="384">384</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::ecs::system::SystemParam;
 <span class="kw">use </span>bevy_egui::{egui, EguiContext};
 <span class="kw">use </span>bevy_fluent::Locale;
@@ -405,7 +393,7 @@
         app.add_startup_system(setup).add_system(
             load_game
                 .run_in_state(EngineState::LoadingGameData)
-                .run_if(core_assets_loaded),
+                .run_if(assets_loaded),
         );
 
         <span class="comment">// Configure hot reload
@@ -419,54 +407,42 @@
     }
 }
 
-<span class="doccomment">/// Run criteria that waits until the necessary core assets have loaded.
-///
-/// Not all the assets need to be loaded, just the ones we need immediately for the menu load, the
-/// rest will be loading while the menu is running, in the background.
-</span><span class="kw">fn </span>core_assets_loaded(
-    game_handle: Res&lt;GameMetaHandle&gt;,
-    game_assets: Res&lt;Assets&lt;GameMeta&gt;&gt;,
-    core_assets: Res&lt;Assets&lt;CoreMeta&gt;&gt;,
-    player_assets: Res&lt;Assets&lt;PlayerMeta&gt;&gt;,
-    atlas_assets: Res&lt;Assets&lt;TextureAtlas&gt;&gt;,
-) -&gt; bool {
-    <span class="comment">// The game asset
-    </span><span class="kw">let </span><span class="prelude-val">Some</span>(game) = game_assets.get(<span class="kw-2">&amp;</span>game_handle) <span class="kw">else </span>{
-        <span class="kw">return </span><span class="bool-val">false</span>;
-    };
-    <span class="comment">// The core asset
-    </span><span class="kw">let </span><span class="prelude-val">Some</span>(core) = core_assets.get(<span class="kw-2">&amp;</span>game.core.inner) <span class="kw">else </span>{
-        <span class="kw">return </span><span class="bool-val">false</span>;
-    };
-    <span class="comment">// The player assets
-    </span><span class="kw">for </span>player <span class="kw">in </span><span class="kw-2">&amp;</span>core.players {
-        <span class="kw">let </span><span class="prelude-val">Some</span>(player) = player_assets.get(<span class="kw-2">&amp;</span>player.get_bevy_handle()) <span class="kw">else </span>{
-            <span class="kw">return </span><span class="bool-val">false</span>;
-        };
+<span class="doccomment">/// Run criteria that waits until the game assets have loaded.
+</span><span class="kw">fn </span>assets_loaded(all_assets: Res&lt;AllAssets&gt;, asset_server: Res&lt;AssetServer&gt;) -&gt; bool {
+    <span class="kw">let </span>load_progress = asset_server.get_group_load_state(all_assets.<span class="number">0</span>.iter().map(|x| x.id));
 
-        <span class="comment">// The player atlases ( needed for the player selection screen )
-        </span><span class="kw">if </span>atlas_assets
-            .get(<span class="kw-2">&amp;</span>player.layers.body.atlas.get_bevy_handle_untyped().typed())
-            .is_none()
-        {
-            <span class="kw">return </span><span class="bool-val">false</span>;
-        }
+    <span class="kw">match </span>load_progress {
+        bevy::asset::LoadState::Loading =&gt; <span class="bool-val">false</span>,
+        bevy::asset::LoadState::Loaded =&gt; <span class="bool-val">true</span>,
+        state =&gt; {
+            <span class="macro">error!</span>(<span class="string">&quot;Unexpected asset load state: {state:?}&quot;</span>);
+            <span class="comment">// Continue, even though some things may not work.
+            </span><span class="bool-val">true
+        </span>}
     }
-
-    <span class="bool-val">true
-</span>}
+}
 
 <span class="attr">#[derive(Component)]
 </span><span class="kw">pub struct </span>PlayerInputCollector(<span class="kw">pub </span>usize);
 
-<span class="kw">fn </span>setup(<span class="kw-2">mut </span>commands: Commands) {
-    commands.spawn((
+<span class="doccomment">/// Resource that stores the handle for every asset in the asset dir. Used to wait until all the
+/// assets have finished loading before starting the game.
+</span><span class="attr">#[derive(Resource)]
+</span><span class="kw">pub struct </span>AllAssets(Vec&lt;HandleUntyped&gt;);
+
+<span class="kw">fn </span>setup(<span class="kw-2">mut </span>commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
+    <span class="comment">// Spawn the menu input collector
+    </span>commands.spawn((
         Name::new(<span class="string">&quot;Menu Input Collector&quot;</span>),
         InputManagerBundle {
             input_map: menu_input_map(),
             ..default()
         },
     ));
+
+    <span class="comment">// Load the whole asset dir and store it in `AllAssets` for so we can wait for them to finish
+    // loading.
+    </span>commands.insert_resource(AllAssets(asset_server.load_folder(<span class="string">&quot;&quot;</span>).unwrap()))
 }
 
 <span class="doccomment">/// System param used to load and hot reload the game

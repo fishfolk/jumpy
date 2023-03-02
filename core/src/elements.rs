@@ -3,6 +3,7 @@ use crate::prelude::*;
 pub mod crab;
 pub mod crate_item;
 pub mod decoration;
+pub mod fish_school;
 pub mod grenade;
 pub mod kick_bomb;
 pub mod mine;
@@ -45,6 +46,7 @@ pub fn install(session: &mut GameSession) {
     sword::install(session);
     grenade::install(session);
     crab::install(session);
+    fish_school::install(session);
     kick_bomb::install(session);
     mine::install(session);
     musket::install(session);

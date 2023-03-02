@@ -284,6 +284,23 @@
 <a href="#283" id="283">283</a>
 <a href="#284" id="284">284</a>
 <a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -413,6 +430,23 @@
         /// will be 1 second
         </span>timer_delay_max: u8,
         atlas: Handle&lt;Atlas&gt;,
+    },
+    Snail {
+        atlas: Handle&lt;Atlas&gt;,
+        fps: f32,
+        body_diameter: f32,
+        bounciness: f32,
+        gravity: f32,
+        hit_speed: f32,
+        <span class="doccomment">/// The animation frames for when the snail is crawling
+        </span>crawl_frames: Vec&lt;usize&gt;,
+        <span class="doccomment">/// The `crawl_frames` indexes in which to move the snail
+        </span>move_frame_indexes: Vec&lt;usize&gt;,
+        <span class="doccomment">/// The animation frames for when the snail is fleeing into its shell.
+        ///
+        /// **Note:** This is reversed for the snail coming out of its shell.
+        </span>hide_frames: Vec&lt;usize&gt;,
+        hide_time: f32,
     },
     Urchin {
         image: Handle&lt;Image&gt;,

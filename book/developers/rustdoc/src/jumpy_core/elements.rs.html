@@ -73,6 +73,8 @@
 <a href="#72" id="72">72</a>
 <a href="#73" id="73">73</a>
 <a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub mod </span>crab;
@@ -85,6 +87,7 @@
 <span class="kw">pub mod </span>musket;
 <span class="kw">pub mod </span>player_spawner;
 <span class="kw">pub mod </span>slippery_seaweed;
+<span class="kw">pub mod </span>snail;
 <span class="kw">pub mod </span>sproinger;
 <span class="kw">pub mod </span>stomp_boots;
 <span class="kw">pub mod </span>sword;
@@ -121,6 +124,7 @@
     sword::install(session);
     grenade::install(session);
     crab::install(session);
+    snail::install(session);
     fish_school::install(session);
     kick_bomb::install(session);
     mine::install(session);

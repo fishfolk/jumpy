@@ -276,6 +276,14 @@
 <a href="#275" id="275">275</a>
 <a href="#276" id="276">276</a>
 <a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -405,6 +413,14 @@
         /// will be 1 second
         </span>timer_delay_max: u8,
         atlas: Handle&lt;Atlas&gt;,
+    },
+    Urchin {
+        image: Handle&lt;Image&gt;,
+        body_diameter: f32,
+        hit_speed: f32,
+        gravity: f32,
+        bounciness: f32,
+        spin: f32,
     },
     <span class="doccomment">/// This is a sproinger
     </span>Sproinger {

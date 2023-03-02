@@ -47,6 +47,7 @@ map_tilesets:
 map_elements:
   - /elements/decoration/anemones/anemones.element.yaml
   - /elements/decoration/seaweed/seaweed.element.yaml
+  - /elements/environment/fish_school/fish_school.element.yaml
   - /elements/environment/crab/crab.element.yaml
   - /elements/environment/player_spawner/player_spawner.element.yaml
   - /elements/environment/sproinger/sproinger.element.yaml

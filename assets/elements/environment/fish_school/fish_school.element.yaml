@@ -1,2 +1,17 @@
 name: Fish School
 category: Critters
+editor:
+  grab_size: [50, 50]
+builtin: !FishSchool
+  kinds: [
+    "ArabianAngelfish.atlas.yaml",
+    "BandedButterflyFish.atlas.yaml",
+    "BlueGreenChromis.atlas.yaml",
+    "BlueTang.atlas.yaml",
+    "RoyalGramma.atlas.yaml"
+    ]
+  base_count: 3
+  count_variation: 2
+  spawn_range: 64
+  school_size: 100
+  flee_range: 15.0

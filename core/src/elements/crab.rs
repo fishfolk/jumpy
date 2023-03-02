@@ -189,12 +189,10 @@ fn update_crabs(
         };
 
         let get_scared_of_pos = |scared_of: Entity| {
-            let scared_of_transform = transforms.get(scared_of).unwrap();
-
-            Vec2::new(
-                scared_of_transform.translation.x,
-                scared_of_transform.translation.y,
-            )
+            transforms
+                .get(scared_of)
+                .map(|x| x.translation.xy())
+                .unwrap_or_default()
         };
 
         if crab.state_count >= crab.state_count_max {

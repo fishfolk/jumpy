@@ -22,7 +22,13 @@ pub struct GameSessionInfo {
     /// Metadata for the selected map.
     pub map_meta: MapMeta,
     /// The player selections.
-    pub player_info: [Option<Handle<PlayerMeta>>; MAX_PLAYERS],
+    pub player_info: [Option<GameSessionPlayerInfo>; MAX_PLAYERS],
+}
+
+#[derive(Debug, Clone)]
+pub struct GameSessionPlayerInfo {
+    pub handle: Handle<PlayerMeta>,
+    pub is_ai: bool,
 }
 
 impl GameSession {
@@ -57,9 +63,10 @@ impl GameSession {
         let player_inputs = session.world.resource::<PlayerInputs>();
         let mut player_inputs = player_inputs.borrow_mut();
         for i in 0..MAX_PLAYERS {
-            if let Some(player) = info.player_info[i].take() {
+            if let Some(info) = info.player_info[i].take() {
                 player_inputs.players[i].active = true;
-                player_inputs.players[i].selected_player = player;
+                player_inputs.players[i].selected_player = info.handle;
+                player_inputs.players[i].is_ai = info.is_ai;
             }
         }
 

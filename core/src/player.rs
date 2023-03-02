@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::{item::ItemGrabbed, physics::KinematicBody, prelude::*};
 
 mod state;
@@ -11,6 +13,7 @@ pub fn install(session: &mut GameSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::First, hydrate_players)
+        .add_system_to_stage(CoreStage::First, player_ai_system)
         .add_system_to_stage(CoreStage::PostUpdate, play_itemless_fin_animations)
         .add_system_to_stage(CoreStage::PostUpdate, player_facial_animations)
         .add_system_to_stage(CoreStage::Last, update_player_layers);
@@ -206,6 +209,146 @@ impl PlayerCommand {
     }
 }
 
+#[derive(Default, Deref, DerefMut, Clone, Debug, TypeUlid)]
+#[ulid = "01GQWND0P969BCZF5JET9MY944"]
+pub struct AiPlayer {
+    movement_buffer: Option<VecDeque<PlayerControl>>,
+}
+
+#[derive(Debug, TypeUlid, Clone, Copy)]
+#[ulid = "01GRA68NKYG6X7C5D0WNA5W1VX"]
+pub struct PathfindingDebugLine {
+    pub entity: Entity,
+}
+
+impl FromWorld for PathfindingDebugLine {
+    fn from_world(world: &mut World) -> Self {
+        let entity = world
+            .run_initialized_system(
+                |mut entities: ResMut<Entities>, mut transforms: CompMut<Transform>| {
+                    let ent = entities.create();
+
+                    transforms.insert(ent, Transform::from_translation(Vec3::new(0.0, 0.0, -1.0)));
+
+                    Ok(ent)
+                },
+            )
+            .unwrap();
+
+        Self { entity }
+    }
+}
+
+fn player_ai_system(
+    entities: Res<Entities>,
+    nav_graph: ResMut<NavGraph>,
+    mut player_inputs: ResMut<PlayerInputs>,
+    mut ai_players: CompMut<AiPlayer>,
+    player_indexes: Comp<PlayerIdx>,
+    map: Res<LoadedMap>,
+    transforms: Comp<Transform>,
+    pathfinding_debug_line: ResMut<PathfindingDebugLine>,
+    mut paths: CompMut<Path2d>,
+    bodies: Comp<KinematicBody>,
+    debug_settings: Res<DebugSettings>,
+) {
+    let Some(player1) = entities
+        .iter_with(&player_indexes)
+        .filter(|(_ent, idx)| idx.0 == 0)
+        .map(|(ent, _idx)| ent)
+        .next() else {
+            return
+        };
+    let transform = transforms.get(player1).unwrap();
+    let pos = transform.translation.truncate();
+    let tile = (pos / map.tile_size).floor().as_ivec2();
+    let target_node = NavNode(tile);
+
+    for (ai_ent, (player_idx, transform, ai_player)) in
+        entities.iter_with((&player_indexes, &transforms, &mut ai_players))
+    {
+        let pos = transform.translation.truncate();
+        let tile = (pos / map.tile_size).floor().as_ivec2();
+        let current_node = NavNode(tile);
+
+        // Complete any previous movement instructions if we are in the middle of any
+        if let Some(movement_buffer) = &mut ai_player.movement_buffer {
+            if let Some(control) = movement_buffer.pop_front() {
+                player_inputs.players[1].control = control;
+                if movement_buffer.is_empty() {
+                    ai_player.movement_buffer = None;
+                }
+                return;
+            }
+        }
+
+        let path = petgraph::algo::astar(
+            nav_graph.as_ref(),
+            current_node,
+            |x| x == target_node,
+            |(_, _, edge)| edge.distance,
+            |_| 0.0,
+        );
+
+        if let Some((_cost, path)) = path {
+            if debug_settings.show_pathfinding_lines {
+                paths.insert(
+                    pathfinding_debug_line.entity,
+                    Path2d {
+                        points: path
+                            .iter()
+                            .map(|x| x.0.as_vec2() * map.tile_size + map.tile_size / 2.0)
+                            .collect(),
+                        thickness: 2.0,
+                        color: [1.0, 0.0, 0.0, 1.0],
+                        ..default()
+                    },
+                );
+            }
+
+            if let Some(&next_node) = path.get(1) {
+                let edge = nav_graph.edge_weight(current_node, next_node).unwrap();
+                let mut movement_buffer = edge.inputs.clone();
+                let mut first_movement = movement_buffer.pop_front().unwrap();
+
+                // This is a hack to prevent us from getting stuck when we think we should be falling
+                // straight down and we actually need to move off of the block we're half-standing on.
+                //
+                // If we aren't moving at all, just move in the direction of player 1
+                if bodies.get(ai_ent).unwrap().velocity == Vec2::ZERO
+                    && first_movement.move_direction == Vec2::ZERO
+                {
+                    let sign = (path.get(2).unwrap_or(&next_node).x as f32 * map.tile_size.x
+                        - transform.translation.x)
+                        .signum();
+                    first_movement.move_direction.x = sign;
+                }
+
+                player_inputs.players[player_idx.0].control = first_movement;
+                if !movement_buffer.is_empty() {
+                    ai_player.movement_buffer = Some(movement_buffer)
+                }
+            }
+        } else if debug_settings.show_pathfinding_lines {
+            let pos =
+                current_node.0.as_vec2() * map.tile_size + map.tile_size / 2.0 - vec2(0.0, 4.0);
+            paths.insert(
+                pathfinding_debug_line.entity,
+                Path2d {
+                    points: vec![pos, pos + vec2(0.0, 4.0)],
+                    thickness: 8.0,
+                    color: [1.0, 0.0, 0.0, 1.0],
+                    ..default()
+                },
+            );
+        }
+
+        if !debug_settings.show_pathfinding_lines {
+            paths.remove(pathfinding_debug_line.entity);
+        }
+    }
+}
+
 fn hydrate_players(
     mut entities: ResMut<Entities>,
     player_inputs: Res<PlayerInputs>,
@@ -220,6 +363,7 @@ fn hydrate_players(
     mut player_body_attachments: CompMut<PlayerBodyAttachment>,
     mut transforms: CompMut<Transform>,
     mut emote_states: CompMut<EmoteState>,
+    mut ai_players: CompMut<AiPlayer>,
 ) {
     let mut not_hydrated_bitset = player_states.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -234,6 +378,7 @@ fn hydrate_players(
     for player_entity in entities.iter_with_bitset(&not_hydrated_bitset) {
         let player_idx = player_indexes.get(player_entity).unwrap();
         let player_handle = &player_inputs.players[player_idx.0].selected_player;
+        let is_ai = player_inputs.players[player_idx.0].is_ai;
 
         let Some(meta) = player_assets.get(&player_handle.get_bevy_handle()) else {
             continue;
@@ -249,6 +394,9 @@ fn hydrate_players(
         emote_states.insert(player_entity, default());
         animation_bank_sprites.insert(player_entity, animation_bank_sprite);
         inventories.insert(player_entity, default());
+        if is_ai {
+            ai_players.insert(player_entity, default());
+        }
 
         atlas_sprites.insert(
             player_entity,

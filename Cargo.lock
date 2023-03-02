@@ -2461,6 +2461,7 @@ dependencies = [
  "humantime-serde",
  "nalgebra",
  "ordered-float",
+ "petgraph",
  "puffin",
  "rapier2d",
  "serde",

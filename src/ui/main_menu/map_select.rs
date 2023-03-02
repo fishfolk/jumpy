@@ -119,13 +119,16 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                         *params.pause_page = PauseMenuPage::Default;
                                         *params.menu_page = MenuPage::Home;
 
-                                        let mut player_info = <[Option<bones::Handle<PlayerMeta>>;
+                                        let mut player_info = <[Option<GameSessionPlayerInfo>;
                                             MAX_PLAYERS]>::default(
                                         );
                                         (0..MAX_PLAYERS).for_each(|i| {
                                             let slot = &params.player_select_state.slots[i];
                                             if slot.active {
-                                                player_info[i] = Some(slot.selected_player.clone());
+                                                player_info[i] = Some(GameSessionPlayerInfo {
+                                                    handle: slot.selected_player.clone(),
+                                                    is_ai: slot.is_ai,
+                                                });
                                             }
                                         });
                                         params.session_manager.start(GameSessionInfo {

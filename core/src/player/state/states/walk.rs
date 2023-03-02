@@ -2,6 +2,12 @@ use super::*;
 
 pub const ID: Key = key!("core::walk");
 
+pub fn install(session: &mut GameSession) {
+    PlayerState::add_player_state_transition_system(session, player_state_transition);
+    PlayerState::add_player_state_update_system(session, handle_player_state);
+    PlayerState::add_player_state_update_system(session, use_drop_or_grab_items_system(ID));
+}
+
 pub fn player_state_transition(
     entities: Res<Entities>,
     player_inputs: Res<PlayerInputs>,
@@ -34,30 +40,19 @@ pub fn handle_player_state(
     player_indexes: Comp<PlayerIdx>,
     player_states: Comp<PlayerState>,
     player_assets: BevyAssets<PlayerMeta>,
-    mut inventories: CompMut<Inventory>,
     mut sprites: CompMut<AtlasSprite>,
     mut animations: CompMut<AnimationBankSprite>,
     mut bodies: CompMut<KinematicBody>,
-    items: Comp<Item>,
     mut audio_events: ResMut<AudioEvents>,
-    collision_world: CollisionWorld,
-    mut commands: Commands,
 ) {
-    // Collect a list of items that are being held by players
-    let held_items = entities
-        .iter_with(&inventories)
-        .filter_map(|(_ent, inventory)| inventory.0)
-        .collect::<Vec<_>>();
-
     let players = entities.iter_with((
         &player_states,
         &player_indexes,
         &mut animations,
         &mut sprites,
         &mut bodies,
-        &mut inventories,
     ));
-    for (player_ent, (player_state, player_idx, animation, sprite, body, inventory)) in players {
+    for (_player_ent, (player_state, player_idx, animation, sprite, body)) in players {
         if player_state.current != ID {
             continue;
         }
@@ -74,17 +69,6 @@ pub fn handle_player_state(
             // set our animation
             animation.current = key!("walk");
         }
-        use_drop_or_grab_items(
-            player_ent,
-            meta,
-            control,
-            inventory,
-            &collision_world,
-            &items,
-            &held_items,
-            &mut audio_events,
-            &mut commands,
-        );
 
         // If we are jumping
         if control.jump_just_pressed {

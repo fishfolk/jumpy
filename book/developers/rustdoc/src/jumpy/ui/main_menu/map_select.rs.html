@@ -215,6 +215,9 @@
 <a href="#214" id="214">214</a>
 <a href="#215" id="215">215</a>
 <a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{editor::UserMapStorage, ui::pause_menu::PauseMenuPage};
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -336,13 +339,16 @@
                                         <span class="kw-2">*</span>params.pause_page = PauseMenuPage::Default;
                                         <span class="kw-2">*</span>params.menu_page = MenuPage::Home;
 
-                                        <span class="kw">let </span><span class="kw-2">mut </span>player_info = &lt;[<span class="prelude-ty">Option</span>&lt;bones::Handle&lt;PlayerMeta&gt;&gt;;
+                                        <span class="kw">let </span><span class="kw-2">mut </span>player_info = &lt;[<span class="prelude-ty">Option</span>&lt;GameSessionPlayerInfo&gt;;
                                             MAX_PLAYERS]&gt;::default(
                                         );
                                         (<span class="number">0</span>..MAX_PLAYERS).for_each(|i| {
                                             <span class="kw">let </span>slot = <span class="kw-2">&amp;</span>params.player_select_state.slots[i];
                                             <span class="kw">if </span>slot.active {
-                                                player_info[i] = <span class="prelude-val">Some</span>(slot.selected_player.clone());
+                                                player_info[i] = <span class="prelude-val">Some</span>(GameSessionPlayerInfo {
+                                                    handle: slot.selected_player.clone(),
+                                                    is_ai: slot.is_ai,
+                                                });
                                             }
                                         });
                                         params.session_manager.start(GameSessionInfo {

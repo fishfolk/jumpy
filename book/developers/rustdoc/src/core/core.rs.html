@@ -211,13 +211,31 @@
 <a href="#211" id="211">211</a>
 <a href="#212" id="212">212</a>
 <a href="#213" id="213">213</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::sync::Arc;
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+</pre><pre class="rust"><code><span class="doccomment">//! This binary isn&#39;t actually used in the game, but can be useful for debugging.
+//!
+//! It is a demonstration of the minimal code required to run Jumpy core.
+
+</span><span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">use </span>bevy::{prelude::<span class="kw-2">*</span>, time::FixedTimestep};
 <span class="kw">use </span>bevy_kira_audio::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>bones_bevy_renderer::<span class="kw-2">*</span>;
 
-<span class="kw">use </span>jumpy_core::{bevy_prelude::<span class="kw-2">*</span>, metadata::JumpyCoreAssetsPlugin};
+<span class="kw">use </span>jumpy_core::{
+    bevy_prelude::<span class="kw-2">*</span>, metadata::JumpyCoreAssetsPlugin, session::GameSessionPlayerInfo,
+};
 
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 #[global_allocator]
@@ -301,8 +319,14 @@
             .unwrap()
             .clone(),
         player_info: [
-            <span class="prelude-val">Some</span>(meta.players[<span class="number">0</span>].clone()),
-            <span class="prelude-val">Some</span>(meta.players[<span class="number">0</span>].clone()),
+            <span class="prelude-val">Some</span>(GameSessionPlayerInfo {
+                handle: meta.players[<span class="number">0</span>].clone(),
+                is_ai: <span class="bool-val">false</span>,
+            }),
+            <span class="prelude-val">Some</span>(GameSessionPlayerInfo {
+                handle: meta.players[<span class="number">0</span>].clone(),
+                is_ai: <span class="bool-val">true</span>,
+            }),
             <span class="prelude-val">None</span>,
             <span class="prelude-val">None</span>,
         ],

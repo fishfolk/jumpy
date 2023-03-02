@@ -235,6 +235,13 @@
 <a href="#234" id="234">234</a>
 <a href="#235" id="235">235</a>
 <a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// The implementation of a Jumpy game session.
@@ -259,7 +266,13 @@
     <span class="doccomment">/// Metadata for the selected map.
     </span><span class="kw">pub </span>map_meta: MapMeta,
     <span class="doccomment">/// The player selections.
-    </span><span class="kw">pub </span>player_info: [<span class="prelude-ty">Option</span>&lt;Handle&lt;PlayerMeta&gt;&gt;; MAX_PLAYERS],
+    </span><span class="kw">pub </span>player_info: [<span class="prelude-ty">Option</span>&lt;GameSessionPlayerInfo&gt;; MAX_PLAYERS],
+}
+
+<span class="attr">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>GameSessionPlayerInfo {
+    <span class="kw">pub </span>handle: Handle&lt;PlayerMeta&gt;,
+    <span class="kw">pub </span>is_ai: bool,
 }
 
 <span class="kw">impl </span>GameSession {
@@ -294,9 +307,10 @@
         </span><span class="kw">let </span>player_inputs = session.world.resource::&lt;PlayerInputs&gt;();
         <span class="kw">let </span><span class="kw-2">mut </span>player_inputs = player_inputs.borrow_mut();
         <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..MAX_PLAYERS {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(player) = info.player_info[i].take() {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(info) = info.player_info[i].take() {
                 player_inputs.players[i].active = <span class="bool-val">true</span>;
-                player_inputs.players[i].selected_player = player;
+                player_inputs.players[i].selected_player = info.handle;
+                player_inputs.players[i].is_ai = info.is_ai;
             }
         }
 

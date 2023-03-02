@@ -668,8 +668,30 @@
 <a href="#667" id="667">667</a>
 <a href="#668" id="668">668</a>
 <a href="#669" id="669">669</a>
+<a href="#670" id="670">670</a>
+<a href="#671" id="671">671</a>
+<a href="#672" id="672">672</a>
+<a href="#673" id="673">673</a>
+<a href="#674" id="674">674</a>
+<a href="#675" id="675">675</a>
+<a href="#676" id="676">676</a>
+<a href="#677" id="677">677</a>
+<a href="#678" id="678">678</a>
+<a href="#679" id="679">679</a>
+<a href="#680" id="680">680</a>
+<a href="#681" id="681">681</a>
+<a href="#682" id="682">682</a>
+<a href="#683" id="683">683</a>
+<a href="#684" id="684">684</a>
+<a href="#685" id="685">685</a>
+<a href="#686" id="686">686</a>
+<a href="#687" id="687">687</a>
+<a href="#688" id="688">688</a>
+<a href="#689" id="689">689</a>
+<a href="#690" id="690">690</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::loading::PlayerInputCollector;
 <span class="kw">use </span>bones_lib::prelude::{key, Key, KeyError};
+<span class="kw">use </span>rand::Rng;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
@@ -686,6 +708,7 @@
     <span class="kw">pub </span>active: bool,
     <span class="kw">pub </span>confirmed: bool,
     <span class="kw">pub </span>selected_player: bones::Handle&lt;PlayerMeta&gt;,
+    <span class="kw">pub </span>is_ai: bool,
 }
 
 <span class="attr">#[derive(SystemParam)]
@@ -841,7 +864,7 @@
                                 world,
                                 ui,
                                 id.with(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;player_panel{i}&quot;</span>)),
-                                (i, ready_players, unconfirmed_players),
+                                i,
                             );
                         }
                     });
@@ -950,18 +973,17 @@
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; WidgetSystem <span class="kw">for </span>PlayerSelectPanel&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
-    <span class="kw">type </span>Args = (usize, usize, usize); <span class="comment">// Player Idx, Unconfirmed Players, Ready Players
+    <span class="kw">type </span>Args = usize; <span class="comment">// Player Idx
     </span><span class="kw">fn </span>system(
         world: <span class="kw-2">&amp;mut </span>World,
         state: <span class="kw-2">&amp;mut </span>SystemState&lt;<span class="self">Self</span>&gt;,
         ui: <span class="kw-2">&amp;mut </span>egui::Ui,
         _id: WidgetId,
-        args: (usize, usize, usize),
+        args: usize,
     ) {
         <span class="kw">let </span><span class="kw-2">mut </span>params: PlayerSelectPanel = state.get_mut(world);
 
-        <span class="kw">let </span>(player_id, unconfirmed_players, ready_players) = args;
-        <span class="kw">let </span>total_players = unconfirmed_players + ready_players;
+        <span class="kw">let </span>player_id = args;
 
         <span class="kw">let </span>player_actions = params
             .players
@@ -1109,18 +1131,7 @@
                     </span>ui.add_space(normal_font.size);
                 <span class="comment">// }
 
-
-                </span><span class="kw">if </span>total_players &lt; MAX_PLAYERS / <span class="number">2 </span>&amp;&amp; player_id &gt; MAX_PLAYERS / <span class="number">2 </span>- <span class="number">1</span>{
-                    ui.vertical_centered(|ui| {
-                        ui.themed_label(
-                            normal_font,
-                            <span class="kw-2">&amp;</span>params
-                                .localization
-                                .get(<span class="kw-2">&amp;</span><span class="string">&quot;waiting-for-more-players&quot;</span>.to_string()),
-                        );
-                    });
-                }
-                <span class="kw">else if </span>slot.active {
+                </span><span class="kw">if </span>slot.active {
                     ui.vertical_centered(|ui| {
                         <span class="kw">let </span><span class="prelude-val">Some</span>(player_meta) = params.player_meta_assets.get(<span class="kw-2">&amp;</span>player_handle.get_bevy_handle()) <span class="kw">else </span>{ <span class="kw">return</span>; };
 
@@ -1145,7 +1156,7 @@
                         ui.vertical_centered(|ui| {
                             ui.set_height(heading_font.size * <span class="number">1.5</span>);
 
-                            <span class="kw">if </span>slot.confirmed {
+                            <span class="kw">if </span>slot.confirmed &amp;&amp; !slot.is_ai {
                                 ui.themed_label(
                                     <span class="kw-2">&amp;</span>heading_font.colored(params.game.ui_theme.colors.positive),
                                     <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;player-select-ready&quot;</span>),
@@ -1158,6 +1169,21 @@
                                         .get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;player-select-unready?button={}&quot;</span>, player_action_map.get_text(PlayerAction::Grab))),
                                 );
 
+                            }
+                            <span class="kw">if </span>slot.is_ai {
+                                ui.themed_label(
+                                    <span class="kw-2">&amp;</span>heading_font.colored(params.game.ui_theme.colors.positive),
+                                    <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;ai-player&quot;</span>),
+                                );
+                                <span class="kw">if </span>BorderedButton::themed(
+                                    <span class="kw-2">&amp;</span>params.game.ui_theme.button_styles.normal,
+                                    <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;remove-ai-player&quot;</span>),
+                                )
+                                .show(ui).clicked() {
+                                    slot.confirmed = <span class="bool-val">false</span>;
+                                    slot.active = <span class="bool-val">false</span>;
+                                    slot.is_ai = <span class="bool-val">false</span>;
+                                }
                             }
                         });
 
@@ -1183,6 +1209,22 @@
                                 .localization
                                 .get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;press-button-to-join?button={}&quot;</span>, player_action_map.get_text(PlayerAction::Jump))),
                         );
+
+                        <span class="kw">if </span>player_id != <span class="number">0 </span>{
+
+                        ui.add_space(params.game.ui_theme.font_styles.bigger.size);
+                            <span class="kw">if </span>BorderedButton::themed(
+                                <span class="kw-2">&amp;</span>params.game.ui_theme.button_styles.normal,
+                                <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;add-ai-player&quot;</span>),
+                            )
+                            .show(ui).clicked() {
+                                slot.is_ai = <span class="bool-val">true</span>;
+                                slot.confirmed = <span class="bool-val">true</span>;
+                                slot.active = <span class="bool-val">true</span>;
+                                <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::thread_rng();
+                                <span class="kw-2">*</span>player_handle = params.core.players[rng.gen_range(<span class="number">0</span>..params.core.players.len())].clone();
+                            }
+                        }
                     });
                 }
             });

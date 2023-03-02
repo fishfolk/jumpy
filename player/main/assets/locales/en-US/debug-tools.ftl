@@ -5,6 +5,7 @@ show-world-inspector = Show World Inspector
 show-frame-time-diagnostics = Show Frame Time Diagnostics
 show-network-visualizer = Show Network Visualizer
 show-profiler = Show Profiler
+show-pathfinding-lines = Show Pathfinding Lines
 
 profiler = Profiler
 

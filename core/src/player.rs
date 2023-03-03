@@ -189,7 +189,7 @@ impl PlayerCommand {
 
             // If there is a new item, grab it
             if let Some(item) = item {
-                items_grabbed.insert(item, ItemGrabbed);
+                items_grabbed.insert(item, ItemGrabbed { player });
             }
 
             // Update the inventory

@@ -29,6 +29,8 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
+    mut item_throws: CompMut<ItemThrow>,
+    mut item_grabs: CompMut<ItemGrab>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
@@ -47,6 +49,7 @@ fn hydrate(
         };
 
         if let BuiltinElementKind::StompBoots {
+            grab_offset,
             body_size,
             map_icon,
             ..
@@ -56,6 +59,15 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
+            item_throws.insert(entity, ItemThrow::strength(0.0));
+            item_grabs.insert(
+                entity,
+                ItemGrab {
+                    fin_anim: key!("grab_2"),
+                    sync_animation: false,
+                    grab_offset: *grab_offset,
+                },
+            );
             stomp_boots.insert(entity, StompBoots);
             atlas_sprites.insert(entity, AtlasSprite::new(map_icon.clone()));
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
@@ -80,12 +92,8 @@ fn update(
     entities: Res<Entities>,
     element_handles: Comp<ElementHandle>,
     element_assets: BevyAssets<ElementMeta>,
-    mut transforms: CompMut<Transform>,
     mut stomp_boots: CompMut<StompBoots>,
-    mut sprites: CompMut<AtlasSprite>,
-    mut bodies: CompMut<KinematicBody>,
     items_used: Comp<ItemUsed>,
-    mut items_dropped: CompMut<ItemDropped>,
     player_inventories: PlayerInventories,
     mut inventoris: CompMut<Inventory>,
     mut hydrated: CompMut<MapElementHydrated>,
@@ -100,7 +108,6 @@ fn update(
         };
 
         let BuiltinElementKind::StompBoots {
-            grab_offset,
             player_decoration,
             ..
         } = &element_meta.builtin else {
@@ -108,26 +115,10 @@ fn update(
         };
 
         // If the item is being held
-        if let Some(inventory) = player_inventories
+        if let Some(Inv { player, .. }) = player_inventories
             .iter()
             .find_map(|x| x.filter(|x| x.inventory == entity))
         {
-            let player = inventory.player;
-            let player_sprite = sprites.get_mut(player).unwrap();
-
-            let body = bodies.get_mut(entity).unwrap();
-            body.is_deactivated = true;
-
-            let flip = player_sprite.flip_x;
-            let sprite = sprites.get_mut(entity).unwrap();
-            sprite.flip_x = flip;
-            let flip_factor = if flip { -1.0 } else { 1.0 };
-            let player_translation = transforms.get(player).unwrap().translation;
-            let transform = transforms.get_mut(entity).unwrap();
-            let offset = Vec3::new(grab_offset.x * flip_factor, grab_offset.y, 1.0);
-            transform.translation = player_translation + offset;
-            transform.rotation = Quat::IDENTITY;
-
             // If the item is being used
             let is_item_used = items_used.get(entity).is_some();
             let player_decoration = player_decoration.clone();
@@ -156,34 +147,6 @@ fn update(
                     },
                 );
             }
-        }
-
-        // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
-            let sprite = sprites.get_mut(entity).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
-
-            let horizontal_flip_factor = if sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-            body.velocity = horizontal_flip_factor + player_velocity;
-
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }

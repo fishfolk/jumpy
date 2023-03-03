@@ -203,12 +203,15 @@ fn update_kinematic_bodies(
         {
             puffin::profile_scope!("move body");
 
-            if collision_world.move_horizontal(&mut transforms, entity, body.velocity.x) {
-                body.velocity.x *= -body.bounciness;
-            }
-
             if collision_world.move_vertical(&mut transforms, entity, body.velocity.y) {
                 body.velocity.y *= -body.bounciness;
+            }
+
+            // NOTE: It's important that we move horizontally after we move vertically, or else the
+            // horizontal movement will clear our `descent` and `seen_wood` flags and we may not go
+            // through drop through platforms while moving horizontally.
+            if collision_world.move_horizontal(&mut transforms, entity, body.velocity.x) {
+                body.velocity.x *= -body.bounciness;
             }
         }
 

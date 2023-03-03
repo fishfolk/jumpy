@@ -53,6 +53,13 @@ fn core_assets_loaded(
     let Some(core) = core_assets.get(&game.core.inner) else {
         return false;
     };
+
+    // Egui assets
+    //
+    // The assets below must be loaded because they are used during the game load process for
+    // getting egui textures for images that need to be displayed in egui. If we add new egui
+    // textures to the load process we need to make sure they are loaded here.
+
     // The player assets
     for player in &core.players {
         let Some(player) = player_assets.get(&player.get_bevy_handle()) else {
@@ -62,6 +69,27 @@ fn core_assets_loaded(
         // The player atlases ( needed for the player selection screen )
         if atlas_assets
             .get(&player.layers.body.atlas.get_bevy_handle_untyped().typed())
+            .is_none()
+        {
+            return false;
+        }
+        if atlas_assets
+            .get(&player.layers.fin.atlas.get_bevy_handle_untyped().typed())
+            .is_none()
+        {
+            return false;
+        }
+        if atlas_assets
+            .get(&player.layers.face.atlas.get_bevy_handle_untyped().typed())
+            .is_none()
+        {
+            return false;
+        }
+    }
+    // The map tilesets
+    for tileset_handle in &core.map_tilesets {
+        if atlas_assets
+            .get(&tileset_handle.get_bevy_handle_untyped().typed())
             .is_none()
         {
             return false;
@@ -275,6 +303,9 @@ impl<'w, 's> GameLoader<'w, 's> {
             );
         }
         commands.insert_resource(MapTilesetEguiTextures(map_tileset_egui_textures));
+
+        // NOTE: If you add more egui texture loading to this phase you need to make sure they are
+        // loaded in the `core_assets_loaded` function.
     }
 
     // Run checks to see if we should skip running the system

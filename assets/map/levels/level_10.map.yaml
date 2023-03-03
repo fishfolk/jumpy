@@ -770,37 +770,37 @@ layers:
           - 1
           - 10
         idx: 58
-        collision: Solid
+        collision: JumpThrough
       - pos:
           - 2
           - 10
         idx: 60
-        collision: Solid
+        collision: JumpThrough
       - pos:
           - 12
           - 10
         idx: 56
-        collision: Solid
+        collision: JumpThrough
       - pos:
           - 13
           - 10
         idx: 58
-        collision: Solid
+        collision: JumpThrough
       - pos:
           - 14
           - 10
         idx: 60
-        collision: Solid
+        collision: JumpThrough
       - pos:
           - 24
           - 10
         idx: 56
-        collision: Solid
+        collision: JumpThrough
       - pos:
           - 25
           - 10
         idx: 58
-        collision: Solid
+        collision: JumpThrough
       - pos:
           - 26
           - 10
@@ -1335,7 +1335,7 @@ layers:
           - 25
           - 21
         idx: 8
-        collision: Solid
+        collision: JumpThrough
       - pos:
           - 26
           - 21

@@ -120,6 +120,10 @@ fn debug_tools_window(
                 &mut core_debug_settings.show_damage_regions,
                 format!("{} ( F10 )", localization.get("show-damage-regions")),
             );
+            ui.checkbox(
+                &mut core_debug_settings.show_pathfinding_lines,
+                localization.get("show-pathfinding-lines"),
+            );
 
             // Show world inspector
             ui.checkbox(

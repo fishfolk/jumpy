@@ -22,11 +22,15 @@ fn hydrate(
     mut sproingers: CompMut<Sproinger>,
     mut atlas_sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
+    mut nav_graph: ResMut<NavGraph>,
+    transforms: Comp<Transform>,
+    map: Res<LoadedMap>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
     not_hydrated_bitset.bit_and(element_handles.bitset());
 
+    let mut new_sproingers = Vec::new();
     for entity in entities.iter_with_bitset(&not_hydrated_bitset) {
         let element_handle = element_handles.get(entity).unwrap();
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -37,6 +41,7 @@ fn hydrate(
             atlas, body_size, ..
         } = &element_meta.builtin
         {
+            new_sproingers.push(entity);
             hydrated.insert(entity, MapElementHydrated);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
             bodies.insert(
@@ -49,6 +54,27 @@ fn hydrate(
             );
             sproingers.insert(entity, sproinger::default());
         }
+    }
+
+    // Update the navigation graph with the new sproingers
+    if !new_sproingers.is_empty() {
+        let mut new_graph = nav_graph.as_ref().clone();
+
+        for ent in new_sproingers {
+            let pos = transforms.get(ent).unwrap().translation;
+            let node = NavNode((pos.truncate() / map.tile_size).as_ivec2());
+            let sproing_to = node.above().above().above().above().above().above();
+
+            new_graph.add_edge(
+                node,
+                sproing_to,
+                NavGraphEdge {
+                    inputs: [PlayerControl::default()].into(),
+                    distance: node.distance(&sproing_to),
+                },
+            );
+        }
+        **nav_graph = Arc::new(new_graph);
     }
 }
 

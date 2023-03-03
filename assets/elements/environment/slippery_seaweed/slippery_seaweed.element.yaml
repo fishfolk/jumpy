@@ -1,5 +1,8 @@
 name: Slippery Seaweed
 category: Gameplay
+editor:
+  grab_size: [40, 51]
+  show_name: false
 builtin: !SlipperySeaweed
   atlas: ./slippery_seaweed.atlas.yaml
   body_size: [8, 8]

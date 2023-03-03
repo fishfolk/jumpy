@@ -1,4 +1,5 @@
 use super::*;
+use crate::player::slippery::Slippery;
 
 pub const ID: Key = key!("core::idle");
 
@@ -41,6 +42,7 @@ pub fn handle_player_state(
     mut audio_events: ResMut<AudioEvents>,
     collision_world: CollisionWorld,
     mut commands: Commands,
+    slippery: CompMut<Slippery>,
 ) {
     // Collect a list of items that are being held by players
     let held_items = entities
@@ -95,12 +97,22 @@ pub fn handle_player_state(
             body.velocity.y = meta.stats.jump_speed;
         }
 
+        let mut slide_factor = 1.;
+        for (slippery_ent, slippery_meta) in entities.iter_with(&slippery) {
+            if collision_world
+                .actor_collisions(player_ent)
+                .contains(&slippery_ent)
+            {
+                slide_factor = 1. / slippery_meta.slide_factor;
+            }
+        }
+
         // Since we are idling, slide
         if body.velocity.x != 0.0 {
             if body.velocity.x.is_sign_positive() {
-                body.velocity.x = (body.velocity.x - meta.stats.slowdown).max(0.0);
+                body.velocity.x = (body.velocity.x - meta.stats.slowdown * slide_factor).max(0.0);
             } else {
-                body.velocity.x = (body.velocity.x + meta.stats.slowdown).min(0.0);
+                body.velocity.x = (body.velocity.x + meta.stats.slowdown * slide_factor).min(0.0);
             }
         }
     }

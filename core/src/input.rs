@@ -35,6 +35,8 @@ pub struct PlayerInput {
     pub previous_control: PlayerControl,
     /// The editor inputs the player is making, if any.
     pub editor_input: Option<EditorInput>,
+    /// Whether or not this is an AI player.
+    pub is_ai: bool,
 }
 
 /// Player control input state

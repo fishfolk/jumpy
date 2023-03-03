@@ -17,6 +17,8 @@ pub struct DebugSettings {
     pub show_kinematic_colliders: bool,
     /// Whether or not to render damage region collider shapes.
     pub show_damage_regions: bool,
+    /// Whether or not to show the pathfinding lines.
+    pub show_pathfinding_lines: bool,
 }
 
 /// Resource containing the physics debug line entity.

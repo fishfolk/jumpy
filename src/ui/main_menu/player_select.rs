@@ -1,5 +1,6 @@
 use crate::loading::PlayerInputCollector;
 use bones_lib::prelude::{key, Key, KeyError};
+use rand::Rng;
 
 use super::*;
 
@@ -16,6 +17,7 @@ pub struct PlayerSlot {
     pub active: bool,
     pub confirmed: bool,
     pub selected_player: bones::Handle<PlayerMeta>,
+    pub is_ai: bool,
 }
 
 #[derive(SystemParam)]
@@ -171,7 +173,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                                 world,
                                 ui,
                                 id.with(&format!("player_panel{i}")),
-                                (i, ready_players, unconfirmed_players),
+                                i,
                             );
                         }
                     });
@@ -280,18 +282,17 @@ struct PlayerSelectPanel<'w, 's> {
 }
 
 impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
-    type Args = (usize, usize, usize); // Player Idx, Unconfirmed Players, Ready Players
+    type Args = usize; // Player Idx
     fn system(
         world: &mut World,
         state: &mut SystemState<Self>,
         ui: &mut egui::Ui,
         _id: WidgetId,
-        args: (usize, usize, usize),
+        args: usize,
     ) {
         let mut params: PlayerSelectPanel = state.get_mut(world);
 
-        let (player_id, unconfirmed_players, ready_players) = args;
-        let total_players = unconfirmed_players + ready_players;
+        let player_id = args;
 
         let player_actions = params
             .players
@@ -439,18 +440,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                     ui.add_space(normal_font.size);
                 // }
 
-
-                if total_players < MAX_PLAYERS / 2 && player_id > MAX_PLAYERS / 2 - 1{
-                    ui.vertical_centered(|ui| {
-                        ui.themed_label(
-                            normal_font,
-                            &params
-                                .localization
-                                .get(&"waiting-for-more-players".to_string()),
-                        );
-                    });
-                }
-                else if slot.active {
+                if slot.active {
                     ui.vertical_centered(|ui| {
                         let Some(player_meta) = params.player_meta_assets.get(&player_handle.get_bevy_handle()) else { return; };
 
@@ -475,7 +465,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                         ui.vertical_centered(|ui| {
                             ui.set_height(heading_font.size * 1.5);
 
-                            if slot.confirmed {
+                            if slot.confirmed && !slot.is_ai {
                                 ui.themed_label(
                                     &heading_font.colored(params.game.ui_theme.colors.positive),
                                     &params.localization.get("player-select-ready"),
@@ -488,6 +478,21 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                                         .get(&format!("player-select-unready?button={}", player_action_map.get_text(PlayerAction::Grab))),
                                 );
 
+                            }
+                            if slot.is_ai {
+                                ui.themed_label(
+                                    &heading_font.colored(params.game.ui_theme.colors.positive),
+                                    &params.localization.get("ai-player"),
+                                );
+                                if BorderedButton::themed(
+                                    &params.game.ui_theme.button_styles.normal,
+                                    &params.localization.get("remove-ai-player"),
+                                )
+                                .show(ui).clicked() {
+                                    slot.confirmed = false;
+                                    slot.active = false;
+                                    slot.is_ai = false;
+                                }
                             }
                         });
 
@@ -513,6 +518,22 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                                 .localization
                                 .get(&format!("press-button-to-join?button={}", player_action_map.get_text(PlayerAction::Jump))),
                         );
+
+                        if player_id != 0 {
+
+                        ui.add_space(params.game.ui_theme.font_styles.bigger.size);
+                            if BorderedButton::themed(
+                                &params.game.ui_theme.button_styles.normal,
+                                &params.localization.get("add-ai-player"),
+                            )
+                            .show(ui).clicked() {
+                                slot.is_ai = true;
+                                slot.confirmed = true;
+                                slot.active = true;
+                                let mut rng = rand::thread_rng();
+                                *player_handle = params.core.players[rng.gen_range(0..params.core.players.len())].clone();
+                            }
+                        }
                     });
                 }
             });

@@ -133,6 +133,17 @@
     <script type="module">
       import init from "./jumpy.js";
       init();
+      const ignoreCanvasContextMenu = () => {
+        const canvases = document.getElementsByTagName('canvas');
+        if (canvases[0]) {
+            canvases[0].oncontextmenu = (e) => {
+                e.preventDefault()
+            };
+        } else {
+            setTimeout(ignoreCanvasContextMenu, 1000)
+        }
+      };
+      setTimeout(ignoreCanvasContextMenu, 1000)
     </script>
   </body>
 </html>

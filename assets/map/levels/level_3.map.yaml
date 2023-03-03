@@ -53,138 +53,1083 @@ layers:
     tiles:
       - pos:
           - 0
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 1
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 2
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 3
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 4
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 5
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 6
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 7
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 8
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 9
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 10
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 11
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 12
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 13
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 14
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 15
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 16
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 17
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 18
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 19
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 20
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 21
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 22
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 23
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 24
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 25
-          - 21
+          - 0
         idx: 8
         collision: Solid
       - pos:
           - 26
-          - 21
+          - 0
         idx: 8
+        collision: Solid
+      - pos:
+          - 0
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 1
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 2
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 3
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 4
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 5
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 6
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 7
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 8
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 9
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 10
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 11
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 12
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 13
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 14
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 15
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 16
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 17
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 18
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 19
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 20
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 21
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 22
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 23
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 24
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 25
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 26
+          - 1
+        idx: 8
+        collision: Solid
+      - pos:
+          - 0
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 1
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 2
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 3
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 4
+          - 2
+        idx: 1
+        collision: Solid
+      - pos:
+          - 5
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 6
+          - 2
+        idx: 1
+        collision: Solid
+      - pos:
+          - 7
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 8
+          - 2
+        idx: 1
+        collision: Solid
+      - pos:
+          - 9
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 10
+          - 2
+        idx: 1
+        collision: Solid
+      - pos:
+          - 11
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 12
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 13
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 14
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 15
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 16
+          - 2
+        idx: 1
+        collision: Solid
+      - pos:
+          - 17
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 18
+          - 2
+        idx: 1
+        collision: Solid
+      - pos:
+          - 19
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 20
+          - 2
+        idx: 1
+        collision: Solid
+      - pos:
+          - 21
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 22
+          - 2
+        idx: 1
+        collision: Solid
+      - pos:
+          - 23
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 24
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 25
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 26
+          - 2
+        idx: 8
+        collision: Solid
+      - pos:
+          - 0
+          - 3
+        idx: 8
+        collision: Solid
+      - pos:
+          - 1
+          - 3
+        idx: 8
+        collision: Solid
+      - pos:
+          - 2
+          - 3
+        idx: 8
+        collision: Solid
+      - pos:
+          - 3
+          - 3
+        idx: 11
+        collision: Solid
+      - pos:
+          - 4
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 5
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 6
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 7
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 8
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 9
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 10
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 11
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 12
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 13
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 14
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 15
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 16
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 17
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 18
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 19
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 20
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 21
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 22
+          - 3
+        idx: 1
+        collision: Solid
+      - pos:
+          - 23
+          - 3
+        idx: 12
+        collision: Solid
+      - pos:
+          - 24
+          - 3
+        idx: 8
+        collision: Solid
+      - pos:
+          - 25
+          - 3
+        idx: 8
+        collision: Solid
+      - pos:
+          - 26
+          - 3
+        idx: 8
+        collision: Solid
+      - pos:
+          - 0
+          - 4
+        idx: 8
+        collision: Solid
+      - pos:
+          - 1
+          - 4
+        idx: 8
+        collision: Solid
+      - pos:
+          - 2
+          - 4
+        idx: 8
+        collision: Solid
+      - pos:
+          - 3
+          - 4
+        idx: 9
+        collision: Solid
+      - pos:
+          - 23
+          - 4
+        idx: 7
+        collision: Solid
+      - pos:
+          - 24
+          - 4
+        idx: 8
+        collision: Solid
+      - pos:
+          - 25
+          - 4
+        idx: 8
+        collision: Solid
+      - pos:
+          - 26
+          - 4
+        idx: 8
+        collision: Solid
+      - pos:
+          - 0
+          - 5
+        idx: 8
+        collision: Solid
+      - pos:
+          - 1
+          - 5
+        idx: 8
+        collision: Solid
+      - pos:
+          - 2
+          - 5
+        idx: 11
+        collision: Solid
+      - pos:
+          - 3
+          - 5
+        idx: 2
+        collision: Solid
+      - pos:
+          - 23
+          - 5
+        idx: 0
+        collision: Solid
+      - pos:
+          - 24
+          - 5
+        idx: 12
+        collision: Solid
+      - pos:
+          - 25
+          - 5
+        idx: 8
+        collision: Solid
+      - pos:
+          - 26
+          - 5
+        idx: 8
+        collision: Solid
+      - pos:
+          - 0
+          - 6
+        idx: 11
+        collision: Solid
+      - pos:
+          - 1
+          - 6
+        idx: 1
+        collision: Solid
+      - pos:
+          - 2
+          - 6
+        idx: 2
+        collision: Solid
+      - pos:
+          - 24
+          - 6
+        idx: 0
+        collision: Solid
+      - pos:
+          - 25
+          - 6
+        idx: 1
+        collision: Solid
+      - pos:
+          - 26
+          - 6
+        idx: 12
+        collision: Solid
+      - pos:
+          - 0
+          - 7
+        idx: 9
+        collision: Solid
+      - pos:
+          - 26
+          - 7
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 8
+        idx: 9
+        collision: Solid
+      - pos:
+          - 6
+          - 8
+        idx: 56
+        collision: JumpThrough
+      - pos:
+          - 7
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 8
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 9
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 10
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 11
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 12
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 13
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 14
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 15
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 16
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 17
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 18
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 19
+          - 8
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 20
+          - 8
+        idx: 60
+        collision: JumpThrough
+      - pos:
+          - 26
+          - 8
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 9
+        idx: 9
+        collision: Solid
+      - pos:
+          - 26
+          - 9
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 10
+        idx: 9
+        collision: Solid
+      - pos:
+          - 1
+          - 10
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 2
+          - 10
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 3
+          - 10
+        idx: 60
+        collision: JumpThrough
+      - pos:
+          - 23
+          - 10
+        idx: 56
+        collision: JumpThrough
+      - pos:
+          - 24
+          - 10
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 25
+          - 10
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 26
+          - 10
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 11
+        idx: 9
+        collision: Solid
+      - pos:
+          - 26
+          - 11
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 12
+        idx: 9
+        collision: Solid
+      - pos:
+          - 26
+          - 12
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 13
+        idx: 9
+        collision: Solid
+      - pos:
+          - 1
+          - 13
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 2
+          - 13
+        idx: 60
+        collision: JumpThrough
+      - pos:
+          - 6
+          - 13
+        idx: 21
+        collision: Solid
+      - pos:
+          - 7
+          - 13
+        idx: 22
+        collision: Solid
+      - pos:
+          - 8
+          - 13
+        idx: 22
+        collision: Solid
+      - pos:
+          - 9
+          - 13
+        idx: 22
+        collision: Solid
+      - pos:
+          - 10
+          - 13
+        idx: 23
+        collision: Solid
+      - pos:
+          - 16
+          - 13
+        idx: 21
+        collision: Solid
+      - pos:
+          - 17
+          - 13
+        idx: 22
+        collision: Solid
+      - pos:
+          - 18
+          - 13
+        idx: 22
+        collision: Solid
+      - pos:
+          - 19
+          - 13
+        idx: 22
+        collision: Solid
+      - pos:
+          - 20
+          - 13
+        idx: 23
+        collision: Solid
+      - pos:
+          - 24
+          - 13
+        idx: 56
+        collision: JumpThrough
+      - pos:
+          - 25
+          - 13
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 26
+          - 13
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 14
+        idx: 9
+        collision: Solid
+      - pos:
+          - 26
+          - 14
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 15
+        idx: 9
+        collision: Solid
+      - pos:
+          - 26
+          - 15
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 16
+        idx: 9
+        collision: Solid
+      - pos:
+          - 26
+          - 16
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 17
+        idx: 9
+        collision: Solid
+      - pos:
+          - 26
+          - 17
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 18
+        idx: 9
+        collision: Solid
+      - pos:
+          - 26
+          - 18
+        idx: 7
+        collision: Solid
+      - pos:
+          - 0
+          - 19
+        idx: 9
+        collision: Solid
+      - pos:
+          - 1
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 2
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 3
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 4
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 5
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 6
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 7
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 8
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 9
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 10
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 11
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 12
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 13
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 14
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 15
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 16
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 17
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 18
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 19
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 20
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 21
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 22
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 23
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 24
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 25
+          - 19
+        idx: 58
+        collision: JumpThrough
+      - pos:
+          - 26
+          - 19
+        idx: 7
         collision: Solid
       - pos:
           - 0
@@ -323,1082 +1268,137 @@ layers:
         collision: Solid
       - pos:
           - 0
-          - 19
-        idx: 9
-        collision: Solid
-      - pos:
-          - 1
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 2
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 3
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 4
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 5
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 6
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 7
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 8
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 9
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 10
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 11
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 12
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 13
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 14
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 15
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 16
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 17
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 18
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 19
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 20
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
           - 21
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 22
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 23
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 24
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 25
-          - 19
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 26
-          - 19
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 18
-        idx: 9
-        collision: Solid
-      - pos:
-          - 26
-          - 18
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 17
-        idx: 9
-        collision: Solid
-      - pos:
-          - 26
-          - 17
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 16
-        idx: 9
-        collision: Solid
-      - pos:
-          - 26
-          - 16
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 15
-        idx: 9
-        collision: Solid
-      - pos:
-          - 26
-          - 15
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 14
-        idx: 9
-        collision: Solid
-      - pos:
-          - 26
-          - 14
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 13
-        idx: 9
-        collision: Solid
-      - pos:
-          - 1
-          - 13
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 2
-          - 13
-        idx: 60
-        collision: JumpThrough
-      - pos:
-          - 6
-          - 13
-        idx: 21
-        collision: Solid
-      - pos:
-          - 7
-          - 13
-        idx: 22
-        collision: Solid
-      - pos:
-          - 8
-          - 13
-        idx: 22
-        collision: Solid
-      - pos:
-          - 9
-          - 13
-        idx: 22
-        collision: Solid
-      - pos:
-          - 10
-          - 13
-        idx: 23
-        collision: Solid
-      - pos:
-          - 16
-          - 13
-        idx: 21
-        collision: Solid
-      - pos:
-          - 17
-          - 13
-        idx: 22
-        collision: Solid
-      - pos:
-          - 18
-          - 13
-        idx: 22
-        collision: Solid
-      - pos:
-          - 19
-          - 13
-        idx: 22
-        collision: Solid
-      - pos:
-          - 20
-          - 13
-        idx: 23
-        collision: Solid
-      - pos:
-          - 24
-          - 13
-        idx: 56
-        collision: JumpThrough
-      - pos:
-          - 25
-          - 13
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 26
-          - 13
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 12
-        idx: 9
-        collision: Solid
-      - pos:
-          - 26
-          - 12
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 11
-        idx: 9
-        collision: Solid
-      - pos:
-          - 26
-          - 11
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 10
-        idx: 9
-        collision: Solid
-      - pos:
-          - 1
-          - 10
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 2
-          - 10
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 3
-          - 10
-        idx: 60
-        collision: JumpThrough
-      - pos:
-          - 23
-          - 10
-        idx: 56
-        collision: JumpThrough
-      - pos:
-          - 24
-          - 10
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 25
-          - 10
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 26
-          - 10
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 9
-        idx: 9
-        collision: Solid
-      - pos:
-          - 26
-          - 9
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 8
-        idx: 9
-        collision: Solid
-      - pos:
-          - 6
-          - 8
-        idx: 56
-        collision: JumpThrough
-      - pos:
-          - 7
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 8
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 9
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 10
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 11
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 12
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 13
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 14
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 15
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 16
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 17
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 18
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 19
-          - 8
-        idx: 58
-        collision: JumpThrough
-      - pos:
-          - 20
-          - 8
-        idx: 60
-        collision: JumpThrough
-      - pos:
-          - 26
-          - 8
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 7
-        idx: 9
-        collision: Solid
-      - pos:
-          - 26
-          - 7
-        idx: 7
-        collision: Solid
-      - pos:
-          - 0
-          - 6
-        idx: 11
-        collision: Solid
-      - pos:
-          - 1
-          - 6
-        idx: 1
-        collision: Solid
-      - pos:
-          - 2
-          - 6
-        idx: 2
-        collision: Solid
-      - pos:
-          - 24
-          - 6
-        idx: 0
-        collision: Solid
-      - pos:
-          - 25
-          - 6
-        idx: 1
-        collision: Solid
-      - pos:
-          - 26
-          - 6
-        idx: 12
-        collision: Solid
-      - pos:
-          - 0
-          - 5
         idx: 8
         collision: Solid
       - pos:
           - 1
-          - 5
-        idx: 8
-        collision: Solid
-      - pos:
-          - 2
-          - 5
-        idx: 11
-        collision: Solid
-      - pos:
-          - 3
-          - 5
-        idx: 2
-        collision: Solid
-      - pos:
-          - 23
-          - 5
-        idx: 0
-        collision: Solid
-      - pos:
-          - 24
-          - 5
-        idx: 12
-        collision: Solid
-      - pos:
-          - 25
-          - 5
-        idx: 8
-        collision: Solid
-      - pos:
-          - 26
-          - 5
-        idx: 8
-        collision: Solid
-      - pos:
-          - 0
-          - 4
-        idx: 8
-        collision: Solid
-      - pos:
-          - 1
-          - 4
-        idx: 8
-        collision: Solid
-      - pos:
-          - 2
-          - 4
-        idx: 8
-        collision: Solid
-      - pos:
-          - 3
-          - 4
-        idx: 9
-        collision: Solid
-      - pos:
-          - 23
-          - 4
-        idx: 7
-        collision: Solid
-      - pos:
-          - 24
-          - 4
-        idx: 8
-        collision: Solid
-      - pos:
-          - 25
-          - 4
-        idx: 8
-        collision: Solid
-      - pos:
-          - 26
-          - 4
-        idx: 8
-        collision: Solid
-      - pos:
-          - 0
-          - 3
-        idx: 8
-        collision: Solid
-      - pos:
-          - 1
-          - 3
-        idx: 8
-        collision: Solid
-      - pos:
-          - 2
-          - 3
-        idx: 8
-        collision: Solid
-      - pos:
-          - 3
-          - 3
-        idx: 11
-        collision: Solid
-      - pos:
-          - 4
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 5
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 6
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 7
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 8
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 9
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 10
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 11
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 12
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 13
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 14
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 15
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 16
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 17
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 18
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 19
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 20
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
           - 21
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 22
-          - 3
-        idx: 1
-        collision: Solid
-      - pos:
-          - 23
-          - 3
-        idx: 12
-        collision: Solid
-      - pos:
-          - 24
-          - 3
-        idx: 8
-        collision: Solid
-      - pos:
-          - 25
-          - 3
-        idx: 8
-        collision: Solid
-      - pos:
-          - 26
-          - 3
-        idx: 8
-        collision: Solid
-      - pos:
-          - 0
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 1
-          - 2
         idx: 8
         collision: Solid
       - pos:
           - 2
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 3
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 4
-          - 2
-        idx: 1
-        collision: Solid
-      - pos:
-          - 5
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 6
-          - 2
-        idx: 1
-        collision: Solid
-      - pos:
-          - 7
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 8
-          - 2
-        idx: 1
-        collision: Solid
-      - pos:
-          - 9
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 10
-          - 2
-        idx: 1
-        collision: Solid
-      - pos:
-          - 11
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 12
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 13
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 14
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 15
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 16
-          - 2
-        idx: 1
-        collision: Solid
-      - pos:
-          - 17
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 18
-          - 2
-        idx: 1
-        collision: Solid
-      - pos:
-          - 19
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 20
-          - 2
-        idx: 1
-        collision: Solid
-      - pos:
           - 21
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 22
-          - 2
-        idx: 1
-        collision: Solid
-      - pos:
-          - 23
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 24
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 25
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 26
-          - 2
-        idx: 8
-        collision: Solid
-      - pos:
-          - 0
-          - 1
-        idx: 8
-        collision: Solid
-      - pos:
-          - 1
-          - 1
-        idx: 8
-        collision: Solid
-      - pos:
-          - 2
-          - 1
         idx: 8
         collision: Solid
       - pos:
           - 3
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 4
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 5
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 6
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 7
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 8
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 9
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 10
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 11
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 12
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 13
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 14
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 15
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 16
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 17
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 18
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 19
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 20
-          - 1
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 21
-          - 1
-        idx: 8
-        collision: Solid
-      - pos:
-          - 22
-          - 1
-        idx: 8
-        collision: Solid
-      - pos:
-          - 23
-          - 1
-        idx: 8
-        collision: Solid
-      - pos:
-          - 24
-          - 1
-        idx: 8
-        collision: Solid
-      - pos:
-          - 25
-          - 1
-        idx: 8
-        collision: Solid
-      - pos:
-          - 26
-          - 1
-        idx: 8
-        collision: Solid
-      - pos:
-          - 0
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 1
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 2
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 3
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 4
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 5
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 6
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 7
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 8
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 9
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 10
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 11
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 12
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 13
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 14
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 15
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 16
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 17
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 18
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 19
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
-          - 20
-          - 0
-        idx: 8
-        collision: Solid
-      - pos:
           - 21
-          - 0
         idx: 8
         collision: Solid
       - pos:
           - 22
-          - 0
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 23
-          - 0
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 24
-          - 0
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 25
-          - 0
+          - 21
         idx: 8
         collision: Solid
       - pos:
           - 26
-          - 0
+          - 21
         idx: 8
         collision: Solid
     elements: []
@@ -1447,34 +1447,6 @@ layers:
     tiles: []
     elements:
       - pos:
-          - 441.41046
-          - 143.5
-        element: /elements/environment/crab/crab.element.yaml
-      - pos:
-          - 310.07715
-          - 203.5
-        element: /elements/environment/fish_school/fish_school.element.yaml
-      - pos:
-          - 528.0
-          - 203.5
-        element: /elements/environment/fish_school/fish_school.element.yaml
-      - pos:
-          - 304.0
-          - 525.5
-        element: /elements/environment/fish_school/fish_school.element.yaml
-      - pos:
-          - 592.0
-          - 513.5
-        element: /elements/environment/fish_school/fish_school.element.yaml
-      - pos:
-          - 560.0
-          - 299.5
-        element: /elements/environment/crab/crab.element.yaml
-      - pos:
-          - 296.0
-          - 303.5
-        element: /elements/environment/crab/crab.element.yaml
-      - pos:
           - 700.0
           - 148.0
         element: /elements/item/mine/mine.element.yaml
@@ -1483,53 +1455,89 @@ layers:
           - 148.0
         element: /elements/item/mine/mine.element.yaml
       - pos:
-          - 65.399994
-          - 471.5
+          - 64.0
+          - 463.0
         element: /elements/item/grenade/grenade.element.yaml
       - pos:
           - 800.0
-          - 469.5
+          - 463.0
         element: /elements/item/grenade/grenade.element.yaml
       - pos:
-          - 549.0
-          - 475.0
+          - 544.0
+          - 463.0
         element: /elements/item/grenade/grenade.element.yaml
       - pos:
           - 304.0
-          - 475.0
+          - 463.0
         element: /elements/item/grenade/grenade.element.yaml
       - pos:
           - 104.0
-          - 374.0
+          - 367.0
         element: /elements/item/grenade/grenade.element.yaml
       - pos:
           - 760.0
           - 363.0
         element: /elements/item/grenade/grenade.element.yaml
       - pos:
-          - 428.0
-          - 159.0
+          - 432.0
+          - 150.5
         element: /elements/item/stomp_boots/stomp_boots.element.yaml
       - pos:
-          - 416.0
-          - 369.5
+          - 432.0
+          - 298.0
         element: /elements/item/sword/sword.element.yaml
       - pos:
-          - 567.0
-          - 306.0
+          - 568.0
+          - 310.5
         element: /elements/item/crate/crate.element.yaml
       - pos:
-          - 300.0
-          - 306.0
+          - 296.0
+          - 310.5
         element: /elements/item/crate/crate.element.yaml
       - pos:
-          - 557.0
-          - 161.0
+          - 560.0
+          - 150.5
         element: /elements/item/crate/crate.element.yaml
       - pos:
-          - 345.0
-          - 161.0
+          - 344.0
+          - 150.5
         element: /elements/item/crate/crate.element.yaml
+  - id: critters
+    tilemap: null
+    tiles: []
+    elements:
+      - pos:
+          - 316.0
+          - 194.0
+        element: /elements/environment/fish_school/fish_school.element.yaml
+      - pos:
+          - 542.0
+          - 195.0
+        element: /elements/environment/fish_school/fish_school.element.yaml
+      - pos:
+          - 321.0
+          - 505.0
+        element: /elements/environment/fish_school/fish_school.element.yaml
+      - pos:
+          - 603.0
+          - 499.0
+        element: /elements/environment/fish_school/fish_school.element.yaml
+      - pos:
+          - 272.0
+          - 295.5
+        element: /elements/environment/crab/crab.element.yaml
+      - pos:
+          - 568.0
+          - 295.5
+        element: /elements/environment/crab/crab.element.yaml
+      - pos:
+          - 504.0
+          - 135.5
+        element: /elements/environment/crab/crab.element.yaml
+      - pos:
+          - 104.0
+          - 199.5
+        element: /elements/environment/crab/crab.element.yaml
   - id: spawners
     tilemap: null
     tiles: []

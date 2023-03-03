@@ -1,0 +1,11 @@
+name: Urchin
+category: Decorations
+editor:
+  grab_size: [20, 15]
+builtin: !Urchin
+  image: ./urchin.png
+  body_diameter: 8.0
+  bounciness: 0.6
+  spin: 0.0
+  gravity: 0.3
+  hit_speed: 6.0

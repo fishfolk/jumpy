@@ -99,6 +99,20 @@ pub enum BuiltinElementKind {
         fps: f32,
         atlas: Handle<Atlas>,
     },
+    FishSchool {
+        kinds: Vec<Handle<Atlas>>,
+        /// The default and most-likely to ocurr number of fish in a school
+        base_count: u32,
+        /// The ammount greater or less than the base number of fish that may spawn
+        count_variation: u32,
+        /// The distance from the spawn point on each axis that the individual fish in the school will be
+        /// initially spawned within
+        spawn_range: f32,
+        /// The distance that the fish wish to stay within the center of their school
+        school_size: f32,
+        // The distance a collider must be for the fish to run away
+        flee_range: f32,
+    },
     /// A crab roaming on the ocean floor
     Crab {
         start_frame: usize,
@@ -113,6 +127,31 @@ pub enum BuiltinElementKind {
         /// will be 1 second
         timer_delay_max: u8,
         atlas: Handle<Atlas>,
+    },
+    Snail {
+        atlas: Handle<Atlas>,
+        fps: f32,
+        body_diameter: f32,
+        bounciness: f32,
+        gravity: f32,
+        hit_speed: f32,
+        /// The animation frames for when the snail is crawling
+        crawl_frames: Vec<usize>,
+        /// The `crawl_frames` indexes in which to move the snail
+        move_frame_indexes: Vec<usize>,
+        /// The animation frames for when the snail is fleeing into its shell.
+        ///
+        /// **Note:** This is reversed for the snail coming out of its shell.
+        hide_frames: Vec<usize>,
+        hide_time: f32,
+    },
+    Urchin {
+        image: Handle<Image>,
+        body_diameter: f32,
+        hit_speed: f32,
+        gravity: f32,
+        bounciness: f32,
+        spin: f32,
     },
     /// This is a sproinger
     Sproinger {

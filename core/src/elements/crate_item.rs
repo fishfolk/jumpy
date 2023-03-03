@@ -230,7 +230,7 @@ fn update_thrown_crates(
         if !colliding_with_players.is_empty()
             || thrown_crate.age >= *break_timeout
             || thrown_crate.crate_break_state >= 4
-            || body.velocity.length_squared() < 0.1
+            || body.is_on_ground && body.velocity.length_squared() < 0.1
         {
             hydrated.remove(**spawner);
 

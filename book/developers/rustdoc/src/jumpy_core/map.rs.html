@@ -701,6 +701,18 @@
 <a href="#700" id="700">700</a>
 <a href="#701" id="701">701</a>
 <a href="#702" id="702">702</a>
+<a href="#703" id="703">703</a>
+<a href="#704" id="704">704</a>
+<a href="#705" id="705">705</a>
+<a href="#706" id="706">706</a>
+<a href="#707" id="707">707</a>
+<a href="#708" id="708">708</a>
+<a href="#709" id="709">709</a>
+<a href="#710" id="710">710</a>
+<a href="#711" id="711">711</a>
+<a href="#712" id="712">712</a>
+<a href="#713" id="713">713</a>
+<a href="#714" id="714">714</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     cmp::{max, min},
     collections::VecDeque,
@@ -1092,7 +1104,7 @@
                     },
                 );
             }
-            <span class="kw">if </span>contains_above2 {
+            <span class="kw">if </span>contains_above2 &amp;&amp; contains_above1 {
                 <span class="comment">// Jump staight up
                 </span>graph.add_edge(
                     node,
@@ -1108,7 +1120,7 @@
                     },
                 );
             }
-            <span class="kw">if </span>contains_above3 {
+            <span class="kw">if </span>contains_above3 &amp;&amp; contains_above2 &amp;&amp; contains_above1 {
                 <span class="comment">// Jump staight up
                 </span>graph.add_edge(
                     node,
@@ -1126,82 +1138,94 @@
             }
 
             <span class="comment">// Jump up and left
-            </span><span class="kw">let </span>above3l = above3.left().left();
-            <span class="kw">if </span>graph.contains_node(above3l) &amp;&amp; contains_above2 &amp;&amp; contains_above3 {
+            </span><span class="kw">let </span>above3l2 = above3.left().left();
+            <span class="kw">let </span>above2l = above2.left();
+            <span class="kw">let </span>contains_above2l = graph.contains_node(above2l);
+            <span class="kw">let </span>contains_above3l2 = graph.contains_node(above3l2);
+            <span class="kw">if </span>contains_above3l2 &amp;&amp; contains_above2 &amp;&amp; contains_above3 &amp;&amp; contains_above2l {
                 graph.add_edge(
                     node,
-                    above3l,
+                    above3l2,
                     NavGraphEdge {
-                        inputs: [PlayerControl {
+                        inputs: std::iter::repeat(PlayerControl {
                             move_direction: vec2(-<span class="number">1.0</span>, <span class="number">0.0</span>),
                             jump_just_pressed: <span class="bool-val">true</span>,
                             jump_pressed: <span class="bool-val">true</span>,
                             ..default()
-                        }]
-                        .into(),
-                        distance: node.distance(<span class="kw-2">&amp;</span>above3l),
+                        })
+                        .take(<span class="number">20</span>)
+                        .collect(),
+                        distance: node.distance(<span class="kw-2">&amp;</span>above3l2),
                     },
                 );
             }
             <span class="kw">let </span>above3l3 = above3.left().left().left();
             <span class="kw">if </span>graph.contains_node(above3l3)
                 &amp;&amp; graph.contains_node(above3.left())
-                &amp;&amp; graph.contains_node(above3.left().left())
+                &amp;&amp; contains_above3l2
                 &amp;&amp; contains_above2
                 &amp;&amp; contains_above3
+                &amp;&amp; contains_above2l
             {
                 graph.add_edge(
                     node,
                     above3l3,
                     NavGraphEdge {
-                        inputs: [PlayerControl {
+                        inputs: std::iter::repeat(PlayerControl {
                             move_direction: vec2(-<span class="number">1.0</span>, <span class="number">0.0</span>),
                             jump_just_pressed: <span class="bool-val">true</span>,
                             jump_pressed: <span class="bool-val">true</span>,
                             ..default()
-                        }]
-                        .into(),
+                        })
+                        .take(<span class="number">20</span>)
+                        .collect(),
                         distance: node.distance(<span class="kw-2">&amp;</span>above3l3),
                     },
                 );
             }
 
             <span class="comment">// Jump up and right
-            </span><span class="kw">let </span>above3r = above3.right().right();
-            <span class="kw">if </span>graph.contains_node(above3r) &amp;&amp; contains_above2 &amp;&amp; contains_above3 {
+            </span><span class="kw">let </span>above3r2 = above3.right().right();
+            <span class="kw">let </span>above2r = above2.right();
+            <span class="kw">let </span>contains_above2r = graph.contains_node(above2r);
+            <span class="kw">let </span>contains_above3r2 = graph.contains_node(above3r2);
+            <span class="kw">if </span>contains_above3r2 &amp;&amp; contains_above2 &amp;&amp; contains_above3 &amp;&amp; contains_above2r {
                 graph.add_edge(
                     node,
-                    above3r,
+                    above3r2,
                     NavGraphEdge {
-                        inputs: [PlayerControl {
+                        inputs: std::iter::repeat(PlayerControl {
                             move_direction: vec2(<span class="number">1.0</span>, <span class="number">0.0</span>),
                             jump_just_pressed: <span class="bool-val">true</span>,
                             jump_pressed: <span class="bool-val">true</span>,
                             ..default()
-                        }]
-                        .into(),
-                        distance: node.distance(<span class="kw-2">&amp;</span>above3r),
+                        })
+                        .take(<span class="number">20</span>)
+                        .collect(),
+                        distance: node.distance(<span class="kw-2">&amp;</span>above3r2),
                     },
                 );
             }
             <span class="kw">let </span>above3r3 = above3.right().right().right();
             <span class="kw">if </span>graph.contains_node(above3r3)
                 &amp;&amp; graph.contains_node(above3.right())
-                &amp;&amp; graph.contains_node(above3.right().right())
+                &amp;&amp; contains_above3r2
                 &amp;&amp; contains_above2
                 &amp;&amp; contains_above3
+                &amp;&amp; contains_above2r
             {
                 graph.add_edge(
                     node,
                     above3r3,
                     NavGraphEdge {
-                        inputs: [PlayerControl {
+                        inputs: std::iter::repeat(PlayerControl {
                             move_direction: vec2(<span class="number">1.0</span>, <span class="number">0.0</span>),
                             jump_just_pressed: <span class="bool-val">true</span>,
                             jump_pressed: <span class="bool-val">true</span>,
                             ..default()
-                        }]
-                        .into(),
+                        })
+                        .take(<span class="number">20</span>)
+                        .collect(),
                         distance: node.distance(<span class="kw-2">&amp;</span>above3r3),
                     },
                 );

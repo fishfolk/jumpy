@@ -287,6 +287,9 @@
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
 <a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub use </span>collisions::{
@@ -492,12 +495,15 @@
         {
             <span class="macro">puffin::profile_scope!</span>(<span class="string">&quot;move body&quot;</span>);
 
-            <span class="kw">if </span>collision_world.move_horizontal(<span class="kw-2">&amp;mut </span>transforms, entity, body.velocity.x) {
-                body.velocity.x <span class="kw-2">*</span>= -body.bounciness;
-            }
-
             <span class="kw">if </span>collision_world.move_vertical(<span class="kw-2">&amp;mut </span>transforms, entity, body.velocity.y) {
                 body.velocity.y <span class="kw-2">*</span>= -body.bounciness;
+            }
+
+            <span class="comment">// NOTE: It&#39;s important that we move horizontally after we move vertically, or else the
+            // horizontal movement will clear our `descent` and `seen_wood` flags and we may not go
+            // through drop through platforms while moving horizontally.
+            </span><span class="kw">if </span>collision_world.move_horizontal(<span class="kw-2">&amp;mut </span>transforms, entity, body.velocity.x) {
+                body.velocity.x <span class="kw-2">*</span>= -body.bounciness;
             }
         }
 

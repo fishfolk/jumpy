@@ -1,0 +1,17 @@
+name: 🕵 Lint Merge Group Commit Message
+on:
+  merge_group:
+
+jobs:
+  commitlint:
+    name: 🔎 Lint Commit Message
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout Source
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: 🔎 Lint Commit Message
+        uses: wagoid/commitlint-github-action@v5
+        with:
+          commitDepth: 1

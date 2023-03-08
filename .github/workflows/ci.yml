@@ -4,9 +4,8 @@ on:
   push:
     branches:
       - main
-      - staging
-      - trying
   pull_request:
+  merge_group:
 
 jobs:
   check_formatting:

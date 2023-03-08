@@ -44,7 +44,7 @@ jobs:
           path: |
             target/
             web-target/
-          key: Linux-cargo-target-${{ hashFiles('**/Cargo.lock') }}
+          key: cargo-doc-${{ hashFiles('**/Cargo.lock') }}
 
       - name: 🔨 Build Rustdoc
         run: |

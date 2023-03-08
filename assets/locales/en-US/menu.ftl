@@ -5,6 +5,7 @@ main-menu = Main Menu
 map-editor = Map Editor
 settings = Settings
 paused = Paused
+credits = Credits
 
 # Actions
 close = Close

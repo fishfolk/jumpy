@@ -20,6 +20,7 @@ stats:
   slowdown: 0.8
 
 body_size: [32, 48]
+slide_body_size: [48, 32]
 gravity: 0.6
 
 layers:
@@ -92,6 +93,12 @@ layers:
             offset: [0, -4]
         fps: *fps
         repeat: false
+      slide:
+        fps: *fps
+        frames:
+          - idx: 58
+            offset: [1, -8]
+        repeat: false
       death_spine:
         frames:
           - idx: 70
@@ -155,6 +162,10 @@ layers:
         fps: *fps
         frames:
           - 20
+      slide:
+        fps: *fps
+        frames:
+          - 25
       death_spine:
         fps: *fps
         frames:
@@ -207,6 +218,10 @@ layers:
         fps: *fps
         frames:
           - 5
+      slide:
+        fps: *fps
+        frames:
+          - 10 # Intentionally an invisible frame
       death_spine:
         fps: *fps
         frames:

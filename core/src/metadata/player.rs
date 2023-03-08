@@ -7,6 +7,7 @@ use super::*;
 pub struct PlayerMeta {
     pub name: String,
     pub body_size: Vec2,
+    pub slide_body_size: Vec2,
     pub gravity: f32,
     pub sounds: PlayerSoundsMeta,
     pub stats: PlayerStatsMeta,

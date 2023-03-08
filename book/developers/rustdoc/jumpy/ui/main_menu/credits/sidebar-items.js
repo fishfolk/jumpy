@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["CREDITS_STR",""]],"mod":[["credits_parser",""]],"static":[["CREDITS",""]],"struct":[["Credits",""],["CreditsEntry",""],["CreditsHandle",""],["CreditsMenu",""],["CreditsSection",""]]};

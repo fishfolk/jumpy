@@ -365,6 +365,21 @@
 <a href="#364" id="364">364</a>
 <a href="#365" id="365">365</a>
 <a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>bevy::{
@@ -396,7 +411,8 @@
 <span class="kw">pub mod </span>map_select;
 <span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
 // pub mod matchmaking;
-</span><span class="kw">pub mod </span>player_select;
+</span><span class="kw">pub mod </span>credits;
+<span class="kw">pub mod </span>player_select;
 <span class="kw">pub mod </span>settings;
 
 <span class="kw">pub struct </span>MainMenuPlugin;
@@ -507,6 +523,7 @@
         /// map.
         </span>is_waiting: bool,
     },
+    Credits,
     <span class="comment">// Matchmaking,
 </span>}
 
@@ -576,6 +593,7 @@
             MenuPage::Settings =&gt; {
                 widget::&lt;settings::SettingsMenu&gt;(world, ui, id.with(<span class="string">&quot;settings&quot;</span>), ())
             }
+            MenuPage::Credits =&gt; widget::&lt;credits::CreditsMenu&gt;(world, ui, id.with(<span class="string">&quot;credits&quot;</span>), ()),
         }
     }
 }
@@ -708,6 +726,18 @@
                                 .get(Settings::STORAGE_KEY)
                                 .unwrap_or_else(|| params.game.default_settings.clone()),
                         );
+                    }
+
+                    <span class="comment">// Credits button
+                    </span><span class="kw">if </span>BorderedButton::themed(
+                        <span class="kw-2">&amp;</span>ui_theme.button_styles.normal,
+                        <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;credits&quot;</span>),
+                    )
+                    .min_size(min_button_size)
+                    .show(ui)
+                    .clicked()
+                    {
+                        <span class="kw-2">*</span>params.menu_page = MenuPage::Credits;
                     }
 
                     <span class="comment">// Quit button

@@ -29,6 +29,7 @@ use super::{
 pub mod map_select;
 // #[cfg(not(target_arch = "wasm32"))]
 // pub mod matchmaking;
+pub mod credits;
 pub mod player_select;
 pub mod settings;
 
@@ -140,6 +141,7 @@ pub enum MenuPage {
         /// map.
         is_waiting: bool,
     },
+    Credits,
     // Matchmaking,
 }
 
@@ -209,6 +211,7 @@ impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
             MenuPage::Settings => {
                 widget::<settings::SettingsMenu>(world, ui, id.with("settings"), ())
             }
+            MenuPage::Credits => widget::<credits::CreditsMenu>(world, ui, id.with("credits"), ()),
         }
     }
 }
@@ -341,6 +344,18 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                                 .get(Settings::STORAGE_KEY)
                                 .unwrap_or_else(|| params.game.default_settings.clone()),
                         );
+                    }
+
+                    // Credits button
+                    if BorderedButton::themed(
+                        &ui_theme.button_styles.normal,
+                        &params.localization.get("credits"),
+                    )
+                    .min_size(min_button_size)
+                    .show(ui)
+                    .clicked()
+                    {
+                        *params.menu_page = MenuPage::Credits;
                     }
 
                     // Quit button

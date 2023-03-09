@@ -115,11 +115,13 @@ pub enum BuiltinElementKind {
     },
     /// A crab roaming on the ocean floor
     Crab {
-        start_frame: usize,
-        end_frame: usize,
+        body_size: Vec2,
+        walk_frames: Vec<usize>,
+        spawn_frames: Vec<usize>,
         fps: f32,
         comfortable_spawn_distance: f32,
         comfortable_scared_distance: f32,
+        uncomfortable_respawn_time: f32,
         same_level_threshold: f32,
         walk_speed: f32,
         run_speed: f32,

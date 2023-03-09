@@ -18,6 +18,8 @@ pub enum CrabState {
     Fleeing {
         scared_of: Entity,
     },
+    Spawning,
+    Despawning,
 }
 
 impl CrabState {
@@ -33,12 +35,14 @@ pub struct CrabCritter {
     start_pos: Vec2,
     state_count: u8,
     state_count_max: u8,
+    respawn_timer: Timer,
 }
 
 fn hydrate(
     game_meta: Res<CoreMetaArc>,
     mut entities: ResMut<Entities>,
     mut hydrated: CompMut<MapElementHydrated>,
+    mut despawns: CompMut<DehydrateOutOfBounds>,
     mut element_handles: CompMut<ElementHandle>,
     element_assets: BevyAssets<ElementMeta>,
     mut crabs: CompMut<CrabCritter>,
@@ -63,10 +67,10 @@ fn hydrate(
         };
 
         if let BuiltinElementKind::Crab {
-            fps,
             atlas,
-            start_frame,
-            end_frame,
+            body_size,
+            spawn_frames,
+            uncomfortable_respawn_time,
             ..
         } = &element_meta.builtin
         {
@@ -78,14 +82,19 @@ fn hydrate(
                 CrabCritter {
                     state_count: 0,
                     state_count_max: 60,
-                    state: CrabState::Paused,
+                    state: CrabState::Spawning,
                     start_pos: Vec2::new(transform.translation.x, transform.translation.y),
+                    respawn_timer: Timer::from_seconds(
+                        *uncomfortable_respawn_time,
+                        TimerMode::Once,
+                    ),
                 },
             );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
             hydrated.insert(entity, MapElementHydrated);
+            despawns.insert(entity, DehydrateOutOfBounds(spawner_ent));
 
             bodies.insert(
                 entity,
@@ -93,9 +102,7 @@ fn hydrate(
                     gravity: game_meta.physics.gravity,
                     has_mass: true,
                     has_friction: true,
-                    shape: ColliderShape::Rectangle {
-                        size: Vec2::new(17.0, 12.0),
-                    },
+                    shape: ColliderShape::Rectangle { size: *body_size },
                     ..default()
                 },
             );
@@ -103,9 +110,8 @@ fn hydrate(
             animated_sprites.insert(
                 entity,
                 AnimatedSprite {
-                    fps: *fps,
-                    repeat: true,
-                    frames: (*start_frame..=*end_frame).collect(),
+                    repeat: false,
+                    frames: spawn_frames.iter().cloned().collect(),
                     ..default()
                 },
             );
@@ -115,6 +121,7 @@ fn hydrate(
 
 fn update_crabs(
     rng: Res<GlobalRng>,
+    time: Res<Time>,
     entities: Res<Entities>,
     player_indexes: Comp<PlayerIdx>,
     mut crabs: CompMut<CrabCritter>,
@@ -122,10 +129,15 @@ fn update_crabs(
     mut animated_sprites: CompMut<AnimatedSprite>,
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
+    mut hydrated: CompMut<MapElementHydrated>,
+    mut commands: Commands,
+    spawners: Comp<DehydrateOutOfBounds>,
     element_handles: Comp<ElementHandle>,
     element_assets: BevyAssets<ElementMeta>,
 ) {
-    for (entity, (crab, element_handle)) in entities.iter_with((&mut crabs, &element_handles)) {
+    for (entity, (crab, element_handle, spawner)) in
+        entities.iter_with((&mut crabs, &element_handles, &spawners))
+    {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
         };
@@ -134,6 +146,8 @@ fn update_crabs(
             fps,
             run_speed,
             walk_speed,
+            walk_frames,
+            spawn_frames,
             comfortable_spawn_distance,
             comfortable_scared_distance,
             same_level_threshold,
@@ -143,8 +157,55 @@ fn update_crabs(
             unreachable!();
         };
 
+        let body = bodies.get_mut(entity).unwrap();
+        let sprite = sprites.get_mut(entity).unwrap();
+        let animated_sprite = animated_sprites.get_mut(entity).unwrap();
         let transform = transforms.get_mut(entity).unwrap();
         let pos = Vec2::new(transform.translation.x, transform.translation.y);
+
+        let distance_from_home = pos.x - crab.start_pos.x;
+
+        if &distance_from_home > comfortable_spawn_distance {
+            crab.respawn_timer.tick(time.delta());
+        } else {
+            crab.respawn_timer.reset();
+        }
+
+        if let CrabState::Despawning = crab.state {
+            if finished_playing(animated_sprite).unwrap() {
+                crab.state = CrabState::Spawning;
+                hydrated.remove(**spawner);
+                commands.add(move |mut entities: ResMut<Entities>| entities.kill(entity));
+            }
+            continue;
+        } else if body.is_on_ground && crab.respawn_timer.finished() {
+            crab.state = CrabState::Despawning;
+            body.is_deactivated = true;
+            *animated_sprite = AnimatedSprite {
+                frames: spawn_frames.iter().rev().cloned().collect(),
+                repeat: false,
+                fps: *fps,
+                ..default()
+            };
+            continue;
+        }
+
+        if let CrabState::Spawning = crab.state {
+            if body.is_on_ground {
+                body.velocity = Vec2::ZERO;
+                animated_sprite.fps = *fps;
+                if finished_playing(animated_sprite).unwrap() {
+                    crab.state = CrabState::Paused;
+                    *animated_sprite = AnimatedSprite {
+                        frames: walk_frames.iter().cloned().collect(),
+                        repeat: true,
+                        fps: *fps,
+                        ..default()
+                    };
+                }
+            }
+            continue;
+        }
 
         crab.state_count += 1;
         let rand_bool = |true_bias: u8| -> bool { rng.u8(0..(1_u8 + true_bias)) > 0 };
@@ -169,7 +230,6 @@ fn update_crabs(
         };
 
         let pick_next_move = |crab: &CrabCritter| {
-            let distance_from_home = pos.x - crab.start_pos.x;
             let pause_bias = if crab.state.is_moving() { 2 } else { 0 };
 
             if rand_bool(pause_bias) {
@@ -224,13 +284,10 @@ fn update_crabs(
                             }
                         }
                     }
+                    _ => {}
                 }
             }
         }
-
-        let body = bodies.get_mut(entity).unwrap();
-        let sprite = sprites.get_mut(entity).unwrap();
-        let animated_sprite = animated_sprites.get_mut(entity).unwrap();
 
         match &crab.state {
             CrabState::Paused => {
@@ -250,6 +307,19 @@ fn update_crabs(
                 let direction = (pos.x - scared_of_pos.x).signum();
                 body.velocity.x = direction * *run_speed;
             }
+            _ => {}
         }
     }
+}
+
+fn finished_playing(
+    AnimatedSprite {
+        index,
+        frames,
+        fps,
+        timer,
+        repeat,
+    }: &AnimatedSprite,
+) -> Option<bool> {
+    (!repeat).then(|| *index == frames.len() - 1 && *timer > 1.0 / fps.max(f32::MIN_POSITIVE))
 }

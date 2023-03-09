@@ -544,6 +544,28 @@ impl<'a> CollisionWorld<'a> {
             .collect()
     }
 
+    /// Returns the collisions that one actor has with any other actors filtered by the given Fn
+    pub fn actor_collisions_filtered(
+        &self,
+        entity: Entity,
+        filter: impl Fn(Entity) -> bool,
+    ) -> Vec<Entity> {
+        if !self.actors.contains(entity) {
+            return default();
+        }
+        if !self.colliders.contains(entity) {
+            return default();
+        };
+
+        self.ctx
+            .collision_cache
+            .get(entity)
+            .iter()
+            .filter(|x| self.actors.contains(**x) && filter(**x))
+            .copied()
+            .collect()
+    }
+
     /// Put the entity's collider into descent mode so that it will fall through jump-through
     /// platforms.
     pub fn descent(&mut self, entity: Entity) {

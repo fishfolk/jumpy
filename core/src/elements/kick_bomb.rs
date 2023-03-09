@@ -184,6 +184,7 @@ fn update_lit_kick_bombs(
     mut transforms: CompMut<Transform>,
     mut commands: Commands,
     spawners: Comp<DehydrateOutOfBounds>,
+    invincibles: CompMut<Invincibility>,
 ) {
     for (entity, (kick_bomb, element_handle, spawner)) in
         entities.iter_with((&mut lit_grenades, &element_handles, &spawners))
@@ -238,7 +239,7 @@ fn update_lit_kick_bombs(
         }
         // The item is on the ground
         else if let Some(player_entity) = collision_world
-            .actor_collisions(entity)
+            .actor_collisions_filtered(entity, |e| invincibles.get(e).is_none())
             .into_iter()
             .find(|&x| player_indexes.contains(x))
         {

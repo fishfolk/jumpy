@@ -206,9 +206,8 @@ fn update_wearer(
             continue;
         }
         collision_world
-            .actor_collisions(entity)
+            .actor_collisions_filtered(entity, |e| player_indexes.contains(e))
             .into_iter()
-            .filter(|&x| player_indexes.contains(x))
             .for_each(|player| {
                 let wearer_transform = transforms
                     .get(entity)

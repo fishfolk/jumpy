@@ -42,12 +42,14 @@ fn hydrate(
 }
 
 fn update(
+    game_meta: Res<CoreMetaArc>,
     mut entities: ResMut<Entities>,
     mut current_spawner: ResMut<CurrentSpawner>,
     player_spawners: Comp<PlayerSpawner>,
     mut player_indexes: CompMut<PlayerIdx>,
     mut transforms: CompMut<Transform>,
     player_inputs: Res<PlayerInputs>,
+    mut invincibles: CompMut<Invincibility>,
 ) {
     let alive_players = entities
         .iter_with(&player_indexes)
@@ -76,6 +78,10 @@ fn update(
             let player_ent = entities.create();
             player_indexes.insert(player_ent, PlayerIdx(i));
             transforms.insert(player_ent, Transform::from_translation(spawn_point));
+            invincibles.insert(
+                player_ent,
+                Invincibility::new(game_meta.config.respawn_invincibility_time),
+            );
         }
     }
 }

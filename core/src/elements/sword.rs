@@ -116,6 +116,7 @@ fn update(
     mut commands: Commands,
     mut player_layers: CompMut<PlayerLayers>,
     transforms: CompMut<Transform>,
+    invincibles: CompMut<Invincibility>,
 ) {
     for (entity, (sword, element_handle)) in entities.iter_with((&mut swords, &element_handles)) {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -275,14 +276,15 @@ fn update(
                 let sword_transform = transforms.get(entity).unwrap();
 
                 collision_world
-                    .actor_collisions(entity)
-                    .into_iter()
-                    .filter(|&x| {
-                        player_indexes.contains(x) && {
-                            let player_body = bodies.get(x).unwrap();
-                            (player_body.velocity - body.velocity).length() >= *killing_speed
-                        }
+                    .actor_collisions_filtered(entity, |e| {
+                        player_indexes.contains(e)
+                            && {
+                                let player_body = bodies.get(e).unwrap();
+                                (player_body.velocity - body.velocity).length() >= *killing_speed
+                            }
+                            && invincibles.get(e).is_none()
                     })
+                    .into_iter()
                     .for_each(|player| {
                         commands.add(PlayerCommand::kill(
                             player,

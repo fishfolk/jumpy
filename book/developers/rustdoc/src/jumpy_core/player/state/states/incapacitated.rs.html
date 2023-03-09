@@ -57,9 +57,19 @@
 <a href="#56" id="56">56</a>
 <a href="#57" id="57">57</a>
 <a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub const </span>ID: Key = <span class="macro">key!</span>(<span class="string">&quot;core::incapacitated&quot;</span>);
+
+<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
+    PlayerState::add_player_state_update_system(session, handle_player_state);
+}
+
 <span class="kw">const </span>SLOWING_SPEED: f32 = <span class="number">0.3</span>;
 
 <span class="kw">pub fn </span>handle_player_state(

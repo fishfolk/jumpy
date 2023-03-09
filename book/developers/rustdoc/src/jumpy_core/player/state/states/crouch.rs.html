@@ -109,29 +109,15 @@
 <a href="#108" id="108">108</a>
 <a href="#109" id="109">109</a>
 <a href="#110" id="110">110</a>
-<a href="#111" id="111">111</a>
-<a href="#112" id="112">112</a>
-<a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
-<a href="#115" id="115">115</a>
-<a href="#116" id="116">116</a>
-<a href="#117" id="117">117</a>
-<a href="#118" id="118">118</a>
-<a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub const </span>ID: Key = <span class="macro">key!</span>(<span class="string">&quot;core::crouch&quot;</span>);
+
+<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
+    PlayerState::add_player_state_transition_system(session, player_state_transition);
+    PlayerState::add_player_state_update_system(session, handle_player_state);
+    PlayerState::add_player_state_update_system(session, use_drop_or_grab_items_system(ID));
+}
 
 <span class="kw">pub fn </span>player_state_transition(
     entities: Res&lt;Entities&gt;,
@@ -186,29 +172,15 @@
     <span class="kw-2">mut </span>animations: CompMut&lt;AnimationBankSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     player_assets: BevyAssets&lt;PlayerMeta&gt;,
-    <span class="kw-2">mut </span>inventories: CompMut&lt;Inventory&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
-    items: Comp&lt;Item&gt;,
-    <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
-    collision_world: CollisionWorld,
-    <span class="kw-2">mut </span>commands: Commands,
 ) {
-    <span class="comment">// Collect a list of items that are being held by players
-    </span><span class="kw">let </span>held_items = entities
-        .iter_with(<span class="kw-2">&amp;</span>inventories)
-        .filter_map(|(_ent, inventory)| inventory.<span class="number">0</span>)
-        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-
-    <span class="kw">for </span>(player_ent, (state, player_idx, animation, body, inventory, transform)) <span class="kw">in </span>entities
-        .iter_with((
-            <span class="kw-2">&amp;</span>player_states,
-            <span class="kw-2">&amp;</span>player_indexes,
-            <span class="kw-2">&amp;mut </span>animations,
-            <span class="kw-2">&amp;mut </span>bodies,
-            <span class="kw-2">&amp;mut </span>inventories,
-            <span class="kw-2">&amp;mut </span>transforms,
-        ))
-    {
+    <span class="kw">for </span>(_player_ent, (state, player_idx, animation, body, transform)) <span class="kw">in </span>entities.iter_with((
+        <span class="kw-2">&amp;</span>player_states,
+        <span class="kw-2">&amp;</span>player_indexes,
+        <span class="kw-2">&amp;mut </span>animations,
+        <span class="kw-2">&amp;mut </span>bodies,
+        <span class="kw-2">&amp;mut </span>transforms,
+    )) {
         <span class="kw">if </span>state.current != ID {
             <span class="kw">continue</span>;
         }
@@ -245,18 +217,6 @@
         <span class="kw">if </span>control.jump_just_pressed {
             body.fall_through = <span class="bool-val">true</span>;
         }
-
-        use_drop_or_grab_items(
-            player_ent,
-            meta,
-            control,
-            inventory,
-            <span class="kw-2">&amp;</span>collision_world,
-            <span class="kw-2">&amp;</span>items,
-            <span class="kw-2">&amp;</span>held_items,
-            <span class="kw-2">&amp;mut </span>audio_events,
-            <span class="kw-2">&amp;mut </span>commands,
-        );
     }
 }
 </code></pre></div>

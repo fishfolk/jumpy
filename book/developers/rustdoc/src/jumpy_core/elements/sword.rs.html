@@ -299,12 +299,6 @@
 <a href="#298" id="298">298</a>
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{damage::DamageRegion, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -345,6 +339,7 @@
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>items: CompMut&lt;Item&gt;,
     <span class="kw-2">mut </span>item_throws: CompMut&lt;ItemThrow&gt;,
+    <span class="kw-2">mut </span>item_grabs: CompMut&lt;ItemGrab&gt;,
     <span class="kw-2">mut </span>respawn_points: CompMut&lt;DehydrateOutOfBounds&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
@@ -364,6 +359,8 @@
 
         <span class="kw">if let </span>BuiltinElementKind::Sword {
             atlas,
+            fin_anim,
+            grab_offset,
             body_size,
             can_rotate,
             bounciness,
@@ -379,6 +376,14 @@
             item_throws.insert(
                 entity,
                 ItemThrow::strength(<span class="kw-2">*</span>throw_velocity).with_spin(<span class="kw-2">*</span>angular_velocity),
+            );
+            item_grabs.insert(
+                entity,
+                ItemGrab {
+                    fin_anim: <span class="kw-2">*</span>fin_anim,
+                    sync_animation: <span class="bool-val">false</span>,
+                    grab_offset: <span class="kw-2">*</span>grab_offset,
+                },
             );
             swords.insert(entity, Sword::default());
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
@@ -414,10 +419,9 @@
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
     <span class="kw-2">mut </span>swords: CompMut&lt;Sword&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
-    <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
+    bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
     items_dropped: CompMut&lt;ItemDropped&gt;,
-    <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     player_indexes: Comp&lt;PlayerIdx&gt;,
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>commands: Commands,
@@ -452,8 +456,6 @@
             cooldown_frames,
             sound,
             sound_volume,
-            grab_offset,
-            fin_anim,
             killing_speed,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
@@ -466,26 +468,12 @@
             .find_map(|x| x.filter(|x| x.inventory == entity))
         {
             <span class="kw">let </span>player = inventory.player;
-            <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
             <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
             <span class="kw">let </span>player_translation = transforms.get(player).unwrap().translation;
             <span class="kw">let </span>flip = sprite.flip_x;
             <span class="kw">let </span>flip_factor = <span class="kw">if </span>flip { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
 
             <span class="kw">let </span>player_layer = player_layers.get_mut(player).unwrap();
-            player_layer.fin_anim = <span class="kw-2">*</span>fin_anim;
-
-            <span class="comment">// Deactivate collisions while being held
-            </span>body.is_deactivated = <span class="bool-val">true</span>;
-
-            attachments.insert(
-                entity,
-                PlayerBodyAttachment {
-                    player,
-                    offset: grab_offset.extend(<span class="number">1.0</span>),
-                    sync_animation: <span class="bool-val">false</span>,
-                },
-            );
 
             <span class="comment">// Reset the sword animation if we&#39;re not swinging it
             </span><span class="kw">if </span>!<span class="macro">matches!</span>(sword.state, SwordState::Swinging { .. }) {

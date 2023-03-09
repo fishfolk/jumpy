@@ -109,6 +109,31 @@
 <a href="#108" id="108">108</a>
 <a href="#109" id="109">109</a>
 <a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub use </span>stage::<span class="kw-2">*</span>;
@@ -128,18 +153,24 @@
     <span class="doccomment">/// The ID of the state that the player was in in the last frame.
     </span><span class="kw">pub </span>last: Key,
 }
+<span class="kw">impl </span>PlayerState {
+    <span class="doccomment">/// Adds a system to the appropriate stage in a [`GameSession`] for a player state transition.
+    </span><span class="kw">pub fn </span>add_player_state_transition_system&lt;Args&gt;(
+        session: <span class="kw-2">&amp;mut </span>GameSession,
+        system: <span class="kw">impl </span>IntoSystem&lt;Args, ()&gt;,
+    ) {
+        session.stages.add_system_to_stage(PlayerStateStage, system);
+    }
 
-<span class="doccomment">/// Helper macro that adds the `player_state_transition` and `handle_player_state` systems from
-/// `module` to the appropriate stages.
-</span><span class="macro">macro_rules! </span>add_state_module {
-    (<span class="macro-nonterminal">$session</span>:ident, <span class="macro-nonterminal">$module</span>:ident) =&gt; {
-        <span class="macro-nonterminal">$session
-            </span>.stages
-            .add_system_to_stage(PlayerStateStage, <span class="macro-nonterminal">$module::player_state_transition</span>);
-        <span class="macro-nonterminal">$session
-            </span>.stages
-            .add_system_to_stage(CoreStage::PreUpdate, <span class="macro-nonterminal">$module::handle_player_state</span>);
-    };
+    <span class="doccomment">/// Adds a system to the appropriate stage in a [`GameSession`] for a player state update.
+    </span><span class="kw">pub fn </span>add_player_state_update_system&lt;Args&gt;(
+        session: <span class="kw-2">&amp;mut </span>GameSession,
+        system: <span class="kw">impl </span>IntoSystem&lt;Args, ()&gt;,
+    ) {
+        session
+            .stages
+            .add_system_to_stage(CoreStage::PreUpdate, system);
+    }
 }
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -152,16 +183,13 @@
         .stages
         .add_system_to_stage(CoreStage::Last, update_player_state_age);
 
-    <span class="macro">add_state_module!</span>(session, default);
-    <span class="macro">add_state_module!</span>(session, idle);
-    <span class="macro">add_state_module!</span>(session, crouch);
-    <span class="macro">add_state_module!</span>(session, midair);
-    <span class="macro">add_state_module!</span>(session, walk);
-    <span class="macro">add_state_module!</span>(session, dead);
-
-    session
-        .stages
-        .add_system_to_stage(CoreStage::PreUpdate, incapacitated::handle_player_state);
+    default::install(session);
+    idle::install(session);
+    crouch::install(session);
+    midair::install(session);
+    walk::install(session);
+    dead::install(session);
+    incapacitated::install(session);
 }
 
 <span class="kw">fn </span>update_player_state_age(entities: Res&lt;Entities&gt;, <span class="kw-2">mut </span>player_states: CompMut&lt;PlayerState&gt;) {
@@ -170,54 +198,76 @@
     }
 }
 
-<span class="kw">fn </span>use_drop_or_grab_items(
-    player_ent: Entity,
-    meta: <span class="kw-2">&amp;</span>PlayerMeta,
-    control: <span class="kw-2">&amp;</span>PlayerControl,
-    inventory: <span class="kw-2">&amp;</span>Inventory,
-    collision_world: <span class="kw-2">&amp;</span>CollisionWorld,
-    items: <span class="kw-2">&amp;</span>Comp&lt;Item&gt;,
-    held_items: <span class="kw-2">&amp;</span>[Entity],
-    audio_events: <span class="kw-2">&amp;mut </span>AudioEvents,
-    commands: <span class="kw-2">&amp;mut </span>Commands,
-) {
-    <span class="comment">// If we are grabbing
-    </span><span class="kw">if </span>control.grab_just_pressed {
-        <span class="kw">if </span>inventory.is_none() {
-            <span class="comment">// If we don&#39;t have an item
-            </span><span class="kw">let </span>colliders = collision_world
-                <span class="comment">// Get all things colliding with the player
-                </span>.actor_collisions(player_ent)
-                .into_iter()
-                <span class="comment">// Filter out anything not an item
-                </span>.filter(|ent| items.contains(<span class="kw-2">*</span>ent))
-                <span class="comment">// Filter out any items held by other players
-                </span>.filter(|ent| !held_items.contains(ent))
-                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+<span class="kw">fn </span>use_drop_or_grab_items_system(id: Key) -&gt; System {
+    (<span class="kw">move </span>|entities: Res&lt;Entities&gt;,
+           player_inputs: Res&lt;PlayerInputs&gt;,
+           player_indexes: Comp&lt;PlayerIdx&gt;,
+           player_states: Comp&lt;PlayerState&gt;,
+           player_assets: BevyAssets&lt;PlayerMeta&gt;,
+           items: Comp&lt;Item&gt;,
+           collision_world: CollisionWorld,
+           <span class="kw-2">mut </span>inventories: CompMut&lt;Inventory&gt;,
+           <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
+           <span class="kw-2">mut </span>commands: Commands| {
+        <span class="comment">// Collect a list of items that are being held by players
+        </span><span class="kw">let </span>held_items = entities
+            .iter_with(<span class="kw-2">&amp;</span>inventories)
+            .filter_map(|(_ent, inventory)| inventory.<span class="number">0</span>)
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
-            <span class="comment">// Grab the first item we are touching
-            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = colliders.get(<span class="number">0</span>) {
-                <span class="comment">// Add the item to the player inventory
-                </span>commands.add(PlayerCommand::set_inventory(player_ent, <span class="prelude-val">Some</span>(<span class="kw-2">*</span>item)));
+        <span class="kw">for </span>(player_ent, (player_state, player_idx, inventory)) <span class="kw">in
+            </span>entities.iter_with((<span class="kw-2">&amp;</span>player_states, <span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;mut </span>inventories))
+        {
+            <span class="kw">if </span>player_state.current != id {
+                <span class="kw">continue</span>;
+            }
+            <span class="kw">let </span>meta_handle = player_inputs.players[player_idx.<span class="number">0</span>]
+                .selected_player
+                .get_bevy_handle();
+            <span class="kw">let </span><span class="prelude-val">Some</span>(meta) = player_assets.get(<span class="kw-2">&amp;</span>meta_handle) <span class="kw">else </span>{ <span class="kw">continue</span>; };
 
-                <span class="comment">// Play grab sound
-                </span>audio_events.play(meta.sounds.grab.clone(), meta.sounds.grab_volume);
+            <span class="kw">let </span>control = <span class="kw-2">&amp;</span>player_inputs.players[player_idx.<span class="number">0</span>].control;
+            <span class="comment">// If we are grabbing
+            </span><span class="kw">if </span>control.grab_just_pressed {
+                <span class="kw">if </span>inventory.is_none() {
+                    <span class="comment">// If we don&#39;t have an item
+                    </span><span class="kw">let </span>colliders = collision_world
+                        <span class="comment">// Get all things colliding with the player
+                        </span>.actor_collisions(player_ent)
+                        .into_iter()
+                        <span class="comment">// Filter out anything not an item
+                        </span>.filter(|ent| items.contains(<span class="kw-2">*</span>ent))
+                        <span class="comment">// TODO: Use the ItemGrabbed tag for this detection after fixing the ItemGrabbed handling
+                        // Filter out any items held by other players
+                        </span>.filter(|ent| !held_items.contains(ent))
+                        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+
+                    <span class="comment">// Grab the first item we are touching
+                    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = colliders.get(<span class="number">0</span>) {
+                        <span class="comment">// Add the item to the player inventory
+                        </span>commands.add(PlayerCommand::set_inventory(player_ent, <span class="prelude-val">Some</span>(<span class="kw-2">*</span>item)));
+
+                        <span class="comment">// Play grab sound
+                        </span>audio_events.play(meta.sounds.grab.clone(), meta.sounds.grab_volume);
+                    }
+
+                <span class="comment">// If we are already carrying an item
+                </span>} <span class="kw">else </span>{
+                    <span class="comment">// Drop it
+                    </span>commands.add(PlayerCommand::set_inventory(player_ent, <span class="prelude-val">None</span>));
+
+                    <span class="comment">// Play drop sound
+                    </span>audio_events.play(meta.sounds.drop.clone(), meta.sounds.drop_volume);
+                }
             }
 
-        <span class="comment">// If we are already carrying an item
-        </span>} <span class="kw">else </span>{
-            <span class="comment">// Drop it
-            </span>commands.add(PlayerCommand::set_inventory(player_ent, <span class="prelude-val">None</span>));
-
-            <span class="comment">// Play drop sound
-            </span>audio_events.play(meta.sounds.drop.clone(), meta.sounds.drop_volume);
+            <span class="comment">// If we are using an item
+            </span><span class="kw">if </span>control.shoot_just_pressed &amp;&amp; inventory.is_some() {
+                commands.add(PlayerCommand::use_item(player_ent));
+            }
         }
-    }
-
-    <span class="comment">// If we are using an item
-    </span><span class="kw">if </span>control.shoot_just_pressed &amp;&amp; inventory.is_some() {
-        commands.add(PlayerCommand::use_item(player_ent));
-    }
+    })
+    .system()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

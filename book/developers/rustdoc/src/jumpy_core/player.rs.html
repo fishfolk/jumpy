@@ -910,7 +910,7 @@
 
             <span class="comment">// If there is a new item, grab it
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = item {
-                items_grabbed.insert(item, ItemGrabbed);
+                items_grabbed.insert(item, ItemGrabbed { player });
             }
 
             <span class="comment">// Update the inventory

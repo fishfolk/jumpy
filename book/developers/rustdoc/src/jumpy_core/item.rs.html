@@ -203,11 +203,68 @@
 <a href="#202" id="202">202</a>
 <a href="#203" id="203">203</a>
 <a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
     session
         .stages
+        .add_system_to_stage(CoreStage::Last, grab_items)
         .add_system_to_stage(CoreStage::Last, throw_dropped_items);
 }
 
@@ -281,16 +338,71 @@
 <span class="doccomment">/// Marker component added to items when they are grabbed.
 </span><span class="attr">#[derive(Clone, Copy, TypeUlid)]
 #[ulid = <span class="string">&quot;01GP4DJ2RPYTDPKSKEK8JKK9VT&quot;</span>]
-</span><span class="kw">pub struct </span>ItemGrabbed;
+</span><span class="kw">pub struct </span>ItemGrabbed {
+    <span class="doccomment">/// The player that grabbed the item
+    </span><span class="kw">pub </span>player: Entity,
+}
 
 <span class="doccomment">/// Marker component added to items when they are used.
 </span><span class="attr">#[derive(Clone, Copy, TypeUlid)]
 #[ulid = <span class="string">&quot;01GP4DJ84TFB8Z7H9VY7Y0R47H&quot;</span>]
 </span><span class="kw">pub struct </span>ItemUsed;
 
+<span class="doccomment">/// Component defining the grab settings when an item is grabbed.
+///
+/// Mainly handled by the [`grab_items`] system which consumes the
+/// [`ItemGrabbed`] components for entities which have this component.
+/// [`Item`] is required for the system to take affect.
+</span><span class="attr">#[derive(Clone, Copy, TypeUlid)]
+#[ulid = <span class="string">&quot;01GTJHWG4C2AW6KCY0P11MZ1KW&quot;</span>]
+</span><span class="kw">pub struct </span>ItemGrab {
+    <span class="kw">pub </span>fin_anim: Key,
+    <span class="kw">pub </span>grab_offset: Vec2,
+    <span class="kw">pub </span>sync_animation: bool,
+}
+
+<span class="kw">pub fn </span>grab_items(
+    entities: Res&lt;Entities&gt;,
+    item_grab: Comp&lt;ItemGrab&gt;,
+    items: Comp&lt;Item&gt;,
+    <span class="kw-2">mut </span>items_grabbed: CompMut&lt;ItemGrabbed&gt;,
+    <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
+    <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
+    <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
+) {
+    <span class="kw">for </span>(entity, (_item, item_grab)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>item_grab)) {
+        <span class="kw">let </span>ItemGrab {
+            fin_anim,
+            grab_offset,
+            sync_animation,
+        } = <span class="kw-2">*</span>item_grab;
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(ItemGrabbed { player }) = items_grabbed.remove(entity) {
+            items_grabbed.remove(entity);
+
+            player_layers.get_mut(player).unwrap().fin_anim = fin_anim;
+
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(body) = bodies.get_mut(entity) {
+                body.is_deactivated = <span class="bool-val">true
+            </span>}
+
+            attachments.insert(
+                entity,
+                PlayerBodyAttachment {
+                    player,
+                    offset: grab_offset.extend(<span class="number">0.1</span>),
+                    sync_animation,
+                },
+            );
+        }
+    }
+}
+
 <span class="doccomment">/// Component defining the strength of the throw types when an item is dropped.
 ///
-/// Mainly handled by the [`throw_dropped_items`] system.
+/// Mainly handled by the [`throw_dropped_items`] system which consumes the
+/// [`ItemDropped`] components for entities which have this component.
+/// [`Item`] is required for the system to take affect.
 </span><span class="attr">#[derive(Clone, Copy, TypeUlid)]
 #[ulid = <span class="string">&quot;01GSGE6N4TSEMQ1DKDP5Y66TE4&quot;</span>]
 </span><span class="kw">pub struct </span>ItemThrow {

@@ -296,27 +296,6 @@
 <a href="#295" id="295">295</a>
 <a href="#296" id="296">296</a>
 <a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
-<a href="#312" id="312">312</a>
-<a href="#313" id="313">313</a>
-<a href="#314" id="314">314</a>
-<a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -351,6 +330,7 @@
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>items: CompMut&lt;Item&gt;,
     <span class="kw-2">mut </span>item_throws: CompMut&lt;ItemThrow&gt;,
+    <span class="kw-2">mut </span>item_grabs: CompMut&lt;ItemGrab&gt;,
     <span class="kw-2">mut </span>respawn_points: CompMut&lt;DehydrateOutOfBounds&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
@@ -370,6 +350,8 @@
 
         <span class="kw">if let </span>BuiltinElementKind::Grenade {
             atlas,
+            fin_anim,
+            grab_offset,
             body_diameter,
             can_rotate,
             bounciness,
@@ -386,6 +368,14 @@
             item_throws.insert(
                 entity,
                 ItemThrow::strength(<span class="kw-2">*</span>throw_velocity).with_spin(<span class="kw-2">*</span>angular_velocity),
+            );
+            item_grabs.insert(
+                entity,
+                ItemGrab {
+                    fin_anim: <span class="kw-2">*</span>fin_anim,
+                    sync_animation: <span class="bool-val">false</span>,
+                    grab_offset: <span class="kw-2">*</span>grab_offset,
+                },
             );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
@@ -418,11 +408,7 @@
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
     <span class="kw-2">mut </span>idle_grenades: CompMut&lt;IdleGrenade&gt;,
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
-    <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
-    <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
-    <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
-    player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>commands: Commands,
 ) {
     <span class="kw">for </span>(entity, (_grenade, element_handle)) <span class="kw">in
@@ -433,54 +419,26 @@
         };
 
         <span class="kw">let </span>BuiltinElementKind::Grenade {
-            grab_offset,
             fuse_sound,
             fuse_sound_volume,
-            fin_anim,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
             <span class="macro">unreachable!</span>();
         };
 
-        <span class="comment">// If the item is being held
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
-            <span class="kw">let </span>player = inventory.player;
-            <span class="kw">let </span>player_layers = player_layers.get_mut(player).unwrap();
-            player_layers.fin_anim = <span class="kw-2">*</span>fin_anim;
-            <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-
-            <span class="comment">// Deactivate held items
-            </span>body.is_deactivated = <span class="bool-val">true</span>;
-
-            <span class="comment">// Attach to the player
-            </span>attachments.insert(
-                entity,
-                PlayerBodyAttachment {
-                    player,
-                    offset: grab_offset.extend(<span class="number">0.1</span>),
-                    sync_animation: <span class="bool-val">false</span>,
+        <span class="kw">if </span>items_used.get(entity).is_some() {
+            audio_events.play(fuse_sound.clone(), <span class="kw-2">*</span>fuse_sound_volume);
+            items_used.remove(entity);
+            <span class="kw">let </span>animated_sprite = animated_sprites.get_mut(entity).unwrap();
+            animated_sprite.frames = Arc::from([<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]);
+            animated_sprite.repeat = <span class="bool-val">true</span>;
+            animated_sprite.fps = <span class="number">8.0</span>;
+            commands.add(
+                <span class="kw">move </span>|<span class="kw-2">mut </span>idle: CompMut&lt;IdleGrenade&gt;, <span class="kw-2">mut </span>lit: CompMut&lt;LitGrenade&gt;| {
+                    idle.remove(entity);
+                    lit.insert(entity, LitGrenade { age: <span class="number">0.0 </span>});
                 },
             );
-
-            <span class="comment">// If the item is being used
-            </span><span class="kw">let </span>item_used = items_used.get(entity).is_some();
-            <span class="kw">if </span>item_used {
-                audio_events.play(fuse_sound.clone(), <span class="kw-2">*</span>fuse_sound_volume);
-                items_used.remove(entity);
-                <span class="kw">let </span>animated_sprite = animated_sprites.get_mut(entity).unwrap();
-                animated_sprite.frames = Arc::from([<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]);
-                animated_sprite.repeat = <span class="bool-val">true</span>;
-                animated_sprite.fps = <span class="number">8.0</span>;
-                commands.add(
-                    <span class="kw">move </span>|<span class="kw-2">mut </span>idle: CompMut&lt;IdleGrenade&gt;, <span class="kw-2">mut </span>lit: CompMut&lt;LitGrenade&gt;| {
-                        idle.remove(entity);
-                        lit.insert(entity, LitGrenade { age: <span class="number">0.0 </span>});
-                    },
-                );
-            }
         }
     }
 }

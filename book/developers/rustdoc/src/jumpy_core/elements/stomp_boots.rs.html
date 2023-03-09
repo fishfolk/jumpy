@@ -192,43 +192,6 @@
 <a href="#191" id="191">191</a>
 <a href="#192" id="192">192</a>
 <a href="#193" id="193">193</a>
-<a href="#194" id="194">194</a>
-<a href="#195" id="195">195</a>
-<a href="#196" id="196">196</a>
-<a href="#197" id="197">197</a>
-<a href="#198" id="198">198</a>
-<a href="#199" id="199">199</a>
-<a href="#200" id="200">200</a>
-<a href="#201" id="201">201</a>
-<a href="#202" id="202">202</a>
-<a href="#203" id="203">203</a>
-<a href="#204" id="204">204</a>
-<a href="#205" id="205">205</a>
-<a href="#206" id="206">206</a>
-<a href="#207" id="207">207</a>
-<a href="#208" id="208">208</a>
-<a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
-<a href="#211" id="211">211</a>
-<a href="#212" id="212">212</a>
-<a href="#213" id="213">213</a>
-<a href="#214" id="214">214</a>
-<a href="#215" id="215">215</a>
-<a href="#216" id="216">216</a>
-<a href="#217" id="217">217</a>
-<a href="#218" id="218">218</a>
-<a href="#219" id="219">219</a>
-<a href="#220" id="220">220</a>
-<a href="#221" id="221">221</a>
-<a href="#222" id="222">222</a>
-<a href="#223" id="223">223</a>
-<a href="#224" id="224">224</a>
-<a href="#225" id="225">225</a>
-<a href="#226" id="226">226</a>
-<a href="#227" id="227">227</a>
-<a href="#228" id="228">228</a>
-<a href="#229" id="229">229</a>
-<a href="#230" id="230">230</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -260,6 +223,8 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>items: CompMut&lt;Item&gt;,
+    <span class="kw-2">mut </span>item_throws: CompMut&lt;ItemThrow&gt;,
+    <span class="kw-2">mut </span>item_grabs: CompMut&lt;ItemGrab&gt;,
     <span class="kw-2">mut </span>respawn_points: CompMut&lt;DehydrateOutOfBounds&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
@@ -278,6 +243,7 @@
         };
 
         <span class="kw">if let </span>BuiltinElementKind::StompBoots {
+            grab_offset,
             body_size,
             map_icon,
             ..
@@ -287,6 +253,15 @@
 
             <span class="kw">let </span>entity = entities.create();
             items.insert(entity, Item);
+            item_throws.insert(entity, ItemThrow::strength(<span class="number">0.0</span>));
+            item_grabs.insert(
+                entity,
+                ItemGrab {
+                    fin_anim: <span class="macro">key!</span>(<span class="string">&quot;grab_2&quot;</span>),
+                    sync_animation: <span class="bool-val">false</span>,
+                    grab_offset: <span class="kw-2">*</span>grab_offset,
+                },
+            );
             stomp_boots.insert(entity, StompBoots);
             atlas_sprites.insert(entity, AtlasSprite::new(map_icon.clone()));
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
@@ -311,12 +286,8 @@
     entities: Res&lt;Entities&gt;,
     element_handles: Comp&lt;ElementHandle&gt;,
     element_assets: BevyAssets&lt;ElementMeta&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>stomp_boots: CompMut&lt;StompBoots&gt;,
-    <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
-    <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     items_used: Comp&lt;ItemUsed&gt;,
-    <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>inventoris: CompMut&lt;Inventory&gt;,
     <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
@@ -331,7 +302,6 @@
         };
 
         <span class="kw">let </span>BuiltinElementKind::StompBoots {
-            grab_offset,
             player_decoration,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
@@ -339,26 +309,10 @@
         };
 
         <span class="comment">// If the item is being held
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(inventory) = player_inventories
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Inv { player, .. }) = player_inventories
             .iter()
             .find_map(|x| x.filter(|x| x.inventory == entity))
         {
-            <span class="kw">let </span>player = inventory.player;
-            <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();
-
-            <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-            body.is_deactivated = <span class="bool-val">true</span>;
-
-            <span class="kw">let </span>flip = player_sprite.flip_x;
-            <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
-            sprite.flip_x = flip;
-            <span class="kw">let </span>flip_factor = <span class="kw">if </span>flip { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
-            <span class="kw">let </span>player_translation = transforms.get(player).unwrap().translation;
-            <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            <span class="kw">let </span>offset = Vec3::new(grab_offset.x * flip_factor, grab_offset.y, <span class="number">1.0</span>);
-            transform.translation = player_translation + offset;
-            transform.rotation = Quat::IDENTITY;
-
             <span class="comment">// If the item is being used
             </span><span class="kw">let </span>is_item_used = items_used.get(entity).is_some();
             <span class="kw">let </span>player_decoration = player_decoration.clone();
@@ -387,34 +341,6 @@
                     },
                 );
             }
-        }
-
-        <span class="comment">// If the item was dropped
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(dropped) = items_dropped.get(entity).copied() {
-            <span class="kw">let </span>player = dropped.player;
-
-            items_dropped.remove(entity);
-            <span class="kw">let </span>player_translation = transforms.get(dropped.player).unwrap().translation;
-            <span class="kw">let </span>player_velocity = bodies.get(player).unwrap().velocity;
-
-            <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-            <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
-
-            <span class="comment">// Re-activate physics
-            </span>body.is_deactivated = <span class="bool-val">false</span>;
-
-            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>sprite.flip_x {
-                Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
-            } <span class="kw">else </span>{
-                Vec2::ONE
-            };
-            body.velocity = horizontal_flip_factor + player_velocity;
-
-            body.is_spawning = <span class="bool-val">true</span>;
-
-            <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (<span class="kw-2">*</span>grab_offset * horizontal_flip_factor).extend(<span class="number">0.0</span>);
         }
     }
 }

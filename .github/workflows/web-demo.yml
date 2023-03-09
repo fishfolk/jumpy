@@ -21,15 +21,6 @@ jobs:
       - name: 🧰 Install Just
         run: curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
 
-      - name: ♻ ️Cargo Registry Cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/git/db
-          key: cargo-registry
-
       - name: 🦀 Install Rust Toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -41,6 +32,19 @@ jobs:
         name: 🔧 Wasm Bindgen
         with:
           version: "0.2.84"
+
+      - uses: actions/cache@v3
+        name: ♻️ Cache Cargo
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            web-target/
+          key: web-release-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            web-release-
 
       - name: 🔨 Build WASM Release
         run: just build-release-web

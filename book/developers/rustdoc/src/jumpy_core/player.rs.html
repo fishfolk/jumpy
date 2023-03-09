@@ -718,6 +718,7 @@
 <a href="#717" id="717">717</a>
 <a href="#718" id="718">718</a>
 <a href="#719" id="719">719</a>
+<a href="#720" id="720">720</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::VecDeque;
 
 <span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>};
@@ -1246,7 +1247,8 @@
                       game_meta: Res&lt;CoreMetaArc&gt;,
                       <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
                       <span class="kw-2">mut </span>inventories: CompMut&lt;Inventory&gt;| {
-                    <span class="kw">let </span>element_handle = element_handles
+                    <span class="kw">let </span>element_handle = game_meta
+                        .map_elements
                         .iter()
                         .find(|handle| {
                             <span class="macro">matches!</span>(
@@ -1276,7 +1278,7 @@
                         swords.insert(sword_ent, sword::Sword::default());
                         atlas_sprites.insert(sword_ent, AtlasSprite::new(atlas.clone()));
                         transforms.insert(sword_ent, default());
-                        element_handles.insert(sword_ent, element_handle.clone());
+                        element_handles.insert(sword_ent, ElementHandle(element_handle.clone()));
                         hydrated.insert(sword_ent, MapElementHydrated);
                         bodies.insert(
                             sword_ent,

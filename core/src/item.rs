@@ -3,6 +3,7 @@ use crate::prelude::*;
 pub fn install(session: &mut GameSession) {
     session
         .stages
+        .add_system_to_stage(CoreStage::Last, grab_items)
         .add_system_to_stage(CoreStage::Last, throw_dropped_items);
 }
 
@@ -76,16 +77,71 @@ pub struct ItemDropped {
 /// Marker component added to items when they are grabbed.
 #[derive(Clone, Copy, TypeUlid)]
 #[ulid = "01GP4DJ2RPYTDPKSKEK8JKK9VT"]
-pub struct ItemGrabbed;
+pub struct ItemGrabbed {
+    /// The player that grabbed the item
+    pub player: Entity,
+}
 
 /// Marker component added to items when they are used.
 #[derive(Clone, Copy, TypeUlid)]
 #[ulid = "01GP4DJ84TFB8Z7H9VY7Y0R47H"]
 pub struct ItemUsed;
 
+/// Component defining the grab settings when an item is grabbed.
+///
+/// Mainly handled by the [`grab_items`] system which consumes the
+/// [`ItemGrabbed`] components for entities which have this component.
+/// [`Item`] is required for the system to take affect.
+#[derive(Clone, Copy, TypeUlid)]
+#[ulid = "01GTJHWG4C2AW6KCY0P11MZ1KW"]
+pub struct ItemGrab {
+    pub fin_anim: Key,
+    pub grab_offset: Vec2,
+    pub sync_animation: bool,
+}
+
+pub fn grab_items(
+    entities: Res<Entities>,
+    item_grab: Comp<ItemGrab>,
+    items: Comp<Item>,
+    mut items_grabbed: CompMut<ItemGrabbed>,
+    mut bodies: CompMut<KinematicBody>,
+    mut attachments: CompMut<PlayerBodyAttachment>,
+    mut player_layers: CompMut<PlayerLayers>,
+) {
+    for (entity, (_item, item_grab)) in entities.iter_with((&items, &item_grab)) {
+        let ItemGrab {
+            fin_anim,
+            grab_offset,
+            sync_animation,
+        } = *item_grab;
+
+        if let Some(ItemGrabbed { player }) = items_grabbed.remove(entity) {
+            items_grabbed.remove(entity);
+
+            player_layers.get_mut(player).unwrap().fin_anim = fin_anim;
+
+            if let Some(body) = bodies.get_mut(entity) {
+                body.is_deactivated = true
+            }
+
+            attachments.insert(
+                entity,
+                PlayerBodyAttachment {
+                    player,
+                    offset: grab_offset.extend(0.1),
+                    sync_animation,
+                },
+            );
+        }
+    }
+}
+
 /// Component defining the strength of the throw types when an item is dropped.
 ///
-/// Mainly handled by the [`throw_dropped_items`] system.
+/// Mainly handled by the [`throw_dropped_items`] system which consumes the
+/// [`ItemDropped`] components for entities which have this component.
+/// [`Item`] is required for the system to take affect.
 #[derive(Clone, Copy, TypeUlid)]
 #[ulid = "01GSGE6N4TSEMQ1DKDP5Y66TE4"]
 pub struct ItemThrow {

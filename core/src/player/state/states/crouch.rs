@@ -2,6 +2,12 @@ use super::*;
 
 pub const ID: Key = key!("core::crouch");
 
+pub fn install(session: &mut GameSession) {
+    PlayerState::add_player_state_transition_system(session, player_state_transition);
+    PlayerState::add_player_state_update_system(session, handle_player_state);
+    PlayerState::add_player_state_update_system(session, use_drop_or_grab_items_system(ID));
+}
+
 pub fn player_state_transition(
     entities: Res<Entities>,
     player_inputs: Res<PlayerInputs>,
@@ -55,29 +61,15 @@ pub fn handle_player_state(
     mut animations: CompMut<AnimationBankSprite>,
     mut bodies: CompMut<KinematicBody>,
     player_assets: BevyAssets<PlayerMeta>,
-    mut inventories: CompMut<Inventory>,
     mut transforms: CompMut<Transform>,
-    items: Comp<Item>,
-    mut audio_events: ResMut<AudioEvents>,
-    collision_world: CollisionWorld,
-    mut commands: Commands,
 ) {
-    // Collect a list of items that are being held by players
-    let held_items = entities
-        .iter_with(&inventories)
-        .filter_map(|(_ent, inventory)| inventory.0)
-        .collect::<Vec<_>>();
-
-    for (player_ent, (state, player_idx, animation, body, inventory, transform)) in entities
-        .iter_with((
-            &player_states,
-            &player_indexes,
-            &mut animations,
-            &mut bodies,
-            &mut inventories,
-            &mut transforms,
-        ))
-    {
+    for (_player_ent, (state, player_idx, animation, body, transform)) in entities.iter_with((
+        &player_states,
+        &player_indexes,
+        &mut animations,
+        &mut bodies,
+        &mut transforms,
+    )) {
         if state.current != ID {
             continue;
         }
@@ -114,17 +106,5 @@ pub fn handle_player_state(
         if control.jump_just_pressed {
             body.fall_through = true;
         }
-
-        use_drop_or_grab_items(
-            player_ent,
-            meta,
-            control,
-            inventory,
-            &collision_world,
-            &items,
-            &held_items,
-            &mut audio_events,
-            &mut commands,
-        );
     }
 }

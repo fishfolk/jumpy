@@ -34,6 +34,7 @@ fn hydrate_crates(
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
     mut item_throws: CompMut<ItemThrow>,
+    mut item_grabs: CompMut<ItemGrab>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
@@ -53,6 +54,8 @@ fn hydrate_crates(
 
         let BuiltinElementKind::Crate{
             atlas,
+            fin_anim,
+            grab_offset,
             body_size,
             throw_velocity,
             bounciness,
@@ -67,6 +70,14 @@ fn hydrate_crates(
         items.insert(entity, Item);
         idle_crates.insert(entity, IdleCrate);
         item_throws.insert(entity, ItemThrow::strength(*throw_velocity));
+        item_grabs.insert(
+            entity,
+            ItemGrab {
+                fin_anim: *fin_anim,
+                sync_animation: false,
+                grab_offset: *grab_offset,
+            },
+        );
         atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
         respawn_points.insert(entity, DehydrateOutOfBounds(spawner));
         transforms.insert(entity, transform);
@@ -90,50 +101,16 @@ fn hydrate_crates(
 
 fn update_idle_crates(
     entities: Res<Entities>,
-    element_handles: Comp<ElementHandle>,
-    element_assets: BevyAssets<ElementMeta>,
     mut items_used: CompMut<ItemUsed>,
     mut idle_crates: CompMut<IdleCrate>,
-    mut bodies: CompMut<KinematicBody>,
-    mut attachments: CompMut<PlayerBodyAttachment>,
-    mut player_layers: CompMut<PlayerLayers>,
     player_inventories: PlayerInventories,
     mut commands: Commands,
 ) {
-    for (entity, (_idle_crate, element_handle)) in
-        entities.iter_with((&mut idle_crates, &element_handles))
-    {
-        let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
-            continue;
-        };
-
-        let BuiltinElementKind::Crate{
-            grab_offset,
-            fin_anim,
-            ..
-        } = &element_meta.builtin else {
-            unreachable!();
-        };
-
-        if let Some(inventory) = player_inventories
+    for (entity, _idle_crate) in entities.iter_with(&mut idle_crates) {
+        if let Some(Inv { player, .. }) = player_inventories
             .iter()
             .find_map(|x| x.filter(|x| x.inventory == entity))
         {
-            let player = inventory.player;
-            let player_layers = player_layers.get_mut(player).unwrap();
-            player_layers.fin_anim = *fin_anim;
-            let body = bodies.get_mut(entity).unwrap();
-            body.is_deactivated = true;
-
-            attachments.insert(
-                entity,
-                PlayerBodyAttachment {
-                    player,
-                    offset: grab_offset.extend(0.1),
-                    sync_animation: false,
-                },
-            );
-
             if items_used.get(entity).is_some() {
                 items_used.remove(entity);
                 commands.add(PlayerCommand::set_inventory(player, None));

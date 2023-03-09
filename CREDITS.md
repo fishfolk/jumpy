@@ -55,6 +55,7 @@
 - [@ArcOfDream](https://github.com/ArcOfDream) - Gameplay Code
 - José Luis Cruz [@joseluis](https://github.com/joseluis) - Keybindings
 - [@figsoda](https://github.com/iwek7) - Dependency Update
+- @Sarahboev - Artwork
 
 ## Tech Foundations
 

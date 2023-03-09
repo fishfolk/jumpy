@@ -43,6 +43,7 @@ map_tilesets:
   - /map/resources/ground_wood.atlas.yaml
   - /map/resources/ground_metal.atlas.yaml
   - /map/resources/ship_decorations.atlas.yaml
+  - /map/resources/coral.atlas.yaml
 
 map_elements:
   - /elements/decoration/anemones/anemones.element.yaml

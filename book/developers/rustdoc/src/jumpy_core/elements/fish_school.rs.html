@@ -299,6 +299,10 @@
 <a href="#298" id="298">298</a>
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, random::GlobalRng};
@@ -499,8 +503,12 @@
                 .actor_collisions(<span class="kw-2">*</span>fish_ent)
                 .into_iter()
                 .find(|ent| {
-                    !fishes.contains(<span class="kw-2">*</span>ent) &amp;&amp; bodies.get(<span class="kw-2">*</span>ent).unwrap().velocity.length() &gt; <span class="number">0.0
-                </span>});
+                    !fishes.contains(<span class="kw-2">*</span>ent)
+                        &amp;&amp; bodies
+                            .get(<span class="kw-2">*</span>ent)
+                            .map(|x| x.velocity != Vec2::ZERO)
+                            .unwrap_or_default()
+                });
 
             <span class="kw">let </span>fish = fishes.get_mut(<span class="kw-2">*</span>fish_ent).unwrap();
             <span class="kw">let </span>sprite = atlas_sprites.get_mut(<span class="kw-2">*</span>fish_ent).unwrap();

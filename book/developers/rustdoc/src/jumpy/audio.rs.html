@@ -78,6 +78,86 @@
 <a href="#77" id="77">77</a>
 <a href="#78" id="78">78</a>
 <a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use </span>bevy_kira_audio::{
@@ -85,14 +165,14 @@
 };
 <span class="kw">use </span>rand::{seq::SliceRandom, thread_rng};
 
-<span class="kw">use crate</span>::{metadata::GameMeta, prelude::<span class="kw-2">*</span>};
+<span class="kw">use crate</span>::{main_menu::MenuPage, metadata::GameMeta, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub struct </span>JumpyAudioPlugin;
 
 <span class="kw">impl </span>Plugin <span class="kw">for </span>JumpyAudioPlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
         app.add_plugin(bevy_kira_audio::AudioPlugin)
-            .init_resource::&lt;CurrentMusic&gt;()
+            .init_resource::&lt;MusicState&gt;()
             .init_resource::&lt;ShuffledPlaylist&gt;()
             .add_audio_channel::&lt;MusicChannel&gt;()
             .add_audio_channel::&lt;EffectsChannel&gt;()
@@ -107,9 +187,28 @@
 </span><span class="kw">pub struct </span>EffectsChannel;
 
 <span class="attr">#[derive(Resource, Clone, Debug, Default)]
-</span><span class="kw">pub struct </span>CurrentMusic {
-    <span class="kw">pub </span>instance: Handle&lt;AudioInstance&gt;,
-    <span class="kw">pub </span>idx: usize,
+</span><span class="kw">pub enum </span>MusicState {
+    <span class="attr">#[default]
+    </span><span class="prelude-val">None</span>,
+    MainMenu(Handle&lt;AudioInstance&gt;),
+    CharacterSelect(Handle&lt;AudioInstance&gt;),
+    Credits(Handle&lt;AudioInstance&gt;),
+    Fight {
+        instance: Handle&lt;AudioInstance&gt;,
+        idx: usize,
+    },
+}
+
+<span class="kw">impl </span>MusicState {
+    <span class="kw">fn </span>current_instance(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Handle&lt;AudioInstance&gt;&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            MusicState::None =&gt; <span class="prelude-val">None</span>,
+            MusicState::MainMenu(i) =&gt; <span class="prelude-val">Some</span>(i),
+            MusicState::CharacterSelect(i) =&gt; <span class="prelude-val">Some</span>(i),
+            MusicState::Credits(i) =&gt; <span class="prelude-val">Some</span>(i),
+            MusicState::Fight { instance, .. } =&gt; <span class="prelude-val">Some</span>(instance),
+        }
+    }
 }
 
 <span class="attr">#[derive(Resource, Deref, DerefMut, Clone, Debug, Default)]
@@ -119,42 +218,103 @@
     music: Res&lt;AudioChannel&lt;MusicChannel&gt;&gt;,
     effects: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;,
 ) {
-    music.set_volume(<span class="number">0.12</span>);
+    music.set_volume(<span class="number">0.22</span>);
     effects.set_volume(<span class="number">0.1</span>);
 }
 
-<span class="doccomment">/// Loops through all the game music as the game is on.
+<span class="kw">const </span>MUSIC_FADE_DURATION: Duration = Duration::from_millis(<span class="number">500</span>);
+
+<span class="doccomment">/// Plays music according to the game mode.
 </span><span class="kw">fn </span>music_system(
     game: Res&lt;GameMeta&gt;,
-    <span class="kw-2">mut </span>playlist: ResMut&lt;ShuffledPlaylist&gt;,
-    <span class="kw-2">mut </span>current_music: ResMut&lt;CurrentMusic&gt;,
-    audio_instances: Res&lt;Assets&lt;AudioInstance&gt;&gt;,
+    <span class="kw-2">mut </span>shuffled_fight_music: ResMut&lt;ShuffledPlaylist&gt;,
+    <span class="kw-2">mut </span>music_state: ResMut&lt;MusicState&gt;,
+    <span class="kw-2">mut </span>audio_instances: ResMut&lt;Assets&lt;AudioInstance&gt;&gt;,
     music: Res&lt;AudioChannel&lt;MusicChannel&gt;&gt;,
+    engine_state: Res&lt;CurrentState&lt;EngineState&gt;&gt;,
+    menu_page: Res&lt;MenuPage&gt;,
 ) {
-    <span class="kw">if </span>playlist.is_empty() {
-        <span class="kw">let </span><span class="kw-2">mut </span>songs = game.playlist.clone();
+    <span class="kw">if </span>shuffled_fight_music.is_empty() || engine_state.is_changed() {
+        <span class="kw">let </span><span class="kw-2">mut </span>songs = game.music.fight.clone();
         songs.shuffle(<span class="kw-2">&amp;mut </span>thread_rng());
-        <span class="kw-2">**</span>playlist = songs;
+        <span class="kw-2">**</span>shuffled_fight_music = songs;
     }
 
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(instance) = audio_instances.get(<span class="kw-2">&amp;</span>current_music.instance) {
-        <span class="kw">if let </span>PlaybackState::Stopped = instance.state() {
-            current_music.idx += <span class="number">1</span>;
-            current_music.idx %= playlist.len();
+    <span class="kw">match </span>engine_state.<span class="number">0 </span>{
+        EngineState::LoadingPlatformStorage | EngineState::LoadingGameData =&gt; (),
+        EngineState::InGame =&gt; {
+            <span class="kw">if let </span>MusicState::Fight { instance, idx } = <span class="kw-2">&amp;mut *</span>music_state {
+                <span class="kw">let </span>inst = audio_instances.get(instance).unwrap();
+                <span class="kw">if let </span>PlaybackState::Stopped = inst.state() {
+                    <span class="kw-2">*</span>idx += <span class="number">1</span>;
+                    <span class="kw-2">*</span>idx %= shuffled_fight_music.len();
 
-            current_music.instance = music
-                .play(playlist[current_music.idx].inner.clone_weak())
-                .linear_fade_in(Duration::from_secs_f32(<span class="number">0.5</span>))
-                .handle();
+                    <span class="kw-2">*</span>instance = music
+                        .play(shuffled_fight_music[<span class="kw-2">*</span>idx].inner.clone_weak())
+                        .linear_fade_in(MUSIC_FADE_DURATION)
+                        .handle();
+                }
+            } <span class="kw">else </span>{
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(instance) = music_state.current_instance() {
+                    <span class="kw">let </span>instance = audio_instances.get_mut(instance).unwrap();
+                    instance.stop(AudioTween::linear(MUSIC_FADE_DURATION));
+                }
+
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(song) = shuffled_fight_music.get(<span class="number">0</span>) {
+                    <span class="kw-2">*</span>music_state = MusicState::Fight {
+                        instance: music
+                            .play(song.inner.clone_weak())
+                            .linear_fade_in(MUSIC_FADE_DURATION)
+                            .handle(),
+                        idx: <span class="number">0</span>,
+                    };
+                }
+            }
         }
-    } <span class="kw">else if let </span><span class="prelude-val">Some</span>(song) = playlist.get(<span class="number">0</span>) {
-        <span class="kw">if </span>current_music.instance == default() {
-            current_music.instance = music
-                .play(song.inner.clone_weak())
-                .linear_fade_in(Duration::from_secs_f32(<span class="number">0.5</span>))
-                .handle();
-            current_music.idx = <span class="number">0</span>;
-        }
+        EngineState::MainMenu =&gt; <span class="kw">match </span><span class="kw-2">&amp;*</span>menu_page {
+            MenuPage::PlayerSelect | MenuPage::MapSelect { .. } =&gt; {
+                <span class="kw">if </span>!<span class="macro">matches!</span>(<span class="kw-2">*</span>music_state, MusicState::CharacterSelect(..)) {
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(instance) = music_state.current_instance() {
+                        <span class="kw">let </span>instance = audio_instances.get_mut(instance).unwrap();
+                        instance.stop(AudioTween::linear(MUSIC_FADE_DURATION));
+                    }
+                    <span class="kw-2">*</span>music_state = MusicState::CharacterSelect(
+                        music
+                            .play(game.music.character_screen.inner.clone_weak())
+                            .linear_fade_in(MUSIC_FADE_DURATION)
+                            .handle(),
+                    );
+                }
+            }
+            MenuPage::Home | MenuPage::Settings =&gt; {
+                <span class="kw">if </span>!<span class="macro">matches!</span>(<span class="kw-2">*</span>music_state, MusicState::MainMenu(..)) {
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(instance) = music_state.current_instance() {
+                        <span class="kw">let </span>instance = audio_instances.get_mut(instance).unwrap();
+                        instance.stop(AudioTween::linear(MUSIC_FADE_DURATION));
+                    }
+                    <span class="kw-2">*</span>music_state = MusicState::MainMenu(
+                        music
+                            .play(game.music.title_screen.inner.clone_weak())
+                            .linear_fade_in(MUSIC_FADE_DURATION)
+                            .handle(),
+                    );
+                }
+            }
+            MenuPage::Credits =&gt; {
+                <span class="kw">if </span>!<span class="macro">matches!</span>(<span class="kw-2">*</span>music_state, MusicState::Credits(..)) {
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(instance) = music_state.current_instance() {
+                        <span class="kw">let </span>instance = audio_instances.get_mut(instance).unwrap();
+                        instance.stop(AudioTween::linear(MUSIC_FADE_DURATION));
+                    }
+                    <span class="kw-2">*</span>music_state = MusicState::Credits(
+                        music
+                            .play(game.music.credits.inner.clone_weak())
+                            .linear_fade_in(MUSIC_FADE_DURATION)
+                            .handle(),
+                    );
+                }
+            }
+        },
     }
 }
 </code></pre></div>

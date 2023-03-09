@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["music_system","Loops through all the game music as the game is on."],["setup_audio_defaults",""]],"struct":[["CurrentMusic",""],["EffectsChannel",""],["JumpyAudioPlugin",""],["MusicChannel",""],["ShuffledPlaylist",""]]};
+window.SIDEBAR_ITEMS = {"constant":[["MUSIC_FADE_DURATION",""]],"enum":[["MusicState",""]],"fn":[["music_system","Plays music according to the game mode."],["setup_audio_defaults",""]],"struct":[["EffectsChannel",""],["JumpyAudioPlugin",""],["MusicChannel",""],["ShuffledPlaylist",""]]};

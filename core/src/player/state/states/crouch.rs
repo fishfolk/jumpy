@@ -89,9 +89,9 @@ pub fn handle_player_state(
         };
 
         if body.velocity.x == 0.0 {
+            animation.current = key!("crouch");
             if let ColliderShape::Rectangle { size } = &body.shape {
                 if *size != meta.body_size {
-                    animation.current = key!("crouch");
                     body.shape = ColliderShape::Rectangle {
                         size: meta.body_size,
                     };

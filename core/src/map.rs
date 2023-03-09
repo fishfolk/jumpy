@@ -239,7 +239,16 @@ fn spawn_map(
                     ..default()
                 },
             );
-            tile_collisions.insert(tile_ent, tile_meta.collision);
+            // TODO: Due to a bug in the way that collisions are handled in the
+            // `physics/collisions.rs` file, having an empty collision isn't equivalent to not
+            // having a collision component.
+            //
+            // We should fix this so that we can insert an empty tile collision kind and have that
+            // work properly. For now, though, just not adding the tile collider component behaves
+            // properly.
+            if tile_meta.collision != TileCollisionKind::Empty {
+                tile_collisions.insert(tile_ent, tile_meta.collision);
+            }
         }
         let layer_ent = entities.create();
         spawned_map_layer_metas.insert(layer_ent, SpawnedMapLayerMeta { layer_idx });

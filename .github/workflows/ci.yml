@@ -68,7 +68,9 @@ jobs:
             ~/.cargo/git/db/
             target/
             web-target/
-          key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
+          key: ci-${{ matrix.config.target }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ci-${{ matrix.config.target }}-
 
       - name: 🔧 Check
         uses: actions-rs/cargo@v1

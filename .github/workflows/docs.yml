@@ -39,7 +39,9 @@ jobs:
             ~/.cargo/git/db/
             target/
             web-target/
-          key: cargo-doc-${{ hashFiles('**/Cargo.lock') }}
+          key: docs-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            docs-
 
       - name: 🔨 Build Rustdoc
         run: |

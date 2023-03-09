@@ -302,7 +302,7 @@ fn update_crabs(
                 body.velocity.x = *walk_speed * direction;
             }
             CrabState::Fleeing { scared_of } => {
-                animated_sprite.fps *= 2.0;
+                animated_sprite.fps = *fps;
                 let scared_of_pos = get_scared_of_pos(*scared_of);
                 let direction = (pos.x - scared_of_pos.x).signum();
                 body.velocity.x = direction * *run_speed;

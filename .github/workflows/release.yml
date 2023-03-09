@@ -30,7 +30,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
             echo "args=--latest" >> $GITHUB_OUTPUT
-          else 
+          else
             echo "args=--unreleased" >> $GITHUB_OUTPUT
           fi
 
@@ -86,15 +86,6 @@ jobs:
           override: true
           profile: minimal
           target: ${{ matrix.config.target }}
-
-      - uses: actions/cache@v3
-        name: ♻️ Cache Cargo Registry
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-          key: cargo-registry
 
       - name: 🔨 Build
         uses: actions-rs/cargo@v1

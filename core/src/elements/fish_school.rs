@@ -198,7 +198,11 @@ pub fn update_fish_schools(
                 .actor_collisions(*fish_ent)
                 .into_iter()
                 .find(|ent| {
-                    !fishes.contains(*ent) && bodies.get(*ent).unwrap().velocity.length() > 0.0
+                    !fishes.contains(*ent)
+                        && bodies
+                            .get(*ent)
+                            .map(|x| x.velocity != Vec2::ZERO)
+                            .unwrap_or_default()
                 });
 
             let fish = fishes.get_mut(*fish_ent).unwrap();

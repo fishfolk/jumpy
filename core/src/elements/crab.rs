@@ -85,7 +85,7 @@ fn hydrate(
                     state: CrabState::Spawning,
                     start_pos: Vec2::new(transform.translation.x, transform.translation.y),
                     respawn_timer: Timer::from_seconds(
-                        *uncomfortable_respawn_time,
+                        uncomfortable_respawn_time.as_secs_f32(),
                         TimerMode::Once,
                     ),
                 },
@@ -163,9 +163,7 @@ fn update_crabs(
         let transform = transforms.get_mut(entity).unwrap();
         let pos = Vec2::new(transform.translation.x, transform.translation.y);
 
-        let distance_from_home = pos.x - crab.start_pos.x;
-
-        if &distance_from_home > comfortable_spawn_distance {
+        if (crab.start_pos - pos).length() > *comfortable_spawn_distance {
             crab.respawn_timer.tick(time.delta());
         } else {
             crab.respawn_timer.reset();
@@ -235,6 +233,7 @@ fn update_crabs(
             if rand_bool(pause_bias) {
                 (CrabState::Paused, rand_timer_delay(*timer_delay_max))
             } else {
+                let distance_from_home = pos.x - crab.start_pos.x;
                 let left = if distance_from_home.abs() > *comfortable_spawn_distance && rand_bool(2)
                 {
                     distance_from_home > 0.0

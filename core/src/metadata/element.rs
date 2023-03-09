@@ -121,12 +121,14 @@ pub enum BuiltinElementKind {
         fps: f32,
         comfortable_spawn_distance: f32,
         comfortable_scared_distance: f32,
-        uncomfortable_respawn_time: f32,
+        /// How long a crab has to be away from it's spawn point before it digs into the ground and
+        /// digs back out in his spawn point.
+        #[serde(with = "humantime_serde")]
+        uncomfortable_respawn_time: Duration,
         same_level_threshold: f32,
         walk_speed: f32,
         run_speed: f32,
-        /// 45 fix updates per second, so if this is 45 the maximum delay between actions
-        /// will be 1 second
+        // TODO: migrate this to a duration like `uncomfortable_respawn_time`.
         timer_delay_max: u8,
         atlas: Handle<Atlas>,
     },

@@ -163,6 +163,7 @@ fn update_thrown_mines(
     collision_world: CollisionWorld,
     transforms: Comp<Transform>,
     spawners: Comp<DehydrateOutOfBounds>,
+    invincibles: CompMut<Invincibility>,
 ) {
     let players = entities
         .iter_with(&player_indexes)
@@ -204,9 +205,10 @@ fn update_thrown_mines(
         }
 
         let colliding_with_players = collision_world
-            .actor_collisions(entity)
+            .actor_collisions_filtered(entity, |e| {
+                players.contains(&e) && invincibles.get(e).is_none()
+            })
             .into_iter()
-            .filter(|&x| players.contains(&x))
             .collect::<Vec<_>>();
 
         if !colliding_with_players.is_empty() && thrown_mine.age >= *arm_delay {

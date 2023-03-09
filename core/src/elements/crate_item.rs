@@ -170,6 +170,7 @@ fn update_thrown_crates(
     mut audio_events: ResMut<AudioEvents>,
     transforms: Comp<Transform>,
     spawners: Comp<DehydrateOutOfBounds>,
+    invincibles: CompMut<Invincibility>,
 ) {
     for (entity, (mut thrown_crate, element_handle, transform, atlas_sprite, body, spawner)) in
         entities.iter_with((
@@ -236,9 +237,10 @@ fn update_thrown_crates(
         }
 
         let colliding_with_players = collision_world
-            .actor_collisions(entity)
+            .actor_collisions_filtered(entity, |e| {
+                e != thrown_crate.owner && players.contains(e) && invincibles.get(e).is_none()
+            })
             .into_iter()
-            .filter(|x| *x != thrown_crate.owner && players.contains(*x))
             .collect::<Vec<_>>();
 
         for player_entity in &colliding_with_players {

@@ -39,6 +39,7 @@ stable_maps:
   - /map/levels/level_11.map.yaml
   - /map/levels/level_12.map.yaml
   - /map/levels/level_13.map.yaml
+  - /map/levels/level_14.map.yaml
 
 map_tilesets:
   - /map/resources/default_tileset.atlas.yaml

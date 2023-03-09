@@ -159,6 +159,7 @@ pub fn update_fish_schools(
     mut atlas_sprites: CompMut<AtlasSprite>,
     mut transforms: CompMut<Transform>,
     collision_world: CollisionWorld,
+    bodies: Comp<KinematicBody>,
 ) {
     for (school_ent, school) in entities.iter_with(&fish_schools) {
         let element_handle = element_handles.get(school_ent).unwrap();
@@ -193,10 +194,12 @@ pub fn update_fish_schools(
         let spawn_pos = transform.translation.xy();
 
         for fish_ent in school.iter() {
-            let collider = collision_world
+            let flee = collision_world
                 .actor_collisions(*fish_ent)
                 .into_iter()
-                .find(|ent| !fishes.contains(*ent));
+                .find(|ent| {
+                    !fishes.contains(*ent) && bodies.get(*ent).unwrap().velocity.length() > 0.0
+                });
 
             let fish = fishes.get_mut(*fish_ent).unwrap();
             let sprite = atlas_sprites.get_mut(*fish_ent).unwrap();
@@ -252,8 +255,8 @@ pub fn update_fish_schools(
 
             fish.state_timer.tick(time.delta());
 
-            if let Some(ent) = collider {
-                let diff = pos - transforms.get(ent).unwrap().translation.xy();
+            if let Some(scary_thing) = flee {
+                let diff = pos - transforms.get(scary_thing).unwrap().translation.xy();
                 fish.state = FishState::Moving {
                     from: pos,
                     to: pos + diff.normalize() * rand_range(30.0, 60.0),
@@ -262,7 +265,6 @@ pub fn update_fish_schools(
                     Duration::from_secs_f32(rand_range(0.2, 0.6)),
                     TimerMode::Repeating,
                 );
-
                 // We tick the timer an extra time here to make sure that the fish gets moving
                 // immediately without waiting for an extra frame, because if we keep colliding we
                 // may just keep re-setting the timer and the fish get's stuck until it stops

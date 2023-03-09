@@ -142,7 +142,7 @@ pub fn grab_items(
 /// Mainly handled by the [`throw_dropped_items`] system which consumes the
 /// [`ItemDropped`] components for entities which have this component.
 /// [`Item`] is required for the system to take affect.
-#[derive(Clone, Copy, TypeUlid)]
+#[derive(Clone, TypeUlid)]
 #[ulid = "01GSGE6N4TSEMQ1DKDP5Y66TE4"]
 pub struct ItemThrow {
     normal: Vec2,
@@ -152,6 +152,8 @@ pub struct ItemThrow {
     lob: Vec2,
     roll: Vec2,
     spin: f32,
+    /// An optional system value that gets run once on throw.
+    system: Option<Arc<AtomicRefCell<System>>>,
 }
 
 impl ItemThrow {
@@ -168,6 +170,7 @@ impl ItemThrow {
             lob: Vec2::new(1.0, 2.5).normalize() * 1.1,
             roll: Vec2::new(0.4, -0.1),
             spin: 0.0,
+            system: None,
         }
     }
 
@@ -182,11 +185,19 @@ impl ItemThrow {
             lob: base.lob * strength,
             roll: base.roll * strength,
             spin: 0.0,
+            system: None,
         }
     }
 
     pub fn with_spin(self, spin: f32) -> Self {
         Self { spin, ..self }
+    }
+
+    pub fn with_system<Args>(self, system: impl IntoSystem<Args, ()>) -> Self {
+        Self {
+            system: Some(Arc::new(AtomicRefCell::new(system.system()))),
+            ..self
+        }
     }
 
     /// Chooses one of the throw values based on a [`PlayerControl`]
@@ -230,8 +241,11 @@ pub fn throw_dropped_items(
     for (entity, (_items, item_throw, body)) in
         entities.iter_with((&items, &item_throws, &mut bodies))
     {
-        if let Some(ItemDropped { player }) = items_dropped.remove(entity) {
-            commands.add(PlayerCommand::set_inventory(player, None));
+        if let Some(ItemDropped { player }) = items_dropped.get(entity).cloned() {
+            if let Some(system) = item_throw.system.clone() {
+                commands.add(move |world: &World| (system.borrow_mut().run)(world).unwrap());
+            }
+            items_dropped.remove(entity);
             attachments.remove(entity);
 
             let player_sprite = sprites.get_mut(player).unwrap();

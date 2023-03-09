@@ -1640,6 +1640,21 @@
 <a href="#1639" id="1639">1639</a>
 <a href="#1640" id="1640">1640</a>
 <a href="#1641" id="1641">1641</a>
+<a href="#1642" id="1642">1642</a>
+<a href="#1643" id="1643">1643</a>
+<a href="#1644" id="1644">1644</a>
+<a href="#1645" id="1645">1645</a>
+<a href="#1646" id="1646">1646</a>
+<a href="#1647" id="1647">1647</a>
+<a href="#1648" id="1648">1648</a>
+<a href="#1649" id="1649">1649</a>
+<a href="#1650" id="1650">1650</a>
+<a href="#1651" id="1651">1651</a>
+<a href="#1652" id="1652">1652</a>
+<a href="#1653" id="1653">1653</a>
+<a href="#1654" id="1654">1654</a>
+<a href="#1655" id="1655">1655</a>
+<a href="#1656" id="1656">1656</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
@@ -1882,7 +1897,8 @@
     localization: Res&lt;<span class="lifetime">&#39;w</span>, Localization&gt;,
     session_manager: SessionManager&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
     camera: CameraQuery&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
-    clipboard: ResMut&lt;<span class="lifetime">&#39;w</span>, bevy_egui::EguiClipboard&gt;,
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span>clipboard: ResMut&lt;<span class="lifetime">&#39;w</span>, bevy_egui::EguiClipboard&gt;,
     map_export: Res&lt;<span class="lifetime">&#39;w</span>, EditorMapExport&gt;,
     storage: ResMut&lt;<span class="lifetime">&#39;w</span>, Storage&gt;,
 }
@@ -2046,7 +2062,21 @@
                     .show(ui)
                     .clicked()
                     {
-                        params.clipboard.set_contents(<span class="kw-2">&amp;</span>export);
+                        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                        </span>params.clipboard.set_contents(<span class="kw-2">&amp;</span>export);
+                        <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+                        </span>{
+                            <span class="kw">use </span>wasm_bindgen::prelude::<span class="kw-2">*</span>;
+                            <span class="attr">#[wasm_bindgen]
+                            </span><span class="kw">extern </span><span class="string">&quot;C&quot; </span>{
+                                <span class="kw">type </span>Clipboard;
+
+                                <span class="attr">#[wasm_bindgen(js_namespace = [<span class="string">&quot;navigator&quot;</span>, <span class="string">&quot;clipboard&quot;</span>]</span>, js_name = writeText)]
+                                <span class="kw">fn </span>write_clipboard(s: <span class="kw-2">&amp;</span>str);
+                            }
+
+                            write_clipboard(<span class="kw-2">&amp;</span>export);
+                        }
                     }
                 });
             });

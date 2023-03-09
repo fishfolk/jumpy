@@ -310,7 +310,7 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
         for tile in &layer.tiles {
             if tile.collision == TileCollisionKind::JumpThrough {
                 semi_solids.insert(NavNode(tile.pos.as_ivec2()));
-            } else {
+            } else if tile.collision != TileCollisionKind::Empty {
                 graph.remove_node(NavNode(tile.pos.as_ivec2()));
             }
         }

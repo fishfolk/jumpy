@@ -229,7 +229,6 @@
 <a href="#228" id="228">228</a>
 <a href="#229" id="229">229</a>
 <a href="#230" id="230">230</a>
-<a href="#231" id="231">231</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -438,9 +437,8 @@
             <span class="kw">continue</span>;
         }
         collision_world
-            .actor_collisions(entity)
+            .actor_collisions_filtered(entity, |e| player_indexes.contains(e))
             .into_iter()
-            .filter(|<span class="kw-2">&amp;</span>x| player_indexes.contains(x))
             .for_each(|player| {
                 <span class="kw">let </span>wearer_transform = transforms
                     .get(entity)

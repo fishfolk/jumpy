@@ -303,6 +303,8 @@
 <a href="#302" id="302">302</a>
 <a href="#303" id="303">303</a>
 <a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{damage::DamageRegion, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -421,6 +423,7 @@
     <span class="kw-2">mut </span>commands: Commands,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
     transforms: CompMut&lt;Transform&gt;,
+    invincibles: CompMut&lt;Invincibility&gt;,
 ) {
     <span class="kw">for </span>(entity, (sword, element_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>swords, <span class="kw-2">&amp;</span>element_handles)) {
         <span class="kw">let </span><span class="prelude-val">Some</span>(element_meta) = element_assets.get(<span class="kw-2">&amp;</span>element_handle.get_bevy_handle()) <span class="kw">else </span>{
@@ -580,14 +583,15 @@
                 <span class="kw">let </span>sword_transform = transforms.get(entity).unwrap();
 
                 collision_world
-                    .actor_collisions(entity)
-                    .into_iter()
-                    .filter(|<span class="kw-2">&amp;</span>x| {
-                        player_indexes.contains(x) &amp;&amp; {
-                            <span class="kw">let </span>player_body = bodies.get(x).unwrap();
-                            (player_body.velocity - body.velocity).length() &gt;= <span class="kw-2">*</span>killing_speed
-                        }
+                    .actor_collisions_filtered(entity, |e| {
+                        player_indexes.contains(e)
+                            &amp;&amp; {
+                                <span class="kw">let </span>player_body = bodies.get(e).unwrap();
+                                (player_body.velocity - body.velocity).length() &gt;= <span class="kw-2">*</span>killing_speed
+                            }
+                            &amp;&amp; invincibles.get(e).is_none()
                     })
+                    .into_iter()
                     .for_each(|player| {
                         commands.add(PlayerCommand::kill(
                             player,

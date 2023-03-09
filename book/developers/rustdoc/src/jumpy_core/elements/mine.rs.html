@@ -281,6 +281,8 @@
 <a href="#280" id="280">280</a>
 <a href="#281" id="281">281</a>
 <a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -446,6 +448,7 @@
     collision_world: CollisionWorld,
     transforms: Comp&lt;Transform&gt;,
     spawners: Comp&lt;DehydrateOutOfBounds&gt;,
+    invincibles: CompMut&lt;Invincibility&gt;,
 ) {
     <span class="kw">let </span>players = entities
         .iter_with(<span class="kw-2">&amp;</span>player_indexes)
@@ -487,9 +490,10 @@
         }
 
         <span class="kw">let </span>colliding_with_players = collision_world
-            .actor_collisions(entity)
+            .actor_collisions_filtered(entity, |e| {
+                players.contains(<span class="kw-2">&amp;</span>e) &amp;&amp; invincibles.get(e).is_none()
+            })
             .into_iter()
-            .filter(|<span class="kw-2">&amp;</span>x| players.contains(<span class="kw-2">&amp;</span>x))
             .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
         <span class="kw">if </span>!colliding_with_players.is_empty() &amp;&amp; thrown_mine.age &gt;= <span class="kw-2">*</span>arm_delay {

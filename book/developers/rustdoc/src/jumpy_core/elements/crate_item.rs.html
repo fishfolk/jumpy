@@ -294,6 +294,8 @@
 <a href="#293" id="293">293</a>
 <a href="#294" id="294">294</a>
 <a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{physics::collisions::TileCollisionKind, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -466,6 +468,7 @@
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
     transforms: Comp&lt;Transform&gt;,
     spawners: Comp&lt;DehydrateOutOfBounds&gt;,
+    invincibles: CompMut&lt;Invincibility&gt;,
 ) {
     <span class="kw">for </span>(entity, (<span class="kw-2">mut </span>thrown_crate, element_handle, transform, atlas_sprite, body, spawner)) <span class="kw">in
         </span>entities.iter_with((
@@ -532,9 +535,10 @@
         }
 
         <span class="kw">let </span>colliding_with_players = collision_world
-            .actor_collisions(entity)
+            .actor_collisions_filtered(entity, |e| {
+                e != thrown_crate.owner &amp;&amp; players.contains(e) &amp;&amp; invincibles.get(e).is_none()
+            })
             .into_iter()
-            .filter(|x| <span class="kw-2">*</span>x != thrown_crate.owner &amp;&amp; players.contains(<span class="kw-2">*</span>x))
             .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
         <span class="kw">for </span>player_entity <span class="kw">in </span><span class="kw-2">&amp;</span>colliding_with_players {

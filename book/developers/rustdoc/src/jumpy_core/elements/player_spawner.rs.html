@@ -80,6 +80,12 @@
 <a href="#79" id="79">79</a>
 <a href="#80" id="80">80</a>
 <a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, MAX_PLAYERS};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -124,12 +130,14 @@
 }
 
 <span class="kw">fn </span>update(
+    game_meta: Res&lt;CoreMetaArc&gt;,
     <span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
     <span class="kw-2">mut </span>current_spawner: ResMut&lt;CurrentSpawner&gt;,
     player_spawners: Comp&lt;PlayerSpawner&gt;,
     <span class="kw-2">mut </span>player_indexes: CompMut&lt;PlayerIdx&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     player_inputs: Res&lt;PlayerInputs&gt;,
+    <span class="kw-2">mut </span>invincibles: CompMut&lt;Invincibility&gt;,
 ) {
     <span class="kw">let </span>alive_players = entities
         .iter_with(<span class="kw-2">&amp;</span>player_indexes)
@@ -158,6 +166,10 @@
             <span class="kw">let </span>player_ent = entities.create();
             player_indexes.insert(player_ent, PlayerIdx(i));
             transforms.insert(player_ent, Transform::from_translation(spawn_point));
+            invincibles.insert(
+                player_ent,
+                Invincibility::new(game_meta.config.respawn_invincibility_time),
+            );
         }
     }
 }

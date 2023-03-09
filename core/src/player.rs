@@ -526,7 +526,8 @@ fn hydrate_players(
                       game_meta: Res<CoreMetaArc>,
                       mut attachments: CompMut<PlayerBodyAttachment>,
                       mut inventories: CompMut<Inventory>| {
-                    let element_handle = element_handles
+                    let element_handle = game_meta
+                        .map_elements
                         .iter()
                         .find(|handle| {
                             matches!(
@@ -556,7 +557,7 @@ fn hydrate_players(
                         swords.insert(sword_ent, sword::Sword::default());
                         atlas_sprites.insert(sword_ent, AtlasSprite::new(atlas.clone()));
                         transforms.insert(sword_ent, default());
-                        element_handles.insert(sword_ent, element_handle.clone());
+                        element_handles.insert(sword_ent, ElementHandle(element_handle.clone()));
                         hydrated.insert(sword_ent, MapElementHydrated);
                         bodies.insert(
                             sword_ent,

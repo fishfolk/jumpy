@@ -74,7 +74,9 @@ fn hydrate(
             items.insert(entity, Item);
             item_throws.insert(
                 entity,
-                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+                ItemThrow::strength(*throw_velocity)
+                    .with_spin(*angular_velocity)
+                    .with_system(sword_drop(entity)),
             );
             item_grabs.insert(
                 entity,
@@ -120,7 +122,6 @@ fn update(
     mut sprites: CompMut<AtlasSprite>,
     bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
-    items_dropped: CompMut<ItemDropped>,
     player_indexes: Comp<PlayerIdx>,
     player_inventories: PlayerInventories,
     mut commands: Commands,
@@ -287,14 +288,14 @@ fn update(
                     });
             }
         }
-
-        // If the item was dropped
-        if items_dropped.get(entity).is_some() {
-            sword.dropped_time = 0.0;
-            let sprite = sprites.get_mut(entity).unwrap();
-
-            // Put sword in rest position
-            sprite.index = 0;
-        }
     }
+}
+
+fn sword_drop(entity: Entity) -> System {
+    (move |mut swords: CompMut<Sword>, mut sprites: CompMut<AtlasSprite>| {
+        // Put sword in rest position
+        sprites.get_mut(entity).unwrap().index = 0;
+        *swords.get_mut(entity).unwrap() = default();
+    })
+    .system()
 }

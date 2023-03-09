@@ -228,7 +228,6 @@ impl FromWorld for PathfindingDebugLines {
             .run_initialized_system(
                 |mut entities: ResMut<Entities>, mut transforms: CompMut<Transform>| {
                     let ents = (0..MAX_PLAYERS)
-                        .into_iter()
                         .map(|_| {
                             let ent = entities.create();
 

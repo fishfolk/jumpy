@@ -299,6 +299,7 @@
 <a href="#298" id="298">298</a>
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{damage::DamageRegion, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -375,7 +376,9 @@
             items.insert(entity, Item);
             item_throws.insert(
                 entity,
-                ItemThrow::strength(<span class="kw-2">*</span>throw_velocity).with_spin(<span class="kw-2">*</span>angular_velocity),
+                ItemThrow::strength(<span class="kw-2">*</span>throw_velocity)
+                    .with_spin(<span class="kw-2">*</span>angular_velocity)
+                    .with_system(sword_drop(entity)),
             );
             item_grabs.insert(
                 entity,
@@ -421,7 +424,6 @@
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
-    items_dropped: CompMut&lt;ItemDropped&gt;,
     player_indexes: Comp&lt;PlayerIdx&gt;,
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>commands: Commands,
@@ -588,16 +590,16 @@
                     });
             }
         }
-
-        <span class="comment">// If the item was dropped
-        </span><span class="kw">if </span>items_dropped.get(entity).is_some() {
-            sword.dropped_time = <span class="number">0.0</span>;
-            <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
-
-            <span class="comment">// Put sword in rest position
-            </span>sprite.index = <span class="number">0</span>;
-        }
     }
+}
+
+<span class="kw">fn </span>sword_drop(entity: Entity) -&gt; System {
+    (<span class="kw">move </span>|<span class="kw-2">mut </span>swords: CompMut&lt;Sword&gt;, <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;| {
+        <span class="comment">// Put sword in rest position
+        </span>sprites.get_mut(entity).unwrap().index = <span class="number">0</span>;
+        <span class="kw-2">*</span>swords.get_mut(entity).unwrap() = default();
+    })
+    .system()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

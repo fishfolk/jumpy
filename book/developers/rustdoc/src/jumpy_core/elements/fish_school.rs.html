@@ -297,6 +297,8 @@
 <a href="#296" id="296">296</a>
 <a href="#297" id="297">297</a>
 <a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, random::GlobalRng};
@@ -458,6 +460,7 @@
     <span class="kw-2">mut </span>atlas_sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     collision_world: CollisionWorld,
+    bodies: Comp&lt;KinematicBody&gt;,
 ) {
     <span class="kw">for </span>(school_ent, school) <span class="kw">in </span>entities.iter_with(<span class="kw-2">&amp;</span>fish_schools) {
         <span class="kw">let </span>element_handle = element_handles.get(school_ent).unwrap();
@@ -492,10 +495,12 @@
         <span class="kw">let </span>spawn_pos = transform.translation.xy();
 
         <span class="kw">for </span>fish_ent <span class="kw">in </span>school.iter() {
-            <span class="kw">let </span>collider = collision_world
+            <span class="kw">let </span>flee = collision_world
                 .actor_collisions(<span class="kw-2">*</span>fish_ent)
                 .into_iter()
-                .find(|ent| !fishes.contains(<span class="kw-2">*</span>ent));
+                .find(|ent| {
+                    !fishes.contains(<span class="kw-2">*</span>ent) &amp;&amp; bodies.get(<span class="kw-2">*</span>ent).unwrap().velocity.length() &gt; <span class="number">0.0
+                </span>});
 
             <span class="kw">let </span>fish = fishes.get_mut(<span class="kw-2">*</span>fish_ent).unwrap();
             <span class="kw">let </span>sprite = atlas_sprites.get_mut(<span class="kw-2">*</span>fish_ent).unwrap();
@@ -551,8 +556,8 @@
 
             fish.state_timer.tick(time.delta());
 
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(ent) = collider {
-                <span class="kw">let </span>diff = pos - transforms.get(ent).unwrap().translation.xy();
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(scary_thing) = flee {
+                <span class="kw">let </span>diff = pos - transforms.get(scary_thing).unwrap().translation.xy();
                 fish.state = FishState::Moving {
                     from: pos,
                     to: pos + diff.normalize() * rand_range(<span class="number">30.0</span>, <span class="number">60.0</span>),
@@ -561,7 +566,6 @@
                     Duration::from_secs_f32(rand_range(<span class="number">0.2</span>, <span class="number">0.6</span>)),
                     TimerMode::Repeating,
                 );
-
                 <span class="comment">// We tick the timer an extra time here to make sure that the fish gets moving
                 // immediately without waiting for an extra frame, because if we keep colliding we
                 // may just keep re-setting the timer and the fish get&#39;s stuck until it stops

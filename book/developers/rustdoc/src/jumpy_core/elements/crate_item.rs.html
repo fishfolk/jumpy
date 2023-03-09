@@ -505,7 +505,7 @@
         <span class="kw">if </span>!colliding_with_players.is_empty()
             || thrown_crate.age &gt;= <span class="kw-2">*</span>break_timeout
             || thrown_crate.crate_break_state &gt;= <span class="number">4
-            </span>|| body.velocity.length_squared() &lt; <span class="number">0.1
+            </span>|| body.is_on_ground &amp;&amp; body.velocity.length_squared() &lt; <span class="number">0.1
         </span>{
             hydrated.remove(<span class="kw-2">**</span>spawner);
 

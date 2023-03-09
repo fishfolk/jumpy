@@ -718,7 +718,6 @@
 <a href="#717" id="717">717</a>
 <a href="#718" id="718">718</a>
 <a href="#719" id="719">719</a>
-<a href="#720" id="720">720</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::VecDeque;
 
 <span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>};
@@ -949,7 +948,6 @@
             .run_initialized_system(
                 |<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;, <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;| {
                     <span class="kw">let </span>ents = (<span class="number">0</span>..MAX_PLAYERS)
-                        .into_iter()
                         .map(|<span class="kw">_</span>| {
                             <span class="kw">let </span>ent = entities.create();
 

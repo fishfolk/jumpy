@@ -259,6 +259,20 @@
 <a href="#258" id="258">258</a>
 <a href="#259" id="259">259</a>
 <a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -403,7 +417,7 @@
 /// Mainly handled by the [`throw_dropped_items`] system which consumes the
 /// [`ItemDropped`] components for entities which have this component.
 /// [`Item`] is required for the system to take affect.
-</span><span class="attr">#[derive(Clone, Copy, TypeUlid)]
+</span><span class="attr">#[derive(Clone, TypeUlid)]
 #[ulid = <span class="string">&quot;01GSGE6N4TSEMQ1DKDP5Y66TE4&quot;</span>]
 </span><span class="kw">pub struct </span>ItemThrow {
     normal: Vec2,
@@ -413,6 +427,8 @@
     lob: Vec2,
     roll: Vec2,
     spin: f32,
+    <span class="doccomment">/// An optional system value that gets run once on throw.
+    </span>system: <span class="prelude-ty">Option</span>&lt;Arc&lt;AtomicRefCell&lt;System&gt;&gt;&gt;,
 }
 
 <span class="kw">impl </span>ItemThrow {
@@ -429,6 +445,7 @@
             lob: Vec2::new(<span class="number">1.0</span>, <span class="number">2.5</span>).normalize() * <span class="number">1.1</span>,
             roll: Vec2::new(<span class="number">0.4</span>, -<span class="number">0.1</span>),
             spin: <span class="number">0.0</span>,
+            system: <span class="prelude-val">None</span>,
         }
     }
 
@@ -443,11 +460,19 @@
             lob: base.lob * strength,
             roll: base.roll * strength,
             spin: <span class="number">0.0</span>,
+            system: <span class="prelude-val">None</span>,
         }
     }
 
     <span class="kw">pub fn </span>with_spin(<span class="self">self</span>, spin: f32) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ spin, ..<span class="self">self </span>}
+    }
+
+    <span class="kw">pub fn </span>with_system&lt;Args&gt;(<span class="self">self</span>, system: <span class="kw">impl </span>IntoSystem&lt;Args, ()&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            system: <span class="prelude-val">Some</span>(Arc::new(AtomicRefCell::new(system.system()))),
+            ..<span class="self">self
+        </span>}
     }
 
     <span class="doccomment">/// Chooses one of the throw values based on a [`PlayerControl`]
@@ -491,8 +516,11 @@
     <span class="kw">for </span>(entity, (_items, item_throw, body)) <span class="kw">in
         </span>entities.iter_with((<span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>item_throws, <span class="kw-2">&amp;mut </span>bodies))
     {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(ItemDropped { player }) = items_dropped.remove(entity) {
-            commands.add(PlayerCommand::set_inventory(player, <span class="prelude-val">None</span>));
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(ItemDropped { player }) = items_dropped.get(entity).cloned() {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(system) = item_throw.system.clone() {
+                commands.add(<span class="kw">move </span>|world: <span class="kw-2">&amp;</span>World| (system.borrow_mut().run)(world).unwrap());
+            }
+            items_dropped.remove(entity);
             attachments.remove(entity);
 
             <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();

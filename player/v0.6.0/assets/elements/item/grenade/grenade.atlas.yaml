@@ -1,0 +1,4 @@
+image: ./grenade.png
+tile_size: [25, 52]
+rows: 2
+columns: 3

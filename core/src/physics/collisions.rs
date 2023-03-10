@@ -870,6 +870,15 @@ impl<'a> CollisionWorld<'a> {
     /// Get the [`TileCollisionKind`] of the first tile detected colliding with the `shape` at the
     /// given `transform`.
     pub fn tile_collision(&self, transform: Transform, shape: ColliderShape) -> TileCollisionKind {
+        self.tile_collision_filtered(transform, shape, |_| true)
+    }
+
+    pub fn tile_collision_filtered(
+        &self,
+        transform: Transform,
+        shape: ColliderShape,
+        filter: impl Fn(Entity) -> bool,
+    ) -> TileCollisionKind {
         self.ctx
             .query_pipeline
             .intersection_with_shape(
@@ -883,7 +892,7 @@ impl<'a> CollisionWorld<'a> {
                 &*shape.shared_shape(),
                 rapier::QueryFilter::new().predicate(&|_handle, collider| {
                     let ent = RapierUserData::entity(collider.user_data);
-                    self.tile_collision_kinds.contains(ent)
+                    self.tile_collision_kinds.contains(ent) && filter(ent)
                 }),
             )
             .map(|x| RapierUserData::entity(self.ctx.collider_set.get(x).unwrap().user_data))

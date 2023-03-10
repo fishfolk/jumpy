@@ -218,16 +218,42 @@ fn update_kinematic_bodies(
         // Check ground collision
         {
             let mut transform = transforms.get(entity).copied().unwrap();
+
+            // Don't get stuck floating in fall-through platforms
+            if body.velocity == Vec2::ZERO
+                && collision_world.tile_collision_filtered(transform, body.shape, |ent| {
+                    collision_world
+                        .tile_collision_kinds
+                        .get(ent)
+                        .map(|x| *x == TileCollisionKind::JumpThrough)
+                        .unwrap_or(false)
+                }) == TileCollisionKind::JumpThrough
+            {
+                body.fall_through = true;
+            }
+
+            // Move transform check down 1 slightly
             transform.translation.y -= 0.1;
 
             body.was_on_ground = body.is_on_ground;
 
-            let tile = collision_world.tile_collision(transform, body.shape);
+            let collider = collision_world.get_collider(entity);
+
+            let tile = collision_world.tile_collision_filtered(transform, body.shape, |ent| {
+                if collider.seen_wood {
+                    collision_world
+                        .tile_collision_kinds
+                        .get(ent)
+                        .map(|x| *x != TileCollisionKind::JumpThrough)
+                        .unwrap_or(false)
+                } else {
+                    true
+                }
+            });
 
             let on_jump_through_tile = tile == TileCollisionKind::JumpThrough;
-            body.is_on_ground = tile != TileCollisionKind::Empty
-                && !collision_world.get_collider(entity).seen_wood
-                && !(on_jump_through_tile && body.fall_through);
+            body.is_on_ground =
+                tile != TileCollisionKind::Empty && !(on_jump_through_tile && body.fall_through);
             body.is_on_platform = body.is_on_ground && on_jump_through_tile;
         }
 

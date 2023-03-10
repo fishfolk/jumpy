@@ -290,6 +290,32 @@
 <a href="#289" id="289">289</a>
 <a href="#290" id="290">290</a>
 <a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub use </span>collisions::{
@@ -510,16 +536,42 @@
         <span class="comment">// Check ground collision
         </span>{
             <span class="kw">let </span><span class="kw-2">mut </span>transform = transforms.get(entity).copied().unwrap();
-            transform.translation.y -= <span class="number">0.1</span>;
+
+            <span class="comment">// Don&#39;t get stuck floating in fall-through platforms
+            </span><span class="kw">if </span>body.velocity == Vec2::ZERO
+                &amp;&amp; collision_world.tile_collision_filtered(transform, body.shape, |ent| {
+                    collision_world
+                        .tile_collision_kinds
+                        .get(ent)
+                        .map(|x| <span class="kw-2">*</span>x == TileCollisionKind::JumpThrough)
+                        .unwrap_or(<span class="bool-val">false</span>)
+                }) == TileCollisionKind::JumpThrough
+            {
+                body.fall_through = <span class="bool-val">true</span>;
+            }
+
+            <span class="comment">// Move transform check down 1 slightly
+            </span>transform.translation.y -= <span class="number">0.1</span>;
 
             body.was_on_ground = body.is_on_ground;
 
-            <span class="kw">let </span>tile = collision_world.tile_collision(transform, body.shape);
+            <span class="kw">let </span>collider = collision_world.get_collider(entity);
+
+            <span class="kw">let </span>tile = collision_world.tile_collision_filtered(transform, body.shape, |ent| {
+                <span class="kw">if </span>collider.seen_wood {
+                    collision_world
+                        .tile_collision_kinds
+                        .get(ent)
+                        .map(|x| <span class="kw-2">*</span>x != TileCollisionKind::JumpThrough)
+                        .unwrap_or(<span class="bool-val">false</span>)
+                } <span class="kw">else </span>{
+                    <span class="bool-val">true
+                </span>}
+            });
 
             <span class="kw">let </span>on_jump_through_tile = tile == TileCollisionKind::JumpThrough;
-            body.is_on_ground = tile != TileCollisionKind::Empty
-                &amp;&amp; !collision_world.get_collider(entity).seen_wood
-                &amp;&amp; !(on_jump_through_tile &amp;&amp; body.fall_through);
+            body.is_on_ground =
+                tile != TileCollisionKind::Empty &amp;&amp; !(on_jump_through_tile &amp;&amp; body.fall_through);
             body.is_on_platform = body.is_on_ground &amp;&amp; on_jump_through_tile;
         }
 

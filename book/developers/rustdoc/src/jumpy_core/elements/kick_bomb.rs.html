@@ -311,6 +311,7 @@
 <a href="#310" id="310">310</a>
 <a href="#311" id="311">311</a>
 <a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -569,6 +570,7 @@
             </span>hydrated.remove(<span class="kw-2">**</span>spawner);
             <span class="kw">let </span><span class="kw-2">mut </span>explosion_transform = <span class="kw-2">*</span>transforms.get(entity).unwrap();
             explosion_transform.translation.z += <span class="number">1.0</span>;
+            explosion_transform.rotation = Quat::IDENTITY;
 
             <span class="comment">// Clone types for move into closure
             </span><span class="kw">let </span>damage_region_size = <span class="kw-2">*</span>damage_region_size;

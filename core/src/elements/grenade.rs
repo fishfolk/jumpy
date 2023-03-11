@@ -241,6 +241,7 @@ fn update_lit_grenades(
             hydrated.remove(**spawner);
             let mut explosion_transform = *transforms.get(entity).unwrap();
             explosion_transform.translation.z += 1.0;
+            explosion_transform.rotation = Quat::IDENTITY;
 
             // Clone types for move into closure
             let damage_region_size = *damage_region_size;

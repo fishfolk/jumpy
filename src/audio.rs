@@ -5,14 +5,14 @@ use bevy_kira_audio::{
 };
 use rand::{seq::SliceRandom, thread_rng};
 
-use crate::{metadata::GameMeta, prelude::*};
+use crate::{main_menu::MenuPage, metadata::GameMeta, prelude::*};
 
 pub struct JumpyAudioPlugin;
 
 impl Plugin for JumpyAudioPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(bevy_kira_audio::AudioPlugin)
-            .init_resource::<CurrentMusic>()
+            .init_resource::<MusicState>()
             .init_resource::<ShuffledPlaylist>()
             .add_audio_channel::<MusicChannel>()
             .add_audio_channel::<EffectsChannel>()
@@ -27,9 +27,28 @@ pub struct MusicChannel;
 pub struct EffectsChannel;
 
 #[derive(Resource, Clone, Debug, Default)]
-pub struct CurrentMusic {
-    pub instance: Handle<AudioInstance>,
-    pub idx: usize,
+pub enum MusicState {
+    #[default]
+    None,
+    MainMenu(Handle<AudioInstance>),
+    CharacterSelect(Handle<AudioInstance>),
+    Credits(Handle<AudioInstance>),
+    Fight {
+        instance: Handle<AudioInstance>,
+        idx: usize,
+    },
+}
+
+impl MusicState {
+    fn current_instance(&self) -> Option<&Handle<AudioInstance>> {
+        match self {
+            MusicState::None => None,
+            MusicState::MainMenu(i) => Some(i),
+            MusicState::CharacterSelect(i) => Some(i),
+            MusicState::Credits(i) => Some(i),
+            MusicState::Fight { instance, .. } => Some(instance),
+        }
+    }
 }
 
 #[derive(Resource, Deref, DerefMut, Clone, Debug, Default)]
@@ -39,41 +58,102 @@ fn setup_audio_defaults(
     music: Res<AudioChannel<MusicChannel>>,
     effects: Res<AudioChannel<EffectsChannel>>,
 ) {
-    music.set_volume(0.12);
+    music.set_volume(0.22);
     effects.set_volume(0.1);
 }
 
-/// Loops through all the game music as the game is on.
+const MUSIC_FADE_DURATION: Duration = Duration::from_millis(500);
+
+/// Plays music according to the game mode.
 fn music_system(
     game: Res<GameMeta>,
-    mut playlist: ResMut<ShuffledPlaylist>,
-    mut current_music: ResMut<CurrentMusic>,
-    audio_instances: Res<Assets<AudioInstance>>,
+    mut shuffled_fight_music: ResMut<ShuffledPlaylist>,
+    mut music_state: ResMut<MusicState>,
+    mut audio_instances: ResMut<Assets<AudioInstance>>,
     music: Res<AudioChannel<MusicChannel>>,
+    engine_state: Res<CurrentState<EngineState>>,
+    menu_page: Res<MenuPage>,
 ) {
-    if playlist.is_empty() {
-        let mut songs = game.playlist.clone();
+    if shuffled_fight_music.is_empty() || engine_state.is_changed() {
+        let mut songs = game.music.fight.clone();
         songs.shuffle(&mut thread_rng());
-        **playlist = songs;
+        **shuffled_fight_music = songs;
     }
 
-    if let Some(instance) = audio_instances.get(&current_music.instance) {
-        if let PlaybackState::Stopped = instance.state() {
-            current_music.idx += 1;
-            current_music.idx %= playlist.len();
+    match engine_state.0 {
+        EngineState::LoadingPlatformStorage | EngineState::LoadingGameData => (),
+        EngineState::InGame => {
+            if let MusicState::Fight { instance, idx } = &mut *music_state {
+                let inst = audio_instances.get(instance).unwrap();
+                if let PlaybackState::Stopped = inst.state() {
+                    *idx += 1;
+                    *idx %= shuffled_fight_music.len();
 
-            current_music.instance = music
-                .play(playlist[current_music.idx].inner.clone_weak())
-                .linear_fade_in(Duration::from_secs_f32(0.5))
-                .handle();
+                    *instance = music
+                        .play(shuffled_fight_music[*idx].inner.clone_weak())
+                        .linear_fade_in(MUSIC_FADE_DURATION)
+                        .handle();
+                }
+            } else {
+                if let Some(instance) = music_state.current_instance() {
+                    let instance = audio_instances.get_mut(instance).unwrap();
+                    instance.stop(AudioTween::linear(MUSIC_FADE_DURATION));
+                }
+
+                if let Some(song) = shuffled_fight_music.get(0) {
+                    *music_state = MusicState::Fight {
+                        instance: music
+                            .play(song.inner.clone_weak())
+                            .linear_fade_in(MUSIC_FADE_DURATION)
+                            .handle(),
+                        idx: 0,
+                    };
+                }
+            }
         }
-    } else if let Some(song) = playlist.get(0) {
-        if current_music.instance == default() {
-            current_music.instance = music
-                .play(song.inner.clone_weak())
-                .linear_fade_in(Duration::from_secs_f32(0.5))
-                .handle();
-            current_music.idx = 0;
-        }
+        EngineState::MainMenu => match &*menu_page {
+            MenuPage::PlayerSelect | MenuPage::MapSelect { .. } => {
+                if !matches!(*music_state, MusicState::CharacterSelect(..)) {
+                    if let Some(instance) = music_state.current_instance() {
+                        let instance = audio_instances.get_mut(instance).unwrap();
+                        instance.stop(AudioTween::linear(MUSIC_FADE_DURATION));
+                    }
+                    *music_state = MusicState::CharacterSelect(
+                        music
+                            .play(game.music.character_screen.inner.clone_weak())
+                            .linear_fade_in(MUSIC_FADE_DURATION)
+                            .handle(),
+                    );
+                }
+            }
+            MenuPage::Home | MenuPage::Settings => {
+                if !matches!(*music_state, MusicState::MainMenu(..)) {
+                    if let Some(instance) = music_state.current_instance() {
+                        let instance = audio_instances.get_mut(instance).unwrap();
+                        instance.stop(AudioTween::linear(MUSIC_FADE_DURATION));
+                    }
+                    *music_state = MusicState::MainMenu(
+                        music
+                            .play(game.music.title_screen.inner.clone_weak())
+                            .linear_fade_in(MUSIC_FADE_DURATION)
+                            .handle(),
+                    );
+                }
+            }
+            MenuPage::Credits => {
+                if !matches!(*music_state, MusicState::Credits(..)) {
+                    if let Some(instance) = music_state.current_instance() {
+                        let instance = audio_instances.get_mut(instance).unwrap();
+                        instance.stop(AudioTween::linear(MUSIC_FADE_DURATION));
+                    }
+                    *music_state = MusicState::Credits(
+                        music
+                            .play(game.music.credits.inner.clone_weak())
+                            .linear_fade_in(MUSIC_FADE_DURATION)
+                            .handle(),
+                    );
+                }
+            }
+        },
     }
 }

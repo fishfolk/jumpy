@@ -4,9 +4,8 @@ on:
   push:
     branches:
       - main
-      - staging
-      - trying
   pull_request:
+  merge_group:
 
 jobs:
   book:
@@ -32,20 +31,17 @@ jobs:
           mdbook-version: "0.4.22"
 
       - uses: actions/cache@v3
-        name: ♻️ Cache Cargo Registry
+        name: ♻️ Cache Cargo
         with:
           path: |
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-          key: cargo-registry
-      - uses: actions/cache@v3
-        name: ♻️ Cache Cargo Target
-        with:
-          path: |
             target/
             web-target/
-          key: Linux-cargo-target-${{ hashFiles('**/Cargo.lock') }}
+          key: docs-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            docs-
 
       - name: 🔨 Build Rustdoc
         run: |

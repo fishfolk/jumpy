@@ -1,11 +1,14 @@
 //! Module providing entity lifetime components and systems
 
+use std::time::Duration;
+
 use crate::{prelude::*, FPS};
 
 pub fn install(session: &mut GameSession) {
     session
         .stages
-        .add_system_to_stage(CoreStage::PostUpdate, lifetime_system);
+        .add_system_to_stage(CoreStage::PostUpdate, lifetime_system)
+        .add_system_to_stage(CoreStage::PostUpdate, invincibility);
 }
 
 /// The lifetime state of an entity
@@ -44,5 +47,35 @@ fn lifetime_system(mut entities: ResMut<Entities>, mut lifetimes: CompMut<Lifeti
     }
     for entity in to_kill {
         entities.kill(entity);
+    }
+}
+
+/// A timer that can be used to make an entity invincible for a certain amount of time
+///
+/// This is a general purpose invinvibility timer, but will serve as our spawn protection timer.
+#[derive(Clone, Default, TypeUlid, Debug)]
+#[ulid = "01GV3P99HFCZSC2MMXHA9394EJ"]
+pub struct Invincibility(Timer);
+
+impl Invincibility {
+    pub fn new(duration: Duration) -> Self {
+        Self(Timer::new(duration, TimerMode::Once))
+    }
+}
+
+fn invincibility(
+    time: Res<Time>,
+    mut commands: Commands,
+    entities: ResMut<Entities>,
+    mut invincibles: CompMut<Invincibility>,
+) {
+    for (entity, invincible) in &mut entities.iter_with(&mut invincibles) {
+        invincible.0.tick(time.delta());
+
+        if invincible.0.finished() {
+            commands.add(move |mut invincibles: CompMut<Invincibility>| {
+                invincibles.remove(entity);
+            });
+        }
     }
 }

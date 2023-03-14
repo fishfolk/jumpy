@@ -87,6 +87,7 @@ fn update(
     mut transforms: CompMut<Transform>,
     mut bullets: CompMut<Bullet>,
     mut audio_events: ResMut<AudioEvents>,
+    invincibles: CompMut<Invincibility>,
 ) {
     for (entity, (bullet, bullet_handle)) in entities.iter_with((&mut bullets, &bullet_handles)) {
         let Some(bullet_meta) = bullet_assets.get(&bullet_handle.get_bevy_handle()) else {
@@ -115,9 +116,10 @@ fn update(
         // Check actor collisions
         let mut hit_player = false;
         collision_world
-            .actor_collisions(entity)
+            .actor_collisions_filtered(entity, |e| {
+                player_indexes.contains(e) && invincibles.get(e).is_none()
+            })
             .into_iter()
-            .filter(|&x| player_indexes.contains(x))
             .for_each(|player| {
                 hit_player = true;
                 commands.add(PlayerCommand::kill(player, Some(position.translation.xy())));

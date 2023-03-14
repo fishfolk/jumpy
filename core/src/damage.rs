@@ -42,10 +42,17 @@ fn kill_players_in_damage_region(
     damage_regions: Comp<DamageRegion>,
     damage_region_owners: Comp<DamageRegionOwner>,
     bodies: Comp<KinematicBody>,
+    invincibles: CompMut<Invincibility>,
 ) {
-    for (player_ent, (_idx, transform, body)) in
-        entities.iter_with((&player_indexes, &transforms, &bodies))
-    {
+    let mut bitset = player_indexes.bitset().clone();
+    bitset.bit_and(transforms.bitset());
+    bitset.bit_and(bodies.bitset());
+    bitset.bit_andnot(invincibles.bitset());
+
+    for player_ent in entities.iter_with_bitset(&bitset) {
+        let transform = transforms.get(player_ent).unwrap();
+        let body = bodies.get(player_ent).unwrap();
+
         let player_rect = body.bounding_box(*transform);
         for (ent, (damage_region, transform)) in entities.iter_with((&damage_regions, &transforms))
         {

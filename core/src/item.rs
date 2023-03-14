@@ -3,6 +3,7 @@ use crate::prelude::*;
 pub fn install(session: &mut GameSession) {
     session
         .stages
+        .add_system_to_stage(CoreStage::Last, grab_items)
         .add_system_to_stage(CoreStage::Last, throw_dropped_items);
 }
 
@@ -76,17 +77,72 @@ pub struct ItemDropped {
 /// Marker component added to items when they are grabbed.
 #[derive(Clone, Copy, TypeUlid)]
 #[ulid = "01GP4DJ2RPYTDPKSKEK8JKK9VT"]
-pub struct ItemGrabbed;
+pub struct ItemGrabbed {
+    /// The player that grabbed the item
+    pub player: Entity,
+}
 
 /// Marker component added to items when they are used.
 #[derive(Clone, Copy, TypeUlid)]
 #[ulid = "01GP4DJ84TFB8Z7H9VY7Y0R47H"]
 pub struct ItemUsed;
 
+/// Component defining the grab settings when an item is grabbed.
+///
+/// Mainly handled by the [`grab_items`] system which consumes the
+/// [`ItemGrabbed`] components for entities which have this component.
+/// [`Item`] is required for the system to take affect.
+#[derive(Clone, Copy, TypeUlid)]
+#[ulid = "01GTJHWG4C2AW6KCY0P11MZ1KW"]
+pub struct ItemGrab {
+    pub fin_anim: Key,
+    pub grab_offset: Vec2,
+    pub sync_animation: bool,
+}
+
+pub fn grab_items(
+    entities: Res<Entities>,
+    item_grab: Comp<ItemGrab>,
+    items: Comp<Item>,
+    mut items_grabbed: CompMut<ItemGrabbed>,
+    mut bodies: CompMut<KinematicBody>,
+    mut attachments: CompMut<PlayerBodyAttachment>,
+    mut player_layers: CompMut<PlayerLayers>,
+) {
+    for (entity, (_item, item_grab)) in entities.iter_with((&items, &item_grab)) {
+        let ItemGrab {
+            fin_anim,
+            grab_offset,
+            sync_animation,
+        } = *item_grab;
+
+        if let Some(ItemGrabbed { player }) = items_grabbed.remove(entity) {
+            items_grabbed.remove(entity);
+
+            player_layers.get_mut(player).unwrap().fin_anim = fin_anim;
+
+            if let Some(body) = bodies.get_mut(entity) {
+                body.is_deactivated = true
+            }
+
+            attachments.insert(
+                entity,
+                PlayerBodyAttachment {
+                    player,
+                    offset: grab_offset.extend(0.1),
+                    sync_animation,
+                },
+            );
+        }
+    }
+}
+
 /// Component defining the strength of the throw types when an item is dropped.
 ///
-/// Mainly handled by the [`throw_dropped_items`] system.
-#[derive(Clone, Copy, TypeUlid)]
+/// Mainly handled by the [`throw_dropped_items`] system which consumes the
+/// [`ItemDropped`] components for entities which have this component.
+/// [`Item`] is required for the system to take affect.
+#[derive(Clone, TypeUlid)]
 #[ulid = "01GSGE6N4TSEMQ1DKDP5Y66TE4"]
 pub struct ItemThrow {
     normal: Vec2,
@@ -96,6 +152,8 @@ pub struct ItemThrow {
     lob: Vec2,
     roll: Vec2,
     spin: f32,
+    /// An optional system value that gets run once on throw.
+    system: Option<Arc<AtomicRefCell<System>>>,
 }
 
 impl ItemThrow {
@@ -112,6 +170,7 @@ impl ItemThrow {
             lob: Vec2::new(1.0, 2.5).normalize() * 1.1,
             roll: Vec2::new(0.4, -0.1),
             spin: 0.0,
+            system: None,
         }
     }
 
@@ -126,11 +185,19 @@ impl ItemThrow {
             lob: base.lob * strength,
             roll: base.roll * strength,
             spin: 0.0,
+            system: None,
         }
     }
 
     pub fn with_spin(self, spin: f32) -> Self {
         Self { spin, ..self }
+    }
+
+    pub fn with_system<Args>(self, system: impl IntoSystem<Args, ()>) -> Self {
+        Self {
+            system: Some(Arc::new(AtomicRefCell::new(system.system()))),
+            ..self
+        }
     }
 
     /// Chooses one of the throw values based on a [`PlayerControl`]
@@ -174,8 +241,11 @@ pub fn throw_dropped_items(
     for (entity, (_items, item_throw, body)) in
         entities.iter_with((&items, &item_throws, &mut bodies))
     {
-        if let Some(ItemDropped { player }) = items_dropped.remove(entity) {
-            commands.add(PlayerCommand::set_inventory(player, None));
+        if let Some(ItemDropped { player }) = items_dropped.get(entity).cloned() {
+            if let Some(system) = item_throw.system.clone() {
+                commands.add(move |world: &World| (system.borrow_mut().run)(world).unwrap());
+            }
+            items_dropped.remove(entity);
             attachments.remove(entity);
 
             let player_sprite = sprites.get_mut(player).unwrap();

@@ -203,28 +203,57 @@ fn update_kinematic_bodies(
         {
             puffin::profile_scope!("move body");
 
-            if collision_world.move_horizontal(&mut transforms, entity, body.velocity.x) {
-                body.velocity.x *= -body.bounciness;
-            }
-
             if collision_world.move_vertical(&mut transforms, entity, body.velocity.y) {
                 body.velocity.y *= -body.bounciness;
+            }
+
+            // NOTE: It's important that we move horizontally after we move vertically, or else the
+            // horizontal movement will clear our `descent` and `seen_wood` flags and we may not go
+            // through drop through platforms while moving horizontally.
+            if collision_world.move_horizontal(&mut transforms, entity, body.velocity.x) {
+                body.velocity.x *= -body.bounciness;
             }
         }
 
         // Check ground collision
         {
             let mut transform = transforms.get(entity).copied().unwrap();
+
+            // Don't get stuck floating in fall-through platforms
+            if body.velocity == Vec2::ZERO
+                && collision_world.tile_collision_filtered(transform, body.shape, |ent| {
+                    collision_world
+                        .tile_collision_kinds
+                        .get(ent)
+                        .map(|x| *x == TileCollisionKind::JumpThrough)
+                        .unwrap_or(false)
+                }) == TileCollisionKind::JumpThrough
+            {
+                body.fall_through = true;
+            }
+
+            // Move transform check down 1 slightly
             transform.translation.y -= 0.1;
 
             body.was_on_ground = body.is_on_ground;
 
-            let tile = collision_world.tile_collision(transform, body.shape);
+            let collider = collision_world.get_collider(entity);
+
+            let tile = collision_world.tile_collision_filtered(transform, body.shape, |ent| {
+                if collider.seen_wood {
+                    collision_world
+                        .tile_collision_kinds
+                        .get(ent)
+                        .map(|x| *x != TileCollisionKind::JumpThrough)
+                        .unwrap_or(false)
+                } else {
+                    true
+                }
+            });
 
             let on_jump_through_tile = tile == TileCollisionKind::JumpThrough;
-            body.is_on_ground = tile != TileCollisionKind::Empty
-                && !collision_world.get_collider(entity).seen_wood
-                && !(on_jump_through_tile && body.fall_through);
+            body.is_on_ground =
+                tile != TileCollisionKind::Empty && !(on_jump_through_tile && body.fall_through);
             body.is_on_platform = body.is_on_ground && on_jump_through_tile;
         }
 

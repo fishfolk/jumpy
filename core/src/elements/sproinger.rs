@@ -105,10 +105,7 @@ fn update(
 
         if sproinger.sproinging {
             match sproinger.frame {
-                1 => {
-                    audio_events.play(sound.clone(), *sound_volume);
-                    sprite.index = 2
-                }
+                1 => sprite.index = 2,
                 4 => sprite.index = 3,
                 8 => sprite.index = 4,
                 12 => sprite.index = 5,
@@ -120,9 +117,12 @@ fn update(
                 _ => (),
             }
             sproinger.frame += 1;
-        } else {
-            for collider_ent in collision_world.actor_collisions(entity) {
-                if let Some(body) = bodies.get_mut(collider_ent) {
+        }
+
+        for collider_ent in collision_world.actor_collisions(entity) {
+            if let Some(body) = bodies.get_mut(collider_ent) {
+                if body.velocity.y < *spring_velocity - body.gravity {
+                    audio_events.play(sound.clone(), *sound_volume);
                     body.velocity.y = *spring_velocity;
                     sproinger.sproinging = true;
                 }

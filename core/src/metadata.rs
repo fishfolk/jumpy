@@ -1,6 +1,7 @@
 //! Core game metadata
 
 use serde::Deserializer;
+use std::time::Duration;
 
 use crate::prelude::*;
 
@@ -41,10 +42,11 @@ impl ::bevy::prelude::Plugin for JumpyCoreAssetsPlugin {
 pub struct CoreMeta {
     pub camera: CameraMeta,
     pub physics: PhysicsMeta,
+    pub config: CoreConfigMeta,
+    pub map_tilesets: Vec<Handle<Atlas>>,
     pub players: Vec<Handle<PlayerMeta>>,
     pub stable_maps: Vec<Handle<MapMeta>>,
     pub map_elements: Vec<Handle<ElementMeta>>,
-    pub map_tilesets: Vec<Handle<Atlas>>,
     pub experimental_maps: Vec<Handle<MapMeta>>,
 }
 
@@ -88,4 +90,12 @@ pub struct PhysicsMeta {
     pub terminal_velocity: f32,
     pub friction_lerp: f32,
     pub stop_threshold: f32,
+}
+
+#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
+#[serde(deny_unknown_fields)]
+pub struct CoreConfigMeta {
+    #[serde(default)]
+    #[serde(with = "humantime_serde")]
+    pub respawn_invincibility_time: Duration,
 }

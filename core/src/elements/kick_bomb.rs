@@ -22,6 +22,7 @@ fn hydrate(
     game_meta: Res<CoreMetaArc>,
     mut items: CompMut<Item>,
     mut item_throws: CompMut<ItemThrow>,
+    mut item_grabs: CompMut<ItemGrab>,
     mut entities: ResMut<Entities>,
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
@@ -50,6 +51,8 @@ fn hydrate(
 
         if let BuiltinElementKind::KickBomb {
             atlas,
+            fin_anim,
+            grab_offset,
             body_diameter,
             can_rotate,
             bounciness,
@@ -65,6 +68,14 @@ fn hydrate(
             item_throws.insert(
                 entity,
                 ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+            );
+            item_grabs.insert(
+                entity,
+                ItemGrab {
+                    fin_anim: *fin_anim,
+                    sync_animation: false,
+                    grab_offset: *grab_offset,
+                },
             );
             idle_bombs.insert(entity, IdleKickBomb);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
@@ -94,16 +105,12 @@ fn hydrate(
 fn update_idle_kick_bombs(
     entities: Res<Entities>,
     mut commands: Commands,
-    player_inventories: PlayerInventories,
-    mut bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
     mut audio_events: ResMut<AudioEvents>,
     element_handles: Comp<ElementHandle>,
     mut idle_bombs: CompMut<IdleKickBomb>,
     element_assets: BevyAssets<ElementMeta>,
     mut animated_sprites: CompMut<AnimatedSprite>,
-    mut attachments: CompMut<PlayerBodyAttachment>,
-    mut player_layers: CompMut<PlayerLayers>,
 ) {
     for (entity, (_kick_bomb, element_handle)) in
         entities.iter_with((&mut idle_bombs, &element_handles))
@@ -113,54 +120,26 @@ fn update_idle_kick_bombs(
         };
 
         let BuiltinElementKind::KickBomb {
-            grab_offset,
             fuse_sound,
             fuse_sound_volume,
-            fin_anim,
             ..
         } = &element_meta.builtin else {
             unreachable!();
         };
 
-        // If the item is being held
-        if let Some(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
-            let player = inventory.player;
-            let body = bodies.get_mut(entity).unwrap();
-
-            player_layers.get_mut(player).unwrap().fin_anim = *fin_anim;
-
-            // Deactivate held items
-            body.is_deactivated = true;
-
-            // Attach to the player
-            attachments.insert(
-                entity,
-                PlayerBodyAttachment {
-                    player,
-                    offset: grab_offset.extend(1.0),
-                    sync_animation: false,
+        if items_used.get(entity).is_some() {
+            audio_events.play(fuse_sound.clone(), *fuse_sound_volume);
+            items_used.remove(entity);
+            let animated_sprite = animated_sprites.get_mut(entity).unwrap();
+            animated_sprite.frames = Arc::from([3, 4, 5]);
+            animated_sprite.repeat = true;
+            animated_sprite.fps = 8.0;
+            commands.add(
+                move |mut idle: CompMut<IdleKickBomb>, mut lit: CompMut<LitKickBomb>| {
+                    idle.remove(entity);
+                    lit.insert(entity, LitKickBomb { age: 0.0 });
                 },
             );
-
-            // If the item is being used
-            let item_used = items_used.get(entity).is_some();
-            if item_used {
-                audio_events.play(fuse_sound.clone(), *fuse_sound_volume);
-                items_used.remove(entity);
-                let animated_sprite = animated_sprites.get_mut(entity).unwrap();
-                animated_sprite.frames = Arc::from([3, 4, 5]);
-                animated_sprite.repeat = true;
-                animated_sprite.fps = 8.0;
-                commands.add(
-                    move |mut idle: CompMut<IdleKickBomb>, mut lit: CompMut<LitKickBomb>| {
-                        idle.remove(entity);
-                        lit.insert(entity, LitKickBomb { age: 0.0 });
-                    },
-                );
-            }
         }
     }
 }
@@ -184,6 +163,7 @@ fn update_lit_kick_bombs(
     mut transforms: CompMut<Transform>,
     mut commands: Commands,
     spawners: Comp<DehydrateOutOfBounds>,
+    invincibles: CompMut<Invincibility>,
 ) {
     for (entity, (kick_bomb, element_handle, spawner)) in
         entities.iter_with((&mut lit_grenades, &element_handles, &spawners))
@@ -238,7 +218,7 @@ fn update_lit_kick_bombs(
         }
         // The item is on the ground
         else if let Some(player_entity) = collision_world
-            .actor_collisions(entity)
+            .actor_collisions_filtered(entity, |e| invincibles.get(e).is_none())
             .into_iter()
             .find(|&x| player_indexes.contains(x))
         {
@@ -276,6 +256,7 @@ fn update_lit_kick_bombs(
             hydrated.remove(**spawner);
             let mut explosion_transform = *transforms.get(entity).unwrap();
             explosion_transform.translation.z += 1.0;
+            explosion_transform.rotation = Quat::IDENTITY;
 
             // Clone types for move into closure
             let damage_region_size = *damage_region_size;

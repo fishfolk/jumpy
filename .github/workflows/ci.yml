@@ -4,9 +4,8 @@ on:
   push:
     branches:
       - main
-      - staging
-      - trying
   pull_request:
+  merge_group:
 
 jobs:
   check_formatting:
@@ -35,7 +34,7 @@ jobs:
       matrix:
         config:
           - { target: "x86_64-unknown-linux-gnu", target_dir: "target" }
-          - { target: 'wasm32-unknown-unknown', target_dir: 'web-target' }
+          - { target: "wasm32-unknown-unknown", target_dir: "web-target" }
     steps:
       - name: ⬇️ Checkout Source
         uses: actions/checkout@v3
@@ -60,22 +59,18 @@ jobs:
         with:
           components: clippy
 
-      - name: ♻️ Cache Cargo Registry
+      - name: ♻️ Cache Cargo
         uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-          key: cargo-registry
-
-      - name: ♻️ Cache Cargo Target
-        uses: actions/cache@v3
-        with:
-          path: |
             target/
             web-target/
-          key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
+          key: ci-${{ matrix.config.target }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ci-${{ matrix.config.target }}-
 
       - name: 🔧 Check
         uses: actions-rs/cargo@v1
@@ -98,7 +93,7 @@ jobs:
     continue-on-error: ${{ matrix.checks == 'advisories' }}
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: EmbarkStudios/cargo-deny-action@v1
-      with:
-        command: check ${{ matrix.checks }}
+      - uses: actions/checkout@v3
+      - uses: EmbarkStudios/cargo-deny-action@v1
+        with:
+          command: check ${{ matrix.checks }}

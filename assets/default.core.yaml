@@ -1,3 +1,6 @@
+config:
+  respawn_invincibility_time: 2s
+
 camera:
   default_height: 448
   border_right: 75
@@ -43,6 +46,7 @@ map_tilesets:
   - /map/resources/ground_wood.atlas.yaml
   - /map/resources/ground_metal.atlas.yaml
   - /map/resources/ship_decorations.atlas.yaml
+  - /map/resources/coral.atlas.yaml
 
 map_elements:
   - /elements/decoration/anemones/anemones.element.yaml

@@ -240,6 +240,7 @@ struct EditorTopBar<'w, 's> {
     localization: Res<'w, Localization>,
     session_manager: SessionManager<'w, 's>,
     camera: CameraQuery<'w, 's>,
+    #[cfg(not(target_arch = "wasm32"))]
     clipboard: ResMut<'w, bevy_egui::EguiClipboard>,
     map_export: Res<'w, EditorMapExport>,
     storage: ResMut<'w, Storage>,
@@ -404,7 +405,21 @@ fn map_export_window(ui: &mut egui::Ui, params: &mut EditorTopBar) {
                     .show(ui)
                     .clicked()
                     {
+                        #[cfg(not(target_arch = "wasm32"))]
                         params.clipboard.set_contents(&export);
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            use wasm_bindgen::prelude::*;
+                            #[wasm_bindgen]
+                            extern "C" {
+                                type Clipboard;
+
+                                #[wasm_bindgen(js_namespace = ["navigator", "clipboard"], js_name = writeText)]
+                                fn write_clipboard(s: &str);
+                            }
+
+                            write_clipboard(&export);
+                        }
                     }
                 });
             });

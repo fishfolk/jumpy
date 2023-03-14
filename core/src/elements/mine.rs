@@ -32,6 +32,7 @@ fn hydrate(
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
     mut item_throws: CompMut<ItemThrow>,
+    mut item_grabs: CompMut<ItemGrab>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
@@ -51,6 +52,8 @@ fn hydrate(
 
         if let BuiltinElementKind::Mine {
             atlas,
+            fin_anim,
+            grab_offset,
             body_size,
             bounciness,
             throw_velocity,
@@ -64,6 +67,14 @@ fn hydrate(
             idle_mines.insert(entity, IdleMine);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
             item_throws.insert(entity, ItemThrow::strength(*throw_velocity));
+            item_grabs.insert(
+                entity,
+                ItemGrab {
+                    fin_anim: *fin_anim,
+                    sync_animation: false,
+                    grab_offset: *grab_offset,
+                },
+            );
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
@@ -86,58 +97,19 @@ fn hydrate(
 
 fn update_idle_mines(
     entities: Res<Entities>,
-    element_handles: Comp<ElementHandle>,
-    element_assets: BevyAssets<ElementMeta>,
     mut idle_mines: CompMut<IdleMine>,
-    mut bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
     player_inventories: PlayerInventories,
-    mut attachments: CompMut<PlayerBodyAttachment>,
-    mut player_layers: CompMut<PlayerLayers>,
     mut commands: Commands,
 ) {
-    for (entity, (_mine, element_handle)) in entities.iter_with((&mut idle_mines, &element_handles))
-    {
-        let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
-        continue;
-    };
-
-        let BuiltinElementKind::Mine {
-        grab_offset,
-        fin_anim,
-        ..
-    } = &element_meta.builtin else {
-        unreachable!();
-    };
-
-        // If the item is being held
-        if let Some(inventory) = player_inventories
+    for (entity, _mine) in entities.iter_with(&mut idle_mines) {
+        if let Some(Inv { player, .. }) = player_inventories
             .iter()
             .find_map(|x| x.filter(|x| x.inventory == entity))
         {
-            let player = inventory.player;
-            let player_layers = player_layers.get_mut(player).unwrap();
-            player_layers.fin_anim = *fin_anim;
-            let body = bodies.get_mut(entity).unwrap();
-
-            // Deactivate held items
-            body.is_deactivated = true;
-
-            // Attach to the player
-            attachments.insert(
-                entity,
-                PlayerBodyAttachment {
-                    player,
-                    offset: grab_offset.extend(0.1),
-                    sync_animation: false,
-                },
-            );
-
-            // If the item is being used
             if items_used.get(entity).is_some() {
                 items_used.remove(entity);
                 commands.add(PlayerCommand::set_inventory(player, None));
-
                 commands.add(
                     move |mut idle: CompMut<IdleMine>, mut thrown: CompMut<ThrownMine>| {
                         idle.remove(entity);
@@ -163,6 +135,7 @@ fn update_thrown_mines(
     collision_world: CollisionWorld,
     transforms: Comp<Transform>,
     spawners: Comp<DehydrateOutOfBounds>,
+    invincibles: CompMut<Invincibility>,
 ) {
     let players = entities
         .iter_with(&player_indexes)
@@ -204,9 +177,10 @@ fn update_thrown_mines(
         }
 
         let colliding_with_players = collision_world
-            .actor_collisions(entity)
+            .actor_collisions_filtered(entity, |e| {
+                players.contains(&e) && invincibles.get(e).is_none()
+            })
             .into_iter()
-            .filter(|&x| players.contains(&x))
             .collect::<Vec<_>>();
 
         if !colliding_with_players.is_empty() && thrown_mine.age >= *arm_delay {
@@ -239,7 +213,8 @@ fn update_thrown_mines(
                       mut lifetimes: CompMut<Lifetime>,
                       mut sprites: CompMut<AtlasSprite>,
                       mut animated_sprites: CompMut<AnimatedSprite>| {
-                    let explosion_transform = mine_transform;
+                    let mut explosion_transform = mine_transform;
+                    explosion_transform.rotation = Quat::IDENTITY;
 
                     // Despawn the grenade
                     entities.kill(entity);

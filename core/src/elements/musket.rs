@@ -28,6 +28,7 @@ fn hydrate(
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
     mut item_throws: CompMut<ItemThrow>,
+    mut item_grabs: CompMut<ItemGrab>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
@@ -47,6 +48,8 @@ fn hydrate(
 
         if let BuiltinElementKind::Musket {
             atlas,
+            fin_anim,
+            grab_offset,
             max_ammo,
             body_size,
             can_rotate,
@@ -63,6 +66,14 @@ fn hydrate(
             item_throws.insert(
                 entity,
                 ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+            );
+            item_grabs.insert(
+                entity,
+                ItemGrab {
+                    fin_anim: *fin_anim,
+                    sync_animation: false,
+                    grab_offset: *grab_offset,
+                },
             );
             muskets.insert(
                 entity,
@@ -101,14 +112,11 @@ fn update(
     mut muskets: CompMut<Musket>,
     transforms: CompMut<Transform>,
     mut sprites: CompMut<AtlasSprite>,
-    mut bodies: CompMut<KinematicBody>,
     mut audio_events: ResMut<AudioEvents>,
-    mut player_layers: CompMut<PlayerLayers>,
 
     player_inventories: PlayerInventories,
     mut items_used: CompMut<ItemUsed>,
     items_dropped: CompMut<ItemDropped>,
-    mut attachments: CompMut<PlayerBodyAttachment>,
     time: Res<Time>,
 ) {
     for (entity, (musket, element_handle)) in entities.iter_with((&mut muskets, &element_handles)) {
@@ -123,8 +131,6 @@ fn update(
             shoot_frames,
             shoot_lifetime,
             cooldown,
-            fin_anim,
-            grab_offset,
             bullet_meta,
             shoot_sound,
             empty_shoot_sound,
@@ -143,21 +149,6 @@ fn update(
             .find_map(|x| x.filter(|x| x.inventory == entity))
         {
             let player = inventory.player;
-            let body = bodies.get_mut(entity).unwrap();
-            player_layers.get_mut(player).unwrap().fin_anim = *fin_anim;
-
-            // Deactivate collisions while being held
-            body.is_deactivated = true;
-
-            // Attach to the player
-            attachments.insert(
-                entity,
-                PlayerBodyAttachment {
-                    player,
-                    offset: grab_offset.extend(0.1),
-                    sync_animation: false,
-                },
-            );
 
             // If the item is being used
             let item_used = items_used.get(entity).is_some();

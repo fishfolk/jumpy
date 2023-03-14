@@ -1,9 +1,6 @@
-name: 🕵 Lint Bors Commit Message
+name: 🕵 Lint Merge Group Commit Message
 on:
-  push:
-    branches:
-      - staging
-      - trying
+  merge_group:
 
 jobs:
   commitlint:

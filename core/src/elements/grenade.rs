@@ -32,6 +32,7 @@ fn hydrate(
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
     mut item_throws: CompMut<ItemThrow>,
+    mut item_grabs: CompMut<ItemGrab>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
@@ -51,6 +52,8 @@ fn hydrate(
 
         if let BuiltinElementKind::Grenade {
             atlas,
+            fin_anim,
+            grab_offset,
             body_diameter,
             can_rotate,
             bounciness,
@@ -67,6 +70,14 @@ fn hydrate(
             item_throws.insert(
                 entity,
                 ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+            );
+            item_grabs.insert(
+                entity,
+                ItemGrab {
+                    fin_anim: *fin_anim,
+                    sync_animation: false,
+                    grab_offset: *grab_offset,
+                },
             );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
@@ -99,11 +110,7 @@ fn update_idle_grenades(
     mut audio_events: ResMut<AudioEvents>,
     mut idle_grenades: CompMut<IdleGrenade>,
     mut animated_sprites: CompMut<AnimatedSprite>,
-    mut bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
-    mut attachments: CompMut<PlayerBodyAttachment>,
-    mut player_layers: CompMut<PlayerLayers>,
-    player_inventories: PlayerInventories,
     mut commands: Commands,
 ) {
     for (entity, (_grenade, element_handle)) in
@@ -114,54 +121,26 @@ fn update_idle_grenades(
         };
 
         let BuiltinElementKind::Grenade {
-            grab_offset,
             fuse_sound,
             fuse_sound_volume,
-            fin_anim,
             ..
         } = &element_meta.builtin else {
             unreachable!();
         };
 
-        // If the item is being held
-        if let Some(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
-            let player = inventory.player;
-            let player_layers = player_layers.get_mut(player).unwrap();
-            player_layers.fin_anim = *fin_anim;
-            let body = bodies.get_mut(entity).unwrap();
-
-            // Deactivate held items
-            body.is_deactivated = true;
-
-            // Attach to the player
-            attachments.insert(
-                entity,
-                PlayerBodyAttachment {
-                    player,
-                    offset: grab_offset.extend(0.1),
-                    sync_animation: false,
+        if items_used.get(entity).is_some() {
+            audio_events.play(fuse_sound.clone(), *fuse_sound_volume);
+            items_used.remove(entity);
+            let animated_sprite = animated_sprites.get_mut(entity).unwrap();
+            animated_sprite.frames = Arc::from([3, 4, 5]);
+            animated_sprite.repeat = true;
+            animated_sprite.fps = 8.0;
+            commands.add(
+                move |mut idle: CompMut<IdleGrenade>, mut lit: CompMut<LitGrenade>| {
+                    idle.remove(entity);
+                    lit.insert(entity, LitGrenade { age: 0.0 });
                 },
             );
-
-            // If the item is being used
-            let item_used = items_used.get(entity).is_some();
-            if item_used {
-                audio_events.play(fuse_sound.clone(), *fuse_sound_volume);
-                items_used.remove(entity);
-                let animated_sprite = animated_sprites.get_mut(entity).unwrap();
-                animated_sprite.frames = Arc::from([3, 4, 5]);
-                animated_sprite.repeat = true;
-                animated_sprite.fps = 8.0;
-                commands.add(
-                    move |mut idle: CompMut<IdleGrenade>, mut lit: CompMut<LitGrenade>| {
-                        idle.remove(entity);
-                        lit.insert(entity, LitGrenade { age: 0.0 });
-                    },
-                );
-            }
         }
     }
 }
@@ -262,6 +241,7 @@ fn update_lit_grenades(
             hydrated.remove(**spawner);
             let mut explosion_transform = *transforms.get(entity).unwrap();
             explosion_transform.translation.z += 1.0;
+            explosion_transform.rotation = Quat::IDENTITY;
 
             // Clone types for move into closure
             let damage_region_size = *damage_region_size;

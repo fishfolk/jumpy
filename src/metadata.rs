@@ -25,7 +25,17 @@ pub struct GameMeta {
     pub main_menu: MainMenuMeta,
     #[asset(deserialize_only)]
     pub default_settings: settings::Settings,
-    pub playlist: Vec<AssetHandle<AudioSource>>,
+    pub music: MusicMeta,
+}
+
+#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct MusicMeta {
+    pub title_screen: AssetHandle<AudioSource>,
+    pub fight: Vec<AssetHandle<AudioSource>>,
+    pub character_screen: AssetHandle<AudioSource>,
+    pub results_screen: AssetHandle<AudioSource>,
+    pub credits: AssetHandle<AudioSource>,
 }
 
 #[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]

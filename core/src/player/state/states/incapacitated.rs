@@ -1,6 +1,11 @@
 use super::*;
 
 pub const ID: Key = key!("core::incapacitated");
+
+pub fn install(session: &mut GameSession) {
+    PlayerState::add_player_state_update_system(session, handle_player_state);
+}
+
 const SLOWING_SPEED: f32 = 0.3;
 
 pub fn handle_player_state(

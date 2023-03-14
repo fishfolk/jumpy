@@ -2,6 +2,11 @@ use super::*;
 
 pub const ID: Key = key!("core::dead");
 
+pub fn install(session: &mut GameSession) {
+    PlayerState::add_player_state_transition_system(session, player_state_transition);
+    PlayerState::add_player_state_update_system(session, handle_player_state);
+}
+
 pub fn player_state_transition(
     entities: Res<Entities>,
     killed_players: Comp<PlayerKilled>,

@@ -544,6 +544,28 @@ impl<'a> CollisionWorld<'a> {
             .collect()
     }
 
+    /// Returns the collisions that one actor has with any other actors filtered by the given Fn
+    pub fn actor_collisions_filtered(
+        &self,
+        entity: Entity,
+        filter: impl Fn(Entity) -> bool,
+    ) -> Vec<Entity> {
+        if !self.actors.contains(entity) {
+            return default();
+        }
+        if !self.colliders.contains(entity) {
+            return default();
+        };
+
+        self.ctx
+            .collision_cache
+            .get(entity)
+            .iter()
+            .filter(|x| self.actors.contains(**x) && filter(**x))
+            .copied()
+            .collect()
+    }
+
     /// Put the entity's collider into descent mode so that it will fall through jump-through
     /// platforms.
     pub fn descent(&mut self, entity: Entity) {
@@ -848,6 +870,15 @@ impl<'a> CollisionWorld<'a> {
     /// Get the [`TileCollisionKind`] of the first tile detected colliding with the `shape` at the
     /// given `transform`.
     pub fn tile_collision(&self, transform: Transform, shape: ColliderShape) -> TileCollisionKind {
+        self.tile_collision_filtered(transform, shape, |_| true)
+    }
+
+    pub fn tile_collision_filtered(
+        &self,
+        transform: Transform,
+        shape: ColliderShape,
+        filter: impl Fn(Entity) -> bool,
+    ) -> TileCollisionKind {
         self.ctx
             .query_pipeline
             .intersection_with_shape(
@@ -861,7 +892,7 @@ impl<'a> CollisionWorld<'a> {
                 &*shape.shared_shape(),
                 rapier::QueryFilter::new().predicate(&|_handle, collider| {
                     let ent = RapierUserData::entity(collider.user_data);
-                    self.tile_collision_kinds.contains(ent)
+                    self.tile_collision_kinds.contains(ent) && filter(ent)
                 }),
             )
             .map(|x| RapierUserData::entity(self.ctx.collider_set.get(x).unwrap().user_data))

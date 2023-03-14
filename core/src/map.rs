@@ -239,7 +239,16 @@ fn spawn_map(
                     ..default()
                 },
             );
-            tile_collisions.insert(tile_ent, tile_meta.collision);
+            // TODO: Due to a bug in the way that collisions are handled in the
+            // `physics/collisions.rs` file, having an empty collision isn't equivalent to not
+            // having a collision component.
+            //
+            // We should fix this so that we can insert an empty tile collision kind and have that
+            // work properly. For now, though, just not adding the tile collider component behaves
+            // properly.
+            if tile_meta.collision != TileCollisionKind::Empty {
+                tile_collisions.insert(tile_ent, tile_meta.collision);
+            }
         }
         let layer_ent = entities.create();
         spawned_map_layer_metas.insert(layer_ent, SpawnedMapLayerMeta { layer_idx });
@@ -301,7 +310,7 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
         for tile in &layer.tiles {
             if tile.collision == TileCollisionKind::JumpThrough {
                 semi_solids.insert(NavNode(tile.pos.as_ivec2()));
-            } else {
+            } else if tile.collision != TileCollisionKind::Empty {
                 graph.remove_node(NavNode(tile.pos.as_ivec2()));
             }
         }
@@ -389,7 +398,7 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
                     },
                 );
             }
-            if contains_above2 {
+            if contains_above2 && contains_above1 {
                 // Jump staight up
                 graph.add_edge(
                     node,
@@ -405,7 +414,7 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
                     },
                 );
             }
-            if contains_above3 {
+            if contains_above3 && contains_above2 && contains_above1 {
                 // Jump staight up
                 graph.add_edge(
                     node,
@@ -423,82 +432,94 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
             }
 
             // Jump up and left
-            let above3l = above3.left().left();
-            if graph.contains_node(above3l) && contains_above2 && contains_above3 {
+            let above3l2 = above3.left().left();
+            let above2l = above2.left();
+            let contains_above2l = graph.contains_node(above2l);
+            let contains_above3l2 = graph.contains_node(above3l2);
+            if contains_above3l2 && contains_above2 && contains_above3 && contains_above2l {
                 graph.add_edge(
                     node,
-                    above3l,
+                    above3l2,
                     NavGraphEdge {
-                        inputs: [PlayerControl {
+                        inputs: std::iter::repeat(PlayerControl {
                             move_direction: vec2(-1.0, 0.0),
                             jump_just_pressed: true,
                             jump_pressed: true,
                             ..default()
-                        }]
-                        .into(),
-                        distance: node.distance(&above3l),
+                        })
+                        .take(20)
+                        .collect(),
+                        distance: node.distance(&above3l2),
                     },
                 );
             }
             let above3l3 = above3.left().left().left();
             if graph.contains_node(above3l3)
                 && graph.contains_node(above3.left())
-                && graph.contains_node(above3.left().left())
+                && contains_above3l2
                 && contains_above2
                 && contains_above3
+                && contains_above2l
             {
                 graph.add_edge(
                     node,
                     above3l3,
                     NavGraphEdge {
-                        inputs: [PlayerControl {
+                        inputs: std::iter::repeat(PlayerControl {
                             move_direction: vec2(-1.0, 0.0),
                             jump_just_pressed: true,
                             jump_pressed: true,
                             ..default()
-                        }]
-                        .into(),
+                        })
+                        .take(20)
+                        .collect(),
                         distance: node.distance(&above3l3),
                     },
                 );
             }
 
             // Jump up and right
-            let above3r = above3.right().right();
-            if graph.contains_node(above3r) && contains_above2 && contains_above3 {
+            let above3r2 = above3.right().right();
+            let above2r = above2.right();
+            let contains_above2r = graph.contains_node(above2r);
+            let contains_above3r2 = graph.contains_node(above3r2);
+            if contains_above3r2 && contains_above2 && contains_above3 && contains_above2r {
                 graph.add_edge(
                     node,
-                    above3r,
+                    above3r2,
                     NavGraphEdge {
-                        inputs: [PlayerControl {
+                        inputs: std::iter::repeat(PlayerControl {
                             move_direction: vec2(1.0, 0.0),
                             jump_just_pressed: true,
                             jump_pressed: true,
                             ..default()
-                        }]
-                        .into(),
-                        distance: node.distance(&above3r),
+                        })
+                        .take(20)
+                        .collect(),
+                        distance: node.distance(&above3r2),
                     },
                 );
             }
             let above3r3 = above3.right().right().right();
             if graph.contains_node(above3r3)
                 && graph.contains_node(above3.right())
-                && graph.contains_node(above3.right().right())
+                && contains_above3r2
                 && contains_above2
                 && contains_above3
+                && contains_above2r
             {
                 graph.add_edge(
                     node,
                     above3r3,
                     NavGraphEdge {
-                        inputs: [PlayerControl {
+                        inputs: std::iter::repeat(PlayerControl {
                             move_direction: vec2(1.0, 0.0),
                             jump_just_pressed: true,
                             jump_pressed: true,
                             ..default()
-                        }]
-                        .into(),
+                        })
+                        .take(20)
+                        .collect(),
                         distance: node.distance(&above3r3),
                     },
                 );

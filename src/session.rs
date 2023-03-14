@@ -148,7 +148,9 @@ fn update_input(
 
         for (player_idx, action_state) in &player_input_collectors {
 
-            if inputs.players[ player_idx.0].is_ai { continue;}
+            if inputs.players[ player_idx.0].is_ai { 
+                continue;
+            }
 
             let control = &mut inputs.players[player_idx.0].control;
 

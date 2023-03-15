@@ -273,6 +273,14 @@
 <a href="#272" id="272">272</a>
 <a href="#273" id="273">273</a>
 <a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -404,7 +412,7 @@
                 entity,
                 PlayerBodyAttachment {
                     player,
-                    offset: grab_offset.extend(<span class="number">0.1</span>),
+                    offset: grab_offset.extend(PlayerLayers::FIN_Z_OFFSET / <span class="number">2.0</span>),
                     sync_animation,
                 },
             );
@@ -511,10 +519,13 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
+    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
+    item_spawners: Comp&lt;DehydrateOutOfBounds&gt;,
+    map_layers: Comp&lt;SpawnedMapLayerMeta&gt;,
     <span class="kw-2">mut </span>commands: Commands,
 ) {
-    <span class="kw">for </span>(entity, (_items, item_throw, body)) <span class="kw">in
-        </span>entities.iter_with((<span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>item_throws, <span class="kw-2">&amp;mut </span>bodies))
+    <span class="kw">for </span>(entity, (_items, item_throw, body, transform)) <span class="kw">in
+        </span>entities.iter_with((<span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>item_throws, <span class="kw-2">&amp;mut </span>bodies, <span class="kw-2">&amp;mut </span>transforms))
     {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(ItemDropped { player }) = items_dropped.get(entity).cloned() {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(system) = item_throw.system.clone() {
@@ -538,6 +549,11 @@
                     .unwrap()
                     .control,
             );
+
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(item_spawner) = item_spawners.get(entity) {
+                <span class="kw">let </span>map_layer = map_layers.get(item_spawner.<span class="number">0</span>).unwrap();
+                transform.translation.z = z_depth_for_map_layer(map_layer.layer_idx);
+            }
 
             body.velocity = throw_velocity * horizontal_flip_factor;
             body.angular_velocity =

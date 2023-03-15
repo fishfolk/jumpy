@@ -210,6 +210,10 @@
 <a href="#209" id="209">209</a>
 <a href="#210" id="210">210</a>
 <a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::{ecs::schedule::ShouldRun, utils::Instant};
 
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
@@ -359,6 +363,10 @@
         </span>inputs.players[<span class="number">0</span>].editor_input = editor_input.take();
 
         <span class="kw">for </span>(player_idx, action_state) <span class="kw">in </span><span class="kw-2">&amp;</span>player_input_collectors {
+            <span class="kw">if </span>inputs.players[player_idx.<span class="number">0</span>].is_ai {
+                <span class="kw">continue</span>;
+            }
+
             <span class="kw">let </span>control = <span class="kw-2">&amp;mut </span>inputs.players[player_idx.<span class="number">0</span>].control;
 
             <span class="kw">let </span>jump_pressed = action_state.pressed(PlayerAction::Jump);

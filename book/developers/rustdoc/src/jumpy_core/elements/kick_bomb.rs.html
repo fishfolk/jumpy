@@ -569,8 +569,8 @@
             <span class="comment">// Cause the item to respawn by un-hydrating it&#39;s spawner.
             </span>hydrated.remove(<span class="kw-2">**</span>spawner);
             <span class="kw">let </span><span class="kw-2">mut </span>explosion_transform = <span class="kw-2">*</span>transforms.get(entity).unwrap();
-            explosion_transform.translation.z += <span class="number">1.0</span>;
-            explosion_transform.rotation = Quat::IDENTITY;
+            explosion_transform.translation.z = -<span class="number">10.0</span>; <span class="comment">// On top of almost everything
+            </span>explosion_transform.rotation = Quat::IDENTITY;
 
             <span class="comment">// Clone types for move into closure
             </span><span class="kw">let </span>damage_region_size = <span class="kw-2">*</span>damage_region_size;

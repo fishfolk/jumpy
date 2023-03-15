@@ -719,6 +719,7 @@
 <a href="#718" id="718">718</a>
 <a href="#719" id="719">719</a>
 <a href="#720" id="720">720</a>
+<a href="#721" id="721">721</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::VecDeque;
 
 <span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>};
@@ -758,7 +759,8 @@
 }
 
 <span class="kw">impl </span>PlayerLayers {
-    <span class="kw">pub const </span>FIN_Z_OFFSET: f32 = <span class="number">2.0</span>;
+    <span class="kw">pub const </span>FIN_Z_OFFSET: f32 = <span class="number">0.5</span>;
+    <span class="kw">pub const </span>FACE_Z_OFFSET: f32 = <span class="number">0.01</span>;
 }
 
 <span class="doccomment">/// A component representing the current emote state of a player.
@@ -1222,7 +1224,7 @@
             face_entity,
             PlayerBodyAttachment {
                 player: player_entity,
-                offset: meta.layers.face.offset.extend(<span class="number">0.01</span>),
+                offset: meta.layers.face.offset.extend(PlayerLayers::FACE_Z_OFFSET),
                 sync_animation: <span class="bool-val">false</span>,
             },
         );

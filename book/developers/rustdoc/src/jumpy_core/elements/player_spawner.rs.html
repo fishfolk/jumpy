@@ -86,6 +86,7 @@
 <a href="#85" id="85">85</a>
 <a href="#86" id="86">86</a>
 <a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, MAX_PLAYERS};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -160,8 +161,9 @@
 
             <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>spawn_point) = spawn_points.get(current_spawner.<span class="number">0</span>).copied() <span class="kw">else </span>{ <span class="kw">return </span>};
 
-            <span class="comment">// Make sure each player spawns at a different z level
-            </span>spawn_point.z += i <span class="kw">as </span>f32 * <span class="number">0.1</span>;
+            <span class="comment">// Make sure each player spawns at a different z level ( give enough room for 10 players
+            // to fit between map layers )
+            </span>spawn_point.z += i <span class="kw">as </span>f32 * MAP_LAYERS_GAP_DEPTH / <span class="number">10.0</span>;
 
             <span class="kw">let </span>player_ent = entities.create();
             player_indexes.insert(player_ent, PlayerIdx(i));

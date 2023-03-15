@@ -722,6 +722,11 @@
 <a href="#721" id="721">721</a>
 <a href="#722" id="722">722</a>
 <a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
+<a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     cmp::{max, min},
     collections::VecDeque,
@@ -748,11 +753,16 @@
 #[ulid = <span class="string">&quot;01GP3Z38HKE37JB6GRHHPPTY38&quot;</span>]
 </span><span class="kw">pub struct </span>MapSpawned(<span class="kw">pub </span>bool);
 
+<span class="doccomment">/// The Z depth of the deepest map layer.
+</span><span class="kw">pub const </span>MAP_LAYERS_MIN_DEPTH: f32 = -<span class="number">900.0</span>;
+<span class="doccomment">/// The Z depth in between each map layer.
+</span><span class="kw">pub const </span>MAP_LAYERS_GAP_DEPTH: f32 = <span class="number">10.0</span>;
+
 <span class="doccomment">/// Helper for getting the z-depth of the map layer with the given index.
 </span><span class="kw">pub fn </span>z_depth_for_map_layer(layer_idx: usize) -&gt; f32 {
-    <span class="comment">// We start map layers at -900 and for ever layer we place a gap of 2 units in between
-    </span>-<span class="number">900.0 </span>+ layer_idx <span class="kw">as </span>f32 * <span class="number">2.0
-</span>}
+    <span class="comment">// We start map layers at -900 and for ever layer we place a gap of 10 units in between
+    </span>MAP_LAYERS_MIN_DEPTH + layer_idx <span class="kw">as </span>f32 * MAP_LAYERS_GAP_DEPTH
+}
 
 <span class="doccomment">/// Resource containing essential the map metadata for the map once spawned. This allows the
 /// complete map metadata to be re-constructed from the world after the map has been spawned and

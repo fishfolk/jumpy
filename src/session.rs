@@ -147,6 +147,10 @@ fn update_input(
         inputs.players[0].editor_input = editor_input.take();
 
         for (player_idx, action_state) in &player_input_collectors {
+            if inputs.players[player_idx.0].is_ai {
+                continue;
+            }
+
             let control = &mut inputs.players[player_idx.0].control;
 
             let jump_pressed = action_state.pressed(PlayerAction::Jump);

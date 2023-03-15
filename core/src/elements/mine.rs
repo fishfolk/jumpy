@@ -214,6 +214,7 @@ fn update_thrown_mines(
                       mut sprites: CompMut<AtlasSprite>,
                       mut animated_sprites: CompMut<AnimatedSprite>| {
                     let mut explosion_transform = mine_transform;
+                    explosion_transform.translation.z = -10.0; // On top of almost everything
                     explosion_transform.rotation = Quat::IDENTITY;
 
                     // Despawn the grenade

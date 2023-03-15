@@ -72,8 +72,9 @@ fn update(
 
             let Some(mut spawn_point) = spawn_points.get(current_spawner.0).copied() else { return };
 
-            // Make sure each player spawns at a different z level
-            spawn_point.z += i as f32 * 0.1;
+            // Make sure each player spawns at a different z level ( give enough room for 10 players
+            // to fit between map layers )
+            spawn_point.z += i as f32 * MAP_LAYERS_GAP_DEPTH / 10.0;
 
             let player_ent = entities.create();
             player_indexes.insert(player_ent, PlayerIdx(i));

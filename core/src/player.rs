@@ -37,7 +37,8 @@ pub struct PlayerLayers {
 }
 
 impl PlayerLayers {
-    pub const FIN_Z_OFFSET: f32 = 2.0;
+    pub const FIN_Z_OFFSET: f32 = 0.5;
+    pub const FACE_Z_OFFSET: f32 = 0.01;
 }
 
 /// A component representing the current emote state of a player.
@@ -501,7 +502,7 @@ fn hydrate_players(
             face_entity,
             PlayerBodyAttachment {
                 player: player_entity,
-                offset: meta.layers.face.offset.extend(0.01),
+                offset: meta.layers.face.offset.extend(PlayerLayers::FACE_Z_OFFSET),
                 sync_animation: false,
             },
         );

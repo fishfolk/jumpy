@@ -129,7 +129,7 @@ pub fn grab_items(
                 entity,
                 PlayerBodyAttachment {
                     player,
-                    offset: grab_offset.extend(0.1),
+                    offset: grab_offset.extend(PlayerLayers::FIN_Z_OFFSET / 2.0),
                     sync_animation,
                 },
             );
@@ -236,10 +236,13 @@ pub fn throw_dropped_items(
     mut bodies: CompMut<KinematicBody>,
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut sprites: CompMut<AtlasSprite>,
+    mut transforms: CompMut<Transform>,
+    item_spawners: Comp<DehydrateOutOfBounds>,
+    map_layers: Comp<SpawnedMapLayerMeta>,
     mut commands: Commands,
 ) {
-    for (entity, (_items, item_throw, body)) in
-        entities.iter_with((&items, &item_throws, &mut bodies))
+    for (entity, (_items, item_throw, body, transform)) in
+        entities.iter_with((&items, &item_throws, &mut bodies, &mut transforms))
     {
         if let Some(ItemDropped { player }) = items_dropped.get(entity).cloned() {
             if let Some(system) = item_throw.system.clone() {
@@ -263,6 +266,11 @@ pub fn throw_dropped_items(
                     .unwrap()
                     .control,
             );
+
+            if let Some(item_spawner) = item_spawners.get(entity) {
+                let map_layer = map_layers.get(item_spawner.0).unwrap();
+                transform.translation.z = z_depth_for_map_layer(map_layer.layer_idx);
+            }
 
             body.velocity = throw_velocity * horizontal_flip_factor;
             body.angular_velocity =

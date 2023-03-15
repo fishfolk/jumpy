@@ -24,10 +24,15 @@ pub struct LoadedMap(pub Arc<MapMeta>);
 #[ulid = "01GP3Z38HKE37JB6GRHHPPTY38"]
 pub struct MapSpawned(pub bool);
 
+/// The Z depth of the deepest map layer.
+pub const MAP_LAYERS_MIN_DEPTH: f32 = -900.0;
+/// The Z depth in between each map layer.
+pub const MAP_LAYERS_GAP_DEPTH: f32 = 10.0;
+
 /// Helper for getting the z-depth of the map layer with the given index.
 pub fn z_depth_for_map_layer(layer_idx: usize) -> f32 {
-    // We start map layers at -900 and for ever layer we place a gap of 2 units in between
-    -900.0 + layer_idx as f32 * 2.0
+    // We start map layers at -900 and for ever layer we place a gap of 10 units in between
+    MAP_LAYERS_MIN_DEPTH + layer_idx as f32 * MAP_LAYERS_GAP_DEPTH
 }
 
 /// Resource containing essential the map metadata for the map once spawned. This allows the

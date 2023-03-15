@@ -240,7 +240,7 @@ fn update_lit_grenades(
             // Cause the item to respawn by un-hydrating it's spawner.
             hydrated.remove(**spawner);
             let mut explosion_transform = *transforms.get(entity).unwrap();
-            explosion_transform.translation.z += 1.0;
+            explosion_transform.translation.z = -10.0; // On top of almost everything
             explosion_transform.rotation = Quat::IDENTITY;
 
             // Clone types for move into closure

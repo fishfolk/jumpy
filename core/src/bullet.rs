@@ -14,12 +14,7 @@ pub fn install(session: &mut GameSession) {
 #[ulid = "01GQX3KM2A4WPV2NKJNG85TJ3P"]
 pub struct Bullet {
     pub direction: f32,
-}
-
-impl Default for Bullet {
-    fn default() -> Self {
-        Self { direction: 1.0 }
-    }
+    pub owner: Entity,
 }
 
 /// Component containing the bullet's metadata handle.
@@ -120,6 +115,7 @@ fn update(
                 player_indexes.contains(e) && invincibles.get(e).is_none()
             })
             .into_iter()
+            .filter(|player| *player != bullet.owner)
             .for_each(|player| {
                 hit_player = true;
                 commands.add(PlayerCommand::kill(player, Some(position.translation.xy())));

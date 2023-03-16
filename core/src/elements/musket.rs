@@ -221,6 +221,7 @@ fn update(
                             bullets.insert(
                                 ent,
                                 Bullet {
+                                    owner: player,
                                     direction: if player_flip_x { -1.0 } else { 1.0 },
                                 },
                             );

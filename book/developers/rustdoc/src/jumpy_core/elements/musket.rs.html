@@ -240,6 +240,7 @@
 <a href="#239" id="239">239</a>
 <a href="#240" id="240">240</a>
 <a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
@@ -463,6 +464,7 @@
                             bullets.insert(
                                 ent,
                                 Bullet {
+                                    owner: player,
                                     direction: <span class="kw">if </span>player_flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>},
                                 },
                             );

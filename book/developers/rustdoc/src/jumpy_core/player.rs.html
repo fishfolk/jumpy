@@ -720,13 +720,23 @@
 <a href="#719" id="719">719</a>
 <a href="#720" id="720">720</a>
 <a href="#721" id="721">721</a>
+<a href="#722" id="722">722</a>
+<a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
+<a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::VecDeque;
 
-<span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>};
+<span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>, random::GlobalRng};
 
 <span class="kw">mod </span>state;
 <span class="kw">use </span>bones_lib::animation::AnimationBankSprite;
 <span class="kw">pub use </span>state::<span class="kw-2">*</span>;
+<span class="kw">use </span>turborand::GenCore;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
     state::install(session);
@@ -933,10 +943,11 @@
     }
 }
 
-<span class="attr">#[derive(Default, Deref, DerefMut, Clone, Debug, TypeUlid)]
+<span class="attr">#[derive(Default, Clone, Debug, TypeUlid)]
 #[ulid = <span class="string">&quot;01GQWND0P969BCZF5JET9MY944&quot;</span>]
 </span><span class="kw">pub struct </span>AiPlayer {
     movement_buffer: <span class="prelude-ty">Option</span>&lt;VecDeque&lt;PlayerControl&gt;&gt;,
+    target_player: <span class="prelude-ty">Option</span>&lt;Entity&gt;,
 }
 
 <span class="attr">#[derive(Debug, TypeUlid, Clone)]
@@ -984,24 +995,31 @@
     <span class="kw-2">mut </span>paths: CompMut&lt;Path2d&gt;,
     bodies: Comp&lt;KinematicBody&gt;,
     debug_settings: Res&lt;DebugSettings&gt;,
+    rng: Res&lt;GlobalRng&gt;,
 ) {
     <span class="kw">const </span>SWORD_SWING_DIST: f32 = <span class="number">50.0</span>;
-
-    <span class="kw">let </span><span class="prelude-val">Some</span>(player1) = entities
-        .iter_with(<span class="kw-2">&amp;</span>player_indexes)
-        .filter(|(_ent, idx)| idx.<span class="number">0 </span>== <span class="number">0</span>)
-        .map(|(ent, _idx)| ent)
-        .next() <span class="kw">else </span>{
-            <span class="kw">return
-        </span>};
-    <span class="kw">let </span>transform = transforms.get(player1).unwrap();
-    <span class="kw">let </span>player1_pos = transform.translation.truncate();
-    <span class="kw">let </span>tile = (player1_pos / map.tile_size).floor().as_ivec2();
-    <span class="kw">let </span>target_node = NavNode(tile);
 
     <span class="kw">for </span>(ai_ent, (player_idx, transform, ai_player)) <span class="kw">in
         </span>entities.iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>transforms, <span class="kw-2">&amp;mut </span>ai_players))
     {
+        <span class="kw">let </span>target_transform = <span class="kw">match </span>ai_player.target_player {
+            <span class="prelude-val">Some</span>(target_player) <span class="kw">if </span>transforms.contains(target_player) =&gt; {
+                transforms.get(target_player).unwrap()
+            }
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">let </span>players = entities
+                    .iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>transforms))
+                    .filter(|(ent, <span class="kw">_</span>)| <span class="kw-2">*</span>ent != ai_ent)
+                    .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+                <span class="kw">let </span>(target_player, (<span class="kw">_</span>, transform)) = players[rng.gen_usize() % players.len()];
+
+                ai_player.target_player = <span class="prelude-val">Some</span>(target_player);
+                transform
+            }
+        };
+        <span class="kw">let </span>target_pos = target_transform.translation.truncate();
+        <span class="kw">let </span>tile = (target_pos / map.tile_size).floor().as_ivec2();
+        <span class="kw">let </span>target_node = NavNode(tile);
         <span class="kw">let </span>ai_pos = transform.translation.truncate();
         <span class="kw">let </span>tile = (ai_pos / map.tile_size).floor().as_ivec2();
         <span class="kw">let </span>current_node = NavNode(tile);
@@ -1070,7 +1088,7 @@
                 }
             }
 
-            <span class="kw">if </span>(player1_pos - ai_pos).length() &lt; SWORD_SWING_DIST {
+            <span class="kw">if </span>(target_pos - ai_pos).length() &lt; SWORD_SWING_DIST {
                 player_inputs.players[player_idx.<span class="number">0</span>]
                     .control
                     .shoot_just_pressed = <span class="bool-val">true</span>;

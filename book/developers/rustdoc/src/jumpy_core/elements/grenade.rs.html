@@ -280,23 +280,6 @@
 <a href="#279" id="279">279</a>
 <a href="#280" id="280">280</a>
 <a href="#281" id="281">281</a>
-<a href="#282" id="282">282</a>
-<a href="#283" id="283">283</a>
-<a href="#284" id="284">284</a>
-<a href="#285" id="285">285</a>
-<a href="#286" id="286">286</a>
-<a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -452,9 +435,7 @@
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
     <span class="kw-2">mut </span>trauma_events: ResMut&lt;CameraTraumaEvents&gt;,
     <span class="kw-2">mut </span>lit_grenades: CompMut&lt;LitGrenade&gt;,
-    <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
-    <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>emote_regions: CompMut&lt;EmoteRegion&gt;,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
     player_inventories: PlayerInventories,
@@ -469,7 +450,6 @@
         };
 
         <span class="kw">let </span>BuiltinElementKind::Grenade {
-            grab_offset,
             explosion_sound,
             explosion_volume,
             fuse_time,
@@ -508,20 +488,6 @@
             <span class="kw">let </span>player = inventory.player;
             <span class="kw">let </span>layers = player_layers.get_mut(player).unwrap();
             layers.fin_anim = <span class="kw-2">*</span>fin_anim;
-            <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-
-            <span class="comment">// Deactivate held items
-            </span>body.is_deactivated = <span class="bool-val">true</span>;
-
-            <span class="comment">// Attach to the player
-            </span>attachments.insert(
-                entity,
-                PlayerBodyAttachment {
-                    player,
-                    offset: grab_offset.extend(<span class="number">1.0</span>),
-                    sync_animation: <span class="bool-val">false</span>,
-                },
-            );
 
             emote_region.active = <span class="bool-val">false</span>;
 

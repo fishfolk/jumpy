@@ -729,6 +729,9 @@
 <a href="#728" id="728">728</a>
 <a href="#729" id="729">729</a>
 <a href="#730" id="730">730</a>
+<a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::VecDeque;
 
 <span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>, random::GlobalRng};
@@ -846,7 +849,8 @@
     ///
     /// &gt; **Note:** This doesn&#39;t despawn the player, it just puts the player into it&#39;s death animation.
     </span><span class="kw">pub fn </span>kill(player: Entity, hit_from: <span class="prelude-ty">Option</span>&lt;Vec2&gt;) -&gt; System {
-        (<span class="kw">move </span>|<span class="kw-2">mut </span>players_killed: CompMut&lt;PlayerKilled&gt;,
+        (<span class="kw">move </span>|entities: Res&lt;Entities&gt;,
+               <span class="kw-2">mut </span>players_killed: CompMut&lt;PlayerKilled&gt;,
                <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
                <span class="kw-2">mut </span>inventories: CompMut&lt;Inventory&gt;,
                player_indexes: Comp&lt;PlayerIdx&gt;| {
@@ -866,7 +870,9 @@
             <span class="comment">// Drop any items the player was carrying
             </span><span class="kw">let </span>inventory = inventories.get(player).cloned().unwrap_or_default();
             <span class="kw">if let </span><span class="prelude-val">Some</span>(item) = inventory.<span class="number">0 </span>{
-                items_dropped.insert(item, ItemDropped { player });
+                <span class="kw">if </span>entities.is_alive(item) {
+                    items_dropped.insert(item, ItemDropped { player });
+                }
             }
 
             <span class="comment">// Update the inventory

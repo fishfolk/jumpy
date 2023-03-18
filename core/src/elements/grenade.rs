@@ -153,9 +153,7 @@ fn update_lit_grenades(
     mut audio_events: ResMut<AudioEvents>,
     mut trauma_events: ResMut<CameraTraumaEvents>,
     mut lit_grenades: CompMut<LitGrenade>,
-    mut bodies: CompMut<KinematicBody>,
     mut hydrated: CompMut<MapElementHydrated>,
-    mut attachments: CompMut<PlayerBodyAttachment>,
     mut emote_regions: CompMut<EmoteRegion>,
     mut player_layers: CompMut<PlayerLayers>,
     player_inventories: PlayerInventories,
@@ -170,7 +168,6 @@ fn update_lit_grenades(
         };
 
         let BuiltinElementKind::Grenade {
-            grab_offset,
             explosion_sound,
             explosion_volume,
             fuse_time,
@@ -209,20 +206,6 @@ fn update_lit_grenades(
             let player = inventory.player;
             let layers = player_layers.get_mut(player).unwrap();
             layers.fin_anim = *fin_anim;
-            let body = bodies.get_mut(entity).unwrap();
-
-            // Deactivate held items
-            body.is_deactivated = true;
-
-            // Attach to the player
-            attachments.insert(
-                entity,
-                PlayerBodyAttachment {
-                    player,
-                    offset: grab_offset.extend(1.0),
-                    sync_animation: false,
-                },
-            );
 
             emote_region.active = false;
 

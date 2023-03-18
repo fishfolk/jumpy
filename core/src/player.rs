@@ -114,7 +114,8 @@ impl PlayerCommand {
     ///
     /// > **Note:** This doesn't despawn the player, it just puts the player into it's death animation.
     pub fn kill(player: Entity, hit_from: Option<Vec2>) -> System {
-        (move |mut players_killed: CompMut<PlayerKilled>,
+        (move |entities: Res<Entities>,
+               mut players_killed: CompMut<PlayerKilled>,
                mut items_dropped: CompMut<ItemDropped>,
                mut inventories: CompMut<Inventory>,
                player_indexes: Comp<PlayerIdx>| {
@@ -134,7 +135,9 @@ impl PlayerCommand {
             // Drop any items the player was carrying
             let inventory = inventories.get(player).cloned().unwrap_or_default();
             if let Some(item) = inventory.0 {
-                items_dropped.insert(item, ItemDropped { player });
+                if entities.is_alive(item) {
+                    items_dropped.insert(item, ItemDropped { player });
+                }
             }
 
             // Update the inventory

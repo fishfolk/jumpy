@@ -1,5 +1,6 @@
 name: 🕵 Lint Merge Group Commit Message
 on:
+  pull_request:
   merge_group:
 
 jobs:
@@ -9,9 +10,11 @@ jobs:
     steps:
       - name: ⬇️ Checkout Source
         uses: actions/checkout@v3
+        if: github.event_name == 'merge_group'
         with:
           fetch-depth: 2
       - name: 🔎 Lint Commit Message
         uses: wagoid/commitlint-github-action@v5
+        if: github.event_name == 'merge_group'
         with:
           commitDepth: 1

@@ -264,17 +264,17 @@ fn player_ai_system(
     mut paths: CompMut<Path2d>,
     bodies: Comp<KinematicBody>,
     debug_settings: Res<DebugSettings>,
-    rng: Res<GlobalRng>
+    rng: Res<GlobalRng>,
 ) {
     const SWORD_SWING_DIST: f32 = 50.0;
-    
+
     for (ai_ent, (player_idx, transform, ai_player)) in
         entities.iter_with((&player_indexes, &transforms, &mut ai_players))
     {
         let target_transform = match ai_player.target_player {
             Some(target_player) if transforms.contains(target_player) => {
                 transforms.get(target_player).unwrap()
-            },
+            }
             _ => {
                 let players = entities
                     .iter_with((&player_indexes, &transforms))

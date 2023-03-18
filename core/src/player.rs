@@ -1,10 +1,11 @@
 use std::collections::VecDeque;
 
-use crate::{item::ItemGrabbed, physics::KinematicBody, prelude::*};
+use crate::{item::ItemGrabbed, physics::KinematicBody, prelude::*, random::GlobalRng};
 
 mod state;
 use bones_lib::animation::AnimationBankSprite;
 pub use state::*;
+use turborand::GenCore;
 
 pub fn install(session: &mut GameSession) {
     state::install(session);
@@ -211,10 +212,11 @@ impl PlayerCommand {
     }
 }
 
-#[derive(Default, Deref, DerefMut, Clone, Debug, TypeUlid)]
+#[derive(Default, Clone, Debug, TypeUlid)]
 #[ulid = "01GQWND0P969BCZF5JET9MY944"]
 pub struct AiPlayer {
     movement_buffer: Option<VecDeque<PlayerControl>>,
+    target_player: Option<Entity>,
 }
 
 #[derive(Debug, TypeUlid, Clone)]
@@ -262,24 +264,31 @@ fn player_ai_system(
     mut paths: CompMut<Path2d>,
     bodies: Comp<KinematicBody>,
     debug_settings: Res<DebugSettings>,
+    rng: Res<GlobalRng>,
 ) {
     const SWORD_SWING_DIST: f32 = 50.0;
-
-    let Some(player1) = entities
-        .iter_with(&player_indexes)
-        .filter(|(_ent, idx)| idx.0 == 0)
-        .map(|(ent, _idx)| ent)
-        .next() else {
-            return
-        };
-    let transform = transforms.get(player1).unwrap();
-    let player1_pos = transform.translation.truncate();
-    let tile = (player1_pos / map.tile_size).floor().as_ivec2();
-    let target_node = NavNode(tile);
 
     for (ai_ent, (player_idx, transform, ai_player)) in
         entities.iter_with((&player_indexes, &transforms, &mut ai_players))
     {
+        let target_transform = match ai_player.target_player {
+            Some(target_player) if transforms.contains(target_player) => {
+                transforms.get(target_player).unwrap()
+            }
+            _ => {
+                let players = entities
+                    .iter_with((&player_indexes, &transforms))
+                    .filter(|(ent, _)| *ent != ai_ent)
+                    .collect::<Vec<_>>();
+                let (target_player, (_, transform)) = players[rng.gen_usize() % players.len()];
+
+                ai_player.target_player = Some(target_player);
+                transform
+            }
+        };
+        let target_pos = target_transform.translation.truncate();
+        let tile = (target_pos / map.tile_size).floor().as_ivec2();
+        let target_node = NavNode(tile);
         let ai_pos = transform.translation.truncate();
         let tile = (ai_pos / map.tile_size).floor().as_ivec2();
         let current_node = NavNode(tile);
@@ -348,7 +357,7 @@ fn player_ai_system(
                 }
             }
 
-            if (player1_pos - ai_pos).length() < SWORD_SWING_DIST {
+            if (target_pos - ai_pos).length() < SWORD_SWING_DIST {
                 player_inputs.players[player_idx.0]
                     .control
                     .shoot_just_pressed = true;

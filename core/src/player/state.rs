@@ -20,7 +20,7 @@ pub struct PlayerState {
 impl PlayerState {
     /// Adds a system to the appropriate stage in a [`GameSession`] for a player state transition.
     pub fn add_player_state_transition_system<Args>(
-        session: &mut GameSession,
+        session: &mut CoreSession,
         system: impl IntoSystem<Args, ()>,
     ) {
         session.stages.add_system_to_stage(PlayerStateStage, system);
@@ -28,7 +28,7 @@ impl PlayerState {
 
     /// Adds a system to the appropriate stage in a [`GameSession`] for a player state update.
     pub fn add_player_state_update_system<Args>(
-        session: &mut GameSession,
+        session: &mut CoreSession,
         system: impl IntoSystem<Args, ()>,
     ) {
         session
@@ -37,7 +37,7 @@ impl PlayerState {
     }
 }
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     // Add the player state stage
     session
         .stages

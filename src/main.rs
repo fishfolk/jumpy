@@ -32,6 +32,7 @@ pub mod ui;
 
 pub mod camera;
 pub mod prelude;
+pub mod networking;
 pub use prelude::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

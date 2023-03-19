@@ -54,18 +54,13 @@ bitfield::bitfield! {
     /// This is used when sending player inputs across the network.
     #[derive(bytemuck::Pod, bytemuck::Zeroable, Copy, Clone, PartialEq, Eq, Reflect)]
     #[repr(transparent)]
-    pub struct DensePlayerControl(u32);
+    pub struct DensePlayerControl(u16);
     impl Debug;
     jump_pressed, set_jump_pressed: 0;
     shoot_pressed, set_shoot_pressed: 1;
     grab_pressed, set_grab_pressed: 2;
     slide_pressed, set_slide_pressed: 3;
     from into DenseMoveDirection, move_direction, set_move_direction: 15, 4;
-    /// This bit will be set if this player wants to try and pause or un-pause the game
-    wants_to_set_pause, set_wants_to_set_pause: 16;
-    /// This value is only relevant if `wants_to_set_pause` is true, and it indicates whether the
-    /// player wants to pause or unpause the game.
-    pause_value, set_pause_value: 17;
 }
 
 impl Default for DensePlayerControl {
@@ -83,10 +78,10 @@ struct DenseMoveDirection(pub Vec2);
 
 /// This is the specific [`Quantized`] type that we use to represent movement directions in
 /// [`DenseMoveDirection`].
-type MoveDirQuant = Quantized<IntRange<u32, 0b111111, -1, 1>>;
+type MoveDirQuant = Quantized<IntRange<u16, 0b111111, -1, 1>>;
 
-impl From<u32> for DenseMoveDirection {
-    fn from(bits: u32) -> Self {
+impl From<u16> for DenseMoveDirection {
+    fn from(bits: u16) -> Self {
         // maximum movement value representable, we use 6 bits to represent each movement direction.
         let max = 0b111111;
         // The first six bits represent the x movement
@@ -108,7 +103,7 @@ impl From<u32> for DenseMoveDirection {
     }
 }
 
-impl From<DenseMoveDirection> for u32 {
+impl From<DenseMoveDirection> for u16 {
     fn from(dir: DenseMoveDirection) -> Self {
         let x_bits = MoveDirQuant::from_f32(dir.x).raw();
         let y_bits = MoveDirQuant::from_f32(dir.y).raw();

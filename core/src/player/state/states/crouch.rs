@@ -2,7 +2,7 @@ use super::*;
 
 pub const ID: Key = key!("core::crouch");
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     PlayerState::add_player_state_transition_system(session, player_state_transition);
     PlayerState::add_player_state_update_system(session, handle_player_state);
     PlayerState::add_player_state_update_system(session, use_drop_or_grab_items_system(ID));

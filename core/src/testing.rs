@@ -2,7 +2,7 @@
 
 use crate::prelude::*;
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     bones_lib::install(&mut session.stages);
     // session
     //     .stages

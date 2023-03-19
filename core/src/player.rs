@@ -7,7 +7,7 @@ use bones_lib::animation::AnimationBankSprite;
 pub use state::*;
 use turborand::GenCore;
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     state::install(session);
 
     // Add other player systems

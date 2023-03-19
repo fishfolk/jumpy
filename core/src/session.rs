@@ -7,16 +7,16 @@ use crate::prelude::*;
 /// - Provide input
 /// - Snapshot/Restore game state
 /// - Access the session's ECS [`World`]
-pub struct GameSession {
+pub struct CoreSession {
     pub world: World,
     pub stages: SystemStages,
     pub scratch_world: Option<::bevy::ecs::world::World>,
-    pub info: GameSessionInfo,
+    pub info: CoreSessionInfo,
 }
 
 /// Information needed to start a game session.
 #[derive(Debug, Clone)]
-pub struct GameSessionInfo {
+pub struct CoreSessionInfo {
     /// The core metadata.
     pub meta: Arc<CoreMeta>,
     /// Metadata for the selected map.
@@ -31,9 +31,9 @@ pub struct GameSessionPlayerInfo {
     pub is_ai: bool,
 }
 
-impl GameSession {
+impl CoreSession {
     /// Create a new game session
-    pub fn new(mut info: GameSessionInfo) -> Self {
+    pub fn new(mut info: CoreSessionInfo) -> Self {
         // Create session
         let mut session = Self {
             world: default(),

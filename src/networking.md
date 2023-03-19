@@ -1,6 +1,6 @@
 Networked multi-player plugin.
 
-Jumpy uses a Peer-to-Peer, rollback networking model built on [GGRS] and the [`bevy_ggrs`] plugin.
+Jumpy uses a Peer-to-Peer, rollback networking model built on [GGRS].
 
 We use a centralized matchmaking server to connect peers to each-other and to forward the peers'
 network traffic. All connections utilize UDP and the QUIC protocol.

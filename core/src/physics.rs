@@ -24,7 +24,7 @@ impl StageLabel for PhysicsStage {
     }
 }
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     session
         .stages
         // TODO: Think again about exactly how to organize the physics sync systems. At the time of

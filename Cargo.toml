@@ -55,6 +55,14 @@ unic-langid            = "0.9.0"
 puffin_egui            = "0.19.0"
 puffin                 = "0.14.3"
 peg                    = "0.8.0"
+ggrs                   = "0.9.3"
+bitfield = "0.14.0"
+numquant = "0.2.0"
+mdns-sd = { version = "0.7.1", default-features = false }
+quinn = { version = "0.9.3", default-features = false }
+quinn_runtime_bevy = "0.1.0"
+smallvec = "1.10.0"
+downcast-rs = "1.2.0"
 
 [dependencies.bevy]
 default-features = false

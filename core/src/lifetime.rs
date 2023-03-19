@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::{prelude::*, FPS};
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::PostUpdate, lifetime_system)

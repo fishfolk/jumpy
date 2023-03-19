@@ -2,7 +2,7 @@ use super::*;
 
 pub const ID: Key = key!("core::incapacitated");
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     PlayerState::add_player_state_update_system(session, handle_player_state);
 }
 

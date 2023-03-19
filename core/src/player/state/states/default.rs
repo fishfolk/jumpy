@@ -1,6 +1,6 @@
 use super::*;
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     PlayerState::add_player_state_transition_system(session, player_state_transition);
 }
 

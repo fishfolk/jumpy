@@ -1,7 +1,4 @@
-use crate::{
-    metadata::{MapMeta, PlayerMeta},
-    prelude::*,
-};
+use crate::prelude::*;
 
 /// Network message sent by client to select a player
 #[derive(Serialize, Deserialize, Clone, Debug)]

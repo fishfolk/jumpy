@@ -11,7 +11,7 @@ type_ulid        = "0.1"
 
 bytemuck        = { version = "1.12.3", features = ["derive"] }
 csscolorparser  = "0.6.2"
-glam            = { version = "0.22.0", features = ["bytemuck"] }
+glam            = { version = "0.22.0", features = ["bytemuck", "libm"] }
 hex             = "0.4.3"
 humantime-serde = "1"
 nalgebra        = { version = "0.32", features = ["convert-glam022"] }
@@ -21,6 +21,7 @@ rapier2d        = { version = "0.17.1", features = ["enhanced-determinism", "deb
 serde           = { version = "1.0.152", features = ["derive"] }
 tracing         = "0.1.37"
 petgraph        = { version = "0.6", features = ["graphmap"], default-features = false }
+indexmap        = "1.9.3"
 
 [dependencies.bevy]
 default-features = false

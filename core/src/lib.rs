@@ -14,7 +14,7 @@ pub mod bevy_prelude {
         crate::{
             input::EditorInput,
             metadata::*,
-            session::{GameSession, GameSessionInfo, GameSessionPlayerInfo},
+            session::{CoreSession, CoreSessionInfo, GameSessionPlayerInfo},
             MAX_PLAYERS,
         },
         bones_lib::prelude as bones,
@@ -38,7 +38,6 @@ pub mod physics;
 pub mod player;
 pub mod random;
 pub mod session;
-pub mod testing;
 pub mod utils;
 
 /// The target fixed frames-per-second that the game sumulation runs at.
@@ -46,8 +45,8 @@ pub const FPS: f32 = 60.0;
 pub const MAX_PLAYERS: usize = 4;
 
 /// Install game modules into the session.
-pub fn install_modules(session: &mut session::GameSession) {
-    testing::install(session);
+pub fn install_modules(session: &mut session::CoreSession) {
+    bones_lib::install(&mut session.stages);
     physics::install(session);
     input::install(session);
     map::install(session);

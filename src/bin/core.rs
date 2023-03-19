@@ -17,7 +17,7 @@ use jumpy_core::{
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 #[derive(Deref, DerefMut, Resource)]
-struct Session(GameSession);
+struct Session(CoreSession);
 
 impl HasBonesWorld for Session {
     fn world(&mut self) -> &mut bones_lib::prelude::World {
@@ -88,7 +88,7 @@ fn load(
         return;
     };
 
-    let session = GameSession::new(GameSessionInfo {
+    let session = CoreSession::new(CoreSessionInfo {
         map_meta: map_assets
             .get(&meta.stable_maps[0].get_bevy_handle())
             .unwrap()

@@ -1,57 +1,62 @@
-#![doc = include_str!("./networking.md")]
+// #![doc = include_str!("./networking.md")]
 
 use ggrs::P2PSession;
+use rand::Rng;
 
-use crate::{prelude::*, session::SessionManager, ui::main_menu::MenuPage};
+use crate::prelude::*;
 
-use self::{
-    client::NetClient,
-    proto::{match_setup::MatchSetupMessage, ReliableGameMessageKind},
-};
-
-pub mod client;
+pub mod certs;
 pub mod proto;
+
+pub use lan::*;
+mod lan;
 
 pub struct NetworkingPlugin;
 
 impl Plugin for NetworkingPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_system(listen_for_map_changes.run_if_resource_exists::<P2PSession<GgrsConfig>>());
-    }
+    fn build(&self, _app: &mut App) {}
 }
 
+/// The [`ggrs::Config`] implementation used by Jumpy.
 #[derive(Debug)]
 pub struct GgrsConfig;
 impl ggrs::Config for GgrsConfig {
-    type Input = networking::DensePlayerControl;
-    type State = u8;
+    type Input = proto::DensePlayerControl;
+    type State = bones::World;
     /// Addresses are the same as the player handle for our custom socket.
     type Address = usize;
 }
 
-/// TODO: Map changes aren't working on network games for now, so this isn't properly used/working.
-fn listen_for_map_changes(
-    mut commands: Commands,
-    client: Res<NetClient>,
-    mut reset_manager: ResetManager,
-    mut session_manager: SessionManager,
-    mut menu_page: ResMut<MenuPage>,
-    mut ridp: ResMut<RollbackIdProvider>,
-) {
-    while let Some(message) = client.recv_reliable() {
-        match message.kind {
-            ReliableGameMessageKind::MatchSetup(setup) => match setup {
-                MatchSetupMessage::SelectMap(map_handle) => {
-                    info!("Other player selected map, starting game");
-                    *menu_page = MenuPage::Home;
-                    reset_manager.reset_world();
+/// The QUIC network endpoint used for all network communications.
+pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
+    // Generate certificate
+    let (cert, key) = certs::generate_self_signed_cert().unwrap();
 
-                    commands.spawn((map_handle, Rollback::new(ridp.next_id())));
-                    commands.insert_resource(NextState(GameState::InGame));
-                    session_manager.start_session();
-                }
-                other => warn!("Unexpected message during match: {other:?}"),
-            },
-        }
-    }
-}
+    let mut transport_config = quinn::TransportConfig::default();
+    transport_config.keep_alive_interval(Some(std::time::Duration::from_secs(5)));
+
+    let mut server_config = quinn::ServerConfig::with_single_cert([cert].to_vec(), key).unwrap();
+    server_config.transport = Arc::new(transport_config);
+
+    // Open Socket and create endpoint
+    let port = rand::thread_rng().gen_range(10000..=11000); // Bind a random port
+    let socket = std::net::UdpSocket::bind(("0.0.0.0", port)).unwrap();
+
+    let client_config = rustls::ClientConfig::builder()
+        .with_safe_defaults()
+        .with_custom_certificate_verifier(certs::SkipServerVerification::new())
+        .with_no_client_auth();
+    let client_config = quinn::ClientConfig::new(Arc::new(client_config));
+
+    let mut endpoint = quinn::Endpoint::new(
+        quinn::EndpointConfig::default(),
+        Some(server_config),
+        socket,
+        quinn_runtime_bevy::BevyIoTaskPoolExecutor,
+    )
+    .unwrap();
+
+    endpoint.set_default_client_config(client_config);
+
+    endpoint
+});

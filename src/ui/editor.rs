@@ -121,8 +121,8 @@ pub struct MapTilesetEguiTextureinfo {
 
 pub fn cleanup_editor(session: Option<ResMut<Session>>) {
     // Update camera viewport to fit into central editor area.
-    if let Some(session) = session {
-        let cameras = session.world.components.get::<bones::Camera>();
+    if let Some(mut session) = session {
+        let cameras = session.world().components.get::<bones::Camera>();
         let mut cameras = cameras.borrow_mut();
         let camera = cameras.iter_mut().next().unwrap();
         camera.viewport = None;
@@ -130,7 +130,7 @@ pub fn cleanup_editor(session: Option<ResMut<Session>>) {
 
         // Enable the default camera controller
         let camera_states = session
-            .world
+            .world()
             .components
             .get::<jumpy_core::camera::CameraState>();
         let mut camera_states = camera_states.borrow_mut();
@@ -141,24 +141,29 @@ pub fn cleanup_editor(session: Option<ResMut<Session>>) {
 pub fn editor_ui_system(world: &mut World) {
     // Force set the camera position
     {
-        let world = world.cell();
-        let session = world.get_resource::<Session>();
-        let editor_state = world.resource_mut::<EditorState>();
-        let camera_info = editor_state.camera;
-        if let Some(session) = session {
-            session.world.run_initialized_system(
-                move |
-                mut cameras: bones::CompMut<bones::Camera>,
-                mut camera_shakes: bones::CompMut<bones::CameraShake>,
-                mut camera_states: bones::CompMut<jumpy_core::camera::CameraState>| {
-                    let Some(camera) = cameras.iter_mut().next() else { return };
-                    let camera_shake = camera_shakes.iter_mut().next().unwrap();
-                    let camera_state = camera_states.iter_mut().next().unwrap();
-                    camera.height = camera_info.height;
-                    camera_shake.center = camera_info.pos.extend(0.0);
-                    camera_state.disable_controller = true;
-            }).ok();
-        }
+        world.resource_scope(|world, editor_state: Mut<EditorState>| {
+            let session = world.get_resource_mut::<Session>();
+            let camera_info = editor_state.camera;
+            if let Some(mut session) = session {
+                session
+                    .world()
+                    .run_initialized_system(
+                        move |mut cameras: bones::CompMut<bones::Camera>,
+                              mut camera_shakes: bones::CompMut<bones::CameraShake>,
+                              mut camera_states: bones::CompMut<
+                            jumpy_core::camera::CameraState,
+                        >| {
+                            let Some(camera) = cameras.iter_mut().next() else { return };
+                            let camera_shake = camera_shakes.iter_mut().next().unwrap();
+                            let camera_state = camera_states.iter_mut().next().unwrap();
+                            camera.height = camera_info.height;
+                            camera_shake.center = camera_info.pos.extend(0.0);
+                            camera_state.disable_controller = true;
+                        },
+                    )
+                    .ok();
+            }
+        });
     }
 
     // Get the world cursor position
@@ -183,8 +188,8 @@ pub fn editor_ui_system(world: &mut World) {
     // Get the up-to-date map meta export from the world
     let map_meta = {
         world
-            .get_resource::<Session>()
-            .map(|sess| sess.export_map())
+            .get_resource_mut::<Session>()
+            .map(|mut sess| sess.core_session().export_map())
     };
     world.insert_resource(EditorMapExport(map_meta));
 
@@ -327,7 +332,7 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
 
                     if ui.button(&params.localization.get("reload")).clicked() {
                         params.session_manager.stop();
-                        params.session_manager.start(GameSessionInfo {
+                        params.session_manager.start_local(CoreSessionInfo {
                             meta: params.core_meta.0.clone(),
                             map_meta: params.map_export.0.as_ref().unwrap().clone(),
                             player_info: default(),
@@ -1010,11 +1015,11 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
             ui.set_enabled(false);
         }
 
-        if let Some(session) = params.session_manager.session {
+        if let Some(mut session) = params.session_manager.session {
             let Ok((camera, camera_transform, _)) = params.camera.get_single() else { return };
             let Some(map) = params.map.0.as_ref() else { return; };
 
-            let core_meta = session.world.resource::<CoreMetaArc>();
+            let core_meta = session.world().resource::<CoreMetaArc>();
             let core_meta = core_meta.borrow();
 
             let mut map_response =
@@ -1070,7 +1075,7 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
 
             let elements =
                 session
-                    .world
+                    .world()
                     .run_initialized_system(
                         |entities: bones::Res<bones::Entities>,
                          transforms: bones::Comp<bones::Transform>,
@@ -1457,7 +1462,7 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                             .get(&map_handle.get_bevy_handle())
                             .unwrap();
                         if ui.button(&map_meta.name).clicked() {
-                            params.session_manager.start(GameSessionInfo {
+                            params.session_manager.start_local(CoreSessionInfo {
                                 meta: params.core_meta.0.clone(),
                                 map_meta: (*map_meta).clone(),
                                 player_info: default(),
@@ -1495,7 +1500,7 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                                     )
                                     .clicked()
                                 {
-                                    params.session_manager.start(GameSessionInfo {
+                                    params.session_manager.start_local(CoreSessionInfo {
                                         meta: params.core_meta.0.clone(),
                                         map_meta: map_meta.clone(),
                                         player_info: default(),

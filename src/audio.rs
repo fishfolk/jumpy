@@ -112,7 +112,7 @@ fn music_system(
             }
         }
         EngineState::MainMenu => match &*menu_page {
-            MenuPage::PlayerSelect | MenuPage::MapSelect { .. } => {
+            MenuPage::PlayerSelect | MenuPage::MapSelect { .. } | MenuPage::NetworkGame => {
                 if !matches!(*music_state, MusicState::CharacterSelect(..)) {
                     if let Some(instance) = music_state.current_instance() {
                         let instance = audio_instances.get_mut(instance).unwrap();

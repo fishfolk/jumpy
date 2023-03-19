@@ -2,7 +2,7 @@ use crate::{physics::collisions::TileCollisionKind, prelude::*};
 
 use std::time::Duration;
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate_crates)

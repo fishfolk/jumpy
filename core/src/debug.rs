@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use rapier2d::prelude as rapier;
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::Last, debug_render_colliders)

@@ -1,4 +1,4 @@
-use crate::{physics::collisions::TileCollisionKind, player, prelude::*};
+use crate::{physics::collisions::TileCollisionKind, prelude::*};
 
 pub fn install(session: &mut GameSession) {
     session

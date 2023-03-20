@@ -58,6 +58,8 @@ map_elements:
   - /elements/environment/snail/snail.element.yaml
   - /elements/environment/player_spawner/player_spawner.element.yaml
   - /elements/environment/sproinger/sproinger.element.yaml
+  - /elements/environment/slippery/slippery.element.yaml
+  - /elements/environment/slippery_seaweed/slippery_seaweed.element.yaml
   - /elements/item/crate/crate.element.yaml
   - /elements/item/grenade/grenade.element.yaml
   - /elements/item/kick_bomb/kick_bomb.element.yaml

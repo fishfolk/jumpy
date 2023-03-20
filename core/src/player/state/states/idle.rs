@@ -1,4 +1,5 @@
 use super::*;
+use crate::player::slippery::Slippery;
 
 pub const ID: Key = key!("core::idle");
 
@@ -43,9 +44,11 @@ pub fn handle_player_state(
     mut sprites: CompMut<AnimationBankSprite>,
     mut bodies: CompMut<KinematicBody>,
     mut audio_events: ResMut<AudioEvents>,
+    collision_world: CollisionWorld,
+    slippery: CompMut<Slippery>,
 ) {
     let players = entities.iter_with((&player_states, &player_indexes, &mut sprites, &mut bodies));
-    for (_player_ent, (player_state, player_idx, animation, body)) in players {
+    for (player_ent, (player_state, player_idx, animation, body)) in players {
         if player_state.current != ID {
             continue;
         }
@@ -73,12 +76,22 @@ pub fn handle_player_state(
             body.velocity.y = meta.stats.jump_speed;
         }
 
+        let mut slide_factor = 1.;
+        for (slippery_ent, slippery_meta) in entities.iter_with(&slippery) {
+            if collision_world
+                .actor_collisions(player_ent)
+                .contains(&slippery_ent)
+            {
+                slide_factor = 1. / slippery_meta.player_slide;
+            }
+        }
+
         // Since we are idling, slide
         if body.velocity.x != 0.0 {
             if body.velocity.x.is_sign_positive() {
-                body.velocity.x = (body.velocity.x - meta.stats.slowdown).max(0.0);
+                body.velocity.x = (body.velocity.x - meta.stats.slowdown * slide_factor).max(0.0);
             } else {
-                body.velocity.x = (body.velocity.x + meta.stats.slowdown).min(0.0);
+                body.velocity.x = (body.velocity.x + meta.stats.slowdown * slide_factor).min(0.0);
             }
         }
     }

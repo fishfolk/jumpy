@@ -316,6 +316,17 @@
 <a href="#315" id="315">315</a>
 <a href="#316" id="316">316</a>
 <a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub use </span>collisions::{
@@ -374,6 +385,12 @@
     </span><span class="kw">pub </span>angular_velocity: f32,
     <span class="kw">pub </span>gravity: f32,
     <span class="kw">pub </span>bounciness: f32,
+    <span class="doccomment">/// Sets a 1 frame override for the body friction. It will be re-set to `None` every frame so if
+    /// you wish to apply a continuous friction change, you must re-set it every frame.
+    ///
+    /// This is useful for things like slippery blocks or other things that want to modify a body&#39;s
+    /// friction while it is on the block.
+    </span><span class="kw">pub </span>frame_friction_override: <span class="prelude-ty">Option</span>&lt;f32&gt;,
     <span class="kw">pub </span>is_on_ground: bool,
     <span class="kw">pub </span>was_on_ground: bool,
     <span class="doccomment">/// Will be `true` if the body is currently on top of a platform/jumpthrough tile
@@ -577,7 +594,12 @@
 
         <span class="kw">if </span>body.is_on_ground {
             <span class="kw">if </span>body.has_friction {
-                body.velocity.x <span class="kw-2">*</span>= game.physics.friction_lerp;
+                body.velocity.x <span class="kw-2">*</span>= <span class="kw">if let </span><span class="prelude-val">Some</span>(friction) = body.frame_friction_override {
+                    friction
+                } <span class="kw">else </span>{
+                    game.physics.friction_lerp
+                };
+                body.frame_friction_override = <span class="prelude-val">None</span>;
 
                 <span class="kw">if </span>body.velocity.x.abs() &lt;= game.physics.stop_threshold {
                     body.velocity.x = <span class="number">0.0</span>;

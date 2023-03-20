@@ -84,7 +84,21 @@
 <a href="#83" id="83">83</a>
 <a href="#84" id="84">84</a>
 <a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::player::slippery::Slippery;
 
 <span class="kw">pub const </span>ID: Key = <span class="macro">key!</span>(<span class="string">&quot;core::idle&quot;</span>);
 
@@ -129,9 +143,11 @@
     <span class="kw-2">mut </span>sprites: CompMut&lt;AnimationBankSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
+    collision_world: CollisionWorld,
+    slippery: CompMut&lt;Slippery&gt;,
 ) {
     <span class="kw">let </span>players = entities.iter_with((<span class="kw-2">&amp;</span>player_states, <span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;mut </span>sprites, <span class="kw-2">&amp;mut </span>bodies));
-    <span class="kw">for </span>(_player_ent, (player_state, player_idx, animation, body)) <span class="kw">in </span>players {
+    <span class="kw">for </span>(player_ent, (player_state, player_idx, animation, body)) <span class="kw">in </span>players {
         <span class="kw">if </span>player_state.current != ID {
             <span class="kw">continue</span>;
         }
@@ -159,12 +175,22 @@
             </span>body.velocity.y = meta.stats.jump_speed;
         }
 
+        <span class="kw">let </span><span class="kw-2">mut </span>slide_factor = <span class="number">1.</span>;
+        <span class="kw">for </span>(slippery_ent, slippery_meta) <span class="kw">in </span>entities.iter_with(<span class="kw-2">&amp;</span>slippery) {
+            <span class="kw">if </span>collision_world
+                .actor_collisions(player_ent)
+                .contains(<span class="kw-2">&amp;</span>slippery_ent)
+            {
+                slide_factor = <span class="number">1. </span>/ slippery_meta.player_slide;
+            }
+        }
+
         <span class="comment">// Since we are idling, slide
         </span><span class="kw">if </span>body.velocity.x != <span class="number">0.0 </span>{
             <span class="kw">if </span>body.velocity.x.is_sign_positive() {
-                body.velocity.x = (body.velocity.x - meta.stats.slowdown).max(<span class="number">0.0</span>);
+                body.velocity.x = (body.velocity.x - meta.stats.slowdown * slide_factor).max(<span class="number">0.0</span>);
             } <span class="kw">else </span>{
-                body.velocity.x = (body.velocity.x + meta.stats.slowdown).min(<span class="number">0.0</span>);
+                body.velocity.x = (body.velocity.x + meta.stats.slowdown * slide_factor).min(<span class="number">0.0</span>);
             }
         }
     }

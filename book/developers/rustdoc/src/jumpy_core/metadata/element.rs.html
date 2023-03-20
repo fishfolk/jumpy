@@ -305,6 +305,12 @@
 <a href="#304" id="304">304</a>
 <a href="#305" id="305">305</a>
 <a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -609,6 +615,12 @@
         end_frame: usize,
         fps: f32,
         body_size: Vec2,
+    },
+    Slippery {
+        atlas: Handle&lt;Atlas&gt;,
+        body_size: Vec2,
+        player_slide: f32,
+        body_friction: f32,
     },
 }
 </code></pre></div>

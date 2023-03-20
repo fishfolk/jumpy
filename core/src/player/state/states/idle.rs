@@ -82,7 +82,7 @@ pub fn handle_player_state(
                 .actor_collisions(player_ent)
                 .contains(&slippery_ent)
             {
-                slide_factor = 1. / slippery_meta.slide_factor;
+                slide_factor = 1. / slippery_meta.player_slide;
             }
         }
 

@@ -306,6 +306,7 @@ pub enum BuiltinElementKind {
     Slippery {
         atlas: Handle<Atlas>,
         body_size: Vec2,
-        slide_factor: f32,
+        player_slide: f32,
+        body_friction: f32,
     },
 }

@@ -56,6 +56,7 @@ pub struct KinematicBody {
     pub angular_velocity: f32,
     pub gravity: f32,
     pub bounciness: f32,
+    pub friction: f32,
     pub is_on_ground: bool,
     pub was_on_ground: bool,
     /// Will be `true` if the body is currently on top of a platform/jumpthrough tile
@@ -259,7 +260,12 @@ fn update_kinematic_bodies(
 
         if body.is_on_ground {
             if body.has_friction {
-                body.velocity.x *= game.physics.friction_lerp;
+                body.velocity.x *= if body.friction != 0. {
+                    body.friction
+                } else {
+                    game.physics.friction_lerp
+                };
+                body.friction = 0.;
 
                 if body.velocity.x.abs() <= game.physics.stop_threshold {
                     body.velocity.x = 0.0;

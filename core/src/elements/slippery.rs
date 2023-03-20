@@ -3,13 +3,15 @@ use crate::prelude::*;
 pub fn install(session: &mut GameSession) {
     session
         .stages
-        .add_system_to_stage(CoreStage::PreUpdate, hydrate);
+        .add_system_to_stage(CoreStage::PreUpdate, hydrate)
+        .add_system_to_stage(CoreStage::PreUpdate, update);
 }
 
 #[derive(Clone, Debug, TypeUlid, Default)]
 #[ulid = "01GTF77BGTAPJNTYEXKP6A2862"]
 pub struct Slippery {
-    pub slide_factor: f32,
+    pub player_slide: f32,
+    pub body_friction: f32,
 }
 
 fn hydrate(
@@ -34,7 +36,8 @@ fn hydrate(
         if let BuiltinElementKind::Slippery {
             atlas,
             body_size,
-            slide_factor,
+            player_slide,
+            body_friction,
         } = &element_meta.builtin
         {
             hydrated.insert(entity, MapElementHydrated);
@@ -50,9 +53,28 @@ fn hydrate(
             slippery.insert(
                 entity,
                 Slippery {
-                    slide_factor: *slide_factor,
+                    player_slide: *player_slide,
+                    body_friction: *body_friction,
                 },
             );
+        }
+    }
+}
+
+pub fn update(
+    entities: Res<Entities>,
+    slippery: CompMut<Slippery>,
+    collision_world: CollisionWorld,
+    mut bodies: CompMut<KinematicBody>,
+) {
+    for (slippery_ent, slippery) in entities.iter_with(&slippery) {
+        for (p_ent, body) in entities.iter_with(&mut bodies) {
+            if collision_world
+                .actor_collisions(p_ent)
+                .contains(&slippery_ent)
+            {
+                body.friction = slippery.body_friction
+            }
         }
     }
 }

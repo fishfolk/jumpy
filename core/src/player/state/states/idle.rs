@@ -45,11 +45,10 @@ pub fn handle_player_state(
     mut bodies: CompMut<KinematicBody>,
     mut audio_events: ResMut<AudioEvents>,
     collision_world: CollisionWorld,
-    mut commands: Commands,
     slippery: CompMut<Slippery>,
 ) {
     let players = entities.iter_with((&player_states, &player_indexes, &mut sprites, &mut bodies));
-    for (_player_ent, (player_state, player_idx, animation, body)) in players {
+    for (player_ent, (player_state, player_idx, animation, body)) in players {
         if player_state.current != ID {
             continue;
         }

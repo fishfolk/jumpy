@@ -73,7 +73,7 @@ pub fn update(
                 .actor_collisions(p_ent)
                 .contains(&slippery_ent)
             {
-                body.friction = slippery.body_friction
+                body.frame_friction_override = Some(slippery.body_friction);
             }
         }
     }

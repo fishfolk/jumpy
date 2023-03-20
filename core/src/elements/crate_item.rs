@@ -1,4 +1,4 @@
-use crate::{physics::collisions::TileCollisionKind, prelude::*, player};
+use crate::{physics::collisions::TileCollisionKind, player, prelude::*};
 
 pub fn install(session: &mut GameSession) {
     session
@@ -215,27 +215,24 @@ fn update_thrown_crates(
 
         let colliding_with_players = collision_world
             .actor_collisions_filtered(entity, |e| {
-                    players.contains(e)
-                    && invincibles.get(e).is_none()
-                    && thrown_crate.was_colliding
+                players.contains(e) && invincibles.get(e).is_none() && thrown_crate.was_colliding
             })
             .into_iter()
             .collect::<Vec<_>>();
 
         for player_entity in &colliding_with_players {
-
             if player_entity == &thrown_crate.owner && thrown_crate.age > 0.25 {
                 commands.add(PlayerCommand::kill(
                     *player_entity,
                     Some(transform.translation.xy()),
-                )); 
+                ));
             }
 
             if thrown_crate.age > 0.25 {
                 commands.add(PlayerCommand::kill(
                     *player_entity,
                     Some(transform.translation.xy()),
-                )); 
+                ));
             }
         }
 

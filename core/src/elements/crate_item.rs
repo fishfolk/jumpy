@@ -215,7 +215,10 @@ fn update_thrown_crates(
 
         let colliding_with_players = collision_world
             .actor_collisions_filtered(entity, |e| {
-                e != thrown_crate.owner && players.contains(e) && invincibles.get(e).is_none()
+                e == thrown_crate.owner
+                    && players.contains(e)
+                    && invincibles.get(e).is_none()
+                    && thrown_crate.was_colliding
             })
             .into_iter()
             .collect::<Vec<_>>();

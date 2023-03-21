@@ -15,8 +15,6 @@ element-layer-icon = E
 add-element = Add Element
 delete-element = Delete Element
 toggle-visibility = Toggle Visibility
-move-up = Move Up
-move-down = Move Down
 delete-layer = Delete Layer
 delete = Delete
 

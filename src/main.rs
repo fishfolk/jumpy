@@ -31,8 +31,9 @@ pub mod session;
 pub mod ui;
 
 pub mod camera;
-pub mod prelude;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod networking;
+pub mod prelude;
 pub use prelude::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -114,6 +115,9 @@ pub fn main() {
         .add_plugin(JumpyAssetPlugin)
         .add_plugin(JumpyLocalizationPlugin)
         .add_plugin(JumpyDebugPlugin);
+
+    #[cfg(not(target_arch = "wasm32"))]
+    app.add_plugin(networking::NetworkingPlugin);
 
     debug!(?engine_config, "Starting game");
 

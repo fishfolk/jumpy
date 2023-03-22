@@ -1,25 +1,23 @@
 #![doc = include_str!("./networking.md")]
 
 use ggrs::P2PSession;
+use rand::Rng;
 
-use crate::{prelude::*, session::SessionManager, ui::main_menu::MenuPage};
-
-use self::{
-    proto::{match_setup::MatchSetupMessage, ReliableGameMessageKind},
-};
+use crate::prelude::*;
 
 // pub mod client;
-pub mod proto;
 pub mod matchmaking;
+pub mod proto;
 
 pub struct NetworkingPlugin;
 
 impl Plugin for NetworkingPlugin {
     fn build(&self, app: &mut App) {
-        // app.add_system(listen_for_map_changes.run_if_resource_exists::<P2PSession<GgrsConfig>>());
+        app.init_resource::<NetworkEndpoint>();
     }
 }
 
+/// The [`ggrs::Config`] implementation used by Jumpy.
 #[derive(Debug)]
 pub struct GgrsConfig;
 impl ggrs::Config for GgrsConfig {
@@ -29,29 +27,45 @@ impl ggrs::Config for GgrsConfig {
     type Address = usize;
 }
 
-// /// TODO: Map changes aren't working on network games for now, so this isn't properly used/working.
-// fn listen_for_map_changes(
-//     mut commands: Commands,
-//     client: Res<NetClient>,
-//     mut reset_manager: ResetManager,
-//     mut session_manager: SessionManager,
-//     mut menu_page: ResMut<MenuPage>,
-//     mut ridp: ResMut<RollbackIdProvider>,
-// ) {
-//     while let Some(message) = client.recv_reliable() {
-//         match message.kind {
-//             ReliableGameMessageKind::MatchSetup(setup) => match setup {
-//                 MatchSetupMessage::SelectMap(map_handle) => {
-//                     info!("Other player selected map, starting game");
-//                     *menu_page = MenuPage::Home;
-//                     reset_manager.reset_world();
+#[derive(Resource, Deref, DerefMut)]
+pub struct NetworkEndpoint(pub quinn::Endpoint);
 
-//                     commands.spawn((map_handle, Rollback::new(ridp.next_id())));
-//                     commands.insert_resource(NextState(GameState::InGame));
-//                     session_manager.start_session();
-//                 }
-//                 other => warn!("Unexpected message during match: {other:?}"),
-//             },
-//         }
-//     }
-// }
+/// Bind the network socket when the game starts.
+impl Default for NetworkEndpoint {
+    fn default() -> Self {
+        // Generate certificate
+        let (cert, key) = cert::generate_self_signed_cert().unwrap();
+
+        let mut transport_config = quinn::TransportConfig::default();
+        transport_config.keep_alive_interval(Some(std::time::Duration::from_secs(5)));
+
+        let mut server_config =
+            quinn::ServerConfig::with_single_cert([cert].to_vec(), key).unwrap();
+        server_config.transport = Arc::new(transport_config);
+
+        // Open Socket and create endpoint
+        let port = rand::thread_rng().gen_range(10000..=11000); // Bind a random port
+        let socket = std::net::UdpSocket::bind(("0.0.0.0", port)).unwrap();
+        let endpoint = quinn::Endpoint::new(
+            quinn::EndpointConfig::default(),
+            Some(server_config),
+            socket,
+            quinn_runtime_bevy::BevyIoTaskPoolExecutor,
+        )
+        .unwrap();
+
+        Self(endpoint)
+    }
+}
+
+pub mod cert {
+    pub fn generate_self_signed_cert() -> anyhow::Result<(rustls::Certificate, rustls::PrivateKey)>
+    {
+        let cert = rcgen::generate_simple_self_signed(vec!["localhost".to_string()])?;
+        let key = rustls::PrivateKey(cert.serialize_private_key_der());
+        Ok((rustls::Certificate(cert.serialize_der()?), key))
+    }
+}
+
+pub use lan::*;
+mod lan;

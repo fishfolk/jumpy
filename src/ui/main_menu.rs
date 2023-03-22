@@ -26,10 +26,10 @@ use super::{
     DisableMenuInput, WidgetAdjacencies, WidgetId, WidgetSystem,
 };
 
-pub mod map_select;
-// #[cfg(not(target_arch = "wasm32"))]
-// pub mod matchmaking;
 pub mod credits;
+pub mod map_select;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod network_game;
 pub mod player_select;
 pub mod settings;
 
@@ -142,7 +142,7 @@ pub enum MenuPage {
         is_waiting: bool,
     },
     Credits,
-    // Matchmaking,
+    NetworkGame,
 }
 
 impl Default for MenuPage {
@@ -197,11 +197,9 @@ impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
         // Render the menu based on the current menu selection
         match *params.menu_page {
             MenuPage::Home => widget::<HomeMenu>(world, ui, id.with("home"), ()),
-            // MenuPage::Matchmaking =>
-            // {
-            //     #[cfg(not(target_arch = "wasm32"))]
-            //     widget::<matchmaking::MatchmakingMenu>(world, ui, id.with("matchmaking"), ())
-            // }
+            MenuPage::NetworkGame => {
+                widget::<network_game::MatchmakingMenu>(world, ui, id.with("network-game"), ())
+            }
             MenuPage::PlayerSelect => {
                 widget::<player_select::PlayerSelectMenu>(world, ui, id.with("player-select"), ())
             }
@@ -287,21 +285,19 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                         *params.menu_page = MenuPage::PlayerSelect;
                     }
 
-                    // Online Game
+                    // Network Game
                     #[cfg(not(target_arch = "wasm32"))]
                     {
                         ui.scope(|ui| {
-                            ui.set_enabled(false);
                             let online_game_button = BorderedButton::themed(
                                 &ui_theme.button_styles.normal,
-                                &params.localization.get("online-game"),
+                                &params.localization.get("network-game"),
                             )
                             .min_size(min_button_size)
                             .show(ui);
 
                             if online_game_button.clicked() {
-                                todo!();
-                                // *params.menu_page = MenuPage::Matchmaking;
+                                *params.menu_page = MenuPage::NetworkGame;
                             }
                         });
                     }

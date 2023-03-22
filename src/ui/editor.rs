@@ -141,24 +141,29 @@ pub fn cleanup_editor(session: Option<ResMut<Session>>) {
 pub fn editor_ui_system(world: &mut World) {
     // Force set the camera position
     {
-        let world = world.cell();
-        let session = world.get_resource_mut::<Session>();
-        let editor_state = world.resource_mut::<EditorState>();
-        let camera_info = editor_state.camera;
-        if let Some(mut session) = session {
-            session.world().run_initialized_system(
-                move |
-                mut cameras: bones::CompMut<bones::Camera>,
-                mut camera_shakes: bones::CompMut<bones::CameraShake>,
-                mut camera_states: bones::CompMut<jumpy_core::camera::CameraState>| {
-                    let Some(camera) = cameras.iter_mut().next() else { return };
-                    let camera_shake = camera_shakes.iter_mut().next().unwrap();
-                    let camera_state = camera_states.iter_mut().next().unwrap();
-                    camera.height = camera_info.height;
-                    camera_shake.center = camera_info.pos.extend(0.0);
-                    camera_state.disable_controller = true;
-            }).ok();
-        }
+        world.resource_scope(|world, editor_state: Mut<EditorState>| {
+            let session = world.get_resource_mut::<Session>();
+            let camera_info = editor_state.camera;
+            if let Some(mut session) = session {
+                session
+                    .world()
+                    .run_initialized_system(
+                        move |mut cameras: bones::CompMut<bones::Camera>,
+                              mut camera_shakes: bones::CompMut<bones::CameraShake>,
+                              mut camera_states: bones::CompMut<
+                            jumpy_core::camera::CameraState,
+                        >| {
+                            let Some(camera) = cameras.iter_mut().next() else { return };
+                            let camera_shake = camera_shakes.iter_mut().next().unwrap();
+                            let camera_state = camera_states.iter_mut().next().unwrap();
+                            camera.height = camera_info.height;
+                            camera_shake.center = camera_info.pos.extend(0.0);
+                            camera_state.disable_controller = true;
+                        },
+                    )
+                    .ok();
+            }
+        });
     }
 
     // Get the world cursor position

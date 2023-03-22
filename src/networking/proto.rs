@@ -56,11 +56,11 @@ bitfield::bitfield! {
     #[repr(transparent)]
     pub struct DensePlayerControl(u16);
     impl Debug;
-    jump_pressed, set_jump_pressed: 0;
-    shoot_pressed, set_shoot_pressed: 1;
-    grab_pressed, set_grab_pressed: 2;
-    slide_pressed, set_slide_pressed: 3;
-    from into DenseMoveDirection, move_direction, set_move_direction: 15, 4;
+    pub jump_pressed, set_jump_pressed: 0;
+    pub shoot_pressed, set_shoot_pressed: 1;
+    pub grab_pressed, set_grab_pressed: 2;
+    pub slide_pressed, set_slide_pressed: 3;
+    pub from into DenseMoveDirection, move_direction, set_move_direction: 15, 4;
 }
 
 impl Default for DensePlayerControl {
@@ -74,7 +74,7 @@ impl Default for DensePlayerControl {
 /// A newtype around [`Vec2`] that implements [`From<u16>`] and [`Into<u16>`] as a way to compress
 /// user stick input for use in [`DensePlayerControl`].
 #[derive(Debug, Deref, DerefMut, Default)]
-struct DenseMoveDirection(pub Vec2);
+pub struct DenseMoveDirection(pub Vec2);
 
 /// This is the specific [`Quantized`] type that we use to represent movement directions in
 /// [`DenseMoveDirection`].

@@ -2,7 +2,7 @@ use bevy::{ecs::schedule::ShouldRun, utils::Instant};
 use downcast_rs::{impl_downcast, Downcast};
 use jumpy_core::input::PlayerControl;
 
-use crate::prelude::*;
+use crate::{networking::proto::DensePlayerControl, prelude::*};
 
 pub struct JumpySessionPlugin;
 
@@ -27,7 +27,7 @@ impl Plugin for JumpySessionPlugin {
                             .run_in_state(EngineState::InGame)
                             .run_in_state(InGameState::Playing),
                     )
-                    .with_system(update_input)
+                    .with_system(collect_local_input)
                     .with_system(
                         update_game
                             .run_in_state(EngineState::InGame)
@@ -52,13 +52,15 @@ fn session_run_criteria(time: Res<Time>, session: Option<ResMut<Session>>) -> Sh
 pub struct Session(pub Box<dyn SessionRunner>);
 
 pub trait SessionRunner: Sync + Send + Downcast {
-    fn new(core_session: CoreSession) -> Self
-    where
-        Self: Sized;
-    fn world(&mut self) -> &mut bones::World;
     fn core_session(&mut self) -> &mut CoreSession;
+    fn world(&mut self) -> &mut bones::World {
+        &mut self.core_session().world
+    }
     fn restart(&mut self);
-    fn get_player_input(&mut self, player_idx: usize) -> PlayerControl;
+    fn get_player_input(&mut self, player_idx: usize) -> PlayerControl {
+        self.core_session()
+            .update_input(|inputs| inputs.players[player_idx].control.clone())
+    }
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl);
     fn advance(&mut self, bevy_world: &mut World);
     fn run_criteria(&mut self, time: &Time) -> ShouldRun;
@@ -71,7 +73,7 @@ pub struct LocalSessionRunner {
     pub loop_start: Option<Instant>,
 }
 
-impl SessionRunner for LocalSessionRunner {
+impl LocalSessionRunner {
     fn new(core: CoreSession) -> Self
     where
         Self: Sized,
@@ -82,15 +84,11 @@ impl SessionRunner for LocalSessionRunner {
             loop_start: default(),
         }
     }
+}
+
+impl SessionRunner for LocalSessionRunner {
     fn core_session(&mut self) -> &mut CoreSession {
         &mut self.core
-    }
-    fn world(&mut self) -> &mut bones::World {
-        &mut self.core.world
-    }
-    fn get_player_input(&mut self, player_idx: usize) -> PlayerControl {
-        self.core
-            .update_input(|inputs| inputs.players[player_idx].control.clone())
     }
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl) {
         self.core.update_input(|inputs| {
@@ -156,6 +154,20 @@ impl<'w, 's> SessionManager<'w, 's> {
         self.menu_camera.for_each_mut(|mut x| x.is_active = false);
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn start_lan(
+        &mut self,
+        core_info: CoreSessionInfo,
+        lan_info: crate::networking::LanSessionInfo,
+    ) {
+        let session = Session(Box::new(crate::networking::LanSessionRunner::new(
+            CoreSession::new(core_info),
+            lan_info,
+        )));
+        self.commands.insert_resource(session);
+        self.menu_camera.for_each_mut(|mut x| x.is_active = false);
+    }
+
     /// Restart a game session without changing the settings
     pub fn restart(&mut self) {
         if let Some(session) = self.session.as_mut() {
@@ -192,7 +204,7 @@ fn ensure_2_players(session: Option<ResMut<Session>>, core_meta: Res<CoreMetaArc
 }
 
 /// Update the input to the game session.
-fn update_input(
+fn collect_local_input(
     session: Option<ResMut<Session>>,
     player_input_collectors: Query<(&PlayerInputCollector, &ActionState<PlayerAction>)>,
     mut current_editor_input: ResMut<CurrentEditorInput>,
@@ -201,7 +213,7 @@ fn update_input(
         return;
     };
 
-    // TODO: Handle editor input in networked games.
+    // TODO: Handle editor input
     if let Some(local_session) = session.downcast_mut::<LocalSessionRunner>() {
         let editor_input = current_editor_input.take();
         local_session.core.update_input(|inputs| {

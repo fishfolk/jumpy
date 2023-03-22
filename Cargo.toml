@@ -80,7 +80,8 @@ smallvec               = "1.10.0"
 rcgen                  = "0.10.0"
 rustls                 = { version = "0.20.7", features = ["dangerous_configuration", "quic"] }
 postcard               = "1.0.4"
-bytes = "1.4.0"
+bytes                  = "1.4.0"
+ping-rs                = "0.1.2"
 
 # Optimize dependencies even in development
 [profile.dev.package."*"]

@@ -1,9 +1,13 @@
-use std::net::{SocketAddr, ToSocketAddrs};
+use std::{
+    net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs},
+    time::Duration,
+};
 
 use anyhow::Context;
 use async_channel::{Receiver, Sender};
-use bevy::tasks::IoTaskPool;
+use bevy::{tasks::IoTaskPool, utils::Instant};
 use futures_lite::future;
+use smallvec::SmallVec;
 
 use crate::networking::NetworkEndpoint;
 
@@ -15,8 +19,53 @@ static MDNS: Lazy<mdns_sd::ServiceDaemon> = Lazy::new(|| {
     mdns_sd::ServiceDaemon::new().expect("Couldn't start MDNS service discovery thread.")
 });
 
+pub struct Pinger {
+    /// Sends the list of servers to ping
+    pub server_sender: Sender<SmallVec<[Ipv4Addr; 10]>>,
+    /// Receives the pings in milliseconds to the servers.
+    pub ping_receiver: Receiver<SmallVec<[(Ipv4Addr, Option<u16>); 10]>>,
+}
+
+static PINGER: Lazy<Pinger> = Lazy::new(|| {
+    let (server_sender, server_receiver) = async_channel::bounded(1);
+    let (ping_sender, ping_receiver) = async_channel::bounded(1);
+
+    std::thread::spawn(move || {
+        while let Ok(servers) = server_receiver.recv_blocking() {
+            let mut pings = SmallVec::new();
+            for server in servers {
+                let start = Instant::now();
+                let ping_result = ping_rs::send_ping(
+                    &IpAddr::V4(server),
+                    Duration::from_secs(2),
+                    &[1, 2, 3, 4],
+                    None,
+                );
+
+                let ping = if let Err(e) = ping_result {
+                    warn!("Error pinging {server}: {e:?}");
+                    None
+                } else {
+                    Some((Instant::now() - start).as_millis() as u16)
+                };
+
+                pings.push((server, ping));
+            }
+            if ping_sender.send_blocking(pings).is_err() {
+                break;
+            }
+        }
+    });
+
+    Pinger {
+        server_sender,
+        ping_receiver,
+    }
+});
+
 #[derive(SystemParam)]
 pub struct MatchmakingMenu<'w, 's> {
+    time: Res<'w, Time>,
     commands: Commands<'w, 's>,
     menu_page: ResMut<'w, MenuPage>,
     game: Res<'w, GameMeta>,
@@ -27,13 +76,32 @@ pub struct MatchmakingMenu<'w, 's> {
     network_endpoint: Res<'w, NetworkEndpoint>,
 }
 
-#[derive(Default)]
 pub struct State {
     match_kind: MatchKind,
     lan_service_discovery_recv: Option<mdns_sd::Receiver<mdns_sd::ServiceEvent>>,
     host_info: Option<mdns_sd::ServiceInfo>,
     is_hosting: bool,
-    lan_servers: Vec<mdns_sd::ServiceInfo>,
+    lan_servers: Vec<ServerInfo>,
+    ping_update_timer: Timer,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self {
+            match_kind: default(),
+            lan_service_discovery_recv: default(),
+            host_info: default(),
+            is_hosting: default(),
+            lan_servers: default(),
+            ping_update_timer: Timer::new(Duration::from_secs(1), TimerMode::Repeating),
+        }
+    }
+}
+
+pub struct ServerInfo {
+    pub service: mdns_sd::ServiceInfo,
+    /// The ping in milliseconds
+    pub ping: Option<u16>,
 }
 
 #[derive(PartialEq, Eq)]
@@ -68,6 +136,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
     ) {
         let mut params: MatchmakingMenu = state.get_mut(world);
         let menu_input = params.menu_input.single();
+        params.state.ping_update_timer.tick(params.time.delta());
 
         if menu_input.pressed(MenuAction::Back) {
             *params.menu_page = MenuPage::Home;
@@ -203,6 +272,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                     lan_servers,
                     host_info,
                     is_hosting,
+                    ping_update_timer,
                 } = &mut *params.state;
 
                 ui.separator();
@@ -223,6 +293,30 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                 *is_hosting = false;
                             }
 
+                            // Update server pings
+                            if ping_update_timer.finished() {
+                                PINGER
+                                    .server_sender
+                                    .try_send(
+                                        lan_servers
+                                            .iter()
+                                            .map(|x| {
+                                                *x.service.get_addresses().iter().next().unwrap()
+                                            })
+                                            .collect(),
+                                    )
+                                    .ok();
+                            }
+                            if let Ok(pings) = PINGER.ping_receiver.try_recv() {
+                                for (server, ping) in pings {
+                                    for info in lan_servers.iter_mut() {
+                                        if info.service.get_addresses().contains(&server) {
+                                            info.ping = ping;
+                                        }
+                                    }
+                                }
+                            }
+
                             let events = lan_service_discovery_recv.get_or_insert_with(|| {
                                 MDNS.browse(MDNS_SERVICE_TYPE)
                                     .expect("Couldn't start service discovery")
@@ -230,11 +324,15 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
 
                             while let Ok(event) = events.try_recv() {
                                 match event {
-                                    mdns_sd::ServiceEvent::ServiceResolved(info) => {
-                                        lan_servers.push(info)
-                                    }
+                                    mdns_sd::ServiceEvent::ServiceResolved(info) => lan_servers
+                                        .push(ServerInfo {
+                                            service: info,
+                                            ping: None,
+                                        }),
                                     mdns_sd::ServiceEvent::ServiceRemoved(_, full_name) => {
-                                        lan_servers.retain(|info| info.get_fullname() != full_name);
+                                        lan_servers.retain(|server| {
+                                            server.service.get_fullname() != full_name
+                                        });
                                     }
                                     _ => (),
                                 }
@@ -245,14 +343,26 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
 
                             ui.indent("servers", |ui| {
                                 for server in lan_servers.iter() {
-                                    if BorderedButton::themed(
-                                        &params.game.ui_theme.button_styles.normal,
-                                        server.get_hostname().trim_end_matches('.'),
-                                    )
-                                    .min_size(egui::vec2(ui.available_width(), 0.0))
-                                    .show(ui)
-                                    .clicked()
-                                    {}
+                                    ui.horizontal(|ui| {
+                                        if BorderedButton::themed(
+                                            &params.game.ui_theme.button_styles.normal,
+                                            server.service.get_hostname().trim_end_matches('.'),
+                                        )
+                                        .min_size(egui::vec2(ui.available_width() * 0.8, 0.0))
+                                        .show(ui)
+                                        .clicked()
+                                        {}
+
+                                        let label_text = egui::RichText::new(format!(
+                                            "🖧 {}ms",
+                                            server
+                                                .ping
+                                                .map(|x| x.to_string())
+                                                .unwrap_or("?".into())
+                                        ))
+                                        .size(normal_text_style.size);
+                                        ui.label(label_text)
+                                    });
                                 }
 
                                 if lan_servers.is_empty() {

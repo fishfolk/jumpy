@@ -308,7 +308,7 @@
             ColliderShape::Circle {
                 diameter: <span class="kw-2">*</span>body_diameter,
             },
-        ) != TileCollisionKind::Empty;
+        ) == TileCollisionKind::Solid;
 
         <span class="comment">// Bullet hit something
         </span><span class="kw">if </span>hit_player || hit_solid {

@@ -254,8 +254,6 @@ pub enum BuiltinElementKind {
         explosion_volume: f32,
         fuse_sound: Handle<AudioSource>,
         fuse_sound_volume: f32,
-        #[serde(skip)]
-        fuse_sound_handle: Handle<AudioSource>,
         /// The time in seconds before a grenade explodes
         fuse_time: f32,
         #[serde(default)]
@@ -302,5 +300,11 @@ pub enum BuiltinElementKind {
         end_frame: usize,
         fps: f32,
         body_size: Vec2,
+    },
+    Slippery {
+        atlas: Handle<Atlas>,
+        body_size: Vec2,
+        player_slide: f32,
+        body_friction: f32,
     },
 }

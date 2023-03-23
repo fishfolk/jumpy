@@ -65,7 +65,9 @@ fn hydrate(
             items.insert(entity, Item);
             item_throws.insert(
                 entity,
-                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+                ItemThrow::strength(*throw_velocity)
+                    .with_spin(*angular_velocity)
+                    .with_system(musket_drop(entity, *max_ammo)),
             );
             item_grabs.insert(
                 entity,
@@ -239,4 +241,12 @@ fn update(
             musket.ammo = *max_ammo;
         }
     }
+}
+
+fn musket_drop(entity: Entity, max_ammo: usize) -> System {
+    (move |mut muskets: CompMut<Musket>| {
+        // Reload musket
+        muskets.get_mut(entity).unwrap().ammo = max_ammo;
+    })
+    .system()
 }

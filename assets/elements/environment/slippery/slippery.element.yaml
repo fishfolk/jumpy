@@ -1,0 +1,10 @@
+name: Slippery
+category: Gameplay
+editor:
+  grab_size: [33, 10]
+  show_name: false
+builtin: !Slippery
+  atlas: ./slippery.atlas.yaml
+  body_size: [33, 18]
+  player_slide: 4
+  body_friction: 0.95

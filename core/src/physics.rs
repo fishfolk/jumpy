@@ -56,6 +56,12 @@ pub struct KinematicBody {
     pub angular_velocity: f32,
     pub gravity: f32,
     pub bounciness: f32,
+    /// Sets a 1 frame override for the body friction. It will be re-set to `None` every frame so if
+    /// you wish to apply a continuous friction change, you must re-set it every frame.
+    ///
+    /// This is useful for things like slippery blocks or other things that want to modify a body's
+    /// friction while it is on the block.
+    pub frame_friction_override: Option<f32>,
     pub is_on_ground: bool,
     pub was_on_ground: bool,
     /// Will be `true` if the body is currently on top of a platform/jumpthrough tile
@@ -259,7 +265,12 @@ fn update_kinematic_bodies(
 
         if body.is_on_ground {
             if body.has_friction {
-                body.velocity.x *= game.physics.friction_lerp;
+                body.velocity.x *= if let Some(friction) = body.frame_friction_override {
+                    friction
+                } else {
+                    game.physics.friction_lerp
+                };
+                body.frame_friction_override = None;
 
                 if body.velocity.x.abs() <= game.physics.stop_threshold {
                     body.velocity.x = 0.0;

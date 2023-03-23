@@ -127,7 +127,7 @@ fn update(
             ColliderShape::Circle {
                 diameter: *body_diameter,
             },
-        ) != TileCollisionKind::Empty;
+        ) == TileCollisionKind::Solid;
 
         // Bullet hit something
         if hit_player || hit_solid {

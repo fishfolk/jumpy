@@ -12,9 +12,7 @@ pub mod proto;
 pub struct NetworkingPlugin;
 
 impl Plugin for NetworkingPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<NetworkEndpoint>();
-    }
+    fn build(&self, _app: &mut App) {}
 }
 
 /// The [`ggrs::Config`] implementation used by Jumpy.
@@ -27,38 +25,66 @@ impl ggrs::Config for GgrsConfig {
     type Address = usize;
 }
 
-#[derive(Resource, Deref, DerefMut)]
-pub struct NetworkEndpoint(pub quinn::Endpoint);
+/// The QUIC network endpoint used for all network communications.
+pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
+    // Generate certificate
+    let (cert, key) = cert::generate_self_signed_cert().unwrap();
 
-/// Bind the network socket when the game starts.
-impl Default for NetworkEndpoint {
-    fn default() -> Self {
-        // Generate certificate
-        let (cert, key) = cert::generate_self_signed_cert().unwrap();
+    let mut transport_config = quinn::TransportConfig::default();
+    transport_config.keep_alive_interval(Some(std::time::Duration::from_secs(5)));
 
-        let mut transport_config = quinn::TransportConfig::default();
-        transport_config.keep_alive_interval(Some(std::time::Duration::from_secs(5)));
+    let mut server_config = quinn::ServerConfig::with_single_cert([cert].to_vec(), key).unwrap();
+    server_config.transport = Arc::new(transport_config);
 
-        let mut server_config =
-            quinn::ServerConfig::with_single_cert([cert].to_vec(), key).unwrap();
-        server_config.transport = Arc::new(transport_config);
+    // Open Socket and create endpoint
+    let port = rand::thread_rng().gen_range(10000..=11000); // Bind a random port
+    let socket = std::net::UdpSocket::bind(("0.0.0.0", port)).unwrap();
 
-        // Open Socket and create endpoint
-        let port = rand::thread_rng().gen_range(10000..=11000); // Bind a random port
-        let socket = std::net::UdpSocket::bind(("0.0.0.0", port)).unwrap();
-        let endpoint = quinn::Endpoint::new(
-            quinn::EndpointConfig::default(),
-            Some(server_config),
-            socket,
-            quinn_runtime_bevy::BevyIoTaskPoolExecutor,
-        )
-        .unwrap();
+    let client_config = rustls::ClientConfig::builder()
+        .with_safe_defaults()
+        .with_custom_certificate_verifier(cert::SkipServerVerification::new())
+        .with_no_client_auth();
+    let client_config = quinn::ClientConfig::new(Arc::new(client_config));
 
-        Self(endpoint)
-    }
-}
+    let mut endpoint = quinn::Endpoint::new(
+        quinn::EndpointConfig::default(),
+        Some(server_config),
+        socket,
+        quinn_runtime_bevy::BevyIoTaskPoolExecutor,
+    )
+    .unwrap();
+
+    endpoint.set_default_client_config(client_config);
+
+    endpoint
+});
 
 pub mod cert {
+    use std::sync::Arc;
+
+    // Implementation of `ServerCertVerifier` that verifies everything as trustworthy.
+    pub struct SkipServerVerification;
+
+    impl SkipServerVerification {
+        pub fn new() -> Arc<Self> {
+            Arc::new(Self)
+        }
+    }
+
+    impl rustls::client::ServerCertVerifier for SkipServerVerification {
+        fn verify_server_cert(
+            &self,
+            _end_entity: &rustls::Certificate,
+            _intermediates: &[rustls::Certificate],
+            _server_name: &rustls::ServerName,
+            _scts: &mut dyn Iterator<Item = &[u8]>,
+            _ocsp_response: &[u8],
+            _now: std::time::SystemTime,
+        ) -> Result<rustls::client::ServerCertVerified, rustls::Error> {
+            Ok(rustls::client::ServerCertVerified::assertion())
+        }
+    }
+
     pub fn generate_self_signed_cert() -> anyhow::Result<(rustls::Certificate, rustls::PrivateKey)>
     {
         let cert = rcgen::generate_simple_self_signed(vec!["localhost".to_string()])?;

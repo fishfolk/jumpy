@@ -1,15 +1,12 @@
 use std::{
-    net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs},
+    net::{IpAddr, Ipv4Addr},
     time::Duration,
 };
 
-use anyhow::Context;
-use async_channel::{Receiver, Sender};
-use bevy::{tasks::IoTaskPool, utils::Instant};
-use futures_lite::future;
+use bevy::utils::Instant;
 use smallvec::SmallVec;
 
-use crate::networking::NetworkEndpoint;
+use crate::networking::{LAN_MATCHMAKER, NETWORK_ENDPOINT};
 
 use super::*;
 
@@ -19,19 +16,16 @@ static MDNS: Lazy<mdns_sd::ServiceDaemon> = Lazy::new(|| {
     mdns_sd::ServiceDaemon::new().expect("Couldn't start MDNS service discovery thread.")
 });
 
-pub struct Pinger {
-    /// Sends the list of servers to ping
-    pub server_sender: Sender<SmallVec<[Ipv4Addr; 10]>>,
-    /// Receives the pings in milliseconds to the servers.
-    pub ping_receiver: Receiver<SmallVec<[(Ipv4Addr, Option<u16>); 10]>>,
-}
+#[derive(DerefMut, Deref)]
+pub struct Pinger(
+    BiChannelClient<SmallVec<[Ipv4Addr; 10]>, SmallVec<[(Ipv4Addr, Option<u16>); 10]>>,
+);
 
 static PINGER: Lazy<Pinger> = Lazy::new(|| {
-    let (server_sender, server_receiver) = async_channel::bounded(1);
-    let (ping_sender, ping_receiver) = async_channel::bounded(1);
+    let (client, server) = bi_channel();
 
     std::thread::spawn(move || {
-        while let Ok(servers) = server_receiver.recv_blocking() {
+        while let Ok(servers) = server.recv_blocking() {
             let mut pings = SmallVec::new();
             for server in servers {
                 let start = Instant::now();
@@ -51,38 +45,41 @@ static PINGER: Lazy<Pinger> = Lazy::new(|| {
 
                 pings.push((server, ping));
             }
-            if ping_sender.send_blocking(pings).is_err() {
+            if server.send_blocking(pings).is_err() {
                 break;
             }
         }
     });
 
-    Pinger {
-        server_sender,
-        ping_receiver,
-    }
+    Pinger(client)
 });
 
 #[derive(SystemParam)]
 pub struct MatchmakingMenu<'w, 's> {
     time: Res<'w, Time>,
-    commands: Commands<'w, 's>,
     menu_page: ResMut<'w, MenuPage>,
     game: Res<'w, GameMeta>,
-    storage: ResMut<'w, Storage>,
     localization: Res<'w, Localization>,
     state: Local<'s, State>,
     menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
-    network_endpoint: Res<'w, NetworkEndpoint>,
 }
 
 pub struct State {
     match_kind: MatchKind,
     lan_service_discovery_recv: Option<mdns_sd::Receiver<mdns_sd::ServiceEvent>>,
-    host_info: Option<mdns_sd::ServiceInfo>,
-    is_hosting: bool,
+    service_info: Option<mdns_sd::ServiceInfo>,
+    status: Status,
+    joined_players: usize,
     lan_servers: Vec<ServerInfo>,
     ping_update_timer: Timer,
+}
+
+#[derive(Default, PartialEq, Eq)]
+pub enum Status {
+    #[default]
+    Idle,
+    Joining,
+    Hosting,
 }
 
 impl Default for State {
@@ -90,9 +87,10 @@ impl Default for State {
         Self {
             match_kind: default(),
             lan_service_discovery_recv: default(),
-            host_info: default(),
-            is_hosting: default(),
+            service_info: default(),
+            status: default(),
             lan_servers: default(),
+            joined_players: default(),
             ping_update_timer: Timer::new(Duration::from_secs(1), TimerMode::Repeating),
         }
     }
@@ -122,6 +120,7 @@ pub enum LanMode {
     Join,
     Host {
         service_name: String,
+        player_count: usize,
     },
 }
 
@@ -137,10 +136,6 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
         let mut params: MatchmakingMenu = state.get_mut(world);
         let menu_input = params.menu_input.single();
         params.state.ping_update_timer.tick(params.time.delta());
-
-        if menu_input.pressed(MenuAction::Back) {
-            *params.menu_page = MenuPage::Home;
-        }
 
         // // Transition to player select if match is ready
         // if params.state.status.is_match_ready() {
@@ -173,6 +168,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
         let normal_text_style = &params.game.ui_theme.font_styles.normal;
         let heading_text_style = &params.game.ui_theme.font_styles.heading;
         let normal_button_style = &params.game.ui_theme.button_styles.normal;
+        let small_button_style = &params.game.ui_theme.button_styles.small;
 
         ui.vertical_centered(|ui| {
             ui.add_space(heading_text_style.size / 4.0);
@@ -239,7 +235,8 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                         .clicked()
                                         {
                                             *mode = LanMode::Host {
-                                                service_name: params.localization.get("untitled"),
+                                                service_name: params.localization.get("fish-fight"),
+                                                player_count: 2,
                                             };
                                         }
 
@@ -270,9 +267,10 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                     match_kind,
                     lan_service_discovery_recv,
                     lan_servers,
-                    host_info,
-                    is_hosting,
+                    service_info: host_info,
+                    status,
                     ping_update_timer,
+                    joined_players,
                 } = &mut *params.state;
 
                 ui.separator();
@@ -290,13 +288,12 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                         Err(e) => panic!("Error unregistering MDNS service: {e}"),
                                     }
                                 }
-                                *is_hosting = false;
+                                *status = Status::Idle;
                             }
 
                             // Update server pings
                             if ping_update_timer.finished() {
                                 PINGER
-                                    .server_sender
                                     .try_send(
                                         lan_servers
                                             .iter()
@@ -307,7 +304,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                     )
                                     .ok();
                             }
-                            if let Ok(pings) = PINGER.ping_receiver.try_recv() {
+                            if let Ok(pings) = PINGER.try_recv() {
                                 for (server, ping) in pings {
                                     for info in lan_servers.iter_mut() {
                                         if info.service.get_addresses().contains(&server) {
@@ -338,52 +335,122 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                 }
                             }
 
-                            ui.themed_label(normal_text_style, &params.localization.get("servers"));
-                            ui.add_space(normal_text_style.size / 2.0);
+                            if *status != Status::Joining {
+                                ui.themed_label(
+                                    normal_text_style,
+                                    &params.localization.get("servers"),
+                                );
+                                ui.add_space(normal_text_style.size / 2.0);
 
-                            ui.indent("servers", |ui| {
-                                for server in lan_servers.iter() {
-                                    ui.horizontal(|ui| {
-                                        if BorderedButton::themed(
-                                            &params.game.ui_theme.button_styles.normal,
-                                            server.service.get_hostname().trim_end_matches('.'),
-                                        )
-                                        .min_size(egui::vec2(ui.available_width() * 0.8, 0.0))
-                                        .show(ui)
-                                        .clicked()
-                                        {}
+                                ui.indent("servers", |ui| {
+                                    for server in lan_servers.iter() {
+                                        ui.horizontal(|ui| {
+                                            if BorderedButton::themed(
+                                                &params.game.ui_theme.button_styles.normal,
+                                                server.service.get_hostname().trim_end_matches('.'),
+                                            )
+                                            .min_size(egui::vec2(ui.available_width() * 0.8, 0.0))
+                                            .show(ui)
+                                            .clicked()
+                                            {
+                                                *status = Status::Joining;
+                                                LAN_MATCHMAKER.try_send(
+                                                    networking::LanMatchmakerRequest::JoinServer {
+                                                        ip: *server
+                                                            .service
+                                                            .get_addresses()
+                                                            .iter()
+                                                            .next()
+                                                            .unwrap(),
+                                                        port: server.service.get_port(),
+                                                    },
+                                                ).unwrap();
+                                            }
 
-                                        let label_text = egui::RichText::new(format!(
-                                            "🖧 {}ms",
-                                            server
-                                                .ping
-                                                .map(|x| x.to_string())
-                                                .unwrap_or("?".into())
-                                        ))
-                                        .size(normal_text_style.size);
-                                        ui.label(label_text)
-                                    });
-                                }
+                                            let label_text = egui::RichText::new(format!(
+                                                "🖧 {}ms",
+                                                server
+                                                    .ping
+                                                    .map(|x| x.to_string())
+                                                    .unwrap_or("?".into())
+                                            ))
+                                            .size(normal_text_style.size);
+                                            ui.label(label_text)
+                                        });
+                                    }
 
-                                if lan_servers.is_empty() {
-                                    ui.themed_label(
-                                        normal_text_style,
-                                        &params.localization.get("no-servers"),
-                                    );
-                                }
-                            });
+                                    if lan_servers.is_empty() {
+                                        ui.themed_label(
+                                            normal_text_style,
+                                            &params.localization.get("no-servers"),
+                                        );
+                                    }
+                                });
+                            } else {
+                                ui.themed_label(
+                                    normal_text_style,
+                                    &params.localization.get("joining"),
+                                );
+                            }
 
                             ui.add_space(normal_text_style.size / 2.0);
                         }
-                        LanMode::Host { service_name } => {
-                            ui.horizontal(|ui| {
-                                ui.label(params.localization.get("server-name"));
-                                ui.text_edit_singleline(service_name);
-                                *service_name = service_name.replace(' ', "-");
+                        LanMode::Host {
+                            service_name,
+                            player_count,
+                        } => {
+                            ui.scope(|ui| {
+                                ui.set_enabled(*status != Status::Hosting);
+                                ui.horizontal(|ui| {
+                                    ui.themed_label(
+                                        normal_text_style,
+                                        &params.localization.get("server-name"),
+                                    );
+                                    ui.add(
+                                        egui::TextEdit::singleline(service_name)
+                                            .font(normal_text_style.font_id()),
+                                    );
+                                    *service_name = service_name.replace(' ', "-");
+                                });
+                                ui.add_space(normal_text_style.size / 2.0);
+                                ui.horizontal(|ui| {
+                                    ui.themed_label(
+                                        normal_text_style,
+                                        &params.localization.get("player-count"),
+                                    );
+                                    ui.add_space(normal_text_style.size);
+                                    ui.scope(|ui| {
+                                        ui.set_enabled(*player_count > 2);
+                                        if BorderedButton::themed(small_button_style, "-")
+                                            .min_size(egui::vec2(normal_text_style.size * 2.0, 0.0))
+                                            .show(ui)
+                                            .clicked()
+                                        {
+                                            *player_count = player_count
+                                                .saturating_sub(1)
+                                                .clamp(2, MAX_PLAYERS);
+                                        }
+                                    });
+                                    ui.themed_label(normal_text_style, &player_count.to_string());
+                                    ui.scope(|ui| {
+                                        ui.set_enabled(*player_count < MAX_PLAYERS);
+                                        if BorderedButton::themed(small_button_style, "+")
+                                            .min_size(egui::vec2(normal_text_style.size * 2.0, 0.0))
+                                            .show(ui)
+                                            .clicked()
+                                        {
+                                            *player_count = player_count
+                                                .saturating_add(1)
+                                                .clamp(2, MAX_PLAYERS);
+                                        }
+                                    });
+
+                                    *service_name = service_name.replace(' ', "-");
+                                });
                             });
 
                             let create_service_info = || {
-                                let port = params.network_endpoint.local_addr().unwrap().port();
+                                let port = NETWORK_ENDPOINT.local_addr().unwrap().port();
                                 mdns_sd::ServiceInfo::new(
                                     MDNS_SERVICE_TYPE,
                                     service_name,
@@ -406,46 +473,108 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                         Err(e) => panic!("Error unregistering MDNS service: {e}"),
                                     }
                                 }
-                                *is_hosting = false;
+                                *status = Status::Idle;
                                 *service_info = create_service_info();
                             }
 
                             ui.add_space(params.game.ui_theme.font_styles.normal.size);
 
-                            if !*is_hosting {
+                            if *status == Status::Idle {
                                 if BorderedButton::themed(
-                                    &params.game.ui_theme.button_styles.small,
+                                    small_button_style,
                                     &params.localization.get("start-server"),
                                 )
                                 .show(ui)
                                 .clicked()
                                 {
-                                    *is_hosting = true;
+                                    *status = Status::Hosting;
                                     MDNS.register(service_info.clone())
                                         .expect("Could not register MDNS service.");
+                                    LAN_MATCHMAKER
+                                        .try_send(networking::LanMatchmakerRequest::StartServer {
+                                            player_count: *player_count,
+                                        })
+                                        .unwrap();
                                 }
-                            } else if BorderedButton::themed(
-                                &params.game.ui_theme.button_styles.small,
-                                &params.localization.get("stop-server"),
-                            )
-                            .show(ui)
-                            .clicked()
-                            {
-                                loop {
-                                    match MDNS.unregister(service_info.get_fullname()) {
-                                        Ok(_) => break,
-                                        Err(mdns_sd::Error::Again) => (),
-                                        Err(e) => {
-                                            panic!("Error unregistering MDNS service: {e}")
-                                        }
+
+                            // If we are hosting a match currently
+                            } else if *status == Status::Hosting {
+                                while let Ok(response) = LAN_MATCHMAKER.try_recv() {
+                                    if let networking::LanMatchmakerResponse::PlayerCount(count) =
+                                        response
+                                    {
+                                        *joined_players = count;
                                     }
                                 }
-                                *is_hosting = false;
+
+                                ui.horizontal(|ui| {
+                                    if BorderedButton::themed(
+                                        small_button_style,
+                                        &params.localization.get("stop-server"),
+                                    )
+                                    .show(ui)
+                                    .clicked()
+                                    {
+                                        loop {
+                                            match MDNS.unregister(service_info.get_fullname()) {
+                                                Ok(_) => break,
+                                                Err(mdns_sd::Error::Again) => (),
+                                                Err(e) => {
+                                                    panic!("Error unregistering MDNS service: {e}")
+                                                }
+                                            }
+                                        }
+                                        *status = Status::Idle;
+                                    }
+
+                                    ui.themed_label(
+                                        normal_text_style,
+                                        &format!(
+                                            "{} {} / {}",
+                                            &params.localization.get("players"),
+                                            *joined_players + 1, // Add one to count the host.
+                                            player_count
+                                        ),
+                                    );
+                                });
                             }
                         }
                     },
                     MatchKind::Online => {}
                 }
+
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
+                    if BorderedButton::themed(normal_button_style, &params.localization.get("back"))
+                        .show(ui)
+                        .clicked()
+                        || menu_input.pressed(MenuAction::Back)
+                    {
+                        match status {
+                            Status::Idle => (),
+                            Status::Joining => {
+                                LAN_MATCHMAKER
+                                    .try_send(networking::LanMatchmakerRequest::StopJoin)
+                                    .unwrap();
+                                *status = Status::Idle;
+                            }
+                            Status::Hosting => {
+                                if let Some(service_info) = host_info.take() {
+                                    loop {
+                                        match MDNS.unregister(service_info.get_fullname()) {
+                                            Ok(_) => break,
+                                            Err(mdns_sd::Error::Again) => (),
+                                            Err(e) => {
+                                                panic!("Error unregistering MDNS service: {e}")
+                                            }
+                                        }
+                                    }
+                                }
+                                *status = Status::Idle;
+                            }
+                        }
+                        *params.menu_page = MenuPage::Home;
+                    }
+                });
             });
     }
 }

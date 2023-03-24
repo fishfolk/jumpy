@@ -4,6 +4,16 @@ use numquant::{IntRange, Quantized};
 
 use crate::prelude::*;
 
+pub mod matchmaking {
+    use super::*;
+
+    #[derive(Serialize, Deserialize)]
+    pub enum LanMatchmakingMessage {
+        Join,
+        
+    }
+}
+
 pub mod match_setup;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

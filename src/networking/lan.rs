@@ -1,11 +1,165 @@
+use std::net::Ipv4Addr;
+
+use bevy::tasks::IoTaskPool;
 use bytes::Bytes;
-use futures_lite::future;
+use futures_lite::{future, FutureExt};
 use jumpy_core::input::PlayerControl;
 
 use super::{
     proto::{DenseMoveDirection, DensePlayerControl},
     *,
 };
+
+pub static LAN_MATCHMAKER: Lazy<LanMatchmaker> = Lazy::new(|| {
+    let (client, server) = bi_channel();
+
+    IoTaskPool::get().spawn(lan_matchmaker(server)).detach();
+
+    LanMatchmaker(client)
+});
+
+async fn lan_matchmaker(
+    matchmaker_channel: BiChannelServer<LanMatchmakerRequest, LanMatchmakerResponse>,
+) {
+    #[derive(Serialize, Deserialize)]
+    enum MatchmakerNetMsg {
+        MatchReady { random_seed: u64 },
+    }
+
+    while let Ok(request) = matchmaker_channel.recv().await {
+        match request {
+            // Start server
+            LanMatchmakerRequest::StartServer { mut player_count } => {
+                info!("Starting LAN server");
+                matchmaker_channel
+                    .send(LanMatchmakerResponse::ServerStarted)
+                    .await
+                    .unwrap();
+
+                let mut connections = Vec::new();
+
+                loop {
+                    let next_request = async { either::Left(matchmaker_channel.recv().await) };
+                    let next_conn = async { either::Right(NETWORK_ENDPOINT.accept().await) };
+
+                    match next_request.or(next_conn).await {
+                        // Handle more matchmaker requests
+                        either::Either::Left(next_request) => {
+                            let Ok(next_request) = next_request else { break; };
+
+                            match next_request {
+                                LanMatchmakerRequest::StartServer {
+                                    player_count: new_player_count,
+                                } => {
+                                    connections.clear();
+                                    player_count = new_player_count;
+                                }
+                                LanMatchmakerRequest::StopServer => {
+                                    break;
+                                }
+                                LanMatchmakerRequest::StopJoin => {} // Not joining, so don't do anything
+                                LanMatchmakerRequest::JoinServer { .. } => {
+                                    error!("Cannot join server while hosting server");
+                                }
+                            }
+                        }
+
+                        // Handle new connections
+                        either::Either::Right(Some(new_connection)) => {
+                            let Some(conn) = new_connection.await.ok() else { continue };
+                            connections.push(conn);
+                            let current_players = connections.len() + 1;
+                            info!(%current_players, "New player connection");
+                        }
+                        _ => (),
+                    }
+
+                    // Discard closed connections
+                    connections.retain(|conn| {
+                        if conn.close_reason().is_some() {
+                            info!("Player closed connection");
+                            false
+                        } else {
+                            true
+                        }
+                    });
+
+                    let current_players = connections.len();
+                    let target_players = player_count;
+                    info!(%current_players, %target_players);
+
+                    // If we're ready to start a match
+                    if connections.len() == player_count - 1 {
+                        info!("All players joined.");
+                        // Subtract one to count the host
+                        // Tell all clients we're ready
+                        for conn in &connections {
+                            let mut uni = conn.open_uni().await.unwrap();
+                            uni.write_all(
+                                &postcard::to_vec::<_, 9>(&MatchmakerNetMsg::MatchReady {
+                                    random_seed: 0, // TODO: random random seed.
+                                })
+                                .unwrap(),
+                            )
+                            .await
+                            .unwrap();
+                            uni.finish().await.unwrap();
+                        }
+                    } else if matchmaker_channel
+                        .try_send(LanMatchmakerResponse::PlayerCount(current_players))
+                        .is_err()
+                    {
+                        break;
+                    }
+                }
+            }
+            // Server not running or joining so do nothing
+            LanMatchmakerRequest::StopServer => (),
+            LanMatchmakerRequest::StopJoin => (),
+
+            // Join a hosted match
+            LanMatchmakerRequest::JoinServer { ip, port } => {
+                let conn = NETWORK_ENDPOINT
+                    .connect((ip, port).into(), "jumpy-host")
+                    .unwrap()
+                    .await
+                    .expect("Could not connect to server");
+
+                // Wait for match to start
+                let uni = conn.accept_uni().await.unwrap();
+                let bytes = uni.read_to_end(20).await.unwrap();
+                let message: MatchmakerNetMsg = postcard::from_bytes(&bytes).unwrap();
+
+                match message {
+                    MatchmakerNetMsg::MatchReady { random_seed } => {
+                        println!("TODO: join match: {random_seed}");
+                    }
+                }
+            }
+        }
+    }
+}
+
+// async fn lan_server(channel: BiChannelServer<LanServerRequest, LanServerResponse>) {}
+
+#[derive(DerefMut, Deref)]
+pub struct LanMatchmaker(BiChannelClient<LanMatchmakerRequest, LanMatchmakerResponse>);
+
+pub enum LanMatchmakerRequest {
+    StartServer { player_count: usize },
+    JoinServer { ip: Ipv4Addr, port: u16 },
+    StopServer,
+    StopJoin,
+}
+pub enum LanMatchmakerResponse {
+    ServerStarted,
+    PlayerCount(usize),
+}
+
+// pub enum LanServerRequest {
+//     Stop,
+// }
+// pub enum LanServerResponse {}
 
 pub struct LanSessionRunner {
     pub core: CoreSession,

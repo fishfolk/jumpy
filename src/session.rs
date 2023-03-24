@@ -2,7 +2,7 @@ use bevy::{ecs::schedule::ShouldRun, utils::Instant};
 use downcast_rs::{impl_downcast, Downcast};
 use jumpy_core::input::PlayerControl;
 
-use crate::{networking::proto::DensePlayerControl, prelude::*};
+use crate::prelude::*;
 
 pub struct JumpySessionPlugin;
 

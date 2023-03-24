@@ -45,9 +45,3 @@ pub struct MatchmakerSessionMessage {
     pub from_player_idx: usize,
     pub kind: MatchmakerSessionMessageKind,
 }
-
-mod lan {
-    use super::*;
-
-    pub struct LanMatchmaker {}
-}

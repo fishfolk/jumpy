@@ -29,6 +29,7 @@ pub mod metadata;
 pub mod platform;
 pub mod session;
 pub mod ui;
+pub mod utils;
 
 pub mod camera;
 #[cfg(not(target_arch = "wasm32"))]

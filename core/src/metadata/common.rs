@@ -1,16 +1,10 @@
 use super::*;
 use serde::{ser::SerializeStruct, Deserialize, Deserializer};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct ColorMeta(pub Color);
 
 impl bones_bevy_asset::BonesBevyAssetLoad for ColorMeta {}
-
-impl Default for ColorMeta {
-    fn default() -> Self {
-        Self(Color::default())
-    }
-}
 
 impl<'de> Deserialize<'de> for ColorMeta {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>

@@ -75,6 +75,7 @@ pub fn update_attachments(
             }
         }
 
+        // Sync animation of attached entity
         if attachment.sync_animation {
             if let Some((index, attach_atlas)) = atlas_sprites
                 .get(attachment.entity)
@@ -85,8 +86,7 @@ pub fn update_attachments(
             }
         }
 
-        transform.translation += offset;
-
+        // Sync color of attached entity
         if attachment.sync_color {
             let mut sync_sprite_colors = |alpha| {
                 if let Some(entity_sprite) = atlas_sprites.get_mut(ent) {
@@ -100,12 +100,15 @@ pub fn update_attachments(
 
             match invincibles.get(attachment.entity) {
                 None => sync_sprite_colors(1.0),
-                Some(_) => {
-                    let alpha = sine_between(0.4, 0.85, (time.elapsed().as_millis() / 100) as f32);
-                    sync_sprite_colors(alpha);
-                }
+                Some(_) => sync_sprite_colors(sine_between(
+                    *INVINVILIBITY_ALPHA_RANGE.start(),
+                    *INVINVILIBITY_ALPHA_RANGE.end(),
+                    (time.elapsed().as_millis() / 150) as f32,
+                )),
             }
         }
+
+        transform.translation += offset;
     }
 }
 
@@ -183,8 +186,4 @@ fn remove_player_body_attachments(
         attachments.remove(entity);
         had_player_body_attachment_markers.remove(entity);
     }
-}
-
-fn sine_between(min: f32, max: f32, t: f32) -> f32 {
-    ((max - min) * t.sin() + max + min) / 2.
 }

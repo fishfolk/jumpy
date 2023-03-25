@@ -1,13 +1,14 @@
 use super::*;
-use serde::{Deserialize, Deserializer};
+use serde::{ser::SerializeStruct, Deserialize, Deserializer};
 
 #[derive(Clone, Copy, Debug)]
-pub struct ColorMeta(pub [f32; 4]);
+pub struct ColorMeta(pub Color);
+
 impl bones_bevy_asset::BonesBevyAssetLoad for ColorMeta {}
 
 impl Default for ColorMeta {
     fn default() -> Self {
-        Self([0.0, 0.0, 0.0, 1.0])
+        Self(Color::default())
     }
 }
 
@@ -25,13 +26,14 @@ impl Serialize for ColorMeta {
     where
         S: serde::Serializer,
     {
-        let [r, g, b, a] = [
-            (self.0[0] * 255.0) as u8,
-            (self.0[1] * 255.0) as u8,
-            (self.0[2] * 255.0) as u8,
-            (self.0[3] * 255.0) as u8,
-        ];
-        serializer.serialize_str(&format!("rgba({r}, {g}, {b}, {a})"))
+        let [r, g, b, a] = self.0.as_rgba_f32();
+
+        let mut color = serializer.serialize_struct("Color", 4)?;
+        color.serialize_field("r", &r)?;
+        color.serialize_field("g", &g)?;
+        color.serialize_field("b", &b)?;
+        color.serialize_field("a", &a)?;
+        color.end()
     }
 }
 
@@ -51,7 +53,7 @@ impl<'de> serde::de::Visitor<'de> for ColorVisitor {
             csscolorparser::parse(v)
                 .map(|x| {
                     let [r, g, b, a] = x.to_array();
-                    [r as f32, g as f32, b as f32, a as f32]
+                    [r as f32, g as f32, b as f32, a as f32].into()
                 })
                 .map_err(|e| E::custom(e))?,
         ))

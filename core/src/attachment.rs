@@ -28,15 +28,19 @@ pub struct Attachment {
     pub offset: Vec3,
     /// Synchronize [`AtlasSprite`] animation with entity animation
     pub sync_animation: bool,
+    /// Synchronize [`Sprite`] color with entity color
+    pub sync_color: bool,
 }
 
 /// System to update the transforms of entities with the [`Attachment`] component.
 pub fn update_attachments(
+    time: Res<Time>,
     entities: Res<Entities>,
-    mut transforms: CompMut<Transform>,
-    attachments: Comp<Attachment>,
-    mut atlas_sprites: CompMut<AtlasSprite>,
     mut sprites: CompMut<Sprite>,
+    attachments: Comp<Attachment>,
+    invincibles: Comp<Invincibility>,
+    mut transforms: CompMut<Transform>,
+    mut atlas_sprites: CompMut<AtlasSprite>,
 ) {
     for (ent, attachment) in entities.iter_with(&attachments) {
         let Some(attached_transform) = transforms.get(attachment.entity).copied() else {
@@ -82,6 +86,26 @@ pub fn update_attachments(
         }
 
         transform.translation += offset;
+
+        if attachment.sync_color {
+            let mut sync_sprite_colors = |alpha| {
+                if let Some(entity_sprite) = atlas_sprites.get_mut(ent) {
+                    entity_sprite.color.set_a(alpha);
+                }
+
+                if let Some(attachment_sprite) = atlas_sprites.get_mut(attachment.entity) {
+                    attachment_sprite.color.set_a(alpha);
+                }
+            };
+
+            match invincibles.get(attachment.entity) {
+                None => sync_sprite_colors(1.0),
+                Some(_) => {
+                    let alpha = sine_between(0.4, 0.85, (time.elapsed().as_millis() / 100) as f32);
+                    sync_sprite_colors(alpha);
+                }
+            }
+        }
     }
 }
 
@@ -100,6 +124,8 @@ pub struct PlayerBodyAttachment {
     /// Whether or not to automatically play the same animation bank animation as the sprite that it
     /// is attached to.
     pub sync_animation: bool,
+    /// Whether or not to automatically sync the color of the attached entity with the player's
+    pub sync_color: bool,
 }
 
 #[derive(Clone, Copy, TypeUlid)]
@@ -136,8 +162,9 @@ fn update_player_body_attachments(
             ent,
             Attachment {
                 entity: player_ent,
-                offset: current_body_offset.extend(0.0) + body_attachment.offset,
+                sync_color: body_attachment.sync_color,
                 sync_animation: body_attachment.sync_animation,
+                offset: current_body_offset.extend(0.0) + body_attachment.offset,
             },
         );
     }
@@ -156,4 +183,8 @@ fn remove_player_body_attachments(
         attachments.remove(entity);
         had_player_body_attachment_markers.remove(entity);
     }
+}
+
+fn sine_between(min: f32, max: f32, t: f32) -> f32 {
+    ((max - min) * t.sin() + max + min) / 2.
 }

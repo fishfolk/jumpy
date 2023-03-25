@@ -137,6 +137,7 @@ fn update(
                         let attachment_ent = entities.create();
                         let attachment = Attachment {
                             entity: player,
+                            sync_color: false,
                             offset: Vec3::ZERO,
                             sync_animation: true,
                         };

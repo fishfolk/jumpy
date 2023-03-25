@@ -18,7 +18,6 @@ struct IdleCrate;
 #[ulid = "01GREP80RJSH9T9MWC88CG2G03"]
 struct ThrownCrate {
     owner: Entity,
-    // age: f32,
     damage_delay: Timer,
     crate_break_state: u8,
     was_colliding: bool,
@@ -124,8 +123,10 @@ fn update_idle_crates(
                             entity,
                             ThrownCrate {
                                 owner: player,
-                                // age: 0.0,
-                                damage_delay: Timer::new(Duration::from_secs_f32(0.25), TimerMode::Once),
+                                damage_delay: Timer::new(
+                                    Duration::from_secs_f32(0.25),
+                                    TimerMode::Once,
+                                ),
                                 was_colliding: false,
                                 crate_break_state: 0,
                             },
@@ -153,7 +154,6 @@ fn update_thrown_crates(
     spawners: Comp<DehydrateOutOfBounds>,
     invincibles: CompMut<Invincibility>,
     time: Res<Time>,
-
 ) {
     for (entity, (mut thrown_crate, element_handle, transform, atlas_sprite, body, spawner)) in
         entities.iter_with((
@@ -165,7 +165,6 @@ fn update_thrown_crates(
             &spawners,
         ))
     {
-
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
            continue;
         };
@@ -186,9 +185,7 @@ fn update_thrown_crates(
             continue;
         };
 
-        thrown_crate.damage_delay.tick(time.delta()); 
-
-        // thrown_crate.age += 1.0 / crate::FPS;
+        thrown_crate.damage_delay.tick(time.delta());
 
         let colliding_with_tile = {
             let collider = collision_world.get_collider(entity);
@@ -224,11 +221,12 @@ fn update_thrown_crates(
 
         let colliding_with_players = collision_world
             .actor_collisions_filtered(entity, |e| {
-                players.contains(e) && invincibles.get(e).is_none() && thrown_crate.damage_delay.finished()
+                players.contains(e)
+                    && invincibles.get(e).is_none()
+                    && thrown_crate.damage_delay.finished()
             })
             .into_iter()
             .collect::<Vec<_>>();
-
 
         for player_entity in &colliding_with_players {
             commands.add(PlayerCommand::kill(
@@ -236,7 +234,14 @@ fn update_thrown_crates(
                 Some(transform.translation.xy()),
             ));
         }
-        kill_all_colliding_if_freshly_thrown(thrown_crate, &collision_world, &players, &invincibles, &mut commands, transform);
+        kill_all_colliding_if_freshly_thrown(
+            thrown_crate,
+            &collision_world,
+            &players,
+            &invincibles,
+            &mut commands,
+            transform,
+        );
 
         if !colliding_with_players.is_empty()
             || thrown_crate.damage_delay.elapsed_secs() >= *break_timeout
@@ -284,7 +289,7 @@ fn update_thrown_crates(
     }
 }
 
-fn kill_all_colliding_if_freshly_thrown (
+fn kill_all_colliding_if_freshly_thrown(
     thrown_crate: &ThrownCrate,
     collision_world: &CollisionWorld,
     players: &Comp<PlayerIdx>,
@@ -297,9 +302,7 @@ fn kill_all_colliding_if_freshly_thrown (
     }
 
     let colliding_with_players = collision_world
-        .actor_collisions_filtered(thrown_crate.owner, |e| {
-            players.contains(e) 
-        })
+        .actor_collisions_filtered(thrown_crate.owner, |e| players.contains(e))
         .into_iter()
         .collect::<Vec<_>>();
 
@@ -312,6 +315,9 @@ fn kill_all_colliding_if_freshly_thrown (
                 ));
             }
         }
-        commands.add( PlayerCommand::kill(thrown_crate.owner, Some(transform.translation.xy())));
+        commands.add(PlayerCommand::kill(
+            thrown_crate.owner,
+            Some(transform.translation.xy()),
+        ));
     }
 }

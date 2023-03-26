@@ -192,8 +192,6 @@ fn update_lit_grenades(
             unreachable!();
         };
 
-        println!("THis is the fuse_time ... {:?}", fuse_time );
-
         grenade.damage_delay.tick(time.delta());
 
         if !emote_regions.contains(entity) {
@@ -226,7 +224,7 @@ fn update_lit_grenades(
         }
 
         // If it's time to explode
-         if grenade.damage_delay.elapsed_secs() >= *fuse_time { 
+        if grenade.damage_delay.elapsed_secs() >= *fuse_time {
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
             trauma_events.send(5.0);

@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::time::Duration;
 
 pub fn install(session: &mut GameSession) {
     session
@@ -12,10 +13,10 @@ pub fn install(session: &mut GameSession) {
 #[ulid = "01GQ0ZWBNA8HZRXYKZXCT05CXT"]
 pub struct IdleKickBomb;
 
-#[derive(Clone, TypeUlid, Debug, Copy)]
+#[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GQ0ZWFYZSHJPESPY9QPSTARR"]
 pub struct LitKickBomb {
-    age: f32,
+    damage_delay: Timer,
 }
 
 fn hydrate(
@@ -137,7 +138,12 @@ fn update_idle_kick_bombs(
             commands.add(
                 move |mut idle: CompMut<IdleKickBomb>, mut lit: CompMut<LitKickBomb>| {
                     idle.remove(entity);
-                    lit.insert(entity, LitKickBomb { age: 0.0 });
+                    lit.insert(
+                        entity,
+                        LitKickBomb {
+                            damage_delay: Timer::new(Duration::from_secs_f32(8.0), TimerMode::Once),
+                        },
+                    );
                 },
             );
         }
@@ -162,6 +168,7 @@ fn update_lit_kick_bombs(
     player_inventories: PlayerInventories,
     mut transforms: CompMut<Transform>,
     mut commands: Commands,
+    time: Res<Time>,
     spawners: Comp<DehydrateOutOfBounds>,
     invincibles: CompMut<Invincibility>,
 ) {
@@ -191,7 +198,7 @@ fn update_lit_kick_bombs(
             unreachable!();
         };
 
-        kick_bomb.age += 1.0 / crate::FPS;
+        kick_bomb.damage_delay.tick(time.delta());
 
         let mut should_explode = false;
         // If the item is being held
@@ -241,13 +248,13 @@ fn update_lit_kick_bombs(
             } else if !player_standing_left && player_sprite.flip_x {
                 body.velocity.x = -kick_velocity.x;
                 body.velocity.y = kick_velocity.y;
-            } else if kick_bomb.age >= *arm_delay {
+            } else if kick_bomb.damage_delay.elapsed_secs() >= *arm_delay {
                 should_explode = true;
             }
         }
 
         // If it's time to explode
-        if kick_bomb.age >= *fuse_time || should_explode {
+        if kick_bomb.damage_delay.elapsed_secs() >= *fuse_time || should_explode {
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
             trauma_events.send(7.5);

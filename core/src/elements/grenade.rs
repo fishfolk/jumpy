@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::time::Duration;
 
 pub fn install(session: &mut GameSession) {
     session
@@ -12,11 +13,13 @@ pub fn install(session: &mut GameSession) {
 #[ulid = "01GPRSBWQ3X0QJC37BDDQXDN84"]
 pub struct IdleGrenade;
 
-#[derive(Clone, TypeUlid, Debug, Copy)]
+// #[derive(Clone, TypeUlid, Debug, Copy)]
+#[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GPY9N9CBR6EFJX0RS2H2K58J"]
 pub struct LitGrenade {
     /// How long the grenade has been lit.
-    pub age: f32,
+    // pub age: f32,
+    pub damage_delay: Timer,
 }
 
 fn hydrate(
@@ -138,7 +141,12 @@ fn update_idle_grenades(
             commands.add(
                 move |mut idle: CompMut<IdleGrenade>, mut lit: CompMut<LitGrenade>| {
                     idle.remove(entity);
-                    lit.insert(entity, LitGrenade { age: 0.0 });
+                    lit.insert(
+                        entity,
+                        LitGrenade {
+                            damage_delay: Timer::new(Duration::from_secs_f32(4.0), TimerMode::Once),
+                        },
+                    );
                 },
             );
         }
@@ -159,6 +167,7 @@ fn update_lit_grenades(
     player_inventories: PlayerInventories,
     mut commands: Commands,
     spawners: Comp<DehydrateOutOfBounds>,
+    time: Res<Time>,
 ) {
     for (entity, (grenade, element_handle, spawner)) in
         entities.iter_with((&mut lit_grenades, &element_handles, &spawners))
@@ -183,7 +192,9 @@ fn update_lit_grenades(
             unreachable!();
         };
 
-        grenade.age += 1.0 / crate::FPS;
+        println!("THis is the fuse_time ... {:?}", fuse_time );
+
+        grenade.damage_delay.tick(time.delta());
 
         if !emote_regions.contains(entity) {
             emote_regions.insert(
@@ -215,7 +226,7 @@ fn update_lit_grenades(
         }
 
         // If it's time to explode
-        if grenade.age >= *fuse_time {
+         if grenade.damage_delay.elapsed_secs() >= *fuse_time { 
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
             trauma_events.send(5.0);

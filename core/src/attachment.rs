@@ -101,8 +101,8 @@ pub fn update_attachments(
             match invincibles.get(attachment.entity) {
                 None => sync_sprite_colors(1.0),
                 Some(_) => sync_sprite_colors(sine_between(
-                    *INVINVILIBITY_ALPHA_RANGE.start(),
-                    *INVINVILIBITY_ALPHA_RANGE.end(),
+                    *INVINCIBILITY_ALPHA_RANGE.start(),
+                    *INVINCIBILITY_ALPHA_RANGE.end(),
                     (time.elapsed().as_millis() / 150) as f32,
                 )),
             }

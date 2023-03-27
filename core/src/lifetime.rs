@@ -69,12 +69,12 @@ fn invincibility(
     entities: ResMut<Entities>,
     mut invincibles: CompMut<Invincibility>,
 ) {
-    for (entity, invincible) in &mut entities.iter_with(&mut invincibles) {
+    for (player_ent, invincible) in &mut entities.iter_with(&mut invincibles) {
         invincible.0.tick(time.delta());
 
         if invincible.0.finished() {
             commands.add(move |mut invincibles: CompMut<Invincibility>| {
-                invincibles.remove(entity);
+                invincibles.remove(player_ent);
             });
         }
     }

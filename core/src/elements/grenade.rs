@@ -126,6 +126,7 @@ fn update_idle_grenades(
         let BuiltinElementKind::Grenade {
             fuse_sound,
             fuse_sound_volume,
+            fuse_time,
             ..
         } = &element_meta.builtin else {
             unreachable!();
@@ -144,7 +145,7 @@ fn update_idle_grenades(
                     lit.insert(
                         entity,
                         LitGrenade {
-                            damage_delay: Timer::new(Duration::from_secs_f32(4.0), TimerMode::Once),
+                            damage_delay: Timer::new(Duration::from_secs_f32(*fuse_time), TimerMode::Once),
                         },
                     );
                 },
@@ -224,7 +225,7 @@ fn update_lit_grenades(
         }
 
         // If it's time to explode
-        if grenade.damage_delay.elapsed_secs() >= *fuse_time {
+         if grenade.damage_delay.finished() {
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
             trauma_events.send(5.0);

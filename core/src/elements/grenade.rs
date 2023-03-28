@@ -18,7 +18,6 @@ pub struct IdleGrenade;
 #[ulid = "01GPY9N9CBR6EFJX0RS2H2K58J"]
 pub struct LitGrenade {
     /// How long the grenade has been lit.
-    // pub age: f32,
     pub damage_delay: Timer,
 }
 
@@ -131,6 +130,7 @@ fn update_idle_grenades(
         } = &element_meta.builtin else {
             unreachable!();
         };
+        let fuse_time = *fuse_time;
 
         if items_used.get(entity).is_some() {
             audio_events.play(fuse_sound.clone(), *fuse_sound_volume);
@@ -145,7 +145,10 @@ fn update_idle_grenades(
                     lit.insert(
                         entity,
                         LitGrenade {
-                            damage_delay: Timer::new(Duration::from_secs_f32(*fuse_time), TimerMode::Once),
+                            damage_delay: Timer::new(
+                                Duration::from_secs_f32(fuse_time),
+                                TimerMode::Once,
+                            ),
                         },
                     );
                 },
@@ -180,7 +183,6 @@ fn update_lit_grenades(
         let BuiltinElementKind::Grenade {
             explosion_sound,
             explosion_volume,
-            fuse_time,
             damage_region_lifetime,
             damage_region_size,
             explosion_lifetime,
@@ -225,7 +227,7 @@ fn update_lit_grenades(
         }
 
         // If it's time to explode
-         if grenade.damage_delay.finished() {
+        if grenade.damage_delay.finished() {
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
             trauma_events.send(5.0);

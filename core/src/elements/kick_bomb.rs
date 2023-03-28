@@ -211,8 +211,9 @@ fn update_lit_kick_bombs(
                 entity,
                 PlayerBodyAttachment {
                     player,
-                    offset: grab_offset.extend(1.0),
+                    sync_color: false,
                     sync_animation: false,
+                    offset: grab_offset.extend(1.0),
                 },
             );
         }

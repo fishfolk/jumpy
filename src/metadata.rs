@@ -66,7 +66,7 @@ pub trait ColorMetaExt {
 
 impl ColorMetaExt for ColorMeta {
     fn into_egui(self) -> egui::Color32 {
-        let [r, g, b, a] = self.0;
+        let [r, g, b, a] = self.0.as_rgba_f32();
         egui::Color32::from_rgba_premultiplied(
             (r * 255.0) as u8,
             (g * 255.0) as u8,

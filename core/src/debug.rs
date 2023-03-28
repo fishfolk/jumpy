@@ -113,13 +113,11 @@ fn debug_render_colliders(
         );
 
         // TODO: Provide a way to change the collider colors
-        // An orange-y color
-        const DEFAULT_COLOR: [f32; 4] = [205.0 / 255.0, 94.0 / 255.0, 15.0 / 255.0, 1.0];
-
         paths.insert(
             debug_context.path_entity,
             Path2d {
-                color: DEFAULT_COLOR,
+                // An orange-y color
+                color: Color::from([205.0 / 255.0, 94.0 / 255.0, 15.0 / 255.0, 1.0]),
                 points,
                 line_breaks,
                 ..default()
@@ -144,10 +142,8 @@ fn debug_render_damage_regions(
         // debug lines to keep it upright.
         let angle = Vec2::from_angle(-rotation);
 
-        // Red color
-        const COLOR: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
         Path2d {
-            color: COLOR,
+            color: Color::RED,
             points: vec![
                 angle.rotate(rect.top_left()),
                 angle.rotate(rect.top_right()),
@@ -188,10 +184,9 @@ fn debug_render_emote_regions(
         // debug lines to keep it upright.
         let angle = Vec2::from_angle(-rotation);
 
-        // Green color
-        const COLOR: [f32; 4] = [39.0 / 255.0, 191.0 / 255.0, 68.0 / 255.0, 1.0];
         Path2d {
-            color: COLOR,
+            // Green color
+            color: Color::from([39.0 / 255.0, 191.0 / 255.0, 68.0 / 255.0, 1.0]),
             points: vec![
                 angle.rotate(rect.top_left()),
                 angle.rotate(rect.top_right()),

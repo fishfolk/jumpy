@@ -7,6 +7,13 @@ use bones_lib::animation::AnimationBankSprite;
 pub use state::*;
 use turborand::GenCore;
 
+const PLAYER_COLORS: [Color; 4] = [
+    Color::RED,
+    Color::GREEN,
+    Color::BLUE,
+    Color::rgb(1.0, 0.0, 1.0),
+];
+
 pub fn install(session: &mut GameSession) {
     state::install(session);
 
@@ -325,12 +332,7 @@ fn player_ai_system(
                             .map(|x| x.0.as_vec2() * map.tile_size + map.tile_size / 2.0)
                             .collect(),
                         thickness: 2.0,
-                        color: [
-                            [1.0, 0.0, 0.0, 1.0],
-                            [0.0, 1.0, 0.0, 1.0],
-                            [0.0, 0.0, 1.0, 1.0],
-                            [1.0, 0.0, 1.0, 1.0],
-                        ][player_idx.0],
+                        color: PLAYER_COLORS[player_idx.0],
                         ..default()
                     },
                 );
@@ -374,7 +376,7 @@ fn player_ai_system(
                 Path2d {
                     points: vec![pos, pos + vec2(0.0, 4.0)],
                     thickness: 8.0,
-                    color: [1.0, 0.0, 0.0, 1.0],
+                    color: Color::RED,
                     ..default()
                 },
             );
@@ -487,9 +489,10 @@ fn hydrate_players(
         player_body_attachments.insert(
             fin_entity,
             PlayerBodyAttachment {
+                sync_color: true,
+                sync_animation: false,
                 player: player_entity,
                 offset: meta.layers.fin.offset.extend(PlayerLayers::FIN_Z_OFFSET),
-                sync_animation: false,
             },
         );
 
@@ -513,9 +516,10 @@ fn hydrate_players(
         player_body_attachments.insert(
             face_entity,
             PlayerBodyAttachment {
+                sync_color: true,
+                sync_animation: false,
                 player: player_entity,
                 offset: meta.layers.face.offset.extend(PlayerLayers::FACE_Z_OFFSET),
-                sync_animation: false,
             },
         );
 
@@ -587,9 +591,10 @@ fn hydrate_players(
                         attachments.insert(
                             sword_ent,
                             PlayerBodyAttachment {
+                                sync_color: false,
+                                sync_animation: false,
                                 player: player_entity,
                                 offset: grab_offset.extend(1.0),
-                                sync_animation: false,
                             },
                         );
                     }

@@ -192,6 +192,7 @@
 <a href="#191" id="191">191</a>
 <a href="#192" id="192">192</a>
 <a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -331,6 +332,7 @@
                         <span class="kw">let </span>attachment_ent = entities.create();
                         <span class="kw">let </span>attachment = Attachment {
                             entity: player,
+                            sync_color: <span class="bool-val">false</span>,
                             offset: Vec3::ZERO,
                             sync_animation: <span class="bool-val">true</span>,
                         };

@@ -54,22 +54,13 @@
 <a href="#53" id="53">53</a>
 <a href="#54" id="54">54</a>
 <a href="#55" id="55">55</a>
-<a href="#56" id="56">56</a>
-<a href="#57" id="57">57</a>
-<a href="#58" id="58">58</a>
-<a href="#59" id="59">59</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
-<span class="kw">use </span>serde::{Deserialize, Deserializer};
+<span class="kw">use </span>serde::{ser::SerializeStruct, Deserialize, Deserializer};
 
-<span class="attr">#[derive(Clone, Copy, Debug)]
-</span><span class="kw">pub struct </span>ColorMeta(<span class="kw">pub </span>[f32; <span class="number">4</span>]);
+<span class="attr">#[derive(Clone, Copy, Debug, Default)]
+</span><span class="kw">pub struct </span>ColorMeta(<span class="kw">pub </span>Color);
+
 <span class="kw">impl </span>bones_bevy_asset::BonesBevyAssetLoad <span class="kw">for </span>ColorMeta {}
-
-<span class="kw">impl </span>Default <span class="kw">for </span>ColorMeta {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="self">Self</span>([<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>])
-    }
-}
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>ColorMeta {
     <span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
@@ -85,13 +76,14 @@
     <span class="kw">where
         </span>S: serde::Serializer,
     {
-        <span class="kw">let </span>[r, g, b, a] = [
-            (<span class="self">self</span>.<span class="number">0</span>[<span class="number">0</span>] * <span class="number">255.0</span>) <span class="kw">as </span>u8,
-            (<span class="self">self</span>.<span class="number">0</span>[<span class="number">1</span>] * <span class="number">255.0</span>) <span class="kw">as </span>u8,
-            (<span class="self">self</span>.<span class="number">0</span>[<span class="number">2</span>] * <span class="number">255.0</span>) <span class="kw">as </span>u8,
-            (<span class="self">self</span>.<span class="number">0</span>[<span class="number">3</span>] * <span class="number">255.0</span>) <span class="kw">as </span>u8,
-        ];
-        serializer.serialize_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;rgba({r}, {g}, {b}, {a})&quot;</span>))
+        <span class="kw">let </span>[r, g, b, a] = <span class="self">self</span>.<span class="number">0</span>.as_rgba_f32();
+
+        <span class="kw">let </span><span class="kw-2">mut </span>color = serializer.serialize_struct(<span class="string">&quot;Color&quot;</span>, <span class="number">4</span>)<span class="question-mark">?</span>;
+        color.serialize_field(<span class="string">&quot;r&quot;</span>, <span class="kw-2">&amp;</span>r)<span class="question-mark">?</span>;
+        color.serialize_field(<span class="string">&quot;g&quot;</span>, <span class="kw-2">&amp;</span>g)<span class="question-mark">?</span>;
+        color.serialize_field(<span class="string">&quot;b&quot;</span>, <span class="kw-2">&amp;</span>b)<span class="question-mark">?</span>;
+        color.serialize_field(<span class="string">&quot;a&quot;</span>, <span class="kw-2">&amp;</span>a)<span class="question-mark">?</span>;
+        color.end()
     }
 }
 
@@ -111,7 +103,7 @@
             csscolorparser::parse(v)
                 .map(|x| {
                     <span class="kw">let </span>[r, g, b, a] = x.to_array();
-                    [r <span class="kw">as </span>f32, g <span class="kw">as </span>f32, b <span class="kw">as </span>f32, a <span class="kw">as </span>f32]
+                    [r <span class="kw">as </span>f32, g <span class="kw">as </span>f32, b <span class="kw">as </span>f32, a <span class="kw">as </span>f32].into()
                 })
                 .map_err(|e| E::custom(e))<span class="question-mark">?</span>,
         ))

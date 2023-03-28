@@ -63,6 +63,7 @@
 <a href="#62" id="62">62</a>
 <a href="#63" id="63">63</a>
 <a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;../README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -93,17 +94,18 @@
 <span class="kw">pub mod </span>debug;
 <span class="kw">pub mod </span>editor;
 <span class="kw">pub mod </span>elements;
+<span class="kw">pub mod </span>globals;
 <span class="kw">pub mod </span>input;
 <span class="kw">pub mod </span>item;
 <span class="kw">pub mod </span>lifetime;
 <span class="kw">pub mod </span>map;
-<span class="kw">pub mod </span>math;
 <span class="kw">pub mod </span>metadata;
 <span class="kw">pub mod </span>physics;
 <span class="kw">pub mod </span>player;
 <span class="kw">pub mod </span>random;
 <span class="kw">pub mod </span>session;
 <span class="kw">pub mod </span>testing;
+<span class="kw">pub mod </span>utils;
 
 <span class="doccomment">/// The target fixed frames-per-second that the game sumulation runs at.
 </span><span class="kw">pub const </span>FPS: f32 = <span class="number">60.0</span>;

@@ -312,6 +312,7 @@
 <a href="#311" id="311">311</a>
 <a href="#312" id="312">312</a>
 <a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -525,8 +526,9 @@
                 entity,
                 PlayerBodyAttachment {
                     player,
-                    offset: grab_offset.extend(<span class="number">1.0</span>),
+                    sync_color: <span class="bool-val">false</span>,
                     sync_animation: <span class="bool-val">false</span>,
+                    offset: grab_offset.extend(<span class="number">1.0</span>),
                 },
             );
         }

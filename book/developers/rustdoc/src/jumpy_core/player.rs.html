@@ -732,6 +732,11 @@
 <a href="#731" id="731">731</a>
 <a href="#732" id="732">732</a>
 <a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::VecDeque;
 
 <span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>, random::GlobalRng};
@@ -740,6 +745,13 @@
 <span class="kw">use </span>bones_lib::animation::AnimationBankSprite;
 <span class="kw">pub use </span>state::<span class="kw-2">*</span>;
 <span class="kw">use </span>turborand::GenCore;
+
+<span class="kw">const </span>PLAYER_COLORS: [Color; <span class="number">4</span>] = [
+    Color::RED,
+    Color::GREEN,
+    Color::BLUE,
+    Color::rgb(<span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>),
+];
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
     state::install(session);
@@ -1059,12 +1071,7 @@
                             .map(|x| x.<span class="number">0</span>.as_vec2() * map.tile_size + map.tile_size / <span class="number">2.0</span>)
                             .collect(),
                         thickness: <span class="number">2.0</span>,
-                        color: [
-                            [<span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>],
-                            [<span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>],
-                            [<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">1.0</span>],
-                            [<span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">1.0</span>],
-                        ][player_idx.<span class="number">0</span>],
+                        color: PLAYER_COLORS[player_idx.<span class="number">0</span>],
                         ..default()
                     },
                 );
@@ -1108,7 +1115,7 @@
                 Path2d {
                     points: <span class="macro">vec!</span>[pos, pos + vec2(<span class="number">0.0</span>, <span class="number">4.0</span>)],
                     thickness: <span class="number">8.0</span>,
-                    color: [<span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>],
+                    color: Color::RED,
                     ..default()
                 },
             );
@@ -1221,9 +1228,10 @@
         player_body_attachments.insert(
             fin_entity,
             PlayerBodyAttachment {
+                sync_color: <span class="bool-val">true</span>,
+                sync_animation: <span class="bool-val">false</span>,
                 player: player_entity,
                 offset: meta.layers.fin.offset.extend(PlayerLayers::FIN_Z_OFFSET),
-                sync_animation: <span class="bool-val">false</span>,
             },
         );
 
@@ -1247,9 +1255,10 @@
         player_body_attachments.insert(
             face_entity,
             PlayerBodyAttachment {
+                sync_color: <span class="bool-val">true</span>,
+                sync_animation: <span class="bool-val">false</span>,
                 player: player_entity,
                 offset: meta.layers.face.offset.extend(PlayerLayers::FACE_Z_OFFSET),
-                sync_animation: <span class="bool-val">false</span>,
             },
         );
 
@@ -1321,9 +1330,10 @@
                         attachments.insert(
                             sword_ent,
                             PlayerBodyAttachment {
+                                sync_color: <span class="bool-val">false</span>,
+                                sync_animation: <span class="bool-val">false</span>,
                                 player: player_entity,
                                 offset: grab_offset.extend(<span class="number">1.0</span>),
-                                sync_animation: <span class="bool-val">false</span>,
                             },
                         );
                     }

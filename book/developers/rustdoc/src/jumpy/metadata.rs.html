@@ -144,7 +144,7 @@
 
 <span class="kw">impl </span>ColorMetaExt <span class="kw">for </span>ColorMeta {
     <span class="kw">fn </span>into_egui(<span class="self">self</span>) -&gt; egui::Color32 {
-        <span class="kw">let </span>[r, g, b, a] = <span class="self">self</span>.<span class="number">0</span>;
+        <span class="kw">let </span>[r, g, b, a] = <span class="self">self</span>.<span class="number">0</span>.as_rgba_f32();
         egui::Color32::from_rgba_premultiplied(
             (r * <span class="number">255.0</span>) <span class="kw">as </span>u8,
             (g * <span class="number">255.0</span>) <span class="kw">as </span>u8,

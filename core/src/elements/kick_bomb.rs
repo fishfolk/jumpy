@@ -209,7 +209,7 @@ fn update_lit_kick_bombs(
             unreachable!();
         };
 
-        kick_bomb.arm_delay.tick(time.delta());
+        kick_bomb.fuse_time.tick(time.delta());
 
         let mut should_explode = false;
         // If the item is being held
@@ -259,7 +259,7 @@ fn update_lit_kick_bombs(
             } else if !player_standing_left && player_sprite.flip_x {
                 body.velocity.x = -kick_velocity.x;
                 body.velocity.y = kick_velocity.y;
-            } else if kick_bomb.arm_delay.finished() || kick_bomb.fuse_time.finished() {
+            } else if kick_bomb.fuse_time.finished() {
                 should_explode = true;
             }
         }

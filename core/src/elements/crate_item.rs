@@ -234,7 +234,7 @@ fn update_thrown_crates(
                 Some(transform.translation.xy()),
             ));
         }
-        kill_all_colliding_if_freshly_thrown(
+        let kill_nearby_colliding: bool = kill_all_colliding_if_freshly_thrown(
             thrown_crate,
             &collision_world,
             &players,
@@ -244,6 +244,7 @@ fn update_thrown_crates(
         );
 
         if !colliding_with_players.is_empty()
+            || kill_nearby_colliding
             || thrown_crate.damage_delay.elapsed_secs() >= *break_timeout
             || thrown_crate.crate_break_state >= 4
             || body.is_on_ground && body.velocity.length_squared() < 0.1
@@ -320,5 +321,5 @@ fn kill_all_colliding_if_freshly_thrown(
             Some(transform.translation.xy()),
         ));
     }
-    return true
+    true
 }

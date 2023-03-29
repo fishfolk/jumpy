@@ -28,17 +28,18 @@ pub mod damage;
 pub mod debug;
 pub mod editor;
 pub mod elements;
+pub mod globals;
 pub mod input;
 pub mod item;
 pub mod lifetime;
 pub mod map;
-pub mod math;
 pub mod metadata;
 pub mod physics;
 pub mod player;
 pub mod random;
 pub mod session;
 pub mod testing;
+pub mod utils;
 
 /// The target fixed frames-per-second that the game sumulation runs at.
 pub const FPS: f32 = 60.0;

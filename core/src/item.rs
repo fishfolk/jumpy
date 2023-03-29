@@ -129,8 +129,9 @@ pub fn grab_items(
                 entity,
                 PlayerBodyAttachment {
                     player,
-                    offset: grab_offset.extend(PlayerLayers::FIN_Z_OFFSET / 2.0),
                     sync_animation,
+                    sync_color: false,
+                    offset: grab_offset.extend(PlayerLayers::FIN_Z_OFFSET / 2.0),
                 },
             );
         }

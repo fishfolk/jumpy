@@ -261,7 +261,7 @@ fn update_lit_kick_bombs(
             } else if !player_standing_left && player_sprite.flip_x {
                 body.velocity.x = -kick_velocity.x;
                 body.velocity.y = kick_velocity.y;
-            } else if kick_bomb.fuse_time.finished() {
+            } else if kick_bomb.arm_delay.finished() {
                 should_explode = true;
             }
         }

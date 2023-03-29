@@ -737,6 +737,10 @@
 <a href="#736" id="736">736</a>
 <a href="#737" id="737">737</a>
 <a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::VecDeque;
 
 <span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>, random::GlobalRng};
@@ -1029,6 +1033,10 @@
                     .iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>transforms))
                     .filter(|(ent, <span class="kw">_</span>)| <span class="kw-2">*</span>ent != ai_ent)
                     .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+                <span class="kw">if </span>players.is_empty() {
+                    <span class="kw">continue</span>;
+                }
+
                 <span class="kw">let </span>(target_player, (<span class="kw">_</span>, transform)) = players[rng.gen_usize() % players.len()];
 
                 ai_player.target_player = <span class="prelude-val">Some</span>(target_player);

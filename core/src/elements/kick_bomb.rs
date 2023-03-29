@@ -210,6 +210,7 @@ fn update_lit_kick_bombs(
         };
 
         kick_bomb.fuse_time.tick(time.delta());
+        kick_bomb.arm_delay.tick(time.delta());
 
         let mut should_explode = false;
         // If the item is being held
@@ -265,7 +266,7 @@ fn update_lit_kick_bombs(
         }
 
         // If it's time to explode
-        if kick_bomb.arm_delay.finished() || kick_bomb.fuse_time.finished() || should_explode {
+        if kick_bomb.fuse_time.finished() || should_explode {
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
             trauma_events.send(7.5);

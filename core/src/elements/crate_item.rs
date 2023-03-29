@@ -296,9 +296,9 @@ fn kill_all_colliding_if_freshly_thrown(
     invincibles: &CompMut<Invincibility>,
     commands: &mut Commands,
     transform: &Transform,
-) {
+) -> bool {
     if thrown_crate.damage_delay.finished() {
-        return;
+        return false;
     }
 
     let colliding_with_players = collision_world
@@ -320,4 +320,5 @@ fn kill_all_colliding_if_freshly_thrown(
             Some(transform.translation.xy()),
         ));
     }
+    return true
 }

@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::time::Duration;
 
 pub fn install(session: &mut GameSession) {
     session
@@ -12,11 +13,12 @@ pub fn install(session: &mut GameSession) {
 #[ulid = "01GPRSBWQ3X0QJC37BDDQXDN84"]
 pub struct IdleGrenade;
 
-#[derive(Clone, TypeUlid, Debug, Copy)]
+// #[derive(Clone, TypeUlid, Debug, Copy)]
+#[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GPY9N9CBR6EFJX0RS2H2K58J"]
 pub struct LitGrenade {
-    /// How long the grenade has been lit.
-    pub age: f32,
+    /// The amount of time left until the grenade explodes.
+    pub fuse_time: Timer,
 }
 
 fn hydrate(
@@ -123,10 +125,12 @@ fn update_idle_grenades(
         let BuiltinElementKind::Grenade {
             fuse_sound,
             fuse_sound_volume,
+            fuse_time,
             ..
         } = &element_meta.builtin else {
             unreachable!();
         };
+        let fuse_time = *fuse_time;
 
         if items_used.get(entity).is_some() {
             audio_events.play(fuse_sound.clone(), *fuse_sound_volume);
@@ -138,7 +142,15 @@ fn update_idle_grenades(
             commands.add(
                 move |mut idle: CompMut<IdleGrenade>, mut lit: CompMut<LitGrenade>| {
                     idle.remove(entity);
-                    lit.insert(entity, LitGrenade { age: 0.0 });
+                    lit.insert(
+                        entity,
+                        LitGrenade {
+                            fuse_time: Timer::new(
+                                Duration::from_secs_f32(fuse_time),
+                                TimerMode::Once,
+                            ),
+                        },
+                    );
                 },
             );
         }
@@ -159,6 +171,7 @@ fn update_lit_grenades(
     player_inventories: PlayerInventories,
     mut commands: Commands,
     spawners: Comp<DehydrateOutOfBounds>,
+    time: Res<Time>,
 ) {
     for (entity, (grenade, element_handle, spawner)) in
         entities.iter_with((&mut lit_grenades, &element_handles, &spawners))
@@ -170,7 +183,6 @@ fn update_lit_grenades(
         let BuiltinElementKind::Grenade {
             explosion_sound,
             explosion_volume,
-            fuse_time,
             damage_region_lifetime,
             damage_region_size,
             explosion_lifetime,
@@ -183,7 +195,7 @@ fn update_lit_grenades(
             unreachable!();
         };
 
-        grenade.age += 1.0 / crate::FPS;
+        grenade.fuse_time.tick(time.delta());
 
         if !emote_regions.contains(entity) {
             emote_regions.insert(
@@ -215,7 +227,7 @@ fn update_lit_grenades(
         }
 
         // If it's time to explode
-        if grenade.age >= *fuse_time {
+        if grenade.fuse_time.finished() {
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
             trauma_events.send(5.0);

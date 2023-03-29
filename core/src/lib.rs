@@ -38,7 +38,6 @@ pub mod physics;
 pub mod player;
 pub mod random;
 pub mod session;
-pub mod testing;
 
 /// The target fixed frames-per-second that the game sumulation runs at.
 pub const FPS: f32 = 60.0;
@@ -46,7 +45,7 @@ pub const MAX_PLAYERS: usize = 4;
 
 /// Install game modules into the session.
 pub fn install_modules(session: &mut session::CoreSession) {
-    testing::install(session);
+    bones_lib::install(&mut session.stages);
     physics::install(session);
     input::install(session);
     map::install(session);

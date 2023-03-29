@@ -197,7 +197,9 @@ impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
         // Render the menu based on the current menu selection
         match *params.menu_page {
             MenuPage::Home => widget::<HomeMenu>(world, ui, id.with("home"), ()),
-            MenuPage::NetworkGame => {
+            MenuPage::NetworkGame =>
+            {
+                #[cfg(not(target_arch = "wasm32"))]
                 widget::<network_game::MatchmakingMenu>(world, ui, id.with("network-game"), ())
             }
             MenuPage::PlayerSelect => {

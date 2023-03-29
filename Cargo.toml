@@ -11,8 +11,9 @@ version     = "0.5.1"
 members = [".", "core"]
 
 [features]
-default = ["render"]
-render  = ["bevy/x11", "bevy/png", "bevy/filesystem_watcher", "bevy/bevy_gilrs"]
+default = []
+# Enable to simulate horrible network latency/slowness
+debug-network-slowdown = ["async-timer", "turborand"]
 
 [dependencies]
 anyhow                 = "1.0.58"
@@ -56,6 +57,12 @@ puffin_egui            = "0.19.0"
 puffin                 = "0.14.3"
 peg                    = "0.8.0"
 downcast-rs            = "1.2.0"
+async-timer            = { version = "0.2.10", optional = true }
+
+[dependencies.turborand]
+features = ["atomic"]
+version  = "0.9"
+optional = true
 
 [dependencies.bevy]
 default-features = false

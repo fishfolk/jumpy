@@ -5,9 +5,11 @@ use rand::Rng;
 
 use crate::prelude::*;
 
-// pub mod client;
-pub mod matchmaking;
 pub mod proto;
+pub mod certs;
+
+pub use lan::*;
+mod lan;
 
 pub struct NetworkingPlugin;
 
@@ -28,7 +30,7 @@ impl ggrs::Config for GgrsConfig {
 /// The QUIC network endpoint used for all network communications.
 pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
     // Generate certificate
-    let (cert, key) = cert::generate_self_signed_cert().unwrap();
+    let (cert, key) = certs::generate_self_signed_cert().unwrap();
 
     let mut transport_config = quinn::TransportConfig::default();
     transport_config.keep_alive_interval(Some(std::time::Duration::from_secs(5)));
@@ -42,7 +44,7 @@ pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
 
     let client_config = rustls::ClientConfig::builder()
         .with_safe_defaults()
-        .with_custom_certificate_verifier(cert::SkipServerVerification::new())
+        .with_custom_certificate_verifier(certs::SkipServerVerification::new())
         .with_no_client_auth();
     let client_config = quinn::ClientConfig::new(Arc::new(client_config));
 
@@ -58,40 +60,3 @@ pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
 
     endpoint
 });
-
-pub mod cert {
-    use std::sync::Arc;
-
-    // Implementation of `ServerCertVerifier` that verifies everything as trustworthy.
-    pub struct SkipServerVerification;
-
-    impl SkipServerVerification {
-        pub fn new() -> Arc<Self> {
-            Arc::new(Self)
-        }
-    }
-
-    impl rustls::client::ServerCertVerifier for SkipServerVerification {
-        fn verify_server_cert(
-            &self,
-            _end_entity: &rustls::Certificate,
-            _intermediates: &[rustls::Certificate],
-            _server_name: &rustls::ServerName,
-            _scts: &mut dyn Iterator<Item = &[u8]>,
-            _ocsp_response: &[u8],
-            _now: std::time::SystemTime,
-        ) -> Result<rustls::client::ServerCertVerified, rustls::Error> {
-            Ok(rustls::client::ServerCertVerified::assertion())
-        }
-    }
-
-    pub fn generate_self_signed_cert() -> anyhow::Result<(rustls::Certificate, rustls::PrivateKey)>
-    {
-        let cert = rcgen::generate_simple_self_signed(vec!["localhost".to_string()])?;
-        let key = rustls::PrivateKey(cert.serialize_private_key_der());
-        Ok((rustls::Certificate(cert.serialize_der()?), key))
-    }
-}
-
-pub use lan::*;
-mod lan;

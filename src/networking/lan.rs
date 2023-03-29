@@ -1,4 +1,4 @@
-use std::net::Ipv4Addr;
+use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
 use bevy::tasks::IoTaskPool;
 use bytes::Bytes;
@@ -10,6 +10,9 @@ use super::{
     *,
 };
 
+/// Channel used to do matchmaking over LAN.
+///
+/// Spawns a task to handle the actual matchmaking.
 pub static LAN_MATCHMAKER: Lazy<LanMatchmaker> = Lazy::new(|| {
     let (client, server) = bi_channel();
 
@@ -18,12 +21,20 @@ pub static LAN_MATCHMAKER: Lazy<LanMatchmaker> = Lazy::new(|| {
     LanMatchmaker(client)
 });
 
+/// Implementation of the matchmaker task
 async fn lan_matchmaker(
     matchmaker_channel: BiChannelServer<LanMatchmakerRequest, LanMatchmakerResponse>,
 ) {
     #[derive(Serialize, Deserialize)]
     enum MatchmakerNetMsg {
-        MatchReady { random_seed: u64 },
+        MatchReady {
+            /// The random seed t use the for the match.
+            random_seed: u64,
+            /// The peers they have for the match, with the index in the array being the player index of the peer.
+            peers: [Option<SocketAddrV4>; MAX_PLAYERS - 1],
+            /// The player index of the player getting the message.
+            player_idx: usize,
+        },
     }
 
     while let Ok(request) = matchmaker_channel.recv().await {
@@ -91,19 +102,52 @@ async fn lan_matchmaker(
                     // If we're ready to start a match
                     if connections.len() == player_count - 1 {
                         info!("All players joined.");
-                        // Subtract one to count the host
+
                         // Tell all clients we're ready
-                        for conn in &connections {
+                        for (i, conn) in connections.iter().enumerate() {
+                            let mut peers = [None; MAX_PLAYERS - 1];
+                            connections
+                                .iter()
+                                .enumerate()
+                                .filter(|x| x.0 != i)
+                                .for_each(|(i, conn)| {
+                                    if let SocketAddr::V4(addr) = conn.remote_address() {
+                                        peers[i] = Some(addr);
+                                    } else {
+                                        unreachable!("IPV6 not support in lan matchmaking");
+                                    };
+                                });
+
                             let mut uni = conn.open_uni().await.unwrap();
                             uni.write_all(
-                                &postcard::to_vec::<_, 9>(&MatchmakerNetMsg::MatchReady {
+                                &postcard::to_vec::<_, 20>(&MatchmakerNetMsg::MatchReady {
+                                    player_idx: i + 1,
                                     random_seed: 0, // TODO: random random seed.
+                                    peers,
                                 })
                                 .unwrap(),
                             )
                             .await
                             .unwrap();
                             uni.finish().await.unwrap();
+                        }
+
+                        let connections = std::array::from_fn(|i| {
+                            if i == 0 {
+                                None
+                            } else {
+                                connections.get(i - 1).cloned()
+                            }
+                        });
+
+                        if matchmaker_channel
+                            .try_send(LanMatchmakerResponse::GameStarting {
+                                lan_socket: LanSocket::new(connections),
+                                player_idx: 0,
+                            })
+                            .is_err()
+                        {
+                            break;
                         }
                     } else if matchmaker_channel
                         .try_send(LanMatchmakerResponse::PlayerCount(current_players))
@@ -131,16 +175,41 @@ async fn lan_matchmaker(
                 let message: MatchmakerNetMsg = postcard::from_bytes(&bytes).unwrap();
 
                 match message {
-                    MatchmakerNetMsg::MatchReady { random_seed } => {
-                        println!("TODO: join match: {random_seed}");
+                    MatchmakerNetMsg::MatchReady {
+                        random_seed: _, // TODO: use random seed
+                        peers: other_peers,
+                        player_idx,
+                    } => {
+                        let mut peers = std::array::from_fn(|_| None);
+                        for i in 0..MAX_PLAYERS {
+                            peers[i] = if i == 0 {
+                                Some(conn.clone())
+                            } else if let Some(addr) = other_peers[i - 1] {
+                                let conn = NETWORK_ENDPOINT
+                                    .connect(addr.into(), "jumpy-peer")
+                                    .unwrap()
+                                    .await
+                                    .expect("Could not connect to peer");
+
+                                Some(conn)
+                            } else {
+                                None
+                            };
+                        }
+                        let lan_socket = LanSocket::new(peers);
+
+                        matchmaker_channel
+                            .try_send(LanMatchmakerResponse::GameStarting {
+                                lan_socket,
+                                player_idx,
+                            })
+                            .ok();
                     }
                 }
             }
         }
     }
 }
-
-// async fn lan_server(channel: BiChannelServer<LanServerRequest, LanServerResponse>) {}
 
 #[derive(DerefMut, Deref)]
 pub struct LanMatchmaker(BiChannelClient<LanMatchmakerRequest, LanMatchmakerResponse>);
@@ -154,26 +223,28 @@ pub enum LanMatchmakerRequest {
 pub enum LanMatchmakerResponse {
     ServerStarted,
     PlayerCount(usize),
+    GameStarting {
+        lan_socket: LanSocket,
+        player_idx: usize,
+    },
 }
-
-// pub enum LanServerRequest {
-//     Stop,
-// }
-// pub enum LanServerResponse {}
 
 pub struct LanSessionRunner {
     pub core: CoreSession,
     pub session: P2PSession<GgrsConfig>,
+    pub player_is_local: [bool; MAX_PLAYERS],
     pub delta: f32,
     pub accumulator: f32,
 }
 
+#[derive(Debug)]
 pub struct LanSessionInfo {
     pub socket: LanSocket,
     pub player_is_local: [bool; MAX_PLAYERS],
     pub player_count: usize,
 }
 
+#[derive(Debug)]
 pub struct LanSocket {
     pub connections: [Option<quinn::Connection>; MAX_PLAYERS],
     pub message_channel: async_channel::Receiver<(usize, ggrs::Message)>,
@@ -191,6 +262,11 @@ impl LanSocket {
             if let Some(conn) = connections[i].clone() {
                 let sender = sender.clone();
                 pool.spawn(async move {
+                    #[cfg(feature = "debug-network-slowdown")]
+                    use turborand::prelude::*;
+                    #[cfg(feature = "debug-network-slowdown")]
+                    let rng = AtomicRng::new();
+
                     loop {
                         let event =
                             future::or(async { either::Left(conn.closed().await) }, async {
@@ -208,6 +284,17 @@ impl LanSocket {
                                     let message: ggrs::Message = postcard::from_bytes(&data)
                                         .expect("Could not deserialize net message");
 
+                                    // Debugging code to introduce artificial latency
+                                    #[cfg(feature = "debug-network-slowdown")]
+                                    {
+                                        use async_timer::Oneshot;
+                                        async_timer::oneshot::Timer::new(
+                                            std::time::Duration::from_millis(
+                                                (rng.f32_normalized() * 30.0) as u64 + 1,
+                                            ),
+                                        )
+                                        .await;
+                                    }
                                     if sender.send((i, message)).await.is_err() {
                                         break;
                                     }
@@ -234,7 +321,8 @@ impl ggrs::NonBlockingSocket<usize> for LanSocket {
     fn send_to(&mut self, msg: &ggrs::Message, addr: &usize) {
         let conn = self.connections[*addr].as_ref().unwrap();
 
-        let msg_bytes = postcard::to_vec::<_, 32>(msg).unwrap();
+        // TODO: determine a reasonable size for this buffer.
+        let msg_bytes = postcard::to_vec::<_, 256>(msg).unwrap();
         conn.send_datagram(Bytes::copy_from_slice(&msg_bytes[..]))
             .ok();
     }
@@ -255,7 +343,10 @@ impl LanSessionRunner {
     {
         let mut builder = ggrs::SessionBuilder::new()
             .with_num_players(info.player_count)
-            .with_input_delay(4)
+            .with_max_prediction_window(30)
+            .with_max_frames_behind(59)
+            .unwrap()
+            .with_input_delay(3)
             .with_fps(jumpy_core::FPS as usize)
             .unwrap();
 
@@ -272,6 +363,7 @@ impl LanSessionRunner {
         Self {
             core,
             session,
+            player_is_local: info.player_is_local,
             accumulator: default(),
             delta: default(),
         }
@@ -288,6 +380,9 @@ impl crate::session::SessionRunner for LanSessionRunner {
     }
 
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl) {
+        if !self.player_is_local[player_idx] {
+            return;
+        }
         let mut dense_control = DensePlayerControl::default();
         dense_control.set_jump_pressed(control.jump_just_pressed);
         dense_control.set_grab_pressed(control.grab_pressed);
@@ -309,51 +404,58 @@ impl crate::session::SessionRunner for LanSessionRunner {
             if self.accumulator >= STEP {
                 self.accumulator -= STEP;
 
-                if let Ok(requests) = self.session.advance_frame() {
-                    for request in requests {
-                        match request {
-                            ggrs::GGRSRequest::SaveGameState { cell, frame } => {
-                                cell.save(frame, Some(self.core.world.clone()), None)
-                            }
-                            ggrs::GGRSRequest::LoadGameState { cell, .. } => {
-                                let world = cell.load().unwrap_or_default();
-                                self.core.world = world;
-                            }
-                            ggrs::GGRSRequest::AdvanceFrame {
-                                inputs: network_inputs,
-                            } => {
-                                self.core.update_input(|inputs| {
-                                    for (player_idx, (input, _status)) in
-                                        network_inputs.into_iter().enumerate()
-                                    {
-                                        let control = &mut inputs.players[player_idx].control;
+                match self.session.advance_frame() {
+                    Ok(requests) => {
+                        for request in requests {
+                            match request {
+                                ggrs::GGRSRequest::SaveGameState { cell, frame } => {
+                                    cell.save(frame, Some(self.core.world.clone()), None)
+                                }
+                                ggrs::GGRSRequest::LoadGameState { cell, .. } => {
+                                    let world = cell.load().unwrap_or_default();
+                                    self.core.world = world;
+                                }
+                                ggrs::GGRSRequest::AdvanceFrame {
+                                    inputs: network_inputs,
+                                } => {
+                                    self.core.update_input(|inputs| {
+                                        for (player_idx, (input, _status)) in
+                                            network_inputs.into_iter().enumerate()
+                                        {
+                                            let control = &mut inputs.players[player_idx].control;
 
-                                        let jump_pressed = input.jump_pressed();
-                                        control.jump_just_pressed =
-                                            jump_pressed && !control.jump_pressed;
-                                        control.jump_pressed = jump_pressed;
+                                            let jump_pressed = input.jump_pressed();
+                                            control.jump_just_pressed =
+                                                jump_pressed && !control.jump_pressed;
+                                            control.jump_pressed = jump_pressed;
 
-                                        let grab_pressed = input.grab_pressed();
-                                        control.grab_just_pressed =
-                                            grab_pressed && !control.grab_pressed;
-                                        control.grab_pressed = grab_pressed;
+                                            let grab_pressed = input.grab_pressed();
+                                            control.grab_just_pressed =
+                                                grab_pressed && !control.grab_pressed;
+                                            control.grab_pressed = grab_pressed;
 
-                                        let shoot_pressed = input.shoot_pressed();
-                                        control.shoot_just_pressed =
-                                            shoot_pressed && !control.shoot_pressed;
-                                        control.shoot_pressed = shoot_pressed;
+                                            let shoot_pressed = input.shoot_pressed();
+                                            control.shoot_just_pressed =
+                                                shoot_pressed && !control.shoot_pressed;
+                                            control.shoot_pressed = shoot_pressed;
 
-                                        let was_moving = control.move_direction.length_squared()
-                                            > f32::MIN_POSITIVE;
-                                        control.move_direction = input.move_direction().0;
-                                        let is_moving = control.move_direction.length_squared()
-                                            > f32::MIN_POSITIVE;
-                                        control.just_moved = !was_moving && is_moving;
-                                    }
-                                });
-                                self.core.advance(bevy_world);
+                                            let was_moving =
+                                                control.move_direction.length_squared()
+                                                    > f32::MIN_POSITIVE;
+                                            control.move_direction = input.move_direction().0;
+                                            let is_moving = control.move_direction.length_squared()
+                                                > f32::MIN_POSITIVE;
+                                            control.just_moved = !was_moving && is_moving;
+                                        }
+                                    });
+                                    self.core.advance(bevy_world);
+                                }
                             }
                         }
+                    }
+                    Err(e) => {
+                        error!("Error running network advance: {e}");
+                        break;
                     }
                 }
             } else {
@@ -365,5 +467,15 @@ impl crate::session::SessionRunner for LanSessionRunner {
     fn run_criteria(&mut self, time: &Time) -> bevy::ecs::schedule::ShouldRun {
         self.delta = time.delta_seconds();
         bevy::ecs::schedule::ShouldRun::Yes
+    }
+
+    fn network_player_idx(&mut self) -> Option<usize> {
+        // We are the first local player
+        for i in 0..MAX_PLAYERS {
+            if self.player_is_local[i] {
+                return Some(i);
+            }
+        }
+        unreachable!();
     }
 }

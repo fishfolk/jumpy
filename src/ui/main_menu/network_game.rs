@@ -6,7 +6,7 @@ use std::{
 use bevy::utils::Instant;
 use smallvec::SmallVec;
 
-use crate::networking::{LAN_MATCHMAKER, NETWORK_ENDPOINT};
+use crate::networking::{LanSessionInfo, LAN_MATCHMAKER, NETWORK_ENDPOINT};
 
 use super::*;
 
@@ -59,9 +59,12 @@ pub struct MatchmakingMenu<'w, 's> {
     time: Res<'w, Time>,
     menu_page: ResMut<'w, MenuPage>,
     game: Res<'w, GameMeta>,
+    core: Res<'w, CoreMetaArc>,
+    map_assets: Res<'w, Assets<MapMeta>>,
     localization: Res<'w, Localization>,
     state: Local<'s, State>,
     menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
+    session_manager: SessionManager<'w, 's>,
 }
 
 pub struct State {
@@ -136,33 +139,6 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
         let mut params: MatchmakingMenu = state.get_mut(world);
         let menu_input = params.menu_input.single();
         params.state.ping_update_timer.tick(params.time.delta());
-
-        // // Transition to player select if match is ready
-        // if params.state.status.is_match_ready() {
-        //     let status = std::mem::take(&mut params.state.status);
-
-        //     if let Status::MatchReady {
-        //         endpoint,
-        //         conn,
-        //         random_seed,
-        //         client_info,
-        //     } = status
-        //     {
-        //         for i in 0..client_info.player_count {
-        //             params.player_inputs.players[i].active = true;
-        //         }
-        //         let client = NetClient::new(endpoint, conn);
-        //         params.commands.insert_resource(client);
-        //         params.commands.insert_resource(client_info);
-        //         *params.menu_page = MenuPage::PlayerSelect;
-        //         params.state.status_receiver = default();
-        //         params.state.status = default();
-        //         params.state.cancel_sender = default();
-        //         params.global_rng.reseed(random_seed);
-        //     } else {
-        //         unreachable!("Programmer error in is_match_ready() helper method");
-        //     }
-        // }
 
         let bigger_text_style = &params.game.ui_theme.font_styles.bigger;
         let normal_text_style = &params.game.ui_theme.font_styles.normal;
@@ -386,11 +362,65 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                         );
                                     }
                                 });
+
+                            // If we are trying to join a match.
                             } else {
                                 ui.themed_label(
                                     normal_text_style,
                                     &params.localization.get("joining"),
                                 );
+
+                                while let Ok(message) = LAN_MATCHMAKER.try_recv() {
+                                    match message {
+                                        networking::LanMatchmakerResponse::ServerStarted => (),
+                                        networking::LanMatchmakerResponse::PlayerCount(_) => (),
+                                        networking::LanMatchmakerResponse::GameStarting {
+                                            lan_socket,
+                                            player_idx,
+                                        } => {
+                                            info!(?player_idx, "Starting network game");
+                                            let map_meta = params
+                                                .map_assets
+                                                .get(
+                                                    &params.core.0.stable_maps[0].get_bevy_handle(),
+                                                )
+                                                .unwrap()
+                                                .clone();
+                                            let player_info = std::array::from_fn(|i| {
+                                                if lan_socket.connections[i].is_some() || i == player_idx {
+                                                    let handle = params.core.players[i].clone();
+                                                    Some(GameSessionPlayerInfo {
+                                                        handle,
+                                                        is_ai: false,
+                                                    })
+                                                } else {
+                                                    None
+                                                }
+                                            });
+                                            let core_info = CoreSessionInfo {
+                                                meta: params.core.0.clone(),
+                                                map_meta,
+                                                player_info,
+                                            };
+
+                                            params.session_manager.start_lan(
+                                                core_info,
+                                                LanSessionInfo {
+                                                    player_is_local: std::array::from_fn(|i| {
+                                                        i == player_idx
+                                                    }),
+                                                    player_count: lan_socket
+                                                        .connections
+                                                        .iter()
+                                                        .filter(|x| x.is_some())
+                                                        .count()
+                                                        + 1,
+                                                    socket: lan_socket,
+                                                },
+                                            );
+                                        }
+                                    }
+                                }
                             }
 
                             ui.add_space(normal_text_style.size / 2.0);
@@ -500,10 +530,56 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                             // If we are hosting a match currently
                             } else if *status == Status::Hosting {
                                 while let Ok(response) = LAN_MATCHMAKER.try_recv() {
-                                    if let networking::LanMatchmakerResponse::PlayerCount(count) =
-                                        response
-                                    {
-                                        *joined_players = count;
+                                    match response {
+                                        networking::LanMatchmakerResponse::PlayerCount(count) => {
+                                            *joined_players = count;
+                                        }
+                                        networking::LanMatchmakerResponse::GameStarting {
+                                            lan_socket,
+                                            player_idx,
+                                        } => {
+                                            info!(?player_idx, "Starting network game");
+                                            let map_meta = params
+                                                .map_assets
+                                                .get(
+                                                    &params.core.0.stable_maps[0].get_bevy_handle(),
+                                                )
+                                                .unwrap()
+                                                .clone();
+                                            let player_info = std::array::from_fn(|i| {
+                                                if lan_socket.connections[i].is_some() || i == player_idx {
+                                                    let handle = params.core.players[i].clone();
+                                                    Some(GameSessionPlayerInfo {
+                                                        handle,
+                                                        is_ai: false,
+                                                    })
+                                                } else {
+                                                    None
+                                                }
+                                            });
+                                            let core_info = CoreSessionInfo {
+                                                meta: params.core.0.clone(),
+                                                map_meta,
+                                                player_info,
+                                            };
+
+                                            params.session_manager.start_lan(
+                                                core_info,
+                                                LanSessionInfo {
+                                                    player_is_local: std::array::from_fn(|i| {
+                                                        i == player_idx
+                                                    }),
+                                                    player_count: lan_socket
+                                                        .connections
+                                                        .iter()
+                                                        .filter(|x| x.is_some())
+                                                        .count()
+                                                        + 1,
+                                                    socket: lan_socket,
+                                                },
+                                            );
+                                        }
+                                        _ => (),
                                     }
                                 }
 

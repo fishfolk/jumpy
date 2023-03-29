@@ -64,6 +64,12 @@ pub trait SessionRunner: Sync + Send + Downcast {
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl);
     fn advance(&mut self, bevy_world: &mut World);
     fn run_criteria(&mut self, time: &Time) -> ShouldRun;
+    /// Returns the player index of the player if we are in a network game.
+    ///
+    /// In a network game, we currently only allow for one local player, so this allows the session
+    /// to find out which player we are playing as so it can map the local player 1's input to the
+    /// appropriate network player.
+    fn network_player_idx(&mut self) -> Option<usize>;
 }
 impl_downcast!(SessionRunner);
 
@@ -128,6 +134,9 @@ impl SessionRunner for LocalSessionRunner {
             ShouldRun::No
         }
     }
+    fn network_player_idx(&mut self) -> Option<usize> {
+        None
+    }
 }
 
 // Give bones_bevy_render plugin access to the bones world in our game session.
@@ -166,6 +175,10 @@ impl<'w, 's> SessionManager<'w, 's> {
         )));
         self.commands.insert_resource(session);
         self.menu_camera.for_each_mut(|mut x| x.is_active = false);
+        self.commands
+            .insert_resource(NextState(InGameState::Playing));
+        self.commands
+            .insert_resource(NextState(EngineState::InGame));
     }
 
     /// Restart a game session without changing the settings
@@ -213,8 +226,10 @@ fn collect_local_input(
         return;
     };
 
-    // TODO: Handle editor input
+    let network_player_idx = session.network_player_idx();
+
     if let Some(local_session) = session.downcast_mut::<LocalSessionRunner>() {
+        // TODO: Handle editor input for non-local sessions.
         let editor_input = current_editor_input.take();
         local_session.core.update_input(|inputs| {
             inputs.players[0].editor_input = editor_input;
@@ -222,6 +237,10 @@ fn collect_local_input(
     }
 
     for (player_idx, action_state) in &player_input_collectors {
+        if network_player_idx.is_some() && player_idx.0 != 0 {
+            continue;
+        }
+
         let mut control = session.0.get_player_input(player_idx.0);
 
         let jump_pressed = action_state.pressed(PlayerAction::Jump);
@@ -241,7 +260,7 @@ fn collect_local_input(
         let is_moving = control.move_direction.length_squared() > f32::MIN_POSITIVE;
         control.just_moved = !was_moving && is_moving;
 
-        session.set_player_input(player_idx.0, control);
+        session.set_player_input(network_player_idx.unwrap_or(player_idx.0), control);
     }
 }
 

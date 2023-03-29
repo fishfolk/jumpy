@@ -10,7 +10,6 @@ pub mod matchmaking {
     #[derive(Serialize, Deserialize)]
     pub enum LanMatchmakingMessage {
         Join,
-        
     }
 }
 

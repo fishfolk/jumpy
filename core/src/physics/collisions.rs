@@ -1,6 +1,6 @@
 //! Collision detection implementation.
 
-use ::bevy::utils::{HashMap, HashSet};
+use ::bevy::utils::HashSet;
 use bytemuck::Zeroable;
 
 pub use rapier2d::prelude as rapier;
@@ -109,10 +109,10 @@ impl Clone for RapierContext {
 
 /// A cache containing a map of entities, to the list of entities that each entity is currently
 /// intersecting with.
-#[derive(Clone, Default)]
+#[derive(Default)]
 pub struct CollisionCache {
     /// The collisions in the cache.
-    pub collisions: Arc<AtomicRefCell<HashMap<Entity, HashSet<Entity>>>>,
+    pub collisions: Arc<AtomicRefCell<indexmap::IndexMap<Entity, HashSet<Entity>>>>,
 }
 
 impl CollisionCache {
@@ -121,6 +121,14 @@ impl CollisionCache {
         AtomicRefMut::map(self.collisions.borrow_mut(), |x| {
             x.entry(entity).or_default()
         })
+    }
+}
+
+impl Clone for CollisionCache {
+    fn clone(&self) -> Self {
+        Self {
+            collisions: Arc::new(AtomicRefCell::new(self.collisions.borrow().clone())),
+        }
     }
 }
 

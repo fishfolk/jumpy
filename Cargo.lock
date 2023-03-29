@@ -231,6 +231,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a40729d2133846d9ed0ea60a8b9541bccddab49cd30f0715a1da672fe9a2524"
 
 [[package]]
+name = "async-timer"
+version = "0.2.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d62d1c449a11d63d953da8602322493f7718b83c2f649c6a7ba9e08c7af188f"
+dependencies = [
+ "libc",
+ "wasm-bindgen",
+ "winapi",
+]
+
+[[package]]
 name = "atomic-arena"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2240,6 +2251,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12f597d56c1bd55a811a1be189459e8fad2bbc272616375602443bdfb37fa774"
 dependencies = [
  "bytemuck",
+ "num-traits",
  "serde",
 ]
 
@@ -2458,9 +2470,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "1.9.2"
+version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1885e79c1fc4b10f0e172c475f458b7f7b93061064d98c3293e98c5ba0c8b399"
+checksum = "bd070e393353796e801d209ad339e89596eb4c8d430d18ede6a1cced8fafbd99"
 dependencies = [
  "autocfg",
  "hashbrown",
@@ -2647,6 +2659,7 @@ version = "0.5.1"
 dependencies = [
  "anyhow",
  "async-channel",
+ "async-timer",
  "base64 0.21.0",
  "bevy",
  "bevy-inspector-egui",
@@ -2699,6 +2712,7 @@ dependencies = [
  "smallvec",
  "thiserror",
  "tracing",
+ "turborand",
  "type_ulid",
  "unic-langid",
  "wasm-bindgen",
@@ -2717,6 +2731,7 @@ dependencies = [
  "glam",
  "hex",
  "humantime-serde",
+ "indexmap",
  "nalgebra",
  "ordered-float",
  "petgraph",

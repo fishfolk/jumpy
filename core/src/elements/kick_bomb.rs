@@ -148,11 +148,11 @@ fn update_idle_kick_bombs(
                         entity,
                         LitKickBomb {
                             arm_delay: Timer::new(
-                                Duration::from_secs_f32(arm_delay),
+                                Duration::from_secs_f32(arm_delay.as_secs_f32()),
                                 TimerMode::Once,
                             ),
                             fuse_time: Timer::new(
-                                Duration::from_secs_f32(fuse_time),
+                                Duration::from_secs_f32(fuse_time.as_secs_f32()),
                                 TimerMode::Once,
                             ),
                         },

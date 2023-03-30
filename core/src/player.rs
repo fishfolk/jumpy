@@ -290,6 +290,10 @@ fn player_ai_system(
                     .iter_with((&player_indexes, &transforms))
                     .filter(|(ent, _)| *ent != ai_ent)
                     .collect::<Vec<_>>();
+                if players.is_empty() {
+                    continue;
+                }
+
                 let (target_player, (_, transform)) = players[rng.gen_usize() % players.len()];
 
                 ai_player.target_player = Some(target_player);

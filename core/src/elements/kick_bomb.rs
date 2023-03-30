@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use std::time::Duration;
 
 pub fn install(session: &mut GameSession) {
     session
@@ -147,14 +146,8 @@ fn update_idle_kick_bombs(
                     lit.insert(
                         entity,
                         LitKickBomb {
-                            arm_delay: Timer::new(
-                                arm_delay,
-                                TimerMode::Once,
-                            ),
-                            fuse_time: Timer::new(
-                                fuse_time,
-                                TimerMode::Once,
-                            ),
+                            arm_delay: Timer::new(arm_delay, TimerMode::Once),
+                            fuse_time: Timer::new(fuse_time, TimerMode::Once),
                         },
                     );
                 },

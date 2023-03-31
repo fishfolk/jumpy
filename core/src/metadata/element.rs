@@ -255,7 +255,8 @@ pub enum BuiltinElementKind {
         fuse_sound: Handle<AudioSource>,
         fuse_sound_volume: f32,
         /// The time in seconds before a grenade explodes
-        fuse_time: f32,
+        #[serde(with = "humantime_serde")]
+        fuse_time: Duration,
         #[serde(default)]
         can_rotate: bool,
         /// The grenade atlas
@@ -265,8 +266,8 @@ pub enum BuiltinElementKind {
         bounciness: f32,
         #[serde(default)]
         angular_velocity: f32,
-        #[serde(default)]
-        arm_delay: f32,
+        #[serde(with = "humantime_serde")]
+        arm_delay: Duration,
     },
     Musket {
         #[serde(default)]

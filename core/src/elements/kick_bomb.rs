@@ -12,10 +12,11 @@ pub fn install(session: &mut GameSession) {
 #[ulid = "01GQ0ZWBNA8HZRXYKZXCT05CXT"]
 pub struct IdleKickBomb;
 
-#[derive(Clone, TypeUlid, Debug, Copy)]
+#[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GQ0ZWFYZSHJPESPY9QPSTARR"]
 pub struct LitKickBomb {
-    age: f32,
+    arm_delay: Timer,
+    fuse_time: Timer,
 }
 
 fn hydrate(
@@ -122,10 +123,15 @@ fn update_idle_kick_bombs(
         let BuiltinElementKind::KickBomb {
             fuse_sound,
             fuse_sound_volume,
+            arm_delay,
+            fuse_time,
             ..
         } = &element_meta.builtin else {
             unreachable!();
         };
+
+        let arm_delay = *arm_delay;
+        let fuse_time = *fuse_time;
 
         if items_used.get(entity).is_some() {
             audio_events.play(fuse_sound.clone(), *fuse_sound_volume);
@@ -137,7 +143,13 @@ fn update_idle_kick_bombs(
             commands.add(
                 move |mut idle: CompMut<IdleKickBomb>, mut lit: CompMut<LitKickBomb>| {
                     idle.remove(entity);
-                    lit.insert(entity, LitKickBomb { age: 0.0 });
+                    lit.insert(
+                        entity,
+                        LitKickBomb {
+                            arm_delay: Timer::new(arm_delay, TimerMode::Once),
+                            fuse_time: Timer::new(fuse_time, TimerMode::Once),
+                        },
+                    );
                 },
             );
         }
@@ -162,6 +174,7 @@ fn update_lit_kick_bombs(
     player_inventories: PlayerInventories,
     mut transforms: CompMut<Transform>,
     mut commands: Commands,
+    time: Res<Time>,
     spawners: Comp<DehydrateOutOfBounds>,
     invincibles: CompMut<Invincibility>,
 ) {
@@ -177,21 +190,20 @@ fn update_lit_kick_bombs(
             explosion_sound,
             explosion_volume,
             kick_velocity,
-            fuse_time,
             damage_region_lifetime,
             damage_region_size,
             explosion_lifetime,
             explosion_atlas,
             explosion_fps,
             explosion_frames,
-            arm_delay,
             fin_anim,
             ..
         } = &element_meta.builtin else {
             unreachable!();
         };
 
-        kick_bomb.age += 1.0 / crate::FPS;
+        kick_bomb.fuse_time.tick(time.delta());
+        kick_bomb.arm_delay.tick(time.delta());
 
         let mut should_explode = false;
         // If the item is being held
@@ -242,13 +254,13 @@ fn update_lit_kick_bombs(
             } else if !player_standing_left && player_sprite.flip_x {
                 body.velocity.x = -kick_velocity.x;
                 body.velocity.y = kick_velocity.y;
-            } else if kick_bomb.age >= *arm_delay {
+            } else if kick_bomb.arm_delay.finished() {
                 should_explode = true;
             }
         }
 
         // If it's time to explode
-        if kick_bomb.age >= *fuse_time || should_explode {
+        if kick_bomb.fuse_time.finished() || should_explode {
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
             trauma_events.send(7.5);

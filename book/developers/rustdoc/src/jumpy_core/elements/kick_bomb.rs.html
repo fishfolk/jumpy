@@ -313,6 +313,18 @@
 <a href="#312" id="312">312</a>
 <a href="#313" id="313">313</a>
 <a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -327,10 +339,11 @@
 #[ulid = <span class="string">&quot;01GQ0ZWBNA8HZRXYKZXCT05CXT&quot;</span>]
 </span><span class="kw">pub struct </span>IdleKickBomb;
 
-<span class="attr">#[derive(Clone, TypeUlid, Debug, Copy)]
+<span class="attr">#[derive(Clone, TypeUlid, Debug)]
 #[ulid = <span class="string">&quot;01GQ0ZWFYZSHJPESPY9QPSTARR&quot;</span>]
 </span><span class="kw">pub struct </span>LitKickBomb {
-    age: f32,
+    arm_delay: Timer,
+    fuse_time: Timer,
 }
 
 <span class="kw">fn </span>hydrate(
@@ -437,10 +450,15 @@
         <span class="kw">let </span>BuiltinElementKind::KickBomb {
             fuse_sound,
             fuse_sound_volume,
+            arm_delay,
+            fuse_time,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
             <span class="macro">unreachable!</span>();
         };
+
+        <span class="kw">let </span>arm_delay = <span class="kw-2">*</span>arm_delay;
+        <span class="kw">let </span>fuse_time = <span class="kw-2">*</span>fuse_time;
 
         <span class="kw">if </span>items_used.get(entity).is_some() {
             audio_events.play(fuse_sound.clone(), <span class="kw-2">*</span>fuse_sound_volume);
@@ -452,7 +470,13 @@
             commands.add(
                 <span class="kw">move </span>|<span class="kw-2">mut </span>idle: CompMut&lt;IdleKickBomb&gt;, <span class="kw-2">mut </span>lit: CompMut&lt;LitKickBomb&gt;| {
                     idle.remove(entity);
-                    lit.insert(entity, LitKickBomb { age: <span class="number">0.0 </span>});
+                    lit.insert(
+                        entity,
+                        LitKickBomb {
+                            arm_delay: Timer::new(arm_delay, TimerMode::Once),
+                            fuse_time: Timer::new(fuse_time, TimerMode::Once),
+                        },
+                    );
                 },
             );
         }
@@ -477,6 +501,7 @@
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>commands: Commands,
+    time: Res&lt;Time&gt;,
     spawners: Comp&lt;DehydrateOutOfBounds&gt;,
     invincibles: CompMut&lt;Invincibility&gt;,
 ) {
@@ -492,21 +517,20 @@
             explosion_sound,
             explosion_volume,
             kick_velocity,
-            fuse_time,
             damage_region_lifetime,
             damage_region_size,
             explosion_lifetime,
             explosion_atlas,
             explosion_fps,
             explosion_frames,
-            arm_delay,
             fin_anim,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
             <span class="macro">unreachable!</span>();
         };
 
-        kick_bomb.age += <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS;
+        kick_bomb.fuse_time.tick(time.delta());
+        kick_bomb.arm_delay.tick(time.delta());
 
         <span class="kw">let </span><span class="kw-2">mut </span>should_explode = <span class="bool-val">false</span>;
         <span class="comment">// If the item is being held
@@ -557,13 +581,13 @@
             } <span class="kw">else if </span>!player_standing_left &amp;&amp; player_sprite.flip_x {
                 body.velocity.x = -kick_velocity.x;
                 body.velocity.y = kick_velocity.y;
-            } <span class="kw">else if </span>kick_bomb.age &gt;= <span class="kw-2">*</span>arm_delay {
+            } <span class="kw">else if </span>kick_bomb.arm_delay.finished() {
                 should_explode = <span class="bool-val">true</span>;
             }
         }
 
         <span class="comment">// If it&#39;s time to explode
-        </span><span class="kw">if </span>kick_bomb.age &gt;= <span class="kw-2">*</span>fuse_time || should_explode {
+        </span><span class="kw">if </span>kick_bomb.fuse_time.finished() || should_explode {
             audio_events.play(explosion_sound.clone(), <span class="kw-2">*</span>explosion_volume);
 
             trauma_events.send(<span class="number">7.5</span>);

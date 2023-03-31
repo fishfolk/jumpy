@@ -309,6 +309,7 @@
 <a href="#308" id="308">308</a>
 <a href="#309" id="309">309</a>
 <a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -566,7 +567,8 @@
         fuse_sound: Handle&lt;AudioSource&gt;,
         fuse_sound_volume: f32,
         <span class="doccomment">/// The time in seconds before a grenade explodes
-        </span>fuse_time: f32,
+        </span><span class="attr">#[serde(with = <span class="string">&quot;humantime_serde&quot;</span>)]
+        </span>fuse_time: Duration,
         <span class="attr">#[serde(default)]
         </span>can_rotate: bool,
         <span class="doccomment">/// The grenade atlas
@@ -576,8 +578,8 @@
         </span>bounciness: f32,
         <span class="attr">#[serde(default)]
         </span>angular_velocity: f32,
-        <span class="attr">#[serde(default)]
-        </span>arm_delay: f32,
+        <span class="attr">#[serde(with = <span class="string">&quot;humantime_serde&quot;</span>)]
+        </span>arm_delay: Duration,
     },
     Musket {
         <span class="attr">#[serde(default)]

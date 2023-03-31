@@ -194,7 +194,6 @@ fn update_thrown_crates(
             breaking_anim_frames,
             breaking_atlas,
             breaking_anim_fps,
-            // break_timeout, TODO: delete this
             break_sound,
             break_sound_volume,
             bounce_sound,
@@ -207,6 +206,7 @@ fn update_thrown_crates(
         };
 
         thrown_crate.damage_delay.tick(time.delta());
+        thrown_crate.break_timeout.tick(time.delta());
 
         let colliding_with_tile = {
             let collider = collision_world.get_collider(entity);

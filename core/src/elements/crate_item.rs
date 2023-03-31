@@ -144,10 +144,7 @@ fn update_idle_crates(
                                     Duration::from_secs_f32(0.25),
                                     TimerMode::Once,
                                 ),
-                                break_timeout: Timer::new(
-                                    Duration::from_secs_f32(break_timeout),
-                                    TimerMode::Once,
-                                ),
+                                break_timeout: Timer::new(break_timeout, TimerMode::Once),
                                 was_colliding: false,
                                 crate_break_state: 0,
                             },

@@ -20,7 +20,7 @@ builtin: !Crate
 
   body_size: [36, 30]
   grab_offset: [14, -2]
-  break_timeout: 4
+  break_timeout: 4s
   bounciness: 0.5
   fin_anim: grab_2
 

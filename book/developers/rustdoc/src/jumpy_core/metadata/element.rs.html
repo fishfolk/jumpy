@@ -310,6 +310,7 @@
 <a href="#309" id="309">309</a>
 <a href="#310" id="310">310</a>
 <a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -511,7 +512,8 @@
         body_size: Vec2,
         grab_offset: Vec2,
         <span class="comment">// How long to wait before despawning a thrown crate, if it hans&#39;t it anything yet.
-        </span>break_timeout: f32,
+        </span><span class="attr">#[serde(with = <span class="string">&quot;humantime_serde&quot;</span>)]
+        </span>break_timeout: Duration,
         bounciness: f32,
         fin_anim: Key,
         crate_break_state_1: usize,

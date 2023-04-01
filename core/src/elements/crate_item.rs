@@ -1,5 +1,7 @@
 use crate::{physics::collisions::TileCollisionKind, prelude::*};
 
+use std::time::Duration;
+
 pub fn install(session: &mut GameSession) {
     session
         .stages
@@ -16,7 +18,8 @@ struct IdleCrate;
 #[ulid = "01GREP80RJSH9T9MWC88CG2G03"]
 struct ThrownCrate {
     owner: Entity,
-    age: f32,
+    damage_delay: Timer,
+    break_timeout: Timer,
     crate_break_state: u8,
     was_colliding: bool,
 }
@@ -102,11 +105,27 @@ fn hydrate_crates(
 fn update_idle_crates(
     entities: Res<Entities>,
     mut items_used: CompMut<ItemUsed>,
-    mut idle_crates: CompMut<IdleCrate>,
+    element_assets: BevyAssets<ElementMeta>,
+    element_handles: Comp<ElementHandle>,
+    idle_crates: CompMut<IdleCrate>,
     player_inventories: PlayerInventories,
     mut commands: Commands,
 ) {
-    for (entity, _idle_crate) in entities.iter_with(&mut idle_crates) {
+    for (entity, (_le_crate, element_handle)) in
+        entities.iter_with((&idle_crates, &element_handles))
+    {
+        let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
+            continue;
+        };
+
+        let BuiltinElementKind::Crate{
+            break_timeout,..
+        } = &element_meta.builtin else {
+            continue;
+        };
+
+        let break_timeout = *break_timeout;
+
         if let Some(Inv { player, .. }) = player_inventories
             .iter()
             .find_map(|x| x.filter(|x| x.inventory == entity))
@@ -121,7 +140,11 @@ fn update_idle_crates(
                             entity,
                             ThrownCrate {
                                 owner: player,
-                                age: 0.0,
+                                damage_delay: Timer::new(
+                                    Duration::from_secs_f32(0.25),
+                                    TimerMode::Once,
+                                ),
+                                break_timeout: Timer::new(break_timeout, TimerMode::Once),
                                 was_colliding: false,
                                 crate_break_state: 0,
                             },
@@ -148,6 +171,7 @@ fn update_thrown_crates(
     transforms: Comp<Transform>,
     spawners: Comp<DehydrateOutOfBounds>,
     invincibles: CompMut<Invincibility>,
+    time: Res<Time>,
 ) {
     for (entity, (mut thrown_crate, element_handle, transform, atlas_sprite, body, spawner)) in
         entities.iter_with((
@@ -167,7 +191,6 @@ fn update_thrown_crates(
             breaking_anim_frames,
             breaking_atlas,
             breaking_anim_fps,
-            break_timeout,
             break_sound,
             break_sound_volume,
             bounce_sound,
@@ -179,7 +202,8 @@ fn update_thrown_crates(
             continue;
         };
 
-        thrown_crate.age += 1.0 / crate::FPS;
+        thrown_crate.damage_delay.tick(time.delta());
+        thrown_crate.break_timeout.tick(time.delta());
 
         let colliding_with_tile = {
             let collider = collision_world.get_collider(entity);
@@ -215,7 +239,9 @@ fn update_thrown_crates(
 
         let colliding_with_players = collision_world
             .actor_collisions_filtered(entity, |e| {
-                e != thrown_crate.owner && players.contains(e) && invincibles.get(e).is_none()
+                players.contains(e)
+                    && invincibles.get(e).is_none()
+                    && thrown_crate.damage_delay.finished()
             })
             .into_iter()
             .collect::<Vec<_>>();
@@ -226,9 +252,18 @@ fn update_thrown_crates(
                 Some(transform.translation.xy()),
             ));
         }
+        let kill_nearby_colliding: bool = kill_all_colliding_if_freshly_thrown(
+            thrown_crate,
+            &collision_world,
+            &players,
+            &invincibles,
+            &mut commands,
+            transform,
+        );
 
         if !colliding_with_players.is_empty()
-            || thrown_crate.age >= *break_timeout
+            || kill_nearby_colliding
+            || thrown_crate.break_timeout.finished()
             || thrown_crate.crate_break_state >= 4
             || body.is_on_ground && body.velocity.length_squared() < 0.1
         {
@@ -270,5 +305,41 @@ fn update_thrown_crates(
                 },
             );
         }
+    }
+}
+
+fn kill_all_colliding_if_freshly_thrown(
+    thrown_crate: &ThrownCrate,
+    collision_world: &CollisionWorld,
+    players: &Comp<PlayerIdx>,
+    invincibles: &CompMut<Invincibility>,
+    commands: &mut Commands,
+    transform: &Transform,
+) -> bool {
+    if thrown_crate.damage_delay.finished() {
+        return false;
+    }
+
+    let colliding_with_players = collision_world
+        .actor_collisions_filtered(thrown_crate.owner, |e| players.contains(e))
+        .into_iter()
+        .collect::<Vec<_>>();
+
+    if !colliding_with_players.is_empty() {
+        for player_entity in &colliding_with_players {
+            if invincibles.get(*player_entity).is_none() {
+                commands.add(PlayerCommand::kill(
+                    *player_entity,
+                    Some(transform.translation.xy()),
+                ));
+            }
+        }
+        commands.add(PlayerCommand::kill(
+            thrown_crate.owner,
+            Some(transform.translation.xy()),
+        ));
+        true
+    } else {
+        false
     }
 }

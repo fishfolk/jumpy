@@ -199,7 +199,8 @@ pub enum BuiltinElementKind {
         body_size: Vec2,
         grab_offset: Vec2,
         // How long to wait before despawning a thrown crate, if it hans't it anything yet.
-        break_timeout: f32,
+        #[serde(with = "humantime_serde")]
+        break_timeout: Duration,
         bounciness: f32,
         fin_anim: Key,
         crate_break_state_1: usize,

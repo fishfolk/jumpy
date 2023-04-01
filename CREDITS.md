@@ -56,6 +56,7 @@
 - José Luis Cruz [@joseluis](https://github.com/joseluis) - Keybindings
 - [@figsoda](https://github.com/iwek7) - Dependency Update
 - @Sarahboev - Artwork
+- [@lvllvl](https://github.com/lvllvl) - Gameplay Code
 
 ## Tech Foundations
 

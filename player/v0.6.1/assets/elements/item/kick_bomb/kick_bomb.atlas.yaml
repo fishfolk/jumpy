@@ -1,0 +1,4 @@
+image: ./kick_bomb.png
+tile_size: [32, 63]
+rows: 2
+columns: 3

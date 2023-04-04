@@ -13,12 +13,10 @@ pub fn install(session: &mut GameSession) {
 #[ulid = "01GPRSBWQ3X0QJC37BDDQXDNF3"]
 pub struct IdleMine;
 
-// #[derive(Clone, TypeUlid, Debug, Copy)]
 #[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GPRSBWQ3X0QJC37BDQXDNASF"]
 pub struct ThrownMine {
-    // How long the mine has been thrown.
-    // age: f32,
+    // When this timer reaches the fuse duration, the mine will explode.
     arm_delay: Timer,
 }
 
@@ -130,8 +128,6 @@ fn update_idle_mines(
                 commands.add(
                     move |mut idle: CompMut<IdleMine>, mut thrown: CompMut<ThrownMine>| {
                         idle.remove(entity);
-                        // thrown.insert(entity, ThrownMine { age: 0.0 }); TODO: delete this and next line
-                        //  Timer::new(Duration::from_millis(0), TimerMode::Once),
                         thrown.insert(
                             entity,
                             ThrownMine {
@@ -184,7 +180,6 @@ fn update_thrown_mines(
             explosion_frames,
             explosion_sound,
             explosion_atlas,
-            // arm_delay, TODO: delete this line 
             arm_sound,
             armed_frames,
             armed_fps,
@@ -194,10 +189,8 @@ fn update_thrown_mines(
         };
 
         let frame_time = 1.0 / crate::FPS;
-        // thrown_mine.age += 1.0 / crate::FPS;
         thrown_mine.arm_delay.tick(time.delta());
 
-        // if thrown_mine.age >= *arm_delay && thrown_mine.age - *arm_delay < frame_time { TODO: delete this line
         if thrown_mine.arm_delay.finished() && thrown_mine.arm_delay.elapsed_secs() < frame_time {
             audio_events.play(arm_sound.clone(), *arm_sound_volume);
 
@@ -213,7 +206,6 @@ fn update_thrown_mines(
             .into_iter()
             .collect::<Vec<_>>();
 
-        // if !colliding_with_players.is_empty() && thrown_mine.age >= *arm_delay { TODO: delete this line
         if !colliding_with_players.is_empty() && thrown_mine.arm_delay.finished() {
             let mine_transform = *transforms.get(entity).unwrap();
 

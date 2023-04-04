@@ -14,7 +14,7 @@ pub fn install(session: &mut GameSession) {
 pub struct IdleMine;
 
 // #[derive(Clone, TypeUlid, Debug, Copy)]
-#[derive(Clone, TypeUlid, Debug )]
+#[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GPRSBWQ3X0QJC37BDQXDNASF"]
 pub struct ThrownMine {
     // How long the mine has been thrown.
@@ -100,12 +100,26 @@ fn hydrate(
 
 fn update_idle_mines(
     entities: Res<Entities>,
+    element_handles: Comp<ElementHandle>,
+    element_assets: BevyAssets<ElementMeta>,
     mut idle_mines: CompMut<IdleMine>,
     mut items_used: CompMut<ItemUsed>,
     player_inventories: PlayerInventories,
     mut commands: Commands,
 ) {
-    for (entity, _mine) in entities.iter_with(&mut idle_mines) {
+    for (entity, (_mine, element_handle)) in entities.iter_with((&mut idle_mines, &element_handles))
+    {
+        let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
+            continue;
+        };
+
+        let BuiltinElementKind::Mine {
+            arm_delay,..
+             } = &element_meta.builtin else {
+            unreachable!();
+        };
+        let arm_delay = *arm_delay;
+
         if let Some(Inv { player, .. }) = player_inventories
             .iter()
             .find_map(|x| x.filter(|x| x.inventory == entity))
@@ -116,9 +130,17 @@ fn update_idle_mines(
                 commands.add(
                     move |mut idle: CompMut<IdleMine>, mut thrown: CompMut<ThrownMine>| {
                         idle.remove(entity);
-                        // thrown.insert(entity, ThrownMine { age: 0.0 });
-                    //  Timer::new(Duration::from_millis(0), TimerMode::Once),
-                        thrown.insert(entity, ThrownMine { arm_delay: Timer::new(Duration::from_secs_f32(0.0), TimerMode::Once) });
+                        // thrown.insert(entity, ThrownMine { age: 0.0 }); TODO: delete this and next line
+                        //  Timer::new(Duration::from_millis(0), TimerMode::Once),
+                        thrown.insert(
+                            entity,
+                            ThrownMine {
+                                arm_delay: Timer::new(
+                                    Duration::from_secs_f32(arm_delay),
+                                    TimerMode::Once,
+                                ),
+                            },
+                        );
                     },
                 );
             }
@@ -162,7 +184,7 @@ fn update_thrown_mines(
             explosion_frames,
             explosion_sound,
             explosion_atlas,
-            arm_delay,
+            // arm_delay, TODO: delete this line 
             arm_sound,
             armed_frames,
             armed_fps,
@@ -173,9 +195,9 @@ fn update_thrown_mines(
 
         let frame_time = 1.0 / crate::FPS;
         // thrown_mine.age += 1.0 / crate::FPS;
-        thrown_mine.arm_delay.tick( time.delta() );
+        thrown_mine.arm_delay.tick(time.delta());
 
-        // if thrown_mine.age >= *arm_delay && thrown_mine.age - *arm_delay < frame_time {
+        // if thrown_mine.age >= *arm_delay && thrown_mine.age - *arm_delay < frame_time { TODO: delete this line
         if thrown_mine.arm_delay.finished() && thrown_mine.arm_delay.elapsed_secs() < frame_time {
             audio_events.play(arm_sound.clone(), *arm_sound_volume);
 
@@ -191,7 +213,7 @@ fn update_thrown_mines(
             .into_iter()
             .collect::<Vec<_>>();
 
-        // if !colliding_with_players.is_empty() && thrown_mine.age >= *arm_delay {
+        // if !colliding_with_players.is_empty() && thrown_mine.age >= *arm_delay { TODO: delete this line
         if !colliding_with_players.is_empty() && thrown_mine.arm_delay.finished() {
             let mine_transform = *transforms.get(entity).unwrap();
 

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["MDNS_SERVICE_TYPE",""]],"enum":[["LanMode",""],["MatchKind",""],["Status",""]],"static":[["MDNS",""],["PINGER",""]],"struct":[["MatchmakingMenu",""],["Pinger",""],["ServerInfo",""],["State",""]]};

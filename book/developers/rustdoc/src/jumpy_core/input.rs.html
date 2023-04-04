@@ -128,7 +128,7 @@
 <a href="#127" id="127">127</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, MAX_PLAYERS};
 
-<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
+<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     session.world.init_resource::&lt;PlayerInputs&gt;();
 }
 
@@ -189,7 +189,7 @@
 }
 
 <span class="doccomment">/// The editor inputs that a player may make.
-</span><span class="attr">#[derive(Clone, Debug)]
+</span><span class="attr">#[derive(Clone, Debug, Serialize, Deserialize)]
 </span><span class="kw">pub enum </span>EditorInput {
     <span class="doccomment">/// Spawn an element onto the map.
     </span>SpawnElement {

@@ -63,7 +63,6 @@
 <a href="#62" id="62">62</a>
 <a href="#63" id="63">63</a>
 <a href="#64" id="64">64</a>
-<a href="#65" id="65">65</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;../README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -80,7 +79,7 @@
         <span class="kw">crate</span>::{
             input::EditorInput,
             metadata::<span class="kw-2">*</span>,
-            session::{GameSession, GameSessionInfo, GameSessionPlayerInfo},
+            session::{CoreSession, CoreSessionInfo, GameSessionPlayerInfo},
             MAX_PLAYERS,
         },
         bones_lib::prelude <span class="kw">as </span>bones,
@@ -104,7 +103,6 @@
 <span class="kw">pub mod </span>player;
 <span class="kw">pub mod </span>random;
 <span class="kw">pub mod </span>session;
-<span class="kw">pub mod </span>testing;
 <span class="kw">pub mod </span>utils;
 
 <span class="doccomment">/// The target fixed frames-per-second that the game sumulation runs at.
@@ -112,8 +110,8 @@
 <span class="kw">pub const </span>MAX_PLAYERS: usize = <span class="number">4</span>;
 
 <span class="doccomment">/// Install game modules into the session.
-</span><span class="kw">pub fn </span>install_modules(session: <span class="kw-2">&amp;mut </span>session::GameSession) {
-    testing::install(session);
+</span><span class="kw">pub fn </span>install_modules(session: <span class="kw-2">&amp;mut </span>session::CoreSession) {
+    bones_lib::install(<span class="kw-2">&amp;mut </span>session.stages);
     physics::install(session);
     input::install(session);
     map::install(session);

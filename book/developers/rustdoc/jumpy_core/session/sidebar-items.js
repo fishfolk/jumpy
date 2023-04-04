@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["GameSession","The implementation of a Jumpy game session."],["GameSessionInfo","Information needed to start a game session."],["GameSessionPlayerInfo",""]]};
+window.SIDEBAR_ITEMS = {"struct":[["CoreSession","The implementation of a Jumpy game session."],["CoreSessionInfo","Information needed to start a game session."],["GameSessionPlayerInfo",""]]};

@@ -272,7 +272,7 @@
             }
         }
         EngineState::MainMenu =&gt; <span class="kw">match </span><span class="kw-2">&amp;*</span>menu_page {
-            MenuPage::PlayerSelect | MenuPage::MapSelect { .. } =&gt; {
+            MenuPage::PlayerSelect | MenuPage::MapSelect { .. } | MenuPage::NetworkGame =&gt; {
                 <span class="kw">if </span>!<span class="macro">matches!</span>(<span class="kw-2">*</span>music_state, MusicState::CharacterSelect(..)) {
                     <span class="kw">if let </span><span class="prelude-val">Some</span>(instance) = music_state.current_instance() {
                         <span class="kw">let </span>instance = audio_instances.get_mut(instance).unwrap();

@@ -367,7 +367,7 @@
                                                 });
                                             }
                                         });
-                                        params.session_manager.start(GameSessionInfo {
+                                        params.session_manager.start_local(CoreSessionInfo {
                                             meta: params.core.<span class="number">0</span>.clone(),
                                             map_meta: map_meta.clone(),
                                             player_info,
@@ -423,7 +423,7 @@
                                                     });
                                                 }
                                             });
-                                            params.session_manager.start(GameSessionInfo {
+                                            params.session_manager.start_local(CoreSessionInfo {
                                                 meta: params.core.<span class="number">0</span>.clone(),
                                                 map_meta,
                                                 player_info,

@@ -89,7 +89,7 @@
 <a href="#88" id="88">88</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, MAX_PLAYERS};
 
-<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
+<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::First, hydrate)

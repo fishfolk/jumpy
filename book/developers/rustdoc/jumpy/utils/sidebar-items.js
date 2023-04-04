@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["bi_channel","Create a bi-directional channel with a given request and response type."]],"struct":[["BiChannelClient","A [`bi_channel`] client."],["BiChannelServer","A [`bi_channel`] server."]]};

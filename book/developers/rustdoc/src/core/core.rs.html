@@ -242,7 +242,7 @@
 </span><span class="kw">static </span>GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 <span class="attr">#[derive(Deref, DerefMut, Resource)]
-</span><span class="kw">struct </span>Session(GameSession);
+</span><span class="kw">struct </span>Session(CoreSession);
 
 <span class="kw">impl </span>HasBonesWorld <span class="kw">for </span>Session {
     <span class="kw">fn </span>world(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>bones_lib::prelude::World {
@@ -313,7 +313,7 @@
         <span class="kw">return</span>;
     };
 
-    <span class="kw">let </span>session = GameSession::new(GameSessionInfo {
+    <span class="kw">let </span>session = CoreSession::new(CoreSessionInfo {
         map_meta: map_assets
             .get(<span class="kw-2">&amp;</span>meta.stable_maps[<span class="number">0</span>].get_bevy_handle())
             .unwrap()

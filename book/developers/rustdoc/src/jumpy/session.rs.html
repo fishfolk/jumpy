@@ -214,7 +214,110 @@
 <a href="#213" id="213">213</a>
 <a href="#214" id="214">214</a>
 <a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::{ecs::schedule::ShouldRun, utils::Instant};
+<span class="kw">use </span>downcast_rs::{impl_downcast, Downcast};
+<span class="kw">use </span>jumpy_core::input::PlayerControl;
 
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
@@ -241,57 +344,126 @@
                             .run_in_state(EngineState::InGame)
                             .run_in_state(InGameState::Playing),
                     )
-                    .with_system(update_input)
-                    .with_system(
-                        update_game
-                            .run_in_state(EngineState::InGame)
-                            .run_in_state(InGameState::Playing),
-                    )
+                    .with_system(collect_local_input.pipe(update_game))
                     .with_system(play_sounds)
-                    .with_run_criteria(fixed_timestep),
+                    .with_run_criteria(session_run_criteria),
             );
     }
 }
 
-<span class="kw">fn </span>fixed_timestep(
-    <span class="kw-2">mut </span>accumulator: Local&lt;f64&gt;,
-    <span class="kw-2">mut </span>loop_start: Local&lt;<span class="prelude-ty">Option</span>&lt;Instant&gt;&gt;,
+<span class="kw">fn </span>session_run_criteria(
     time: Res&lt;Time&gt;,
+    session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;,
+    in_game_state: Res&lt;CurrentState&lt;InGameState&gt;&gt;,
+    engine_state: Res&lt;CurrentState&lt;EngineState&gt;&gt;,
 ) -&gt; ShouldRun {
-    <span class="kw">const </span>STEP: f64 = <span class="number">1.0 </span>/ jumpy_core::FPS <span class="kw">as </span>f64;
-    <span class="kw">let </span>delta = time.delta_seconds_f64();
-    <span class="kw">if </span>loop_start.is_none() {
-        <span class="kw-2">*</span>accumulator += delta;
-    }
-
-    <span class="kw">if </span><span class="kw-2">*</span>accumulator &gt;= STEP {
-        <span class="kw">let </span>start = loop_start.get_or_insert_with(Instant::now);
-
-        <span class="kw">let </span>loop_too_long = (Instant::now() - <span class="kw-2">*</span>start).as_secs_f64() &gt; STEP;
-
-        <span class="kw">if </span>loop_too_long {
-            <span class="macro">warn!</span>(<span class="string">&quot;Frame took too long: couldn&#39;t keep up with fixed update.&quot;</span>);
-            <span class="kw-2">*</span>accumulator = <span class="number">0.0</span>;
-            <span class="kw-2">*</span>loop_start = <span class="prelude-val">None</span>;
-            ShouldRun::No
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session {
+        <span class="kw">if </span>engine_state.<span class="number">0 </span>== EngineState::InGame &amp;&amp; in_game_state.<span class="number">0 </span>== InGameState::Playing {
+            session.run_criteria(<span class="kw-2">&amp;</span>time)
         } <span class="kw">else </span>{
-            <span class="kw-2">*</span>accumulator -= STEP;
-            ShouldRun::YesAndCheckAgain
+            ShouldRun::No
         }
     } <span class="kw">else </span>{
-        <span class="kw-2">*</span>loop_start = <span class="prelude-val">None</span>;
         ShouldRun::No
     }
 }
 
 <span class="doccomment">/// A resource containing an in-progress game session.
 </span><span class="attr">#[derive(Resource, Deref, DerefMut)]
-</span><span class="kw">pub struct </span>Session(<span class="kw">pub </span>GameSession);
+</span><span class="kw">pub struct </span>Session(<span class="kw">pub </span>Box&lt;<span class="kw">dyn </span>SessionRunner&gt;);
+
+<span class="kw">pub trait </span>SessionRunner: Sync + Send + Downcast {
+    <span class="kw">fn </span>core_session(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>CoreSession;
+    <span class="kw">fn </span>world(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>bones::World {
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>.core_session().world
+    }
+    <span class="kw">fn </span>restart(<span class="kw-2">&amp;mut </span><span class="self">self</span>);
+    <span class="kw">fn </span>get_player_input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player_idx: usize) -&gt; PlayerControl {
+        <span class="self">self</span>.core_session()
+            .update_input(|inputs| inputs.players[player_idx].control.clone())
+    }
+    <span class="kw">fn </span>set_player_input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player_idx: usize, control: PlayerControl);
+    <span class="kw">fn </span>advance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bevy_world: <span class="kw-2">&amp;mut </span>World);
+    <span class="kw">fn </span>run_criteria(<span class="kw-2">&amp;mut </span><span class="self">self</span>, time: <span class="kw-2">&amp;</span>Time) -&gt; ShouldRun;
+    <span class="doccomment">/// Returns the player index of the player if we are in a network game.
+    ///
+    /// In a network game, we currently only allow for one local player, so this allows the session
+    /// to find out which player we are playing as so it can map the local player 1&#39;s input to the
+    /// appropriate network player.
+    </span><span class="kw">fn </span>network_player_idx(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;usize&gt;;
+}
+<span class="macro">impl_downcast!</span>(SessionRunner);
+
+<span class="kw">pub struct </span>LocalSessionRunner {
+    <span class="kw">pub </span>core: CoreSession,
+    <span class="kw">pub </span>accumulator: f64,
+    <span class="kw">pub </span>loop_start: <span class="prelude-ty">Option</span>&lt;Instant&gt;,
+}
+
+<span class="kw">impl </span>LocalSessionRunner {
+    <span class="kw">fn </span>new(core: CoreSession) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span><span class="self">Self</span>: Sized,
+    {
+        LocalSessionRunner {
+            core,
+            accumulator: default(),
+            loop_start: default(),
+        }
+    }
+}
+
+<span class="kw">impl </span>SessionRunner <span class="kw">for </span>LocalSessionRunner {
+    <span class="kw">fn </span>core_session(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>CoreSession {
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>.core
+    }
+    <span class="kw">fn </span>set_player_input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player_idx: usize, control: PlayerControl) {
+        <span class="self">self</span>.core.update_input(|inputs| {
+            inputs.players[player_idx].control = control;
+        });
+    }
+    <span class="kw">fn </span>restart(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.core.restart();
+    }
+    <span class="kw">fn </span>advance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bevy_world: <span class="kw-2">&amp;mut </span>World) {
+        <span class="self">self</span>.core.advance(bevy_world);
+    }
+
+    <span class="kw">fn </span>run_criteria(<span class="kw-2">&amp;mut </span><span class="self">self</span>, time: <span class="kw-2">&amp;</span>Time) -&gt; ShouldRun {
+        <span class="kw">const </span>STEP: f64 = <span class="number">1.0 </span>/ jumpy_core::FPS <span class="kw">as </span>f64;
+        <span class="kw">let </span>delta = time.delta_seconds_f64();
+        <span class="kw">if </span><span class="self">self</span>.loop_start.is_none() {
+            <span class="self">self</span>.accumulator += delta;
+        }
+
+        <span class="kw">if </span><span class="self">self</span>.accumulator &gt;= STEP {
+            <span class="kw">let </span>start = <span class="self">self</span>.loop_start.get_or_insert_with(Instant::now);
+
+            <span class="kw">let </span>loop_too_long = (Instant::now() - <span class="kw-2">*</span>start).as_secs_f64() &gt; STEP;
+
+            <span class="kw">if </span>loop_too_long {
+                <span class="macro">warn!</span>(<span class="string">&quot;Frame took too long: couldn&#39;t keep up with fixed update.&quot;</span>);
+                <span class="self">self</span>.accumulator = <span class="number">0.0</span>;
+                <span class="self">self</span>.loop_start = <span class="prelude-val">None</span>;
+                ShouldRun::No
+            } <span class="kw">else </span>{
+                <span class="self">self</span>.accumulator -= STEP;
+                ShouldRun::YesAndCheckAgain
+            }
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.loop_start = <span class="prelude-val">None</span>;
+            ShouldRun::No
+        }
+    }
+    <span class="kw">fn </span>network_player_idx(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;usize&gt; {
+        <span class="prelude-val">None
+    </span>}
+}
 
 <span class="comment">// Give bones_bevy_render plugin access to the bones world in our game session.
 </span><span class="kw">impl </span>bones_bevy_renderer::HasBonesWorld <span class="kw">for </span>Session {
     <span class="kw">fn </span>world(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>bones::World {
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>.<span class="number">0</span>.world
+        <span class="self">self</span>.<span class="number">0</span>.world()
     }
 }
 
@@ -306,10 +478,28 @@
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; SessionManager&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
     <span class="doccomment">/// Start a game session
-    </span><span class="kw">pub fn </span>start(<span class="kw-2">&amp;mut </span><span class="self">self</span>, info: GameSessionInfo) {
-        <span class="kw">let </span>session = Session(GameSession::new(info));
+    </span><span class="kw">pub fn </span>start_local(<span class="kw-2">&amp;mut </span><span class="self">self</span>, info: CoreSessionInfo) {
+        <span class="kw">let </span>session = Session(Box::new(LocalSessionRunner::new(CoreSession::new(info))));
         <span class="self">self</span>.commands.insert_resource(session);
         <span class="self">self</span>.menu_camera.for_each_mut(|<span class="kw-2">mut </span>x| x.is_active = <span class="bool-val">false</span>);
+    }
+
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span><span class="kw">pub fn </span>start_lan(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        core_info: CoreSessionInfo,
+        lan_info: <span class="kw">crate</span>::networking::LanSessionInfo,
+    ) {
+        <span class="kw">let </span>session = Session(Box::new(<span class="kw">crate</span>::networking::LanSessionRunner::new(
+            CoreSession::new(core_info),
+            lan_info,
+        )));
+        <span class="self">self</span>.commands.insert_resource(session);
+        <span class="self">self</span>.menu_camera.for_each_mut(|<span class="kw-2">mut </span>x| x.is_active = <span class="bool-val">false</span>);
+        <span class="self">self</span>.commands
+            .insert_resource(NextState(InGameState::Playing));
+        <span class="self">self</span>.commands
+            .insert_resource(NextState(EngineState::InGame));
     }
 
     <span class="doccomment">/// Restart a game session without changing the settings
@@ -332,8 +522,10 @@
 /// This is primarily for the editor, which may be started without going through the player
 /// selection screen.
 </span><span class="kw">fn </span>ensure_2_players(session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;, core_meta: Res&lt;CoreMetaArc&gt;) {
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = session {
-        <span class="kw">let </span>player_inputs = session.world.resource::&lt;jumpy_core::input::PlayerInputs&gt;();
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session {
+        <span class="kw">let </span>player_inputs = session
+            .world()
+            .resource::&lt;jumpy_core::input::PlayerInputs&gt;();
         <span class="kw">let </span><span class="kw-2">mut </span>player_inputs = player_inputs.borrow_mut();
 
         <span class="kw">if </span>player_inputs.players.iter().all(|x| !x.active) {
@@ -346,7 +538,7 @@
 }
 
 <span class="doccomment">/// Update the input to the game session.
-</span><span class="kw">fn </span>update_input(
+</span><span class="kw">fn </span>collect_local_input(
     session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;,
     player_input_collectors: Query&lt;(<span class="kw-2">&amp;</span>PlayerInputCollector, <span class="kw-2">&amp;</span>ActionState&lt;PlayerAction&gt;)&gt;,
     <span class="kw-2">mut </span>current_editor_input: ResMut&lt;CurrentEditorInput&gt;,
@@ -355,38 +547,42 @@
         <span class="kw">return</span>;
     };
 
-    <span class="kw">let </span><span class="kw-2">mut </span>editor_input = current_editor_input.take();
+    <span class="kw">let </span>network_player_idx = session.network_player_idx();
 
-    session.update_input(|inputs| {
-        <span class="comment">// TODO: Properly handle which player is taking the editor input, which is important in
-        // networked multiplayer.
-        </span>inputs.players[<span class="number">0</span>].editor_input = editor_input.take();
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(local_session) = session.downcast_mut::&lt;LocalSessionRunner&gt;() {
+        <span class="comment">// TODO: Handle editor input for non-local sessions.
+        </span><span class="kw">let </span>editor_input = current_editor_input.take();
+        local_session.core.update_input(|inputs| {
+            inputs.players[<span class="number">0</span>].editor_input = editor_input;
+        });
+    }
 
-        <span class="kw">for </span>(player_idx, action_state) <span class="kw">in </span><span class="kw-2">&amp;</span>player_input_collectors {
-            <span class="kw">if </span>inputs.players[player_idx.<span class="number">0</span>].is_ai {
-                <span class="kw">continue</span>;
-            }
-
-            <span class="kw">let </span>control = <span class="kw-2">&amp;mut </span>inputs.players[player_idx.<span class="number">0</span>].control;
-
-            <span class="kw">let </span>jump_pressed = action_state.pressed(PlayerAction::Jump);
-            control.jump_just_pressed = jump_pressed &amp;&amp; !control.jump_pressed;
-            control.jump_pressed = jump_pressed;
-
-            <span class="kw">let </span>grab_pressed = action_state.pressed(PlayerAction::Grab);
-            control.grab_just_pressed = grab_pressed &amp;&amp; !control.grab_pressed;
-            control.grab_pressed = grab_pressed;
-
-            <span class="kw">let </span>shoot_pressed = action_state.pressed(PlayerAction::Shoot);
-            control.shoot_just_pressed = shoot_pressed &amp;&amp; !control.shoot_pressed;
-            control.shoot_pressed = shoot_pressed;
-
-            <span class="kw">let </span>was_moving = control.move_direction.length_squared() &gt; f32::MIN_POSITIVE;
-            control.move_direction = action_state.axis_pair(PlayerAction::Move).unwrap().xy();
-            <span class="kw">let </span>is_moving = control.move_direction.length_squared() &gt; f32::MIN_POSITIVE;
-            control.just_moved = !was_moving &amp;&amp; is_moving;
+    <span class="kw">for </span>(player_idx, action_state) <span class="kw">in </span><span class="kw-2">&amp;</span>player_input_collectors {
+        <span class="kw">if </span>network_player_idx.is_some() &amp;&amp; player_idx.<span class="number">0 </span>!= <span class="number">0 </span>{
+            <span class="kw">continue</span>;
         }
-    });
+
+        <span class="kw">let </span><span class="kw-2">mut </span>control = session.<span class="number">0</span>.get_player_input(player_idx.<span class="number">0</span>);
+
+        <span class="kw">let </span>jump_pressed = action_state.pressed(PlayerAction::Jump);
+        control.jump_just_pressed = jump_pressed &amp;&amp; !control.jump_pressed;
+        control.jump_pressed = jump_pressed;
+
+        <span class="kw">let </span>grab_pressed = action_state.pressed(PlayerAction::Grab);
+        control.grab_just_pressed = grab_pressed &amp;&amp; !control.grab_pressed;
+        control.grab_pressed = grab_pressed;
+
+        <span class="kw">let </span>shoot_pressed = action_state.pressed(PlayerAction::Shoot);
+        control.shoot_just_pressed = shoot_pressed &amp;&amp; !control.shoot_pressed;
+        control.shoot_pressed = shoot_pressed;
+
+        <span class="kw">let </span>was_moving = control.move_direction.length_squared() &gt; f32::MIN_POSITIVE;
+        control.move_direction = action_state.axis_pair(PlayerAction::Move).unwrap().xy();
+        <span class="kw">let </span>is_moving = control.move_direction.length_squared() &gt; f32::MIN_POSITIVE;
+        control.just_moved = !was_moving &amp;&amp; is_moving;
+
+        session.set_player_input(network_player_idx.unwrap_or(player_idx.<span class="number">0</span>), control);
+    }
 }
 
 <span class="doccomment">/// Update the game session simulation.
@@ -394,6 +590,12 @@
     <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = world.remove_resource::&lt;Session&gt;() <span class="kw">else </span>{
         <span class="kw">return</span>;
     };
+    <span class="kw">if </span>world.resource::&lt;CurrentState&lt;EngineState&gt;&gt;().<span class="number">0 </span>!= EngineState::InGame {
+        <span class="kw">return</span>;
+    }
+    <span class="kw">if </span>world.resource::&lt;CurrentState&lt;InGameState&gt;&gt;().<span class="number">0 </span>!= InGameState::Playing {
+        <span class="kw">return</span>;
+    }
 
     <span class="comment">// Advance the game session
     </span>session.advance(world);
@@ -402,14 +604,14 @@
 }
 
 <span class="doccomment">/// Play sounds from the game session.
-</span><span class="kw">fn </span>play_sounds(audio: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;, session: <span class="prelude-ty">Option</span>&lt;Res&lt;Session&gt;&gt;) {
-    <span class="kw">let </span><span class="prelude-val">Some</span>(session) = session <span class="kw">else </span>{
+</span><span class="kw">fn </span>play_sounds(audio: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;, session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;) {
+    <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session <span class="kw">else </span>{
         <span class="kw">return</span>;
     };
 
     <span class="comment">// Get the sound queue out of the world
     </span><span class="kw">let </span>queue = session
-        .world
+        .world()
         .run_initialized_system(<span class="kw">move </span>|<span class="kw-2">mut </span>audio_events: bones::ResMut&lt;bones::AudioEvents&gt;| {
             <span class="prelude-val">Ok</span>(audio_events.queue.drain(..).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;())
         })

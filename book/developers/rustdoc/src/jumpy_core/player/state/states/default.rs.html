@@ -15,7 +15,7 @@
 <a href="#14" id="14">14</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
+<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     PlayerState::add_player_state_transition_system(session, player_state_transition);
 }
 

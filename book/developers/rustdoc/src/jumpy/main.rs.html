@@ -128,6 +128,12 @@
 <a href="#127" id="127">127</a>
 <a href="#128" id="128">128</a>
 <a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -159,8 +165,11 @@
 <span class="kw">pub mod </span>platform;
 <span class="kw">pub mod </span>session;
 <span class="kw">pub mod </span>ui;
+<span class="kw">pub mod </span>utils;
 
 <span class="kw">pub mod </span>camera;
+<span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</span><span class="kw">pub mod </span>networking;
 <span class="kw">pub mod </span>prelude;
 <span class="kw">pub use </span>prelude::<span class="kw-2">*</span>;
 
@@ -243,6 +252,9 @@
         .add_plugin(JumpyAssetPlugin)
         .add_plugin(JumpyLocalizationPlugin)
         .add_plugin(JumpyDebugPlugin);
+
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span>app.add_plugin(networking::NetworkingPlugin);
 
     <span class="macro">debug!</span>(<span class="question-mark">?</span>engine_config, <span class="string">&quot;Starting game&quot;</span>);
 

@@ -154,17 +154,17 @@
     </span><span class="kw">pub </span>last: Key,
 }
 <span class="kw">impl </span>PlayerState {
-    <span class="doccomment">/// Adds a system to the appropriate stage in a [`GameSession`] for a player state transition.
+    <span class="doccomment">/// Adds a system to the appropriate stage in a [`CoreSession`] for a player state transition.
     </span><span class="kw">pub fn </span>add_player_state_transition_system&lt;Args&gt;(
-        session: <span class="kw-2">&amp;mut </span>GameSession,
+        session: <span class="kw-2">&amp;mut </span>CoreSession,
         system: <span class="kw">impl </span>IntoSystem&lt;Args, ()&gt;,
     ) {
         session.stages.add_system_to_stage(PlayerStateStage, system);
     }
 
-    <span class="doccomment">/// Adds a system to the appropriate stage in a [`GameSession`] for a player state update.
+    <span class="doccomment">/// Adds a system to the appropriate stage in a [`CoreSession`] for a player state update.
     </span><span class="kw">pub fn </span>add_player_state_update_system&lt;Args&gt;(
-        session: <span class="kw-2">&amp;mut </span>GameSession,
+        session: <span class="kw-2">&amp;mut </span>CoreSession,
         system: <span class="kw">impl </span>IntoSystem&lt;Args, ()&gt;,
     ) {
         session
@@ -173,7 +173,7 @@
     }
 }
 
-<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
+<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     <span class="comment">// Add the player state stage
     </span>session
         .stages

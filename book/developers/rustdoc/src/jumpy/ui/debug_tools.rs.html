@@ -308,7 +308,7 @@
 </span><span class="kw">fn </span>sync_core_debug_settings(session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;, settings: Res&lt;CoreDebugSettings&gt;) {
     <span class="kw">if </span>settings.is_changed() {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session {
-            session.world.insert_resource(settings.<span class="number">0</span>);
+            session.world().insert_resource(settings.<span class="number">0</span>);
         }
     }
 }
@@ -348,7 +348,7 @@
     input: Res&lt;Input&lt;KeyCode&gt;&gt;,
     <span class="kw-2">mut </span>show_inspector: ResMut&lt;WorldInspectorEnabled&gt;,
     <span class="kw-2">mut </span>bones_world_snapshot: ResMut&lt;BonesSnapshot&gt;,
-    session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;,
+    <span class="kw-2">mut </span>session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;,
 ) {
     <span class="kw">let </span>ctx = egui_context.ctx_mut();
 
@@ -428,8 +428,8 @@
                     ui.set_enabled(session.is_some());
 
                     <span class="kw">if </span>ui.button(localization.get(<span class="string">&quot;take-snapshot&quot;</span>)).clicked() {
-                        <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = <span class="kw-2">&amp;</span>session {
-                            bones_world_snapshot.<span class="number">0 </span>= <span class="prelude-val">Some</span>(session.snapshot());
+                        <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = <span class="kw-2">&amp;mut </span>session {
+                            bones_world_snapshot.<span class="number">0 </span>= <span class="prelude-val">Some</span>(session.core_session().snapshot());
                         }
                     }
 
@@ -439,7 +439,7 @@
                         <span class="kw">if </span>ui.button(localization.get(<span class="string">&quot;restore-snapshot&quot;</span>)).clicked() {
                             <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session {
                                 <span class="kw">if let </span><span class="prelude-val">Some</span>(snapshot) = <span class="kw-2">&amp;mut </span>bones_world_snapshot.<span class="number">0 </span>{
-                                    session.restore(<span class="kw-2">&amp;mut </span>snapshot.clone())
+                                    session.core_session().restore(<span class="kw-2">&amp;mut </span>snapshot.clone())
                                 }
                             }
                         }

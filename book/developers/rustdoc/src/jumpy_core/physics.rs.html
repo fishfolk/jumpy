@@ -327,6 +327,20 @@
 <a href="#326" id="326">326</a>
 <a href="#327" id="327">327</a>
 <a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub use </span>collisions::{
@@ -353,7 +367,7 @@
     }
 }
 
-<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
+<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     session
         .stages
         <span class="comment">// TODO: Think again about exactly how to organize the physics sync systems. At the time of
@@ -458,8 +472,17 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>collision_world: CollisionWorld,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
+    time: Res&lt;Time&gt;,
 ) {
     <span class="macro">puffin::profile_function!</span>();
+
+    <span class="comment">// TODO: By default we assume a frame rate of of crate::FPS ( 60 frames-per-second ), but we may
+    // actually run at a different rate during, for example, network games. This gets the ratio
+    // between the default frame rate and the actual frame rate and is used to adjust velocities.
+    // This is a temporary fix. In the future, we should adjust all velocities to be in terms of
+    // pixels-per-second, instead of pixels-per-1/60 of a second like they are today. This temporary
+    // fix allows us to avoid chainging the velocities throughout the game for now.
+    </span><span class="kw">let </span>time_factor = time.delta().as_secs_f32() / (<span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS);
 
     collision_world.update(<span class="kw-2">&amp;</span>transforms);
     <span class="kw">for </span>(entity, body) <span class="kw">in </span>entities.iter_with(<span class="kw-2">&amp;mut </span>bodies) {
@@ -538,14 +561,19 @@
         {
             <span class="macro">puffin::profile_scope!</span>(<span class="string">&quot;move body&quot;</span>);
 
-            <span class="kw">if </span>collision_world.move_vertical(<span class="kw-2">&amp;mut </span>transforms, entity, body.velocity.y) {
+            <span class="kw">if </span>collision_world.move_vertical(<span class="kw-2">&amp;mut </span>transforms, entity, body.velocity.y * time_factor)
+            {
                 body.velocity.y <span class="kw-2">*</span>= -body.bounciness;
             }
 
             <span class="comment">// NOTE: It&#39;s important that we move horizontally after we move vertically, or else the
             // horizontal movement will clear our `descent` and `seen_wood` flags and we may not go
             // through drop through platforms while moving horizontally.
-            </span><span class="kw">if </span>collision_world.move_horizontal(<span class="kw-2">&amp;mut </span>transforms, entity, body.velocity.x) {
+            </span><span class="kw">if </span>collision_world.move_horizontal(
+                <span class="kw-2">&amp;mut </span>transforms,
+                entity,
+                body.velocity.x * time_factor,
+            ) {
                 body.velocity.x <span class="kw-2">*</span>= -body.bounciness;
             }
         }
@@ -614,7 +642,7 @@
         }
 
         <span class="kw">if </span>!body.is_on_ground &amp;&amp; body.has_mass {
-            body.velocity.y -= body.gravity;
+            body.velocity.y -= body.gravity * time_factor;
 
             <span class="kw">if </span>body.velocity.y &lt; -game.physics.terminal_velocity {
                 body.velocity.y = -game.physics.terminal_velocity;

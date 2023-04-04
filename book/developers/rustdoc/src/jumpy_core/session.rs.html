@@ -242,6 +242,8 @@
 <a href="#241" id="241">241</a>
 <a href="#242" id="242">242</a>
 <a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// The implementation of a Jumpy game session.
@@ -251,16 +253,17 @@
 /// - Provide input
 /// - Snapshot/Restore game state
 /// - Access the session&#39;s ECS [`World`]
-</span><span class="kw">pub struct </span>GameSession {
+</span><span class="kw">pub struct </span>CoreSession {
     <span class="kw">pub </span>world: World,
     <span class="kw">pub </span>stages: SystemStages,
     <span class="kw">pub </span>scratch_world: <span class="prelude-ty">Option</span>&lt;::bevy::ecs::world::World&gt;,
-    <span class="kw">pub </span>info: GameSessionInfo,
+    <span class="kw">pub </span>info: CoreSessionInfo,
+    <span class="kw">pub </span>time_step: f32,
 }
 
 <span class="doccomment">/// Information needed to start a game session.
 </span><span class="attr">#[derive(Debug, Clone)]
-</span><span class="kw">pub struct </span>GameSessionInfo {
+</span><span class="kw">pub struct </span>CoreSessionInfo {
     <span class="doccomment">/// The core metadata.
     </span><span class="kw">pub </span>meta: Arc&lt;CoreMeta&gt;,
     <span class="doccomment">/// Metadata for the selected map.
@@ -275,15 +278,16 @@
     <span class="kw">pub </span>is_ai: bool,
 }
 
-<span class="kw">impl </span>GameSession {
+<span class="kw">impl </span>CoreSession {
     <span class="doccomment">/// Create a new game session
-    </span><span class="kw">pub fn </span>new(<span class="kw-2">mut </span>info: GameSessionInfo) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(<span class="kw-2">mut </span>info: CoreSessionInfo) -&gt; <span class="self">Self </span>{
         <span class="comment">// Create session
         </span><span class="kw">let </span><span class="kw-2">mut </span>session = <span class="self">Self </span>{
             world: default(),
             stages: SystemStages::with_core_stages(),
             scratch_world: <span class="prelude-val">Some</span>(::bevy::ecs::world::World::new()),
             info: info.clone(),
+            time_step: <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS,
         };
 
         <span class="comment">// Install modules
@@ -367,7 +371,7 @@
         </span><span class="kw">let </span>time_resource = <span class="self">self</span>.world.resource::&lt;Time&gt;();
         time_resource
             .borrow_mut()
-            .advance_exact(std::time::Duration::from_secs_f32(<span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS));
+            .advance_exact(std::time::Duration::from_secs_f32(<span class="self">self</span>.time_step));
 
         <span class="self">self</span>.world.maintain();
 

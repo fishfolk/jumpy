@@ -1655,6 +1655,11 @@
 <a href="#1654" id="1654">1654</a>
 <a href="#1655" id="1655">1655</a>
 <a href="#1656" id="1656">1656</a>
+<a href="#1657" id="1657">1657</a>
+<a href="#1658" id="1658">1658</a>
+<a href="#1659" id="1659">1659</a>
+<a href="#1660" id="1660">1660</a>
+<a href="#1661" id="1661">1661</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
@@ -1778,8 +1783,8 @@
 
 <span class="kw">pub fn </span>cleanup_editor(session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;) {
     <span class="comment">// Update camera viewport to fit into central editor area.
-    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(session) = session {
-        <span class="kw">let </span>cameras = session.world.components.get::&lt;bones::Camera&gt;();
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session {
+        <span class="kw">let </span>cameras = session.world().components.get::&lt;bones::Camera&gt;();
         <span class="kw">let </span><span class="kw-2">mut </span>cameras = cameras.borrow_mut();
         <span class="kw">let </span>camera = cameras.iter_mut().next().unwrap();
         camera.viewport = <span class="prelude-val">None</span>;
@@ -1787,7 +1792,7 @@
 
         <span class="comment">// Enable the default camera controller
         </span><span class="kw">let </span>camera_states = session
-            .world
+            .world()
             .components
             .get::&lt;jumpy_core::camera::CameraState&gt;();
         <span class="kw">let </span><span class="kw-2">mut </span>camera_states = camera_states.borrow_mut();
@@ -1798,24 +1803,29 @@
 <span class="kw">pub fn </span>editor_ui_system(world: <span class="kw-2">&amp;mut </span>World) {
     <span class="comment">// Force set the camera position
     </span>{
-        <span class="kw">let </span>world = world.cell();
-        <span class="kw">let </span>session = world.get_resource::&lt;Session&gt;();
-        <span class="kw">let </span>editor_state = world.resource_mut::&lt;EditorState&gt;();
-        <span class="kw">let </span>camera_info = editor_state.camera;
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = session {
-            session.world.run_initialized_system(
-                <span class="kw">move </span>|
-                <span class="kw-2">mut </span>cameras: bones::CompMut&lt;bones::Camera&gt;,
-                <span class="kw-2">mut </span>camera_shakes: bones::CompMut&lt;bones::CameraShake&gt;,
-                <span class="kw-2">mut </span>camera_states: bones::CompMut&lt;jumpy_core::camera::CameraState&gt;| {
-                    <span class="kw">let </span><span class="prelude-val">Some</span>(camera) = cameras.iter_mut().next() <span class="kw">else </span>{ <span class="kw">return </span>};
-                    <span class="kw">let </span>camera_shake = camera_shakes.iter_mut().next().unwrap();
-                    <span class="kw">let </span>camera_state = camera_states.iter_mut().next().unwrap();
-                    camera.height = camera_info.height;
-                    camera_shake.center = camera_info.pos.extend(<span class="number">0.0</span>);
-                    camera_state.disable_controller = <span class="bool-val">true</span>;
-            }).ok();
-        }
+        world.resource_scope(|world, editor_state: Mut&lt;EditorState&gt;| {
+            <span class="kw">let </span>session = world.get_resource_mut::&lt;Session&gt;();
+            <span class="kw">let </span>camera_info = editor_state.camera;
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session {
+                session
+                    .world()
+                    .run_initialized_system(
+                        <span class="kw">move </span>|<span class="kw-2">mut </span>cameras: bones::CompMut&lt;bones::Camera&gt;,
+                              <span class="kw-2">mut </span>camera_shakes: bones::CompMut&lt;bones::CameraShake&gt;,
+                              <span class="kw-2">mut </span>camera_states: bones::CompMut&lt;
+                            jumpy_core::camera::CameraState,
+                        &gt;| {
+                            <span class="kw">let </span><span class="prelude-val">Some</span>(camera) = cameras.iter_mut().next() <span class="kw">else </span>{ <span class="kw">return </span>};
+                            <span class="kw">let </span>camera_shake = camera_shakes.iter_mut().next().unwrap();
+                            <span class="kw">let </span>camera_state = camera_states.iter_mut().next().unwrap();
+                            camera.height = camera_info.height;
+                            camera_shake.center = camera_info.pos.extend(<span class="number">0.0</span>);
+                            camera_state.disable_controller = <span class="bool-val">true</span>;
+                        },
+                    )
+                    .ok();
+            }
+        });
     }
 
     <span class="comment">// Get the world cursor position
@@ -1840,8 +1850,8 @@
     <span class="comment">// Get the up-to-date map meta export from the world
     </span><span class="kw">let </span>map_meta = {
         world
-            .get_resource::&lt;Session&gt;()
-            .map(|sess| sess.export_map())
+            .get_resource_mut::&lt;Session&gt;()
+            .map(|<span class="kw-2">mut </span>sess| sess.core_session().export_map())
     };
     world.insert_resource(EditorMapExport(map_meta));
 
@@ -1984,7 +1994,7 @@
 
                     <span class="kw">if </span>ui.button(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;reload&quot;</span>)).clicked() {
                         params.session_manager.stop();
-                        params.session_manager.start(GameSessionInfo {
+                        params.session_manager.start_local(CoreSessionInfo {
                             meta: params.core_meta.<span class="number">0</span>.clone(),
                             map_meta: params.map_export.<span class="number">0</span>.as_ref().unwrap().clone(),
                             player_info: default(),
@@ -2667,11 +2677,11 @@
             ui.set_enabled(<span class="bool-val">false</span>);
         }
 
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = params.session_manager.session {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = params.session_manager.session {
             <span class="kw">let </span><span class="prelude-val">Ok</span>((camera, camera_transform, <span class="kw">_</span>)) = params.camera.get_single() <span class="kw">else </span>{ <span class="kw">return </span>};
             <span class="kw">let </span><span class="prelude-val">Some</span>(map) = params.map.<span class="number">0</span>.as_ref() <span class="kw">else </span>{ <span class="kw">return</span>; };
 
-            <span class="kw">let </span>core_meta = session.world.resource::&lt;CoreMetaArc&gt;();
+            <span class="kw">let </span>core_meta = session.world().resource::&lt;CoreMetaArc&gt;();
             <span class="kw">let </span>core_meta = core_meta.borrow();
 
             <span class="kw">let </span><span class="kw-2">mut </span>map_response =
@@ -2727,7 +2737,7 @@
 
             <span class="kw">let </span>elements =
                 session
-                    .world
+                    .world()
                     .run_initialized_system(
                         |entities: bones::Res&lt;bones::Entities&gt;,
                          transforms: bones::Comp&lt;bones::Transform&gt;,
@@ -3114,7 +3124,7 @@
                             .get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle())
                             .unwrap();
                         <span class="kw">if </span>ui.button(<span class="kw-2">&amp;</span>map_meta.name).clicked() {
-                            params.session_manager.start(GameSessionInfo {
+                            params.session_manager.start_local(CoreSessionInfo {
                                 meta: params.core_meta.<span class="number">0</span>.clone(),
                                 map_meta: (<span class="kw-2">*</span>map_meta).clone(),
                                 player_info: default(),
@@ -3152,7 +3162,7 @@
                                     )
                                     .clicked()
                                 {
-                                    params.session_manager.start(GameSessionInfo {
+                                    params.session_manager.start_local(CoreSessionInfo {
                                         meta: params.core_meta.<span class="number">0</span>.clone(),
                                         map_meta: map_meta.clone(),
                                         player_info: default(),

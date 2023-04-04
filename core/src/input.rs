@@ -1,6 +1,6 @@
 use crate::{prelude::*, MAX_PLAYERS};
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     session.world.init_resource::<PlayerInputs>();
 }
 
@@ -61,7 +61,7 @@ pub struct PlayerControl {
 }
 
 /// The editor inputs that a player may make.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum EditorInput {
     /// Spawn an element onto the map.
     SpawnElement {

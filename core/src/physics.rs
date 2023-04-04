@@ -24,7 +24,7 @@ impl StageLabel for PhysicsStage {
     }
 }
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     session
         .stages
         // TODO: Think again about exactly how to organize the physics sync systems. At the time of
@@ -129,8 +129,17 @@ fn update_kinematic_bodies(
     mut bodies: CompMut<KinematicBody>,
     mut collision_world: CollisionWorld,
     mut transforms: CompMut<Transform>,
+    time: Res<Time>,
 ) {
     puffin::profile_function!();
+
+    // TODO: By default we assume a frame rate of of crate::FPS ( 60 frames-per-second ), but we may
+    // actually run at a different rate during, for example, network games. This gets the ratio
+    // between the default frame rate and the actual frame rate and is used to adjust velocities.
+    // This is a temporary fix. In the future, we should adjust all velocities to be in terms of
+    // pixels-per-second, instead of pixels-per-1/60 of a second like they are today. This temporary
+    // fix allows us to avoid chainging the velocities throughout the game for now.
+    let time_factor = time.delta().as_secs_f32() / (1.0 / crate::FPS);
 
     collision_world.update(&transforms);
     for (entity, body) in entities.iter_with(&mut bodies) {
@@ -209,14 +218,19 @@ fn update_kinematic_bodies(
         {
             puffin::profile_scope!("move body");
 
-            if collision_world.move_vertical(&mut transforms, entity, body.velocity.y) {
+            if collision_world.move_vertical(&mut transforms, entity, body.velocity.y * time_factor)
+            {
                 body.velocity.y *= -body.bounciness;
             }
 
             // NOTE: It's important that we move horizontally after we move vertically, or else the
             // horizontal movement will clear our `descent` and `seen_wood` flags and we may not go
             // through drop through platforms while moving horizontally.
-            if collision_world.move_horizontal(&mut transforms, entity, body.velocity.x) {
+            if collision_world.move_horizontal(
+                &mut transforms,
+                entity,
+                body.velocity.x * time_factor,
+            ) {
                 body.velocity.x *= -body.bounciness;
             }
         }
@@ -285,7 +299,7 @@ fn update_kinematic_bodies(
         }
 
         if !body.is_on_ground && body.has_mass {
-            body.velocity.y -= body.gravity;
+            body.velocity.y -= body.gravity * time_factor;
 
             if body.velocity.y < -game.physics.terminal_velocity {
                 body.velocity.y = -game.physics.terminal_velocity;

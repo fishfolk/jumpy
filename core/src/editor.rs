@@ -1,6 +1,6 @@
 use crate::{map::z_depth_for_map_layer, prelude::*};
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, handle_editor_input);

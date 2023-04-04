@@ -11,6 +11,7 @@ pub use crate::{
     platform::*,
     session::*,
     ui::{input::MenuAction, *},
+    utils::*,
     *,
 };
 pub use jumpy_core::bevy_prelude::*;

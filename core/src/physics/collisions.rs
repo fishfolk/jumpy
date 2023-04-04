@@ -1,7 +1,10 @@
 //! Collision detection implementation.
 
-use ::bevy::utils::{HashMap, HashSet};
+use std::hash::BuildHasherDefault;
+
 use bytemuck::Zeroable;
+
+use indexmap::IndexMap;
 
 pub use rapier2d::prelude as rapier;
 pub use shape::*;
@@ -109,18 +112,48 @@ impl Clone for RapierContext {
 
 /// A cache containing a map of entities, to the list of entities that each entity is currently
 /// intersecting with.
-#[derive(Clone, Default)]
+#[derive(Default)]
 pub struct CollisionCache {
     /// The collisions in the cache.
-    pub collisions: Arc<AtomicRefCell<HashMap<Entity, HashSet<Entity>>>>,
+    pub collisions: Arc<AtomicRefCell<IndexMap<Entity, Vec<Entity>, EntityBuildHasher>>>,
+}
+
+/// Pass-through hasher for entities to reduce hashing cost when using them as keys in a hash map.
+#[derive(Default)]
+pub struct EntityHasher {
+    bytes_so_far: usize,
+    data: [u8; 8],
+}
+type EntityBuildHasher = BuildHasherDefault<EntityHasher>;
+
+impl std::hash::Hasher for EntityHasher {
+    fn finish(&self) -> u64 {
+        u64::from_ne_bytes(self.data)
+    }
+    fn write(&mut self, bytes: &[u8]) {
+        if self.bytes_so_far + bytes.len() <= 8 {
+            self.data[self.bytes_so_far..(self.bytes_so_far + bytes.len())].copy_from_slice(bytes);
+            self.bytes_so_far += bytes.len()
+        } else {
+            panic!("Too much data for `EntityHasher`. Will only accept 64 bits.")
+        }
+    }
 }
 
 impl CollisionCache {
     /// Get the set of entities that the given `entity` is intersecting.
-    pub fn get(&self, entity: Entity) -> AtomicRefMut<'_, HashSet<Entity>> {
+    pub fn get(&self, entity: Entity) -> AtomicRefMut<'_, Vec<Entity>> {
         AtomicRefMut::map(self.collisions.borrow_mut(), |x| {
             x.entry(entity).or_default()
         })
+    }
+}
+
+impl Clone for CollisionCache {
+    fn clone(&self) -> Self {
+        Self {
+            collisions: Arc::new(AtomicRefCell::new(self.collisions.borrow().clone())),
+        }
     }
 }
 
@@ -142,12 +175,12 @@ impl rapier::EventHandler for &mut CollisionCache {
                     .borrow_mut()
                     .entry(a_ent)
                     .or_default()
-                    .insert(b_ent);
+                    .push(b_ent);
                 self.collisions
                     .borrow_mut()
                     .entry(b_ent)
                     .or_default()
-                    .insert(a_ent);
+                    .push(a_ent);
             }
             rapier::CollisionEvent::Stopped(a, b, _) => {
                 let Some(a_ent) = colliders.get(a).map(|x| RapierUserData::entity(x.user_data)) else {
@@ -161,12 +194,12 @@ impl rapier::EventHandler for &mut CollisionCache {
                     .borrow_mut()
                     .entry(a_ent)
                     .or_default()
-                    .remove(&b_ent);
+                    .retain(|e| e != &b_ent);
                 self.collisions
                     .borrow_mut()
                     .entry(b_ent)
                     .or_default()
-                    .remove(&a_ent);
+                    .retain(|e| e != &a_ent);
             }
         }
     }
@@ -329,7 +362,7 @@ impl<'a> CollisionWorld<'a> {
                 if let Some(colliding_with) = colliding_with {
                     for other_entity in colliding_with {
                         if let Some(collisions) = collisions.get_mut(&other_entity) {
-                            collisions.remove(&entity);
+                            collisions.retain(|e| e != &entity);
                         }
                     }
                 }

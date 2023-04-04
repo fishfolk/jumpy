@@ -31,7 +31,7 @@ pub struct CoreDebugSettings(pub jumpy_core::debug::DebugSettings);
 fn sync_core_debug_settings(session: Option<ResMut<Session>>, settings: Res<CoreDebugSettings>) {
     if settings.is_changed() {
         if let Some(mut session) = session {
-            session.world.insert_resource(settings.0);
+            session.world().insert_resource(settings.0);
         }
     }
 }
@@ -71,7 +71,7 @@ fn debug_tools_window(
     input: Res<Input<KeyCode>>,
     mut show_inspector: ResMut<WorldInspectorEnabled>,
     mut bones_world_snapshot: ResMut<BonesSnapshot>,
-    session: Option<ResMut<Session>>,
+    mut session: Option<ResMut<Session>>,
 ) {
     let ctx = egui_context.ctx_mut();
 
@@ -151,8 +151,8 @@ fn debug_tools_window(
                     ui.set_enabled(session.is_some());
 
                     if ui.button(localization.get("take-snapshot")).clicked() {
-                        if let Some(session) = &session {
-                            bones_world_snapshot.0 = Some(session.snapshot());
+                        if let Some(session) = &mut session {
+                            bones_world_snapshot.0 = Some(session.core_session().snapshot());
                         }
                     }
 
@@ -162,7 +162,7 @@ fn debug_tools_window(
                         if ui.button(localization.get("restore-snapshot")).clicked() {
                             if let Some(mut session) = session {
                                 if let Some(snapshot) = &mut bones_world_snapshot.0 {
-                                    session.restore(&mut snapshot.clone())
+                                    session.core_session().restore(&mut snapshot.clone())
                                 }
                             }
                         }

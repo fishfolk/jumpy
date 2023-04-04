@@ -19,8 +19,16 @@ allow = [
     "ISC",
     "BSD-2-Clause",
     "MPL-2.0", # TODO(zicklag): I believe MPL is fine for us, but maybe double-check this.
+    "OpenSSL",
 ]
 default = "deny"
+
+[[licenses.clarify]]
+name = "ring"
+expression = "OpenSSL"
+license-files = [
+    { path = "LICENSE", hash = 0xbd0eed23 }
+]
 
 [sources.allow-org]
 github = [

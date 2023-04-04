@@ -1,5 +1,7 @@
 # Menu Pages
 local-game = Local Game
+network-game = Network Game
+lan-game = LAN Game
 online-game = Online Game
 main-menu = Main Menu
 map-editor = Map Editor

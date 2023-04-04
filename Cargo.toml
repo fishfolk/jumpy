@@ -11,8 +11,9 @@ version     = "0.6.1"
 members = [".", "core"]
 
 [features]
-default = ["render"]
-render  = ["bevy/x11", "bevy/png", "bevy/filesystem_watcher", "bevy/bevy_gilrs"]
+default = []
+# Enable to simulate horrible network latency/slowness
+debug-network-slowdown = ["async-timer", "turborand"]
 
 [dependencies]
 anyhow                 = "1.0.58"
@@ -55,6 +56,13 @@ unic-langid            = "0.9.0"
 puffin_egui            = "0.19.0"
 puffin                 = "0.14.3"
 peg                    = "0.8.0"
+downcast-rs            = "1.2.0"
+async-timer            = { version = "0.2.10", optional = true }
+
+[dependencies.turborand]
+features = ["atomic"]
+version  = "0.9"
+optional = true
 
 [dependencies.bevy]
 default-features = false
@@ -68,6 +76,19 @@ web-sys      = { version = "0.3", features = ["Window", "Location", "Storage"] }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 bevy_dylib = "0.9.1"
 mimalloc   = { version = "0.1.32", default-features = false }
+# Networking deps
+ggrs                   = { version = "0.9.3", features = ["sync-send"] }
+bitfield               = "0.14.0"
+numquant               = "0.2.0"
+mdns-sd                = { version = "0.7.1", default-features = false }
+quinn                  = { version = "0.9.3", default-features = false }
+quinn_runtime_bevy     = "0.1.0"
+smallvec               = "1.10.0"
+rcgen                  = "0.10.0"
+rustls                 = { version = "0.20.7", features = ["dangerous_configuration", "quic"] }
+postcard               = { version = "1.0.4", features = ["alloc"] }
+bytes                  = "1.4.0"
+ping-rs                = "0.1.2"
 
 # Optimize dependencies even in development
 [profile.dev.package."*"]
@@ -94,7 +115,7 @@ codegen-units = 1    # Improved rapier physics perf, so it might help other stuf
 lto           = true
 
 [patch.crates-io]
-bevy_simple_tilemap = { git = "https://github.com/forbjok/bevy_simple_tilemap.git" }
+bevy_simple_tilemap = { git = "https://github.com/forbjok/bevy_simple_tilemap.git", rev = "963d447fa1fd2d6f89228106275b7086840be762" }
 
 bones_lib = { git = "https://github.com/fishfolk/bones" }
 bones_bevy_asset = { git = "https://github.com/fishfolk/bones" }

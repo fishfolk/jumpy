@@ -7,16 +7,17 @@ use crate::prelude::*;
 /// - Provide input
 /// - Snapshot/Restore game state
 /// - Access the session's ECS [`World`]
-pub struct GameSession {
+pub struct CoreSession {
     pub world: World,
     pub stages: SystemStages,
     pub scratch_world: Option<::bevy::ecs::world::World>,
-    pub info: GameSessionInfo,
+    pub info: CoreSessionInfo,
+    pub time_step: f32,
 }
 
 /// Information needed to start a game session.
 #[derive(Debug, Clone)]
-pub struct GameSessionInfo {
+pub struct CoreSessionInfo {
     /// The core metadata.
     pub meta: Arc<CoreMeta>,
     /// Metadata for the selected map.
@@ -31,15 +32,16 @@ pub struct GameSessionPlayerInfo {
     pub is_ai: bool,
 }
 
-impl GameSession {
+impl CoreSession {
     /// Create a new game session
-    pub fn new(mut info: GameSessionInfo) -> Self {
+    pub fn new(mut info: CoreSessionInfo) -> Self {
         // Create session
         let mut session = Self {
             world: default(),
             stages: SystemStages::with_core_stages(),
             scratch_world: Some(::bevy::ecs::world::World::new()),
             info: info.clone(),
+            time_step: 1.0 / crate::FPS,
         };
 
         // Install modules
@@ -123,7 +125,7 @@ impl GameSession {
         let time_resource = self.world.resource::<Time>();
         time_resource
             .borrow_mut()
-            .advance_exact(std::time::Duration::from_secs_f32(1.0 / crate::FPS));
+            .advance_exact(std::time::Duration::from_secs_f32(self.time_step));
 
         self.world.maintain();
 

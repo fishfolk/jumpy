@@ -131,7 +131,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                                 });
                                             }
                                         });
-                                        params.session_manager.start(GameSessionInfo {
+                                        params.session_manager.start_local(CoreSessionInfo {
                                             meta: params.core.0.clone(),
                                             map_meta: map_meta.clone(),
                                             player_info,
@@ -187,7 +187,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                                     });
                                                 }
                                             });
-                                            params.session_manager.start(GameSessionInfo {
+                                            params.session_manager.start_local(CoreSessionInfo {
                                                 meta: params.core.0.clone(),
                                                 map_meta,
                                                 player_info,

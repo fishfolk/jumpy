@@ -36,7 +36,7 @@ pub struct DehydrateOutOfBounds(pub Entity);
 #[ulid = "01GP421CHN323T2614F19PA5E9"]
 pub struct ElementHandle(pub Handle<ElementMeta>);
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::First, handle_out_of_bounds_items);

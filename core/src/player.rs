@@ -14,7 +14,7 @@ const PLAYER_COLORS: [Color; 4] = [
     Color::rgb(1.0, 0.0, 1.0),
 ];
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     state::install(session);
 
     // Add other player systems

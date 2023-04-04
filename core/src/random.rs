@@ -1,7 +1,7 @@
 use crate::prelude::*;
 pub use turborand::prelude::*;
 
-pub fn install(session: &mut GameSession) {
+pub fn install(session: &mut CoreSession) {
     session.world.init_resource::<GlobalRng>();
 }
 

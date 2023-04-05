@@ -1746,7 +1746,7 @@ function getImports() {
     imports.wbg.__wbg_setheight_98cf0db22c40ef07 = function(arg0, arg1) {
         getObject(arg0).height = arg1 >>> 0;
     };
-    imports.wbg.__wbindgen_closure_wrapper9835 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper9834 = function(arg0, arg1, arg2) {
         const ret = makeMutClosure(arg0, arg1, 1363, __wbg_adapter_34);
         return addHeapObject(ret);
     };

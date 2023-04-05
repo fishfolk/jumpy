@@ -12,7 +12,7 @@ use crate::{
     metadata::{GameMeta, Settings},
     platform::Storage,
     prelude::*,
-    ui::input::MenuAction,
+    ui::ui_input::MenuAction,
 };
 
 use self::settings::{ModifiedSettings, SettingsTab};

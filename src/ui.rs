@@ -2,9 +2,9 @@ use bevy::ecs::system::SystemState;
 
 use crate::prelude::*;
 
-use self::input::MenuAction;
+pub use self::ui_input::MenuAction;
 
-pub mod input;
+pub mod ui_input;
 pub mod widgets;
 
 pub mod debug_tools;
@@ -17,7 +17,7 @@ pub struct JumpyUiPlugin;
 impl Plugin for JumpyUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(bevy_egui::EguiPlugin)
-            .add_plugin(input::UiInputPlugin)
+            .add_plugin(ui_input::UiInputPlugin)
             .add_plugin(main_menu::MainMenuPlugin)
             .add_plugin(editor::EditorPlugin)
             .add_plugin(debug_tools::DebugToolsPlugin)

@@ -1,10 +1,7 @@
 use bevy_egui::*;
 use bevy_fluent::Localization;
 
-use crate::{
-    localization::LocalizationExt, metadata::GameMeta, prelude::*, ui::input::MenuAction,
-    widgets::EguiResponseExt, EngineState,
-};
+use crate::{prelude::*, widgets::EguiResponseExt};
 
 use super::{
     main_menu::map_select::MapSelectMenu,

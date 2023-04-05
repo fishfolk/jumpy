@@ -378,9 +378,9 @@
 
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
-<span class="kw">use </span><span class="self">self</span>::input::MenuAction;
+<span class="kw">pub use </span><span class="self">self</span>::ui_input::MenuAction;
 
-<span class="kw">pub mod </span>input;
+<span class="kw">pub mod </span>ui_input;
 <span class="kw">pub mod </span>widgets;
 
 <span class="kw">pub mod </span>debug_tools;
@@ -393,7 +393,7 @@
 <span class="kw">impl </span>Plugin <span class="kw">for </span>JumpyUiPlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
         app.add_plugin(bevy_egui::EguiPlugin)
-            .add_plugin(input::UiInputPlugin)
+            .add_plugin(ui_input::UiInputPlugin)
             .add_plugin(main_menu::MainMenuPlugin)
             .add_plugin(editor::EditorPlugin)
             .add_plugin(debug_tools::DebugToolsPlugin)

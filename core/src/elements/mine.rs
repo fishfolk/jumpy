@@ -16,7 +16,7 @@ pub struct IdleMine;
 #[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GPRSBWQ3X0QJC37BDQXDNASF"]
 pub struct ThrownMine {
-    // When this timer reaches the fuse duration, the mine will explode.
+    // The mine won't explode until this timer finishes.
     arm_delay: Timer,
 }
 
@@ -188,10 +188,9 @@ fn update_thrown_mines(
             unreachable!();
         };
 
-        let frame_time = 1.0 / crate::FPS;
         thrown_mine.arm_delay.tick(time.delta());
 
-        if thrown_mine.arm_delay.finished() && thrown_mine.arm_delay.elapsed_secs() < frame_time {
+        if thrown_mine.arm_delay.just_finished() {
             audio_events.play(arm_sound.clone(), *arm_sound_volume);
 
             sprite.frames = (0..*armed_frames).collect();

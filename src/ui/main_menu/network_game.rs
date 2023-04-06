@@ -420,6 +420,8 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                                     socket: lan_socket,
                                                 },
                                             );
+                                            *status = default();
+                                            *params.menu_page = MenuPage::Home;
                                         }
                                     }
                                 }
@@ -582,6 +584,17 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                                     socket: lan_socket,
                                                 },
                                             );
+                                            *status = default();
+                                            *params.menu_page = MenuPage::Home;
+                                            loop {
+                                                match MDNS.unregister(service_info.get_fullname()) {
+                                                    Ok(_) => break,
+                                                    Err(mdns_sd::Error::Again) => (),
+                                                    Err(e) => panic!(
+                                                        "Error unregistering MDNS service: {e}"
+                                                    ),
+                                                }
+                                            }
                                         }
                                         _ => (),
                                     }

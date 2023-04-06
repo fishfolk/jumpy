@@ -134,6 +134,7 @@ async fn lan_matchmaker(
                             uni.finish().await.unwrap();
                         }
 
+                        // Collect the list of client connections
                         let connections = std::array::from_fn(|i| {
                             if i == 0 {
                                 None
@@ -142,15 +143,18 @@ async fn lan_matchmaker(
                             }
                         });
 
-                        if matchmaker_channel
+                        // Send the connections to the game so that it can start the network match.
+                        matchmaker_channel
                             .try_send(LanMatchmakerResponse::GameStarting {
                                 lan_socket: LanSocket::new(connections),
                                 player_idx: 0,
                             })
-                            .is_err()
-                        {
-                            break;
-                        }
+                            .ok();
+
+                        // Break out of the server loop
+                        break;
+
+                    // If we don't have enough players yet, send the updated player count to the game.
                     } else if matchmaker_channel
                         .try_send(LanMatchmakerResponse::PlayerCount(current_players))
                         .is_err()
@@ -158,6 +162,8 @@ async fn lan_matchmaker(
                         break;
                     }
                 }
+
+                // Once we are done with server matchmaking
             }
             // Server not running or joining so do nothing
             LanMatchmakerRequest::StopServer => (),

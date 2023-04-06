@@ -2,7 +2,7 @@ use bevy::{ecs::schedule::ShouldRun, utils::Instant};
 use downcast_rs::{impl_downcast, Downcast};
 use jumpy_core::input::PlayerControl;
 
-use crate::prelude::*;
+use crate::{main_menu::MenuPage, prelude::*};
 
 pub struct JumpySessionPlugin;
 
@@ -66,7 +66,7 @@ pub trait SessionRunner: Sync + Send + Downcast {
             .update_input(|inputs| inputs.players[player_idx].control.clone())
     }
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl);
-    fn advance(&mut self, bevy_world: &mut World);
+    fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError>;
     fn run_criteria(&mut self, time: &Time) -> ShouldRun;
     /// Returns the player index of the player if we are in a network game.
     ///
@@ -76,6 +76,12 @@ pub trait SessionRunner: Sync + Send + Downcast {
     fn network_player_idx(&mut self) -> Option<usize>;
 }
 impl_downcast!(SessionRunner);
+
+/// Possible errors returned by [`SessionRunner::advance`].
+pub enum SessionError {
+    /// The session was disconnected.
+    Disconnected,
+}
 
 pub struct LocalSessionRunner {
     pub core: CoreSession,
@@ -108,10 +114,11 @@ impl SessionRunner for LocalSessionRunner {
     fn restart(&mut self) {
         self.core.restart();
     }
-    fn advance(&mut self, bevy_world: &mut World) {
+    fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError> {
         self.core.advance(bevy_world);
-    }
 
+        Ok(())
+    }
     fn run_criteria(&mut self, time: &Time) -> ShouldRun {
         const STEP: f64 = 1.0 / jumpy_core::FPS as f64;
         let delta = time.delta_seconds_f64();
@@ -281,9 +288,26 @@ fn update_game(world: &mut World) {
     }
 
     // Advance the game session
-    session.advance(world);
+    if let Err(e) = session.advance(world) {
+        match e {
+            SessionError::Disconnected => {
+                error!("Network session disconnected");
+                // Don't return the session to the world
 
-    world.insert_resource(session);
+                // Go back to the menu
+                let mut cameras = world.query_filtered::<&mut Camera, With<MenuCamera>>();
+                cameras.for_each_mut(world, |mut camera| camera.is_active = true);
+                world.insert_resource(MenuPage::Home);
+                world.insert_resource(NextState(EngineState::MainMenu));
+                world.insert_resource(NextState(InGameState::Playing));
+            }
+        }
+
+    // If the session is OK
+    } else {
+        // Return the session to the world
+        world.insert_resource(session);
+    }
 }
 
 /// Play sounds from the game session.

@@ -348,7 +348,7 @@ impl LanSessionRunner {
         let mut builder = ggrs::SessionBuilder::new()
             .with_num_players(info.player_count)
             .with_max_prediction_window(8)
-            .with_input_delay(2)
+            .with_input_delay(1)
             .with_fps((jumpy_core::FPS * NETWORK_FRAME_RATE_FACTOR) as usize)
             .unwrap();
 
@@ -399,12 +399,47 @@ impl crate::session::SessionRunner for LanSessionRunner {
         self.last_player_input = control;
     }
 
-    fn advance(&mut self, bevy_world: &mut World) {
+    fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError> {
         const STEP: f32 = 1.0 / (jumpy_core::FPS * NETWORK_FRAME_RATE_FACTOR);
         let delta = self.delta;
         let local_player_idx = self.network_player_idx().unwrap();
 
         self.accumulator += delta;
+
+        let mut skip_frames = 0;
+        for event in self.session.events() {
+            match event {
+                ggrs::GGRSEvent::Synchronizing { addr, total, count } => {
+                    info!(player=%addr, %total, progress=%count, "Syncing network player");
+                }
+                ggrs::GGRSEvent::Synchronized { addr } => {
+                    info!(player=%addr, "Syncrhonized network client");
+                }
+                ggrs::GGRSEvent::Disconnected { .. } => return Err(SessionError::Disconnected),
+                ggrs::GGRSEvent::NetworkInterrupted { addr, .. } => {
+                    info!(player=%addr, "Network player interrupted");
+                }
+                ggrs::GGRSEvent::NetworkResumed { addr } => {
+                    info!(player=%addr, "Network player re-connected");
+                }
+                ggrs::GGRSEvent::WaitRecommendation {
+                    skip_frames: skip_count,
+                } => {
+                    info!(
+                        "Skipping {skip_count} frames to give network players a chance to catch up"
+                    );
+                    skip_frames = skip_count
+                }
+                ggrs::GGRSEvent::DesyncDetected {
+                    frame,
+                    local_checksum,
+                    remote_checksum,
+                    addr,
+                } => {
+                    error!(%frame, %local_checksum, %remote_checksum, player=%addr, "Network de-sync detected");
+                }
+            }
+        }
 
         loop {
             self.session
@@ -412,6 +447,11 @@ impl crate::session::SessionRunner for LanSessionRunner {
                 .unwrap();
             if self.accumulator >= STEP {
                 self.accumulator -= STEP;
+
+                if skip_frames > 0 {
+                    skip_frames = skip_frames.saturating_sub(1);
+                    continue;
+                }
 
                 match self.session.advance_frame() {
                     Ok(requests) => {
@@ -466,6 +506,9 @@ impl crate::session::SessionRunner for LanSessionRunner {
                         ggrs::GGRSError::NotSynchronized => {
                             debug!("Waiting for network clients to sync")
                         }
+                        ggrs::GGRSError::PredictionThreshold => {
+                            warn!("Freezing game while waiting for network to catch-up.")
+                        }
                         e => error!("Network protocol error: {e}"),
                     },
                 }
@@ -473,6 +516,8 @@ impl crate::session::SessionRunner for LanSessionRunner {
                 break;
             }
         }
+
+        Ok(())
     }
 
     fn run_criteria(&mut self, time: &Time) -> bevy::ecs::schedule::ShouldRun {

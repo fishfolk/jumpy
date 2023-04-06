@@ -315,11 +315,35 @@
 <a href="#314" id="314">314</a>
 <a href="#315" id="315">315</a>
 <a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::{ecs::schedule::ShouldRun, utils::Instant};
 <span class="kw">use </span>downcast_rs::{impl_downcast, Downcast};
 <span class="kw">use </span>jumpy_core::input::PlayerControl;
 
-<span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<span class="kw">use crate</span>::{main_menu::MenuPage, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub struct </span>JumpySessionPlugin;
 
@@ -383,7 +407,7 @@
             .update_input(|inputs| inputs.players[player_idx].control.clone())
     }
     <span class="kw">fn </span>set_player_input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player_idx: usize, control: PlayerControl);
-    <span class="kw">fn </span>advance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bevy_world: <span class="kw-2">&amp;mut </span>World);
+    <span class="kw">fn </span>advance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bevy_world: <span class="kw-2">&amp;mut </span>World) -&gt; <span class="prelude-ty">Result</span>&lt;(), SessionError&gt;;
     <span class="kw">fn </span>run_criteria(<span class="kw-2">&amp;mut </span><span class="self">self</span>, time: <span class="kw-2">&amp;</span>Time) -&gt; ShouldRun;
     <span class="doccomment">/// Returns the player index of the player if we are in a network game.
     ///
@@ -393,6 +417,12 @@
     </span><span class="kw">fn </span>network_player_idx(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;usize&gt;;
 }
 <span class="macro">impl_downcast!</span>(SessionRunner);
+
+<span class="doccomment">/// Possible errors returned by [`SessionRunner::advance`].
+</span><span class="kw">pub enum </span>SessionError {
+    <span class="doccomment">/// The session was disconnected.
+    </span>Disconnected,
+}
 
 <span class="kw">pub struct </span>LocalSessionRunner {
     <span class="kw">pub </span>core: CoreSession,
@@ -425,10 +455,11 @@
     <span class="kw">fn </span>restart(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="self">self</span>.core.restart();
     }
-    <span class="kw">fn </span>advance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bevy_world: <span class="kw-2">&amp;mut </span>World) {
+    <span class="kw">fn </span>advance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bevy_world: <span class="kw-2">&amp;mut </span>World) -&gt; <span class="prelude-ty">Result</span>&lt;(), SessionError&gt; {
         <span class="self">self</span>.core.advance(bevy_world);
-    }
 
+        <span class="prelude-val">Ok</span>(())
+    }
     <span class="kw">fn </span>run_criteria(<span class="kw-2">&amp;mut </span><span class="self">self</span>, time: <span class="kw-2">&amp;</span>Time) -&gt; ShouldRun {
         <span class="kw">const </span>STEP: f64 = <span class="number">1.0 </span>/ jumpy_core::FPS <span class="kw">as </span>f64;
         <span class="kw">let </span>delta = time.delta_seconds_f64();
@@ -598,9 +629,26 @@
     }
 
     <span class="comment">// Advance the game session
-    </span>session.advance(world);
+    </span><span class="kw">if let </span><span class="prelude-val">Err</span>(e) = session.advance(world) {
+        <span class="kw">match </span>e {
+            SessionError::Disconnected =&gt; {
+                <span class="macro">error!</span>(<span class="string">&quot;Network session disconnected&quot;</span>);
+                <span class="comment">// Don&#39;t return the session to the world
 
-    world.insert_resource(session);
+                // Go back to the menu
+                </span><span class="kw">let </span><span class="kw-2">mut </span>cameras = world.query_filtered::&lt;<span class="kw-2">&amp;mut </span>Camera, With&lt;MenuCamera&gt;&gt;();
+                cameras.for_each_mut(world, |<span class="kw-2">mut </span>camera| camera.is_active = <span class="bool-val">true</span>);
+                world.insert_resource(MenuPage::Home);
+                world.insert_resource(NextState(EngineState::MainMenu));
+                world.insert_resource(NextState(InGameState::Playing));
+            }
+        }
+
+    <span class="comment">// If the session is OK
+    </span>} <span class="kw">else </span>{
+        <span class="comment">// Return the session to the world
+        </span>world.insert_resource(session);
+    }
 }
 
 <span class="doccomment">/// Play sounds from the game session.

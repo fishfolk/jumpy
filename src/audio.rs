@@ -105,6 +105,7 @@ fn music_system(
                         instance: music
                             .play(song.inner.clone_weak())
                             .linear_fade_in(MUSIC_FADE_DURATION)
+                            .looped()
                             .handle(),
                         idx: 0,
                     };
@@ -122,6 +123,7 @@ fn music_system(
                         music
                             .play(game.music.character_screen.inner.clone_weak())
                             .linear_fade_in(MUSIC_FADE_DURATION)
+                            .looped()
                             .handle(),
                     );
                 }
@@ -136,6 +138,7 @@ fn music_system(
                         music
                             .play(game.music.title_screen.inner.clone_weak())
                             .linear_fade_in(MUSIC_FADE_DURATION)
+                            .looped()
                             .handle(),
                     );
                 }
@@ -150,6 +153,7 @@ fn music_system(
                         music
                             .play(game.music.credits.inner.clone_weak())
                             .linear_fade_in(MUSIC_FADE_DURATION)
+                            .looped()
                             .handle(),
                     );
                 }

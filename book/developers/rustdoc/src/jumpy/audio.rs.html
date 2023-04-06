@@ -158,6 +158,10 @@
 <a href="#157" id="157">157</a>
 <a href="#158" id="158">158</a>
 <a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use </span>bevy_kira_audio::{
@@ -265,6 +269,7 @@
                         instance: music
                             .play(song.inner.clone_weak())
                             .linear_fade_in(MUSIC_FADE_DURATION)
+                            .looped()
                             .handle(),
                         idx: <span class="number">0</span>,
                     };
@@ -282,6 +287,7 @@
                         music
                             .play(game.music.character_screen.inner.clone_weak())
                             .linear_fade_in(MUSIC_FADE_DURATION)
+                            .looped()
                             .handle(),
                     );
                 }
@@ -296,6 +302,7 @@
                         music
                             .play(game.music.title_screen.inner.clone_weak())
                             .linear_fade_in(MUSIC_FADE_DURATION)
+                            .looped()
                             .handle(),
                     );
                 }
@@ -310,6 +317,7 @@
                         music
                             .play(game.music.credits.inner.clone_weak())
                             .linear_fade_in(MUSIC_FADE_DURATION)
+                            .looped()
                             .handle(),
                     );
                 }

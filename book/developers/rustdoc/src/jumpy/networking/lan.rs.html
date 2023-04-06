@@ -536,6 +536,12 @@
 <a href="#535" id="535">535</a>
 <a href="#536" id="536">536</a>
 <a href="#537" id="537">537</a>
+<a href="#538" id="538">538</a>
+<a href="#539" id="539">539</a>
+<a href="#540" id="540">540</a>
+<a href="#541" id="541">541</a>
+<a href="#542" id="542">542</a>
+<a href="#543" id="543">543</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
 <span class="kw">use </span>bevy::tasks::IoTaskPool;
@@ -672,7 +678,8 @@
                             uni.finish().<span class="kw">await</span>.unwrap();
                         }
 
-                        <span class="kw">let </span>connections = std::array::from_fn(|i| {
+                        <span class="comment">// Collect the list of client connections
+                        </span><span class="kw">let </span>connections = std::array::from_fn(|i| {
                             <span class="kw">if </span>i == <span class="number">0 </span>{
                                 <span class="prelude-val">None
                             </span>} <span class="kw">else </span>{
@@ -680,23 +687,28 @@
                             }
                         });
 
-                        <span class="kw">if </span>matchmaker_channel
+                        <span class="comment">// Send the connections to the game so that it can start the network match.
+                        </span>matchmaker_channel
                             .try_send(LanMatchmakerResponse::GameStarting {
                                 lan_socket: LanSocket::new(connections),
                                 player_idx: <span class="number">0</span>,
                             })
-                            .is_err()
-                        {
-                            <span class="kw">break</span>;
-                        }
-                    } <span class="kw">else if </span>matchmaker_channel
+                            .ok();
+
+                        <span class="comment">// Break out of the server loop
+                        </span><span class="kw">break</span>;
+
+                    <span class="comment">// If we don&#39;t have enough players yet, send the updated player count to the game.
+                    </span>} <span class="kw">else if </span>matchmaker_channel
                         .try_send(LanMatchmakerResponse::PlayerCount(current_players))
                         .is_err()
                     {
                         <span class="kw">break</span>;
                     }
                 }
-            }
+
+                <span class="comment">// Once we are done with server matchmaking
+            </span>}
             <span class="comment">// Server not running or joining so do nothing
             </span>LanMatchmakerRequest::StopServer =&gt; (),
             LanMatchmakerRequest::StopJoin =&gt; (),

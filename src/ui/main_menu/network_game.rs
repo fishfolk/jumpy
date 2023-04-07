@@ -377,6 +377,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                         networking::LanMatchmakerResponse::GameStarting {
                                             lan_socket,
                                             player_idx,
+                                            player_count,
                                         } => {
                                             info!(?player_idx, "Starting network game");
                                             let map_meta = params
@@ -411,12 +412,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                                     player_is_local: std::array::from_fn(|i| {
                                                         i == player_idx
                                                     }),
-                                                    player_count: lan_socket
-                                                        .connections
-                                                        .iter()
-                                                        .filter(|x| x.is_some())
-                                                        .count()
-                                                        + 1,
+                                                    player_count,
                                                     socket: lan_socket,
                                                 },
                                             );
@@ -541,6 +537,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                         networking::LanMatchmakerResponse::GameStarting {
                                             lan_socket,
                                             player_idx,
+                                            player_count,
                                         } => {
                                             info!(?player_idx, "Starting network game");
                                             let map_meta = params
@@ -575,12 +572,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                                     player_is_local: std::array::from_fn(|i| {
                                                         i == player_idx
                                                     }),
-                                                    player_count: lan_socket
-                                                        .connections
-                                                        .iter()
-                                                        .filter(|x| x.is_some())
-                                                        .count()
-                                                        + 1,
+                                                    player_count,
                                                     socket: lan_socket,
                                                 },
                                             );

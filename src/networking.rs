@@ -40,6 +40,7 @@ pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
 
     // Open Socket and create endpoint
     let port = rand::thread_rng().gen_range(10000..=11000); // Bind a random port
+    info!(port, "Started network endpoint");
     let socket = std::net::UdpSocket::bind(("0.0.0.0", port)).unwrap();
 
     let client_config = rustls::ClientConfig::builder()

@@ -542,6 +542,45 @@
 <a href="#541" id="541">541</a>
 <a href="#542" id="542">542</a>
 <a href="#543" id="543">543</a>
+<a href="#544" id="544">544</a>
+<a href="#545" id="545">545</a>
+<a href="#546" id="546">546</a>
+<a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
+<a href="#550" id="550">550</a>
+<a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
+<a href="#554" id="554">554</a>
+<a href="#555" id="555">555</a>
+<a href="#556" id="556">556</a>
+<a href="#557" id="557">557</a>
+<a href="#558" id="558">558</a>
+<a href="#559" id="559">559</a>
+<a href="#560" id="560">560</a>
+<a href="#561" id="561">561</a>
+<a href="#562" id="562">562</a>
+<a href="#563" id="563">563</a>
+<a href="#564" id="564">564</a>
+<a href="#565" id="565">565</a>
+<a href="#566" id="566">566</a>
+<a href="#567" id="567">567</a>
+<a href="#568" id="568">568</a>
+<a href="#569" id="569">569</a>
+<a href="#570" id="570">570</a>
+<a href="#571" id="571">571</a>
+<a href="#572" id="572">572</a>
+<a href="#573" id="573">573</a>
+<a href="#574" id="574">574</a>
+<a href="#575" id="575">575</a>
+<a href="#576" id="576">576</a>
+<a href="#577" id="577">577</a>
+<a href="#578" id="578">578</a>
+<a href="#579" id="579">579</a>
+<a href="#580" id="580">580</a>
+<a href="#581" id="581">581</a>
+<a href="#582" id="582">582</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
 <span class="kw">use </span>bevy::tasks::IoTaskPool;
@@ -574,12 +613,11 @@
     <span class="attr">#[derive(Serialize, Deserialize)]
     </span><span class="kw">enum </span>MatchmakerNetMsg {
         MatchReady {
-            <span class="doccomment">/// The random seed t use the for the match.
-            </span>random_seed: u64,
             <span class="doccomment">/// The peers they have for the match, with the index in the array being the player index of the peer.
-            </span>peers: [<span class="prelude-ty">Option</span>&lt;SocketAddrV4&gt;; MAX_PLAYERS - <span class="number">1</span>],
+            </span>peers: [<span class="prelude-ty">Option</span>&lt;SocketAddrV4&gt;; MAX_PLAYERS],
             <span class="doccomment">/// The player index of the player getting the message.
             </span>player_idx: usize,
+            player_count: usize,
         },
     }
 
@@ -651,16 +689,16 @@
 
                         <span class="comment">// Tell all clients we&#39;re ready
                         </span><span class="kw">for </span>(i, conn) <span class="kw">in </span>connections.iter().enumerate() {
-                            <span class="kw">let </span><span class="kw-2">mut </span>peers = [<span class="prelude-val">None</span>; MAX_PLAYERS - <span class="number">1</span>];
+                            <span class="kw">let </span><span class="kw-2">mut </span>peers = [<span class="prelude-val">None</span>; MAX_PLAYERS];
                             connections
                                 .iter()
                                 .enumerate()
                                 .filter(|x| x.<span class="number">0 </span>!= i)
                                 .for_each(|(i, conn)| {
                                     <span class="kw">if let </span>SocketAddr::V4(addr) = conn.remote_address() {
-                                        peers[i] = <span class="prelude-val">Some</span>(addr);
+                                        peers[i + <span class="number">1</span>] = <span class="prelude-val">Some</span>(addr);
                                     } <span class="kw">else </span>{
-                                        <span class="macro">unreachable!</span>(<span class="string">&quot;IPV6 not support in lan matchmaking&quot;</span>);
+                                        <span class="macro">unreachable!</span>(<span class="string">&quot;IPV6 not supported in LAN matchmaking&quot;</span>);
                                     };
                                 });
 
@@ -668,8 +706,8 @@
                             uni.write_all(
                                 <span class="kw-2">&amp;</span>postcard::to_vec::&lt;<span class="kw">_</span>, <span class="number">20</span>&gt;(<span class="kw-2">&amp;</span>MatchmakerNetMsg::MatchReady {
                                     player_idx: i + <span class="number">1</span>,
-                                    random_seed: <span class="number">0</span>, <span class="comment">// TODO: random random seed.
-                                    </span>peers,
+                                    peers,
+                                    player_count,
                                 })
                                 .unwrap(),
                             )
@@ -692,8 +730,10 @@
                             .try_send(LanMatchmakerResponse::GameStarting {
                                 lan_socket: LanSocket::new(connections),
                                 player_idx: <span class="number">0</span>,
+                                player_count,
                             })
                             .ok();
+                        <span class="macro">info!</span>(player_idx=<span class="number">0</span>, %player_count, <span class="string">&quot;Matchmaking finished&quot;</span>);
 
                         <span class="comment">// Break out of the server loop
                         </span><span class="kw">break</span>;
@@ -728,32 +768,69 @@
 
                 <span class="kw">match </span>message {
                     MatchmakerNetMsg::MatchReady {
-                        random_seed: <span class="kw">_</span>, <span class="comment">// TODO: use random seed
-                        </span>peers: other_peers,
+                        peers: peer_addrs,
                         player_idx,
+                        player_count,
                     } =&gt; {
-                        <span class="kw">let </span><span class="kw-2">mut </span>peers = std::array::from_fn(|<span class="kw">_</span>| <span class="prelude-val">None</span>);
-                        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..MAX_PLAYERS {
-                            peers[i] = <span class="kw">if </span>i == <span class="number">0 </span>{
-                                <span class="prelude-val">Some</span>(conn.clone())
-                            } <span class="kw">else if let </span><span class="prelude-val">Some</span>(addr) = other_peers[i - <span class="number">1</span>] {
-                                <span class="kw">let </span>conn = NETWORK_ENDPOINT
-                                    .connect(addr.into(), <span class="string">&quot;jumpy-peer&quot;</span>)
-                                    .unwrap()
-                                    .<span class="kw">await
-                                    </span>.expect(<span class="string">&quot;Could not connect to peer&quot;</span>);
+                        <span class="macro">info!</span>(%player_count, %player_idx, <span class="question-mark">?</span>peer_addrs, <span class="string">&quot;Matchmaking finished&quot;</span>);
+                        <span class="kw">let </span><span class="kw-2">mut </span>peer_connections = std::array::from_fn(|<span class="kw">_</span>| <span class="prelude-val">None</span>);
 
-                                <span class="prelude-val">Some</span>(conn)
-                            } <span class="kw">else </span>{
-                                <span class="prelude-val">None
-                            </span>};
+                        <span class="comment">// Set the connection to the matchmaker for player 0
+                        </span>peer_connections[<span class="number">0</span>] = <span class="prelude-val">Some</span>(conn.clone());
+
+                        <span class="comment">// For every peer with a player index that is higher than ours, wait for
+                        // them to connect to us.
+                        </span><span class="kw">let </span>range = (player_idx + <span class="number">1</span>)..player_count;
+                        <span class="macro">info!</span>(players=<span class="question-mark">?</span>range, <span class="string">&quot;Waiting for {} peer connections&quot;</span>, range.len());
+                        <span class="kw">for _ in </span>range {
+                            <span class="comment">// Wait for connection
+                            </span><span class="kw">let </span>conn = NETWORK_ENDPOINT
+                                .accept()
+                                .<span class="kw">await
+                                </span>.unwrap()
+                                .<span class="kw">await
+                                </span>.expect(<span class="string">&quot;Could not accept incomming connection&quot;</span>);
+
+                            <span class="comment">// Receive the player index
+                            </span><span class="kw">let </span>idx = {
+                                <span class="kw">let </span><span class="kw-2">mut </span>buf = [<span class="number">0</span>; <span class="number">1</span>];
+                                <span class="kw">let </span><span class="kw-2">mut </span>channel = conn.accept_uni().<span class="kw">await</span>.unwrap();
+                                channel.read_exact(<span class="kw-2">&amp;mut </span>buf).<span class="kw">await</span>.unwrap();
+
+                                buf[<span class="number">0</span>] <span class="kw">as </span>usize
+                            };
+                            <span class="macro">assert!</span>(idx &lt; MAX_PLAYERS, <span class="string">&quot;Invalid player index&quot;</span>);
+
+                            peer_connections[idx] = <span class="prelude-val">Some</span>(conn);
                         }
-                        <span class="kw">let </span>lan_socket = LanSocket::new(peers);
+
+                        <span class="comment">// For every peer with a player index lower than ours, connect to them.
+                        </span><span class="kw">let </span>range = <span class="number">1</span>..player_idx;
+                        <span class="macro">info!</span>(players=<span class="question-mark">?</span>range, <span class="string">&quot;Connecting to {} peers&quot;</span>, range.len());
+                        <span class="kw">for </span>i <span class="kw">in </span>range {
+                            <span class="kw">let </span>addr = peer_addrs[i].unwrap();
+                            <span class="kw">let </span>conn = NETWORK_ENDPOINT
+                                .connect(addr.into(), <span class="string">&quot;jumpy-peer&quot;</span>)
+                                .unwrap()
+                                .<span class="kw">await
+                                </span>.expect(<span class="string">&quot;Could not connect to peer&quot;</span>);
+
+                            <span class="comment">// Send player index
+                            </span><span class="kw">let </span><span class="kw-2">mut </span>channel = conn.open_uni().<span class="kw">await</span>.unwrap();
+                            channel.write(<span class="kw-2">&amp;</span>[player_idx <span class="kw">as </span>u8]).<span class="kw">await</span>.unwrap();
+                            channel.finish().<span class="kw">await</span>.unwrap();
+
+                            peer_connections[i] = <span class="prelude-val">Some</span>(conn);
+                        }
+
+                        <span class="kw">let </span>lan_socket = LanSocket::new(peer_connections);
+                        <span class="macro">info!</span>(<span class="string">&quot;Connections established.&quot;</span>);
 
                         matchmaker_channel
                             .try_send(LanMatchmakerResponse::GameStarting {
                                 lan_socket,
                                 player_idx,
+                                player_count,
                             })
                             .ok();
                     }
@@ -778,6 +855,7 @@
     GameStarting {
         lan_socket: LanSocket,
         player_idx: usize,
+        player_count: usize,
     },
 }
 

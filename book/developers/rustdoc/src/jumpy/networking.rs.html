@@ -61,6 +61,7 @@
 <a href="#60" id="60">60</a>
 <a href="#61" id="61">61</a>
 <a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
 </pre><pre class="rust"><code><span class="comment">// #![doc = include_str!(&quot;./networking.md&quot;)]
 
 </span><span class="kw">use </span>ggrs::P2PSession;
@@ -103,7 +104,8 @@
 
     <span class="comment">// Open Socket and create endpoint
     </span><span class="kw">let </span>port = rand::thread_rng().gen_range(<span class="number">10000</span>..=<span class="number">11000</span>); <span class="comment">// Bind a random port
-    </span><span class="kw">let </span>socket = std::net::UdpSocket::bind((<span class="string">&quot;0.0.0.0&quot;</span>, port)).unwrap();
+    </span><span class="macro">info!</span>(port, <span class="string">&quot;Started network endpoint&quot;</span>);
+    <span class="kw">let </span>socket = std::net::UdpSocket::bind((<span class="string">&quot;0.0.0.0&quot;</span>, port)).unwrap();
 
     <span class="kw">let </span>client_config = rustls::ClientConfig::builder()
         .with_safe_defaults()

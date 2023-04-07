@@ -30,12 +30,11 @@ async fn lan_matchmaker(
     #[derive(Serialize, Deserialize)]
     enum MatchmakerNetMsg {
         MatchReady {
-            /// The random seed t use the for the match.
-            random_seed: u64,
             /// The peers they have for the match, with the index in the array being the player index of the peer.
-            peers: [Option<SocketAddrV4>; MAX_PLAYERS - 1],
+            peers: [Option<SocketAddrV4>; MAX_PLAYERS],
             /// The player index of the player getting the message.
             player_idx: usize,
+            player_count: usize,
         },
     }
 
@@ -107,16 +106,16 @@ async fn lan_matchmaker(
 
                         // Tell all clients we're ready
                         for (i, conn) in connections.iter().enumerate() {
-                            let mut peers = [None; MAX_PLAYERS - 1];
+                            let mut peers = [None; MAX_PLAYERS];
                             connections
                                 .iter()
                                 .enumerate()
                                 .filter(|x| x.0 != i)
                                 .for_each(|(i, conn)| {
                                     if let SocketAddr::V4(addr) = conn.remote_address() {
-                                        peers[i] = Some(addr);
+                                        peers[i + 1] = Some(addr);
                                     } else {
-                                        unreachable!("IPV6 not support in lan matchmaking");
+                                        unreachable!("IPV6 not supported in LAN matchmaking");
                                     };
                                 });
 
@@ -124,8 +123,8 @@ async fn lan_matchmaker(
                             uni.write_all(
                                 &postcard::to_vec::<_, 20>(&MatchmakerNetMsg::MatchReady {
                                     player_idx: i + 1,
-                                    random_seed: 0, // TODO: random random seed.
                                     peers,
+                                    player_count,
                                 })
                                 .unwrap(),
                             )
@@ -148,8 +147,10 @@ async fn lan_matchmaker(
                             .try_send(LanMatchmakerResponse::GameStarting {
                                 lan_socket: LanSocket::new(connections),
                                 player_idx: 0,
+                                player_count,
                             })
                             .ok();
+                        info!(player_idx=0, %player_count, "Matchmaking finished");
 
                         // Break out of the server loop
                         break;
@@ -184,32 +185,69 @@ async fn lan_matchmaker(
 
                 match message {
                     MatchmakerNetMsg::MatchReady {
-                        random_seed: _, // TODO: use random seed
-                        peers: other_peers,
+                        peers: peer_addrs,
                         player_idx,
+                        player_count,
                     } => {
-                        let mut peers = std::array::from_fn(|_| None);
-                        for i in 0..MAX_PLAYERS {
-                            peers[i] = if i == 0 {
-                                Some(conn.clone())
-                            } else if let Some(addr) = other_peers[i - 1] {
-                                let conn = NETWORK_ENDPOINT
-                                    .connect(addr.into(), "jumpy-peer")
-                                    .unwrap()
-                                    .await
-                                    .expect("Could not connect to peer");
+                        info!(%player_count, %player_idx, ?peer_addrs, "Matchmaking finished");
+                        let mut peer_connections = std::array::from_fn(|_| None);
 
-                                Some(conn)
-                            } else {
-                                None
+                        // Set the connection to the matchmaker for player 0
+                        peer_connections[0] = Some(conn.clone());
+
+                        // For every peer with a player index that is higher than ours, wait for
+                        // them to connect to us.
+                        let range = (player_idx + 1)..player_count;
+                        info!(players=?range, "Waiting for {} peer connections", range.len());
+                        for _ in range {
+                            // Wait for connection
+                            let conn = NETWORK_ENDPOINT
+                                .accept()
+                                .await
+                                .unwrap()
+                                .await
+                                .expect("Could not accept incomming connection");
+
+                            // Receive the player index
+                            let idx = {
+                                let mut buf = [0; 1];
+                                let mut channel = conn.accept_uni().await.unwrap();
+                                channel.read_exact(&mut buf).await.unwrap();
+
+                                buf[0] as usize
                             };
+                            assert!(idx < MAX_PLAYERS, "Invalid player index");
+
+                            peer_connections[idx] = Some(conn);
                         }
-                        let lan_socket = LanSocket::new(peers);
+
+                        // For every peer with a player index lower than ours, connect to them.
+                        let range = 1..player_idx;
+                        info!(players=?range, "Connecting to {} peers", range.len());
+                        for i in range {
+                            let addr = peer_addrs[i].unwrap();
+                            let conn = NETWORK_ENDPOINT
+                                .connect(addr.into(), "jumpy-peer")
+                                .unwrap()
+                                .await
+                                .expect("Could not connect to peer");
+
+                            // Send player index
+                            let mut channel = conn.open_uni().await.unwrap();
+                            channel.write(&[player_idx as u8]).await.unwrap();
+                            channel.finish().await.unwrap();
+
+                            peer_connections[i] = Some(conn);
+                        }
+
+                        let lan_socket = LanSocket::new(peer_connections);
+                        info!("Connections established.");
 
                         matchmaker_channel
                             .try_send(LanMatchmakerResponse::GameStarting {
                                 lan_socket,
                                 player_idx,
+                                player_count,
                             })
                             .ok();
                     }
@@ -234,6 +272,7 @@ pub enum LanMatchmakerResponse {
     GameStarting {
         lan_socket: LanSocket,
         player_idx: usize,
+        player_count: usize,
     },
 }
 

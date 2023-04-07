@@ -672,7 +672,7 @@
 <span class="kw">use </span>bevy::utils::Instant;
 <span class="kw">use </span>smallvec::SmallVec;
 
-<span class="kw">use </span><span class="kw">crate</span>::networking::{LanSessionInfo, LAN_MATCHMAKER, NETWORK_ENDPOINT};
+<span class="kw">use </span><span class="kw">crate</span>::networking::{GgrsSessionRunnerInfo, LAN_MATCHMAKER, NETWORK_ENDPOINT};
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
@@ -1074,7 +1074,7 @@
 
                                             params.session_manager.start_lan(
                                                 core_info,
-                                                LanSessionInfo {
+                                                GgrsSessionRunnerInfo {
                                                     player_is_local: std::array::from_fn(|i| {
                                                         i == player_idx
                                                     }),
@@ -1234,7 +1234,7 @@
 
                                             params.session_manager.start_lan(
                                                 core_info,
-                                                LanSessionInfo {
+                                                GgrsSessionRunnerInfo {
                                                     player_is_local: std::array::from_fn(|i| {
                                                         i == player_idx
                                                     }),

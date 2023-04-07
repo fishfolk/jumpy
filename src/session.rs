@@ -178,9 +178,9 @@ impl<'w, 's> SessionManager<'w, 's> {
     pub fn start_lan(
         &mut self,
         core_info: CoreSessionInfo,
-        lan_info: crate::networking::LanSessionInfo,
+        lan_info: crate::networking::GgrsSessionRunnerInfo,
     ) {
-        let session = Session(Box::new(crate::networking::LanSessionRunner::new(
+        let session = Session(Box::new(crate::networking::GgrsSessionRunner::new(
             CoreSession::new(core_info),
             lan_info,
         )));

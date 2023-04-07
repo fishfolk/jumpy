@@ -1,12 +1,15 @@
 // #![doc = include_str!("./networking.md")]
 
 use ggrs::P2PSession;
+use jumpy_core::input::PlayerControl;
 use rand::Rng;
 
 use crate::prelude::*;
 
 pub mod certs;
+
 pub mod proto;
+use proto::*;
 
 pub use lan::*;
 mod lan;
@@ -61,3 +64,221 @@ pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
 
     endpoint
 });
+
+/// Trait implemented by sockets that may be used for a [`GgrsSessionRunner`].
+pub trait GgrsSocket: ggrs::NonBlockingSocket<usize> {}
+
+/// [`SessionRunner`] implementation that uses [`ggrs`] for network play.
+pub struct GgrsSessionRunner {
+    pub last_player_input: PlayerControl,
+    pub core: CoreSession,
+    pub session: P2PSession<GgrsConfig>,
+    pub player_is_local: [bool; MAX_PLAYERS],
+    pub delta: f32,
+    pub accumulator: f32,
+}
+
+/// The info required to create a [`GgrsSessionRunner`].
+#[derive(Debug)]
+pub struct GgrsSessionRunnerInfo {
+    pub socket: LanSocket,
+    pub player_is_local: [bool; MAX_PLAYERS],
+    pub player_count: usize,
+}
+
+impl GgrsSessionRunner {
+    pub fn new(mut core: CoreSession, info: GgrsSessionRunnerInfo) -> Self
+    where
+        Self: Sized,
+    {
+        core.time_step = 1.0 / (jumpy_core::FPS * NETWORK_FRAME_RATE_FACTOR);
+        let mut builder = ggrs::SessionBuilder::new()
+            .with_num_players(info.player_count)
+            .with_max_prediction_window(8)
+            .with_input_delay(1)
+            .with_fps((jumpy_core::FPS * NETWORK_FRAME_RATE_FACTOR) as usize)
+            .unwrap();
+
+        for i in 0..info.player_count {
+            if info.player_is_local[i] {
+                builder = builder.add_player(ggrs::PlayerType::Local, i).unwrap();
+            } else {
+                builder = builder.add_player(ggrs::PlayerType::Remote(i), i).unwrap();
+            }
+        }
+
+        let session = builder.start_p2p_session(info.socket).unwrap();
+
+        Self {
+            last_player_input: PlayerControl::default(),
+            core,
+            session,
+            player_is_local: info.player_is_local,
+            accumulator: default(),
+            delta: default(),
+        }
+    }
+}
+
+fn get_dense_input(control: &PlayerControl) -> DensePlayerControl {
+    let mut dense_control = DensePlayerControl::default();
+    dense_control.set_jump_pressed(control.jump_just_pressed);
+    dense_control.set_grab_pressed(control.grab_pressed);
+    dense_control.set_slide_pressed(control.slide_pressed);
+    dense_control.set_shoot_pressed(control.shoot_pressed);
+    dense_control.set_move_direction(DenseMoveDirection(control.move_direction));
+    dense_control
+}
+
+impl crate::session::SessionRunner for GgrsSessionRunner {
+    fn core_session(&mut self) -> &mut CoreSession {
+        &mut self.core
+    }
+
+    fn restart(&mut self) {
+        self.core.restart()
+    }
+
+    fn set_player_input(&mut self, player_idx: usize, control: PlayerControl) {
+        if !self.player_is_local[player_idx] {
+            return;
+        }
+        self.last_player_input = control;
+    }
+
+    fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError> {
+        const STEP: f32 = 1.0 / (jumpy_core::FPS * NETWORK_FRAME_RATE_FACTOR);
+        let delta = self.delta;
+        let local_player_idx = self.network_player_idx().unwrap();
+
+        self.accumulator += delta;
+
+        let mut skip_frames = 0;
+        for event in self.session.events() {
+            match event {
+                ggrs::GGRSEvent::Synchronizing { addr, total, count } => {
+                    info!(player=%addr, %total, progress=%count, "Syncing network player");
+                }
+                ggrs::GGRSEvent::Synchronized { addr } => {
+                    info!(player=%addr, "Syncrhonized network client");
+                }
+                ggrs::GGRSEvent::Disconnected { .. } => return Err(SessionError::Disconnected),
+                ggrs::GGRSEvent::NetworkInterrupted { addr, .. } => {
+                    info!(player=%addr, "Network player interrupted");
+                }
+                ggrs::GGRSEvent::NetworkResumed { addr } => {
+                    info!(player=%addr, "Network player re-connected");
+                }
+                ggrs::GGRSEvent::WaitRecommendation {
+                    skip_frames: skip_count,
+                } => {
+                    info!(
+                        "Skipping {skip_count} frames to give network players a chance to catch up"
+                    );
+                    skip_frames = skip_count
+                }
+                ggrs::GGRSEvent::DesyncDetected {
+                    frame,
+                    local_checksum,
+                    remote_checksum,
+                    addr,
+                } => {
+                    error!(%frame, %local_checksum, %remote_checksum, player=%addr, "Network de-sync detected");
+                }
+            }
+        }
+
+        loop {
+            self.session
+                .add_local_input(local_player_idx, get_dense_input(&self.last_player_input))
+                .unwrap();
+            if self.accumulator >= STEP {
+                self.accumulator -= STEP;
+
+                if skip_frames > 0 {
+                    skip_frames = skip_frames.saturating_sub(1);
+                    continue;
+                }
+
+                match self.session.advance_frame() {
+                    Ok(requests) => {
+                        for request in requests {
+                            match request {
+                                ggrs::GGRSRequest::SaveGameState { cell, frame } => {
+                                    cell.save(frame, Some(self.core.world.clone()), None)
+                                }
+                                ggrs::GGRSRequest::LoadGameState { cell, .. } => {
+                                    let world = cell.load().unwrap_or_default();
+                                    self.core.world = world;
+                                }
+                                ggrs::GGRSRequest::AdvanceFrame {
+                                    inputs: network_inputs,
+                                } => {
+                                    self.core.update_input(|inputs| {
+                                        for (player_idx, (input, _status)) in
+                                            network_inputs.into_iter().enumerate()
+                                        {
+                                            let control = &mut inputs.players[player_idx].control;
+
+                                            let jump_pressed = input.jump_pressed();
+                                            control.jump_just_pressed =
+                                                jump_pressed && !control.jump_pressed;
+                                            control.jump_pressed = jump_pressed;
+
+                                            let grab_pressed = input.grab_pressed();
+                                            control.grab_just_pressed =
+                                                grab_pressed && !control.grab_pressed;
+                                            control.grab_pressed = grab_pressed;
+
+                                            let shoot_pressed = input.shoot_pressed();
+                                            control.shoot_just_pressed =
+                                                shoot_pressed && !control.shoot_pressed;
+                                            control.shoot_pressed = shoot_pressed;
+
+                                            let was_moving =
+                                                control.move_direction.length_squared()
+                                                    > f32::MIN_POSITIVE;
+                                            control.move_direction = input.move_direction().0;
+                                            let is_moving = control.move_direction.length_squared()
+                                                > f32::MIN_POSITIVE;
+                                            control.just_moved = !was_moving && is_moving;
+                                        }
+                                    });
+                                    self.core.advance(bevy_world);
+                                }
+                            }
+                        }
+                    }
+                    Err(e) => match e {
+                        ggrs::GGRSError::NotSynchronized => {
+                            debug!("Waiting for network clients to sync")
+                        }
+                        ggrs::GGRSError::PredictionThreshold => {
+                            warn!("Freezing game while waiting for network to catch-up.")
+                        }
+                        e => error!("Network protocol error: {e}"),
+                    },
+                }
+            } else {
+                break;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn run_criteria(&mut self, time: &Time) -> bevy::ecs::schedule::ShouldRun {
+        self.delta = time.delta_seconds();
+        bevy::ecs::schedule::ShouldRun::Yes
+    }
+
+    fn network_player_idx(&mut self) -> Option<usize> {
+        // We are the first local player
+        for i in 0..MAX_PLAYERS {
+            if self.player_is_local[i] {
+                return Some(i);
+            }
+        }
+        unreachable!();
+    }
+}

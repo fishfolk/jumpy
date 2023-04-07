@@ -6,7 +6,7 @@ use std::{
 use bevy::utils::Instant;
 use smallvec::SmallVec;
 
-use crate::networking::{LanSessionInfo, LAN_MATCHMAKER, NETWORK_ENDPOINT};
+use crate::networking::{GgrsSessionRunnerInfo, LAN_MATCHMAKER, NETWORK_ENDPOINT};
 
 use super::*;
 
@@ -408,7 +408,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
 
                                             params.session_manager.start_lan(
                                                 core_info,
-                                                LanSessionInfo {
+                                                GgrsSessionRunnerInfo {
                                                     player_is_local: std::array::from_fn(|i| {
                                                         i == player_idx
                                                     }),
@@ -568,7 +568,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
 
                                             params.session_manager.start_lan(
                                                 core_info,
-                                                LanSessionInfo {
+                                                GgrsSessionRunnerInfo {
                                                     player_is_local: std::array::from_fn(|i| {
                                                         i == player_idx
                                                     }),

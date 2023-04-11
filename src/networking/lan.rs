@@ -6,7 +6,7 @@ use futures_lite::{future, FutureExt};
 
 use super::*;
 
-pub const NETWORK_FRAME_RATE_FACTOR: f32 = 0.75;
+pub const NETWORK_FRAME_RATE_FACTOR: f32 = 0.9;
 
 /// Channel used to do matchmaking over LAN.
 ///

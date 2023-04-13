@@ -1,4 +1,7 @@
 use crate::loading::PlayerInputCollector;
+#[cfg(not(target_arch = "wasm32"))]
+use crate::networking::{NetworkMatchSocket, SocketTarget};
+
 use bones_lib::prelude::{key, Key, KeyError};
 use rand::Rng;
 
@@ -20,6 +23,13 @@ pub struct PlayerSlot {
     pub is_ai: bool,
 }
 
+/// Network message that may be sent during player selection.
+#[derive(Serialize, Deserialize)]
+pub enum PlayerSelectMessage {
+    SelectPlayer(bones::Handle<PlayerMeta>),
+    ConfirmSelection(bool),
+}
+
 #[derive(SystemParam)]
 pub struct PlayerSelectMenu<'w, 's> {
     game: Res<'w, GameMeta>,
@@ -28,6 +38,8 @@ pub struct PlayerSelectMenu<'w, 's> {
     keyboard_input: Res<'w, Input<KeyCode>>,
     player_select_state: ResMut<'w, PlayerSelectState>,
     menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
+    #[cfg(not(target_arch = "wasm32"))]
+    network_socket: Option<Res<'w, NetworkMatchSocket>>,
 }
 
 impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
@@ -39,9 +51,11 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
         id: WidgetId,
         _: (),
     ) {
+        #[cfg_attr(target_arch = "wasm32", allow(unused_mut))]
         let mut params: PlayerSelectMenu = state.get_mut(world);
         let is_online = false;
 
+        #[cfg(not(target_arch = "wasm32"))]
         handle_match_setup_messages(&mut params);
 
         // Whether or not the continue button should be enabled
@@ -57,22 +71,15 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
         }
         let may_continue = ready_players >= 1 && unconfirmed_players == 0;
 
-        // if let Some(client_info) = params.client_info {
-        //     if may_continue {
-        //         let player_to_select_map = *params
-        //             .global_rng
-        //             .sample(
-        //                 &(0usize..client_info.player_count)
-        //                     .into_iter()
-        //                     .collect::<Vec<_>>(),
-        //             )
-        //             .unwrap();
-        //         info!(%player_to_select_map, %client_info.player_idx);
-        //         let is_waiting = player_to_select_map != client_info.player_idx;
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(socket) = &params.network_socket {
+            if may_continue {
+                // The first player picks the map
+                let is_waiting = socket.player_idx() != 0;
 
-        //         *params.menu_page = MenuPage::MapSelect { is_waiting };
-        //     }
-        // }
+                *params.menu_page = MenuPage::MapSelect { is_waiting };
+            }
+        }
 
         ui.vertical_centered(|ui| {
             let params: PlayerSelectMenu = state.get_mut(world);
@@ -128,9 +135,10 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                         || params.keyboard_input.just_pressed(KeyCode::Escape)
                     {
                         *params.menu_page = MenuPage::Home;
-                        // if let Some(client) = params.client {
-                        //     client.close();
-                        // }
+                        #[cfg(not(target_arch = "wasm32"))]
+                        if let Some(socket) = params.network_socket {
+                            socket.close();
+                        }
                         ui.ctx().clear_focus();
                     }
 
@@ -183,27 +191,25 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
     }
 }
 
-fn handle_match_setup_messages(_params: &mut PlayerSelectMenu) {
-    // if let Some(client) = &mut params.client {
-    //     while let Some(message) = client.recv_reliable() {
-    //         match message.kind {
-    //             crate::networking::proto::ReliableGameMessageKind::MatchSetup(setup) => match setup
-    //             {
-    //                 MatchSetupMessage::SelectPlayer(player_handle) => {
-    //                     params.player_inputs.players[message.from_player_idx].selected_player =
-    //                         player_handle
-    //                 }
-    //                 MatchSetupMessage::ConfirmSelection(confirmed) => {
-    //                     params.player_select_state.player_slots[message.from_player_idx]
-    //                         .confirmed = confirmed;
-    //                 }
-    //                 MatchSetupMessage::SelectMap(_) => {
-    //                     warn!("Unexpected map select message: player selection not yet confirmed");
-    //                 }
-    //             },
-    //         }
-    //     }
-    // }
+#[cfg(not(target_arch = "wasm32"))]
+fn handle_match_setup_messages(params: &mut PlayerSelectMenu) {
+    if let Some(socket) = &params.network_socket {
+        let datas: Vec<(usize, Vec<u8>)> = socket.recv_reliable();
+
+        for (player, data) in datas {
+            match postcard::from_bytes::<PlayerSelectMessage>(&data) {
+                Ok(message) => match message {
+                    PlayerSelectMessage::SelectPlayer(player_handle) => {
+                        params.player_select_state.slots[player].selected_player = player_handle
+                    }
+                    PlayerSelectMessage::ConfirmSelection(confirmed) => {
+                        params.player_select_state.slots[player].confirmed = confirmed;
+                    }
+                },
+                Err(e) => warn!("Ignoring network message that was not understood: {e}"),
+            }
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -279,6 +285,8 @@ struct PlayerSelectPanel<'w, 's> {
             &'static InputMap<PlayerAction>,
         ),
     >,
+    #[cfg(not(target_arch = "wasm32"))]
+    network_socket: Option<Res<'w, NetworkMatchSocket>>,
 }
 
 impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
@@ -292,14 +300,12 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
     ) {
         let mut params: PlayerSelectPanel = state.get_mut(world);
 
-        let player_id = args;
+        #[cfg(target_arch = "wasm32")]
+        let is_network = false;
+        #[cfg(not(target_arch = "wasm32"))]
+        let is_network = params.network_socket.is_some();
 
-        let player_actions = params
-            .players
-            .iter()
-            .find(|(player_idx, _, _)| player_idx.0 == player_id)
-            .unwrap()
-            .1;
+        let player_id = args;
 
         let player_map = params
             .players
@@ -308,32 +314,50 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
             .unwrap()
             .2;
 
-        let player_action_map = get_player_actions(player_id, player_map);
+        #[cfg(not(target_arch = "wasm32"))]
+        let dummy_actions = default();
+        let (player_actions, player_action_map) = if is_network {
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(socket) = &params.network_socket {
+                let actions = if player_id == socket.player_idx() {
+                    params
+                        .players
+                        .iter()
+                        .find(|(player_idx, _, _)| player_idx.0 == 0)
+                        .unwrap()
+                        .1
+                } else {
+                    &dummy_actions
+                };
+                let map = None;
+                (actions, map)
+            } else {
+                unreachable!();
+            }
 
-        // let player_actions = if let Some(match_info) = &params.client_match_info {
-        //     if idx == match_info.player_idx {
-        //         params
-        //             .players
-        //             .iter()
-        //             .find(|(player_idx, _)| player_idx.0 == 0)
-        //             .unwrap()
-        //             .1
-        //     } else {
-        //         &dummy_actions
-        //     }
-        // } else {
-        //     params
-        //         .players
-        //         .iter()
-        //         .find(|(player_idx, _)| player_idx.0 == idx)
-        //         .unwrap()
-        //         .1
-        // };
+            #[cfg(target_arch = "wasm32")]
+            unreachable!()
+        } else {
+            let actions = params
+                .players
+                .iter()
+                .find(|(player_idx, _, _)| player_idx.0 == player_id)
+                .unwrap()
+                .1;
+            let map = Some(get_player_actions(player_id, player_map));
+            (actions, map)
+        };
 
         let slot = &mut params.player_select_state.slots[player_id];
-        // if !player_input.active && params.client.is_some() {
-        //     return;
-        // }
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(socket) = &params.network_socket {
+            // Don't show panels for non-connected players.
+            if player_id + 1 > socket.player_count() {
+                return;
+            } else {
+                slot.active = true;
+            }
+        }
 
         let player_handle = &mut slot.selected_player;
 
@@ -344,38 +368,43 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
         }
 
         if player_actions.just_pressed(PlayerAction::Jump) {
-            // if params.client.is_none() {
-            if slot.active {
+            if !is_network {
+                if slot.active {
+                    slot.confirmed = true;
+                } else {
+                    slot.active = true;
+                }
+            } else {
                 slot.confirmed = true;
-            } else {
-                slot.active = true;
             }
-            // } else {
-            //     slot.confirmed = true;
-            // }
 
-            // if let Some(client) = params.client {
-            //     client.send_reliable(
-            //         MatchSetupMessage::ConfirmSelection(slot.confirmed),
-            //         TargetClient::All,
-            //     );
-            // }
-        } else if player_actions.just_pressed(PlayerAction::Grab) {
-            // if params.client.is_none() {
-            if slot.confirmed {
-                slot.confirmed = false;
-            } else {
-                slot.active = false;
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(socket) = &params.network_socket {
+                socket.send_reliable(
+                    SocketTarget::All,
+                    &postcard::to_allocvec(&PlayerSelectMessage::ConfirmSelection(slot.confirmed))
+                        .unwrap(),
+                );
             }
-            // } else {
-            //     slot.confirmed = false;
-            // }
-            // if let Some(client) = params.client {
-            //     client.send_reliable(
-            //         MatchSetupMessage::ConfirmSelection(slot.confirmed),
-            //         TargetClient::All,
-            //     );
-            // }
+        } else if player_actions.just_pressed(PlayerAction::Grab) {
+            if !is_network {
+                if slot.confirmed {
+                    slot.confirmed = false;
+                } else {
+                    slot.active = false;
+                }
+            } else {
+                slot.confirmed = false;
+            }
+
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(socket) = &params.network_socket {
+                socket.send_reliable(
+                    SocketTarget::All,
+                    &postcard::to_allocvec(&PlayerSelectMessage::ConfirmSelection(slot.confirmed))
+                        .unwrap(),
+                );
+            }
         } else if player_actions.just_pressed(PlayerAction::Move) && !slot.confirmed {
             let direction = player_actions
                 .clamped_axis_pair(PlayerAction::Move)
@@ -410,12 +439,16 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                 }
             }
 
-            // if let Some(client) = params.client {
-            //     client.send_reliable(
-            //         MatchSetupMessage::SelectPlayer(player_handle.clone_weak()),
-            //         TargetClient::All,
-            //     );
-            // }
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(socket) = &params.network_socket {
+                socket.send_reliable(
+                    SocketTarget::All,
+                    &postcard::to_allocvec(&PlayerSelectMessage::SelectPlayer(
+                        player_handle.clone(),
+                    ))
+                    .unwrap(),
+                );
+            }
         }
 
         BorderedFrame::new(&params.game.ui_theme.panel.border)
@@ -427,39 +460,50 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                 let normal_font = &params.game.ui_theme.font_styles.normal;
                 let heading_font = &params.game.ui_theme.font_styles.heading;
 
-                // // Marker for current player in online matches
-                // if let Some(match_info) = params.client_match_info {
-                //     if match_info.player_idx == idx {
-                //         ui.vertical_centered(|ui| {
-                //             ui.themed_label(normal_font, &params.localization.get("you-marker"));
-                //         });
-                //     } else {
-                //         ui.add_space(normal_font.size);
-                //     }
-                // } else {
+                // Marker for current player in online matches
+                #[cfg(not(target_arch = "wasm32"))]
+                if let Some(socket) = &params.network_socket {
+                    if socket.player_idx() == player_id {
+                        ui.vertical_centered(|ui| {
+                            ui.themed_label(normal_font, &params.localization.get("you-marker"));
+                        });
+                    } else {
+                        ui.add_space(normal_font.size);
+                    }
+                } else {
                     ui.add_space(normal_font.size);
-                // }
+                }
+                #[cfg(target_arch = "wasm32")]
+                ui.add_space(normal_font.size);
 
                 if slot.active {
                     ui.vertical_centered(|ui| {
-                        let Some(player_meta) = params.player_meta_assets.get(&player_handle.get_bevy_handle()) else { return; };
+                        let Some(player_meta) = params
+                            .player_meta_assets
+                            .get(&player_handle.get_bevy_handle()) else { return; };
 
                         ui.themed_label(normal_font, &params.localization.get("pick-a-fish"));
 
                         if !slot.confirmed {
-                            ui.themed_label(
-                                normal_font,
-                                &params
-                                    .localization
-                                    .get(&format!("press-button-to-lock-in?button={}", player_action_map.get_text(PlayerAction::Jump))),
-                            );
+                            if let Some(player_action_map) = &player_action_map {
+                                ui.themed_label(
+                                    normal_font,
+                                    &params.localization.get(&format!(
+                                        "press-button-to-lock-in?button={}",
+                                        player_action_map.get_text(PlayerAction::Jump)
+                                    )),
+                                );
 
-                            ui.themed_label(
-                                normal_font,
-                                &params
-                                    .localization
-                                    .get(&format!("press-button-to-remove?button={}", player_action_map.get_text(PlayerAction::Grab))),
-                            );
+                                ui.themed_label(
+                                    normal_font,
+                                    &params.localization.get(&format!(
+                                        "press-button-to-remove?button={}",
+                                        player_action_map.get_text(PlayerAction::Grab)
+                                    )),
+                                );
+                            } else {
+                                ui.themed_label(normal_font, &params.localization.get("waiting"));
+                            }
                         }
 
                         ui.vertical_centered(|ui| {
@@ -471,13 +515,15 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                                     &params.localization.get("player-select-ready"),
                                 );
 
-                                ui.themed_label(
-                                    normal_font,
-                                    &params
-                                        .localization
-                                        .get(&format!("player-select-unready?button={}", player_action_map.get_text(PlayerAction::Grab))),
-                                );
-
+                                if let Some(player_action_map) = &player_action_map {
+                                    ui.themed_label(
+                                        normal_font,
+                                        &params.localization.get(&format!(
+                                            "player-select-unready?button={}",
+                                            player_action_map.get_text(PlayerAction::Grab)
+                                        )),
+                                    );
+                                }
                             }
                             if slot.is_ai {
                                 ui.themed_label(
@@ -488,7 +534,9 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                                     &params.game.ui_theme.button_styles.normal,
                                     &params.localization.get("remove-ai-player"),
                                 )
-                                .show(ui).clicked() {
+                                .show(ui)
+                                .clicked()
+                                {
                                     slot.confirmed = false;
                                     slot.active = false;
                                     slot.is_ai = false;
@@ -507,31 +555,42 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                                 },
                             );
 
-                            player_image(ui, player_meta, &params.atlas_meta_assets, &params.player_atlas_egui_textures);
+                            player_image(
+                                ui,
+                                player_meta,
+                                &params.atlas_meta_assets,
+                                &params.player_atlas_egui_textures,
+                            );
                         });
                     });
                 } else {
                     ui.vertical_centered(|ui| {
-                        ui.themed_label(
-                            normal_font,
-                            &params
-                                .localization
-                                .get(&format!("press-button-to-join?button={}", player_action_map.get_text(PlayerAction::Jump))),
-                        );
+                        if let Some(player_action_map) = &player_action_map {
+                            ui.themed_label(
+                                normal_font,
+                                &params.localization.get(&format!(
+                                    "press-button-to-join?button={}",
+                                    player_action_map.get_text(PlayerAction::Jump)
+                                )),
+                            );
+                        }
 
-                        if player_id != 0 {
-
-                        ui.add_space(params.game.ui_theme.font_styles.bigger.size);
+                        if player_id != 0 && !is_network {
+                            ui.add_space(params.game.ui_theme.font_styles.bigger.size);
                             if BorderedButton::themed(
                                 &params.game.ui_theme.button_styles.normal,
                                 &params.localization.get("add-ai-player"),
                             )
-                            .show(ui).clicked() {
+                            .show(ui)
+                            .clicked()
+                            {
                                 slot.is_ai = true;
                                 slot.confirmed = true;
                                 slot.active = true;
                                 let mut rng = rand::thread_rng();
-                                *player_handle = params.core.players[rng.gen_range(0..params.core.players.len())].clone();
+                                *player_handle = params.core.players
+                                    [rng.gen_range(0..params.core.players.len())]
+                                .clone();
                             }
                         }
                     });

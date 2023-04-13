@@ -6,7 +6,7 @@ use std::{
 use bevy::utils::Instant;
 use smallvec::SmallVec;
 
-use crate::networking::{GgrsSessionRunnerInfo, LAN_MATCHMAKER, NETWORK_ENDPOINT};
+use crate::networking::{NetworkMatchSocket, LAN_MATCHMAKER, NETWORK_ENDPOINT};
 
 use super::*;
 
@@ -59,12 +59,10 @@ pub struct MatchmakingMenu<'w, 's> {
     time: Res<'w, Time>,
     menu_page: ResMut<'w, MenuPage>,
     game: Res<'w, GameMeta>,
-    core: Res<'w, CoreMetaArc>,
-    map_assets: Res<'w, Assets<MapMeta>>,
     localization: Res<'w, Localization>,
     state: Local<'s, State>,
     menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
-    session_manager: SessionManager<'w, 's>,
+    commands: Commands<'w, 's>,
 }
 
 pub struct State {
@@ -377,47 +375,15 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                         networking::LanMatchmakerResponse::GameStarting {
                                             lan_socket,
                                             player_idx,
-                                            player_count,
+                                            player_count: _,
                                         } => {
                                             info!(?player_idx, "Starting network game");
-                                            let map_meta = params
-                                                .map_assets
-                                                .get(
-                                                    &params.core.0.stable_maps[0].get_bevy_handle(),
-                                                )
-                                                .unwrap()
-                                                .clone();
-                                            let player_info = std::array::from_fn(|i| {
-                                                if lan_socket.connections[i].is_some()
-                                                    || i == player_idx
-                                                {
-                                                    let handle = params.core.players[i].clone();
-                                                    Some(GameSessionPlayerInfo {
-                                                        handle,
-                                                        is_ai: false,
-                                                    })
-                                                } else {
-                                                    None
-                                                }
-                                            });
-                                            let core_info = CoreSessionInfo {
-                                                meta: params.core.0.clone(),
-                                                map_meta,
-                                                player_info,
-                                            };
+                                            params.commands.insert_resource(NetworkMatchSocket(
+                                                Box::new(lan_socket),
+                                            ));
 
-                                            params.session_manager.start_lan(
-                                                core_info,
-                                                GgrsSessionRunnerInfo {
-                                                    player_is_local: std::array::from_fn(|i| {
-                                                        i == player_idx
-                                                    }),
-                                                    player_count,
-                                                    socket: lan_socket,
-                                                },
-                                            );
                                             *status = default();
-                                            *params.menu_page = MenuPage::Home;
+                                            *params.menu_page = MenuPage::PlayerSelect;
                                         }
                                     }
                                 }
@@ -537,47 +503,15 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                         networking::LanMatchmakerResponse::GameStarting {
                                             lan_socket,
                                             player_idx,
-                                            player_count,
+                                            player_count: _,
                                         } => {
                                             info!(?player_idx, "Starting network game");
-                                            let map_meta = params
-                                                .map_assets
-                                                .get(
-                                                    &params.core.0.stable_maps[0].get_bevy_handle(),
-                                                )
-                                                .unwrap()
-                                                .clone();
-                                            let player_info = std::array::from_fn(|i| {
-                                                if lan_socket.connections[i].is_some()
-                                                    || i == player_idx
-                                                {
-                                                    let handle = params.core.players[i].clone();
-                                                    Some(GameSessionPlayerInfo {
-                                                        handle,
-                                                        is_ai: false,
-                                                    })
-                                                } else {
-                                                    None
-                                                }
-                                            });
-                                            let core_info = CoreSessionInfo {
-                                                meta: params.core.0.clone(),
-                                                map_meta,
-                                                player_info,
-                                            };
+                                            params.commands.insert_resource(NetworkMatchSocket(
+                                                Box::new(lan_socket),
+                                            ));
 
-                                            params.session_manager.start_lan(
-                                                core_info,
-                                                GgrsSessionRunnerInfo {
-                                                    player_is_local: std::array::from_fn(|i| {
-                                                        i == player_idx
-                                                    }),
-                                                    player_count,
-                                                    socket: lan_socket,
-                                                },
-                                            );
                                             *status = default();
-                                            *params.menu_page = MenuPage::Home;
+                                            *params.menu_page = MenuPage::PlayerSelect;
                                             loop {
                                                 match MDNS.unregister(service_info.get_fullname()) {
                                                     Ok(_) => break,

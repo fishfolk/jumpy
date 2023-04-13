@@ -175,7 +175,7 @@ impl<'w, 's> SessionManager<'w, 's> {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn start_lan(
+    pub fn start_network(
         &mut self,
         core_info: CoreSessionInfo,
         lan_info: crate::networking::GgrsSessionRunnerInfo,

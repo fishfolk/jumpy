@@ -65,8 +65,50 @@ pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
     endpoint
 });
 
-/// Trait implemented by sockets that may be used for a [`GgrsSessionRunner`].
-pub trait GgrsSocket: ggrs::NonBlockingSocket<usize> {}
+/// Resource containing the network socket while there is a connection to a LAN or online game.
+#[derive(Resource, Deref, DerefMut)]
+pub struct NetworkMatchSocket(pub Box<dyn NetworkSocket>);
+
+/// A boxed [`ggrs::NonBlockingSocket`] implementation.
+#[derive(Deref, DerefMut)]
+pub struct BoxedNonBlockingSocket(Box<dyn ggrs::NonBlockingSocket<usize> + 'static>);
+
+impl ggrs::NonBlockingSocket<usize> for BoxedNonBlockingSocket {
+    fn send_to(&mut self, msg: &ggrs::Message, addr: &usize) {
+        self.0.send_to(msg, addr)
+    }
+
+    fn receive_all_messages(&mut self) -> Vec<(usize, ggrs::Message)> {
+        self.0.receive_all_messages()
+    }
+}
+
+/// Trait implemented by network match sockets.
+pub trait NetworkSocket: Sync + Send {
+    /// Get a GGRS socket from this network socket.
+    fn ggrs_socket(&self) -> BoxedNonBlockingSocket;
+    /// Send a reliable message to the given [`SocketTarget`].
+    fn send_reliable(&self, target: SocketTarget, message: &[u8]);
+    /// Receive reliable messages from other players. The `usize` is the index of the player that
+    /// sent the message.
+    fn recv_reliable(&self) -> Vec<(usize, Vec<u8>)>;
+    /// Close the connection.
+    fn close(&self);
+    /// Get the player index of the local player.
+    fn player_idx(&self) -> usize;
+    /// Return, for every player index, whether the player is a local player.
+    fn player_is_local(&self) -> [bool; MAX_PLAYERS];
+    /// Get the player count for this network match.
+    fn player_count(&self) -> usize;
+}
+
+/// The target for a reliable network message.
+pub enum SocketTarget {
+    /// Send to a specific player.
+    Player(usize),
+    /// Broadcast to all players.
+    All,
+}
 
 /// [`SessionRunner`] implementation that uses [`ggrs`] for network play.
 pub struct GgrsSessionRunner {
@@ -79,9 +121,8 @@ pub struct GgrsSessionRunner {
 }
 
 /// The info required to create a [`GgrsSessionRunner`].
-#[derive(Debug)]
 pub struct GgrsSessionRunnerInfo {
-    pub socket: LanSocket,
+    pub socket: BoxedNonBlockingSocket,
     pub player_is_local: [bool; MAX_PLAYERS],
     pub player_count: usize,
 }

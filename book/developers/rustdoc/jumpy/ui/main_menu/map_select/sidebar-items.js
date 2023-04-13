@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["handle_match_setup_messages",""]],"struct":[["MapSelectMenu",""]]};
+window.SIDEBAR_ITEMS = {"enum":[["MapSelectMessage","Network message that may be sent when selecting a map."]],"fn":[["handle_match_setup_messages",""]],"struct":[["MapSelectMenu",""]]};

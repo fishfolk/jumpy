@@ -234,9 +234,96 @@
 <a href="#233" id="233">233</a>
 <a href="#234" id="234">234</a>
 <a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{editor::UserMapStorage, ui::pause_menu::PauseMenuPage};
 
+<span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</span><span class="kw">use </span><span class="kw">crate</span>::networking::{GgrsSessionRunnerInfo, NetworkMatchSocket, SocketTarget};
+
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
+
+<span class="doccomment">/// Network message that may be sent when selecting a map.
+</span><span class="attr">#[derive(Serialize, Deserialize)]
+</span><span class="kw">pub enum </span>MapSelectMessage {
+    SelectMap(bones::Handle&lt;MapMeta&gt;),
+}
 
 <span class="attr">#[derive(SystemParam)]
 </span><span class="kw">pub struct </span>MapSelectMenu&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
@@ -252,6 +339,8 @@
     localization: Res&lt;<span class="lifetime">&#39;w</span>, Localization&gt;,
     map_assets: Res&lt;<span class="lifetime">&#39;w</span>, Assets&lt;MapMeta&gt;&gt;,
     storage: ResMut&lt;<span class="lifetime">&#39;w</span>, Storage&gt;,
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span>network_socket: <span class="prelude-ty">Option</span>&lt;Res&lt;<span class="lifetime">&#39;w</span>, NetworkMatchSocket&gt;&gt;,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; WidgetSystem <span class="kw">for </span>MapSelectMenu&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
@@ -266,7 +355,8 @@
     ) {
         <span class="kw">let </span><span class="kw-2">mut </span>params: MapSelectMenu = state.get_mut(world);
 
-        handle_match_setup_messages(<span class="kw-2">&amp;mut </span>params);
+        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+        </span>handle_match_setup_messages(<span class="kw-2">&amp;mut </span>params);
 
         <span class="kw">let </span>in_game = params.game_state.<span class="number">0 </span>== EngineState::InGame;
 
@@ -351,11 +441,13 @@
                                     }
 
                                     <span class="kw">if </span>button.clicked() {
-                                        <span class="macro">info!</span>(<span class="string">&quot;Selected map, starting game&quot;</span>);
                                         <span class="kw-2">*</span>params.pause_page = PauseMenuPage::Default;
                                         <span class="kw-2">*</span>params.menu_page = MenuPage::Home;
 
-                                        <span class="kw">let </span><span class="kw-2">mut </span>player_info = &lt;[<span class="prelude-ty">Option</span>&lt;GameSessionPlayerInfo&gt;;
+                                        <span class="comment">// TODO: This code to start a game is duplicated 3 or 4
+                                        // times throughout this file, which isn&#39;t good. We should
+                                        // try to abstract it into a function or something.
+                                        </span><span class="kw">let </span><span class="kw-2">mut </span>player_info = &lt;[<span class="prelude-ty">Option</span>&lt;GameSessionPlayerInfo&gt;;
                                             MAX_PLAYERS]&gt;::default(
                                         );
                                         (<span class="number">0</span>..MAX_PLAYERS).for_each(|i| {
@@ -367,11 +459,32 @@
                                                 });
                                             }
                                         });
-                                        params.session_manager.start_local(CoreSessionInfo {
+                                        <span class="kw">let </span>core_info = CoreSessionInfo {
                                             meta: params.core.<span class="number">0</span>.clone(),
                                             map_meta: map_meta.clone(),
                                             player_info,
-                                        });
+                                        };
+                                        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                                        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+                                            <span class="macro">info!</span>(<span class="string">&quot;Selected map, starting network game&quot;</span>);
+                                            params.session_manager.start_network(
+                                                core_info,
+                                                GgrsSessionRunnerInfo {
+                                                    socket: socket.ggrs_socket(),
+                                                    player_is_local: socket.player_is_local(),
+                                                    player_count: socket.player_count(),
+                                                },
+                                            );
+                                        } <span class="kw">else </span>{
+                                            <span class="macro">info!</span>(<span class="string">&quot;Selected map, starting game&quot;</span>);
+                                            params.session_manager.start_local(core_info);
+                                        }
+                                        <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+                                        </span>{
+                                            <span class="macro">info!</span>(<span class="string">&quot;Selected map, starting game&quot;</span>);
+                                            params.session_manager.start_local(core_info);
+                                        }
+
                                         params
                                             .commands
                                             .insert_resource(NextState(EngineState::InGame));
@@ -379,18 +492,29 @@
                                             .commands
                                             .insert_resource(NextState(InGameState::Playing));
 
-                                        <span class="comment">// if let Some(client) = &amp;mut params.client {
-                                        //     client.send_reliable(
-                                        //         MatchSetupMessage::SelectMap(map_handle),
-                                        //         TargetClient::All,
-                                        //     );
-                                        // }
-                                    </span>}
+                                        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                                        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+                                            socket.send_reliable(
+                                                SocketTarget::All,
+                                                <span class="kw-2">&amp;</span>postcard::to_allocvec(
+                                                    <span class="kw-2">&amp;</span>MapSelectMessage::SelectMap(map_handle),
+                                                )
+                                                .unwrap(),
+                                            );
+                                        }
+                                    }
                                 }
 
                                 <span class="kw">let </span>user_maps: <span class="prelude-ty">Option</span>&lt;UserMapStorage&gt; =
                                     params.storage.get(UserMapStorage::STORAGE_KEY);
                                 <span class="kw">if let </span><span class="prelude-val">Some</span>(user_maps) = user_maps {
+                                    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                                    </span><span class="kw">let </span>is_network = params.network_socket.is_some();
+                                    <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+                                    </span><span class="kw">let </span>is_network = <span class="bool-val">false</span>;
+
+                                    <span class="comment">// For now, network games can only play core maps.
+                                    </span>ui.set_enabled(!is_network);
                                     ui.add_space(bigger_text_style.size / <span class="number">2.0</span>);
                                     ui.themed_label(
                                         bigger_text_style,
@@ -407,7 +531,6 @@
                                             BorderedButton::themed(small_button_style, <span class="kw-2">&amp;</span>name)
                                                 .show(ui);
                                         <span class="kw">if </span>button.clicked() {
-                                            <span class="macro">info!</span>(<span class="string">&quot;Selected map, starting game&quot;</span>);
                                             <span class="kw-2">*</span>params.pause_page = PauseMenuPage::Default;
                                             <span class="kw-2">*</span>params.menu_page = MenuPage::Home;
 
@@ -445,29 +568,62 @@
     }
 }
 
-<span class="kw">fn </span>handle_match_setup_messages(_params: <span class="kw-2">&amp;mut </span>MapSelectMenu) {
-    <span class="comment">// if let Some(client) = &amp;mut params.client {
-    //     while let Some(message) = client.recv_reliable() {
-    //         match message.kind {
-    //             ReliableGameMessageKind::MatchSetup(setup) =&gt; match setup {
-    //                 MatchSetupMessage::SelectMap(map_handle) =&gt; {
-    //                     info!(&quot;Other player selected map, starting game&quot;);
-    //                     *params.menu_page = MenuPage::Home;
-    //                     params.reset_manager.reset_world();
-    //                     params
-    //                         .commands
-    //                         .spawn()
-    //                         .insert(map_handle)
-    //                         .insert(Rollback::new(params.rids.next_id()));
-    //                     params
-    //                         .commands
-    //                         .insert_resource(NextState(GameState::InGame));
-    //                 }
-    //                 other =&gt; warn!(&quot;Unexpected message: {other:?}&quot;),
-    //             },
-    //         }
-    //     }
-    // }
-</span>}
+<span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</span><span class="kw">fn </span>handle_match_setup_messages(params: <span class="kw-2">&amp;mut </span>MapSelectMenu) {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+        <span class="kw">let </span>datas: Vec&lt;(usize, Vec&lt;u8&gt;)&gt; = socket.recv_reliable();
+
+        <span class="kw">for </span>(player, data) <span class="kw">in </span>datas {
+            <span class="macro">assert_eq!</span>(player, <span class="number">0</span>, <span class="string">&quot;Only player 0 may select the map.&quot;</span>);
+
+            <span class="kw">match </span>postcard::from_bytes::&lt;MapSelectMessage&gt;(<span class="kw-2">&amp;</span>data) {
+                <span class="prelude-val">Ok</span>(message) =&gt; <span class="kw">match </span>message {
+                    MapSelectMessage::SelectMap(map_handle) =&gt; {
+                        <span class="macro">info!</span>(<span class="string">&quot;Other player selected map, starting game&quot;</span>);
+                        <span class="kw-2">*</span>params.pause_page = PauseMenuPage::Default;
+                        <span class="kw-2">*</span>params.menu_page = MenuPage::Home;
+
+                        <span class="kw">let </span>map_meta = params
+                            .map_assets
+                            .get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle())
+                            .unwrap()
+                            .clone();
+
+                        <span class="kw">let </span><span class="kw-2">mut </span>player_info =
+                            &lt;[<span class="prelude-ty">Option</span>&lt;GameSessionPlayerInfo&gt;; MAX_PLAYERS]&gt;::default();
+                        (<span class="number">0</span>..MAX_PLAYERS).for_each(|i| {
+                            <span class="kw">let </span>slot = <span class="kw-2">&amp;</span>params.player_select_state.slots[i];
+                            <span class="kw">if </span>slot.active {
+                                player_info[i] = <span class="prelude-val">Some</span>(GameSessionPlayerInfo {
+                                    handle: slot.selected_player.clone(),
+                                    is_ai: slot.is_ai,
+                                });
+                            }
+                        });
+                        params.session_manager.start_network(
+                            CoreSessionInfo {
+                                meta: params.core.<span class="number">0</span>.clone(),
+                                map_meta,
+                                player_info,
+                            },
+                            GgrsSessionRunnerInfo {
+                                socket: socket.ggrs_socket(),
+                                player_is_local: socket.player_is_local(),
+                                player_count: socket.player_count(),
+                            },
+                        );
+                        params
+                            .commands
+                            .insert_resource(NextState(EngineState::InGame));
+                        params
+                            .commands
+                            .insert_resource(NextState(InGameState::Playing));
+                    }
+                },
+                <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(<span class="string">&quot;Ignoring network message that was not understood: {e}&quot;</span>),
+            }
+        }
+    }
+}
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

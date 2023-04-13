@@ -689,7 +689,69 @@
 <a href="#688" id="688">688</a>
 <a href="#689" id="689">689</a>
 <a href="#690" id="690">690</a>
+<a href="#691" id="691">691</a>
+<a href="#692" id="692">692</a>
+<a href="#693" id="693">693</a>
+<a href="#694" id="694">694</a>
+<a href="#695" id="695">695</a>
+<a href="#696" id="696">696</a>
+<a href="#697" id="697">697</a>
+<a href="#698" id="698">698</a>
+<a href="#699" id="699">699</a>
+<a href="#700" id="700">700</a>
+<a href="#701" id="701">701</a>
+<a href="#702" id="702">702</a>
+<a href="#703" id="703">703</a>
+<a href="#704" id="704">704</a>
+<a href="#705" id="705">705</a>
+<a href="#706" id="706">706</a>
+<a href="#707" id="707">707</a>
+<a href="#708" id="708">708</a>
+<a href="#709" id="709">709</a>
+<a href="#710" id="710">710</a>
+<a href="#711" id="711">711</a>
+<a href="#712" id="712">712</a>
+<a href="#713" id="713">713</a>
+<a href="#714" id="714">714</a>
+<a href="#715" id="715">715</a>
+<a href="#716" id="716">716</a>
+<a href="#717" id="717">717</a>
+<a href="#718" id="718">718</a>
+<a href="#719" id="719">719</a>
+<a href="#720" id="720">720</a>
+<a href="#721" id="721">721</a>
+<a href="#722" id="722">722</a>
+<a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
+<a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
+<a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
+<a href="#743" id="743">743</a>
+<a href="#744" id="744">744</a>
+<a href="#745" id="745">745</a>
+<a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::loading::PlayerInputCollector;
+<span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</span><span class="kw">use </span><span class="kw">crate</span>::networking::{NetworkMatchSocket, SocketTarget};
+
 <span class="kw">use </span>bones_lib::prelude::{key, Key, KeyError};
 <span class="kw">use </span>rand::Rng;
 
@@ -711,6 +773,13 @@
     <span class="kw">pub </span>is_ai: bool,
 }
 
+<span class="doccomment">/// Network message that may be sent during player selection.
+</span><span class="attr">#[derive(Serialize, Deserialize)]
+</span><span class="kw">pub enum </span>PlayerSelectMessage {
+    SelectPlayer(bones::Handle&lt;PlayerMeta&gt;),
+    ConfirmSelection(bool),
+}
+
 <span class="attr">#[derive(SystemParam)]
 </span><span class="kw">pub struct </span>PlayerSelectMenu&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
     game: Res&lt;<span class="lifetime">&#39;w</span>, GameMeta&gt;,
@@ -719,6 +788,8 @@
     keyboard_input: Res&lt;<span class="lifetime">&#39;w</span>, Input&lt;KeyCode&gt;&gt;,
     player_select_state: ResMut&lt;<span class="lifetime">&#39;w</span>, PlayerSelectState&gt;,
     menu_input: Query&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="kw-2">mut </span>ActionState&lt;MenuAction&gt;&gt;,
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span>network_socket: <span class="prelude-ty">Option</span>&lt;Res&lt;<span class="lifetime">&#39;w</span>, NetworkMatchSocket&gt;&gt;,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; WidgetSystem <span class="kw">for </span>PlayerSelectMenu&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
@@ -730,10 +801,12 @@
         id: WidgetId,
         <span class="kw">_</span>: (),
     ) {
-        <span class="kw">let </span><span class="kw-2">mut </span>params: PlayerSelectMenu = state.get_mut(world);
+        <span class="attr">#[cfg_attr(target_arch = <span class="string">&quot;wasm32&quot;</span>, allow(unused_mut))]
+        </span><span class="kw">let </span><span class="kw-2">mut </span>params: PlayerSelectMenu = state.get_mut(world);
         <span class="kw">let </span>is_online = <span class="bool-val">false</span>;
 
-        handle_match_setup_messages(<span class="kw-2">&amp;mut </span>params);
+        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+        </span>handle_match_setup_messages(<span class="kw-2">&amp;mut </span>params);
 
         <span class="comment">// Whether or not the continue button should be enabled
         </span><span class="kw">let </span><span class="kw-2">mut </span>ready_players = <span class="number">0</span>;
@@ -748,24 +821,17 @@
         }
         <span class="kw">let </span>may_continue = ready_players &gt;= <span class="number">1 </span>&amp;&amp; unconfirmed_players == <span class="number">0</span>;
 
-        <span class="comment">// if let Some(client_info) = params.client_info {
-        //     if may_continue {
-        //         let player_to_select_map = *params
-        //             .global_rng
-        //             .sample(
-        //                 &amp;(0usize..client_info.player_count)
-        //                     .into_iter()
-        //                     .collect::&lt;Vec&lt;_&gt;&gt;(),
-        //             )
-        //             .unwrap();
-        //         info!(%player_to_select_map, %client_info.player_idx);
-        //         let is_waiting = player_to_select_map != client_info.player_idx;
+        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+            <span class="kw">if </span>may_continue {
+                <span class="comment">// The first player picks the map
+                </span><span class="kw">let </span>is_waiting = socket.player_idx() != <span class="number">0</span>;
 
-        //         *params.menu_page = MenuPage::MapSelect { is_waiting };
-        //     }
-        // }
+                <span class="kw-2">*</span>params.menu_page = MenuPage::MapSelect { is_waiting };
+            }
+        }
 
-        </span>ui.vertical_centered(|ui| {
+        ui.vertical_centered(|ui| {
             <span class="kw">let </span>params: PlayerSelectMenu = state.get_mut(world);
 
             <span class="kw">let </span>bigger_text_style = <span class="kw-2">&amp;</span>params.game.ui_theme.font_styles.bigger;
@@ -819,10 +885,11 @@
                         || params.keyboard_input.just_pressed(KeyCode::Escape)
                     {
                         <span class="kw-2">*</span>params.menu_page = MenuPage::Home;
-                        <span class="comment">// if let Some(client) = params.client {
-                        //     client.close();
-                        // }
-                        </span>ui.ctx().clear_focus();
+                        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = params.network_socket {
+                            socket.close();
+                        }
+                        ui.ctx().clear_focus();
                     }
 
                     ui.add_space(button_spacing);
@@ -874,28 +941,26 @@
     }
 }
 
-<span class="kw">fn </span>handle_match_setup_messages(_params: <span class="kw-2">&amp;mut </span>PlayerSelectMenu) {
-    <span class="comment">// if let Some(client) = &amp;mut params.client {
-    //     while let Some(message) = client.recv_reliable() {
-    //         match message.kind {
-    //             crate::networking::proto::ReliableGameMessageKind::MatchSetup(setup) =&gt; match setup
-    //             {
-    //                 MatchSetupMessage::SelectPlayer(player_handle) =&gt; {
-    //                     params.player_inputs.players[message.from_player_idx].selected_player =
-    //                         player_handle
-    //                 }
-    //                 MatchSetupMessage::ConfirmSelection(confirmed) =&gt; {
-    //                     params.player_select_state.player_slots[message.from_player_idx]
-    //                         .confirmed = confirmed;
-    //                 }
-    //                 MatchSetupMessage::SelectMap(_) =&gt; {
-    //                     warn!(&quot;Unexpected map select message: player selection not yet confirmed&quot;);
-    //                 }
-    //             },
-    //         }
-    //     }
-    // }
-</span>}
+<span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</span><span class="kw">fn </span>handle_match_setup_messages(params: <span class="kw-2">&amp;mut </span>PlayerSelectMenu) {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+        <span class="kw">let </span>datas: Vec&lt;(usize, Vec&lt;u8&gt;)&gt; = socket.recv_reliable();
+
+        <span class="kw">for </span>(player, data) <span class="kw">in </span>datas {
+            <span class="kw">match </span>postcard::from_bytes::&lt;PlayerSelectMessage&gt;(<span class="kw-2">&amp;</span>data) {
+                <span class="prelude-val">Ok</span>(message) =&gt; <span class="kw">match </span>message {
+                    PlayerSelectMessage::SelectPlayer(player_handle) =&gt; {
+                        params.player_select_state.slots[player].selected_player = player_handle
+                    }
+                    PlayerSelectMessage::ConfirmSelection(confirmed) =&gt; {
+                        params.player_select_state.slots[player].confirmed = confirmed;
+                    }
+                },
+                <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(<span class="string">&quot;Ignoring network message that was not understood: {e}&quot;</span>),
+            }
+        }
+    }
+}
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">struct </span>PlayerActionMap&lt;<span class="lifetime">&#39;a</span>&gt;(HashMap&lt;PlayerAction, Vec&lt;<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>UserInput&gt;&gt;&gt;);
@@ -970,6 +1035,8 @@
             <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>InputMap&lt;PlayerAction&gt;,
         ),
     &gt;,
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span>network_socket: <span class="prelude-ty">Option</span>&lt;Res&lt;<span class="lifetime">&#39;w</span>, NetworkMatchSocket&gt;&gt;,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; WidgetSystem <span class="kw">for </span>PlayerSelectPanel&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
@@ -983,14 +1050,12 @@
     ) {
         <span class="kw">let </span><span class="kw-2">mut </span>params: PlayerSelectPanel = state.get_mut(world);
 
-        <span class="kw">let </span>player_id = args;
+        <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+        </span><span class="kw">let </span>is_network = <span class="bool-val">false</span>;
+        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+        </span><span class="kw">let </span>is_network = params.network_socket.is_some();
 
-        <span class="kw">let </span>player_actions = params
-            .players
-            .iter()
-            .find(|(player_idx, <span class="kw">_</span>, <span class="kw">_</span>)| player_idx.<span class="number">0 </span>== player_id)
-            .unwrap()
-            .<span class="number">1</span>;
+        <span class="kw">let </span>player_id = args;
 
         <span class="kw">let </span>player_map = params
             .players
@@ -999,34 +1064,52 @@
             .unwrap()
             .<span class="number">2</span>;
 
-        <span class="kw">let </span>player_action_map = get_player_actions(player_id, player_map);
+        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+        </span><span class="kw">let </span>dummy_actions = default();
+        <span class="kw">let </span>(player_actions, player_action_map) = <span class="kw">if </span>is_network {
+            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+                <span class="kw">let </span>actions = <span class="kw">if </span>player_id == socket.player_idx() {
+                    params
+                        .players
+                        .iter()
+                        .find(|(player_idx, <span class="kw">_</span>, <span class="kw">_</span>)| player_idx.<span class="number">0 </span>== <span class="number">0</span>)
+                        .unwrap()
+                        .<span class="number">1
+                </span>} <span class="kw">else </span>{
+                    <span class="kw-2">&amp;</span>dummy_actions
+                };
+                <span class="kw">let </span>map = <span class="prelude-val">None</span>;
+                (actions, map)
+            } <span class="kw">else </span>{
+                <span class="macro">unreachable!</span>();
+            }
 
-        <span class="comment">// let player_actions = if let Some(match_info) = &amp;params.client_match_info {
-        //     if idx == match_info.player_idx {
-        //         params
-        //             .players
-        //             .iter()
-        //             .find(|(player_idx, _)| player_idx.0 == 0)
-        //             .unwrap()
-        //             .1
-        //     } else {
-        //         &amp;dummy_actions
-        //     }
-        // } else {
-        //     params
-        //         .players
-        //         .iter()
-        //         .find(|(player_idx, _)| player_idx.0 == idx)
-        //         .unwrap()
-        //         .1
-        // };
+            <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+            </span><span class="macro">unreachable!</span>()
+        } <span class="kw">else </span>{
+            <span class="kw">let </span>actions = params
+                .players
+                .iter()
+                .find(|(player_idx, <span class="kw">_</span>, <span class="kw">_</span>)| player_idx.<span class="number">0 </span>== player_id)
+                .unwrap()
+                .<span class="number">1</span>;
+            <span class="kw">let </span>map = <span class="prelude-val">Some</span>(get_player_actions(player_id, player_map));
+            (actions, map)
+        };
 
-        </span><span class="kw">let </span>slot = <span class="kw-2">&amp;mut </span>params.player_select_state.slots[player_id];
-        <span class="comment">// if !player_input.active &amp;&amp; params.client.is_some() {
-        //     return;
-        // }
+        <span class="kw">let </span>slot = <span class="kw-2">&amp;mut </span>params.player_select_state.slots[player_id];
+        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+            <span class="comment">// Don&#39;t show panels for non-connected players.
+            </span><span class="kw">if </span>player_id + <span class="number">1 </span>&gt; socket.player_count() {
+                <span class="kw">return</span>;
+            } <span class="kw">else </span>{
+                slot.active = <span class="bool-val">true</span>;
+            }
+        }
 
-        </span><span class="kw">let </span>player_handle = <span class="kw-2">&amp;mut </span>slot.selected_player;
+        <span class="kw">let </span>player_handle = <span class="kw-2">&amp;mut </span>slot.selected_player;
 
         <span class="comment">// If the handle is empty
         </span><span class="kw">if </span>player_handle.path == default() {
@@ -1035,39 +1118,44 @@
         }
 
         <span class="kw">if </span>player_actions.just_pressed(PlayerAction::Jump) {
-            <span class="comment">// if params.client.is_none() {
-            </span><span class="kw">if </span>slot.active {
+            <span class="kw">if </span>!is_network {
+                <span class="kw">if </span>slot.active {
+                    slot.confirmed = <span class="bool-val">true</span>;
+                } <span class="kw">else </span>{
+                    slot.active = <span class="bool-val">true</span>;
+                }
+            } <span class="kw">else </span>{
                 slot.confirmed = <span class="bool-val">true</span>;
-            } <span class="kw">else </span>{
-                slot.active = <span class="bool-val">true</span>;
             }
-            <span class="comment">// } else {
-            //     slot.confirmed = true;
-            // }
 
-            // if let Some(client) = params.client {
-            //     client.send_reliable(
-            //         MatchSetupMessage::ConfirmSelection(slot.confirmed),
-            //         TargetClient::All,
-            //     );
-            // }
-        </span>} <span class="kw">else if </span>player_actions.just_pressed(PlayerAction::Grab) {
-            <span class="comment">// if params.client.is_none() {
-            </span><span class="kw">if </span>slot.confirmed {
-                slot.confirmed = <span class="bool-val">false</span>;
-            } <span class="kw">else </span>{
-                slot.active = <span class="bool-val">false</span>;
+            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+                socket.send_reliable(
+                    SocketTarget::All,
+                    <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::ConfirmSelection(slot.confirmed))
+                        .unwrap(),
+                );
             }
-            <span class="comment">// } else {
-            //     slot.confirmed = false;
-            // }
-            // if let Some(client) = params.client {
-            //     client.send_reliable(
-            //         MatchSetupMessage::ConfirmSelection(slot.confirmed),
-            //         TargetClient::All,
-            //     );
-            // }
-        </span>} <span class="kw">else if </span>player_actions.just_pressed(PlayerAction::Move) &amp;&amp; !slot.confirmed {
+        } <span class="kw">else if </span>player_actions.just_pressed(PlayerAction::Grab) {
+            <span class="kw">if </span>!is_network {
+                <span class="kw">if </span>slot.confirmed {
+                    slot.confirmed = <span class="bool-val">false</span>;
+                } <span class="kw">else </span>{
+                    slot.active = <span class="bool-val">false</span>;
+                }
+            } <span class="kw">else </span>{
+                slot.confirmed = <span class="bool-val">false</span>;
+            }
+
+            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+                socket.send_reliable(
+                    SocketTarget::All,
+                    <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::ConfirmSelection(slot.confirmed))
+                        .unwrap(),
+                );
+            }
+        } <span class="kw">else if </span>player_actions.just_pressed(PlayerAction::Move) &amp;&amp; !slot.confirmed {
             <span class="kw">let </span>direction = player_actions
                 .clamped_axis_pair(PlayerAction::Move)
                 .unwrap();
@@ -1101,13 +1189,17 @@
                 }
             }
 
-            <span class="comment">// if let Some(client) = params.client {
-            //     client.send_reliable(
-            //         MatchSetupMessage::SelectPlayer(player_handle.clone_weak()),
-            //         TargetClient::All,
-            //     );
-            // }
-        </span>}
+            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+                socket.send_reliable(
+                    SocketTarget::All,
+                    <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::SelectPlayer(
+                        player_handle.clone(),
+                    ))
+                    .unwrap(),
+                );
+            }
+        }
 
         BorderedFrame::new(<span class="kw-2">&amp;</span>params.game.ui_theme.panel.border)
             .padding(params.game.ui_theme.panel.padding.into())
@@ -1118,39 +1210,50 @@
                 <span class="kw">let </span>normal_font = <span class="kw-2">&amp;</span>params.game.ui_theme.font_styles.normal;
                 <span class="kw">let </span>heading_font = <span class="kw-2">&amp;</span>params.game.ui_theme.font_styles.heading;
 
-                <span class="comment">// // Marker for current player in online matches
-                // if let Some(match_info) = params.client_match_info {
-                //     if match_info.player_idx == idx {
-                //         ui.vertical_centered(|ui| {
-                //             ui.themed_label(normal_font, &amp;params.localization.get(&quot;you-marker&quot;));
-                //         });
-                //     } else {
-                //         ui.add_space(normal_font.size);
-                //     }
-                // } else {
-                    </span>ui.add_space(normal_font.size);
-                <span class="comment">// }
+                <span class="comment">// Marker for current player in online matches
+                </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+                    <span class="kw">if </span>socket.player_idx() == player_id {
+                        ui.vertical_centered(|ui| {
+                            ui.themed_label(normal_font, <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;you-marker&quot;</span>));
+                        });
+                    } <span class="kw">else </span>{
+                        ui.add_space(normal_font.size);
+                    }
+                } <span class="kw">else </span>{
+                    ui.add_space(normal_font.size);
+                }
+                <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+                </span>ui.add_space(normal_font.size);
 
-                </span><span class="kw">if </span>slot.active {
+                <span class="kw">if </span>slot.active {
                     ui.vertical_centered(|ui| {
-                        <span class="kw">let </span><span class="prelude-val">Some</span>(player_meta) = params.player_meta_assets.get(<span class="kw-2">&amp;</span>player_handle.get_bevy_handle()) <span class="kw">else </span>{ <span class="kw">return</span>; };
+                        <span class="kw">let </span><span class="prelude-val">Some</span>(player_meta) = params
+                            .player_meta_assets
+                            .get(<span class="kw-2">&amp;</span>player_handle.get_bevy_handle()) <span class="kw">else </span>{ <span class="kw">return</span>; };
 
                         ui.themed_label(normal_font, <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;pick-a-fish&quot;</span>));
 
                         <span class="kw">if </span>!slot.confirmed {
-                            ui.themed_label(
-                                normal_font,
-                                <span class="kw-2">&amp;</span>params
-                                    .localization
-                                    .get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;press-button-to-lock-in?button={}&quot;</span>, player_action_map.get_text(PlayerAction::Jump))),
-                            );
+                            <span class="kw">if let </span><span class="prelude-val">Some</span>(player_action_map) = <span class="kw-2">&amp;</span>player_action_map {
+                                ui.themed_label(
+                                    normal_font,
+                                    <span class="kw-2">&amp;</span>params.localization.get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                                        <span class="string">&quot;press-button-to-lock-in?button={}&quot;</span>,
+                                        player_action_map.get_text(PlayerAction::Jump)
+                                    )),
+                                );
 
-                            ui.themed_label(
-                                normal_font,
-                                <span class="kw-2">&amp;</span>params
-                                    .localization
-                                    .get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;press-button-to-remove?button={}&quot;</span>, player_action_map.get_text(PlayerAction::Grab))),
-                            );
+                                ui.themed_label(
+                                    normal_font,
+                                    <span class="kw-2">&amp;</span>params.localization.get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                                        <span class="string">&quot;press-button-to-remove?button={}&quot;</span>,
+                                        player_action_map.get_text(PlayerAction::Grab)
+                                    )),
+                                );
+                            } <span class="kw">else </span>{
+                                ui.themed_label(normal_font, <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;waiting&quot;</span>));
+                            }
                         }
 
                         ui.vertical_centered(|ui| {
@@ -1162,13 +1265,15 @@
                                     <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;player-select-ready&quot;</span>),
                                 );
 
-                                ui.themed_label(
-                                    normal_font,
-                                    <span class="kw-2">&amp;</span>params
-                                        .localization
-                                        .get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;player-select-unready?button={}&quot;</span>, player_action_map.get_text(PlayerAction::Grab))),
-                                );
-
+                                <span class="kw">if let </span><span class="prelude-val">Some</span>(player_action_map) = <span class="kw-2">&amp;</span>player_action_map {
+                                    ui.themed_label(
+                                        normal_font,
+                                        <span class="kw-2">&amp;</span>params.localization.get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                                            <span class="string">&quot;player-select-unready?button={}&quot;</span>,
+                                            player_action_map.get_text(PlayerAction::Grab)
+                                        )),
+                                    );
+                                }
                             }
                             <span class="kw">if </span>slot.is_ai {
                                 ui.themed_label(
@@ -1179,7 +1284,9 @@
                                     <span class="kw-2">&amp;</span>params.game.ui_theme.button_styles.normal,
                                     <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;remove-ai-player&quot;</span>),
                                 )
-                                .show(ui).clicked() {
+                                .show(ui)
+                                .clicked()
+                                {
                                     slot.confirmed = <span class="bool-val">false</span>;
                                     slot.active = <span class="bool-val">false</span>;
                                     slot.is_ai = <span class="bool-val">false</span>;
@@ -1198,31 +1305,42 @@
                                 },
                             );
 
-                            player_image(ui, player_meta, <span class="kw-2">&amp;</span>params.atlas_meta_assets, <span class="kw-2">&amp;</span>params.player_atlas_egui_textures);
+                            player_image(
+                                ui,
+                                player_meta,
+                                <span class="kw-2">&amp;</span>params.atlas_meta_assets,
+                                <span class="kw-2">&amp;</span>params.player_atlas_egui_textures,
+                            );
                         });
                     });
                 } <span class="kw">else </span>{
                     ui.vertical_centered(|ui| {
-                        ui.themed_label(
-                            normal_font,
-                            <span class="kw-2">&amp;</span>params
-                                .localization
-                                .get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;press-button-to-join?button={}&quot;</span>, player_action_map.get_text(PlayerAction::Jump))),
-                        );
+                        <span class="kw">if let </span><span class="prelude-val">Some</span>(player_action_map) = <span class="kw-2">&amp;</span>player_action_map {
+                            ui.themed_label(
+                                normal_font,
+                                <span class="kw-2">&amp;</span>params.localization.get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                                    <span class="string">&quot;press-button-to-join?button={}&quot;</span>,
+                                    player_action_map.get_text(PlayerAction::Jump)
+                                )),
+                            );
+                        }
 
-                        <span class="kw">if </span>player_id != <span class="number">0 </span>{
-
-                        ui.add_space(params.game.ui_theme.font_styles.bigger.size);
+                        <span class="kw">if </span>player_id != <span class="number">0 </span>&amp;&amp; !is_network {
+                            ui.add_space(params.game.ui_theme.font_styles.bigger.size);
                             <span class="kw">if </span>BorderedButton::themed(
                                 <span class="kw-2">&amp;</span>params.game.ui_theme.button_styles.normal,
                                 <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;add-ai-player&quot;</span>),
                             )
-                            .show(ui).clicked() {
+                            .show(ui)
+                            .clicked()
+                            {
                                 slot.is_ai = <span class="bool-val">true</span>;
                                 slot.confirmed = <span class="bool-val">true</span>;
                                 slot.active = <span class="bool-val">true</span>;
                                 <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::thread_rng();
-                                <span class="kw-2">*</span>player_handle = params.core.players[rng.gen_range(<span class="number">0</span>..params.core.players.len())].clone();
+                                <span class="kw-2">*</span>player_handle = params.core.players
+                                    [rng.gen_range(<span class="number">0</span>..params.core.players.len())]
+                                .clone();
                             }
                         }
                     });

@@ -26,7 +26,9 @@ pub fn networking_settings_ui(
         }
 
         let text_box = &ui.add(
-            egui::TextEdit::singleline(&mut settings.matchmaking_server).font(normal_font.clone()),
+            egui::TextEdit::singleline(&mut settings.matchmaking_server)
+                .font(normal_font.clone())
+                .desired_width(ui.available_width() - bigger_font.size * 2.0),
         );
         let first_bottom_button = bottom_buttons.iter().next().unwrap();
         let last_bottom_button = bottom_buttons.iter().last().unwrap();

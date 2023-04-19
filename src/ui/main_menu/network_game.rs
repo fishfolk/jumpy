@@ -6,7 +6,7 @@ use std::{
 use bevy::utils::Instant;
 use smallvec::SmallVec;
 
-use crate::networking::{NetworkMatchSocket, LAN_MATCHMAKER, NETWORK_ENDPOINT};
+use crate::networking::{NetworkMatchSocket, LAN_MATCHMAKER, NETWORK_ENDPOINT, ONLINE_MATCHMAKER};
 
 use super::*;
 
@@ -63,6 +63,7 @@ pub struct MatchmakingMenu<'w, 's> {
     state: Local<'s, State>,
     menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
     commands: Commands<'w, 's>,
+    storage: ResMut<'w, Storage>,
 }
 
 pub struct State {
@@ -81,6 +82,7 @@ pub enum Status {
     Idle,
     Joining,
     Hosting,
+    Searching,
 }
 
 impl Default for State {
@@ -103,10 +105,9 @@ pub struct ServerInfo {
     pub ping: Option<u16>,
 }
 
-#[derive(PartialEq, Eq)]
 pub enum MatchKind {
     Lan(LanMode),
-    Online,
+    Online(OnlineState),
 }
 
 impl Default for MatchKind {
@@ -115,7 +116,7 @@ impl Default for MatchKind {
     }
 }
 
-#[derive(Default, PartialEq, Eq)]
+#[derive(Default)]
 pub enum LanMode {
     #[default]
     Join,
@@ -123,6 +124,31 @@ pub enum LanMode {
         service_name: String,
         player_count: usize,
     },
+}
+
+#[derive(Eq, PartialEq)]
+pub struct OnlineState {
+    player_count: usize,
+    matchmaking_server: String,
+    search_state: SearchState,
+}
+
+impl Default for OnlineState {
+    fn default() -> Self {
+        Self {
+            player_count: 2,
+            matchmaking_server: String::new(),
+            search_state: default(),
+        }
+    }
+}
+
+#[derive(Default, PartialEq, Eq)]
+pub enum SearchState {
+    #[default]
+    Connecting,
+    Searching,
+    WaitingForPlayers(usize),
 }
 
 impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
@@ -140,6 +166,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
 
         let bigger_text_style = &params.game.ui_theme.font_styles.bigger;
         let normal_text_style = &params.game.ui_theme.font_styles.normal;
+        let smaller_text_style = &params.game.ui_theme.font_styles.smaller;
         let heading_text_style = &params.game.ui_theme.font_styles.heading;
         let normal_button_style = &params.game.ui_theme.button_styles.normal;
         let small_button_style = &params.game.ui_theme.button_styles.small;
@@ -179,14 +206,14 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
 
                     // Online tab
                     let mut online = egui::RichText::new(params.localization.get("online"));
-                    if params.state.match_kind == MatchKind::Online {
+                    if matches!(params.state.match_kind, MatchKind::Online(..)) {
                         online = online.underline();
                     }
                     if BorderedButton::themed(normal_button_style, online)
                         .show(ui)
                         .clicked()
                     {
-                        params.state.match_kind = MatchKind::Online
+                        params.state.match_kind = MatchKind::Online(default());
                     }
 
                     match &mut params.state.match_kind {
@@ -233,7 +260,17 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                 },
                             );
                         }
-                        MatchKind::Online => (),
+                        MatchKind::Online(_online_state) => {
+                            ui.with_layout(
+                                egui::Layout::right_to_left(egui::Align::Center),
+                                |ui| {
+                                    ui.themed_label(
+                                        normal_text_style,
+                                        &params.localization.get("search-for-match"),
+                                    );
+                                },
+                            );
+                        }
                     }
                 });
 
@@ -251,6 +288,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                 ui.add_space(normal_text_style.size);
 
                 match match_kind {
+                    // LAN game
                     MatchKind::Lan(mode) => match mode {
                         LanMode::Join => {
                             // Stop any running server
@@ -559,7 +597,132 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                             }
                         }
                     },
-                    MatchKind::Online => {}
+
+                    // Online game
+                    MatchKind::Online(OnlineState {
+                        player_count,
+                        matchmaking_server,
+                        search_state,
+                    }) => {
+                        // Get the matchmaking server from the settings.
+                        if matchmaking_server.is_empty() {
+                            *matchmaking_server = params
+                                .storage
+                                .get::<Settings>(Settings::STORAGE_KEY)
+                                .unwrap()
+                                .matchmaking_server;
+                        }
+
+                        ui.horizontal(|ui| {
+                            ui.set_enabled(*status == Status::Idle);
+                            ui.themed_label(
+                                normal_text_style,
+                                &params.localization.get("player-count"),
+                            );
+
+                            ui.scope(|ui| {
+                                ui.set_enabled(*player_count > 2);
+                                if BorderedButton::themed(small_button_style, "-")
+                                    .min_size(egui::vec2(normal_text_style.size * 2.0, 0.0))
+                                    .show(ui)
+                                    .clicked()
+                                {
+                                    *player_count =
+                                        player_count.saturating_sub(1).clamp(2, MAX_PLAYERS);
+                                }
+                            });
+                            ui.themed_label(normal_text_style, &player_count.to_string());
+                            ui.scope(|ui| {
+                                ui.set_enabled(*player_count < MAX_PLAYERS);
+                                if BorderedButton::themed(small_button_style, "+")
+                                    .min_size(egui::vec2(normal_text_style.size * 2.0, 0.0))
+                                    .show(ui)
+                                    .clicked()
+                                {
+                                    *player_count =
+                                        player_count.saturating_add(1).clamp(2, MAX_PLAYERS);
+                                }
+                            });
+                        });
+
+                        ui.add_space(normal_text_style.size);
+
+                        if *status == Status::Idle {
+                            if BorderedButton::themed(
+                                small_button_style,
+                                &params.localization.get("search"),
+                            )
+                            .show(ui)
+                            .clicked()
+                            {
+                                *status = Status::Searching;
+                                ONLINE_MATCHMAKER
+                                    .try_send(networking::OnlineMatchmakerRequest::SearchForGame {
+                                        addr: matchmaking_server.clone(),
+                                        player_count: *player_count,
+                                    })
+                                    .unwrap();
+                            }
+                        } else if *status == Status::Searching {
+                            while let Ok(message) = ONLINE_MATCHMAKER.try_recv() {
+                                match message {
+                                    networking::OnlineMatchmakerResponse::Searching => {
+                                        *search_state = SearchState::Searching
+                                    }
+                                    networking::OnlineMatchmakerResponse::PlayerCount(count) => {
+                                        *search_state = SearchState::WaitingForPlayers(count)
+                                    }
+                                    networking::OnlineMatchmakerResponse::GameStarting {
+                                        online_socket,
+                                        player_idx,
+                                        player_count: _,
+                                    } => {
+                                        info!(?player_idx, "Starting network game");
+                                        params.commands.insert_resource(NetworkMatchSocket(
+                                            Box::new(online_socket),
+                                        ));
+
+                                        *status = default();
+                                        *search_state = default();
+                                        *params.menu_page = MenuPage::PlayerSelect;
+                                    }
+                                }
+                            }
+
+                            ui.horizontal(|ui| {
+                                if BorderedButton::themed(
+                                    small_button_style,
+                                    &params.localization.get("cancel"),
+                                )
+                                .show(ui)
+                                .clicked()
+                                {
+                                    ONLINE_MATCHMAKER
+                                        .try_send(networking::OnlineMatchmakerRequest::StopSearch)
+                                        .unwrap();
+                                    *search_state = default();
+                                    *status = Status::Idle;
+                                }
+
+                                ui.themed_label(
+                                    smaller_text_style,
+                                    &match search_state {
+                                        SearchState::Connecting => {
+                                            params.localization.get("connecting")
+                                        }
+                                        SearchState::Searching => {
+                                            params.localization.get("searching")
+                                        }
+                                        SearchState::WaitingForPlayers(current) => {
+                                            params.localization.get(&format!(
+                                                "waiting-for-players?current={current}&total={player_count}",
+                                            ))
+                                        }
+                                    },
+                                );
+                            });
+                        }
+                    }
                 }
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
@@ -570,6 +733,12 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                     {
                         match status {
                             Status::Idle => (),
+                            Status::Searching => {
+                                ONLINE_MATCHMAKER
+                                    .try_send(networking::OnlineMatchmakerRequest::StopSearch)
+                                    .unwrap();
+                                *status = Status::Idle;
+                            }
                             Status::Joining => {
                                 LAN_MATCHMAKER
                                     .try_send(networking::LanMatchmakerRequest::StopJoin)

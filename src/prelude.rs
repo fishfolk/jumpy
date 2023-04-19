@@ -2,6 +2,7 @@ pub use crate::{
     assets::*, audio::*, camera::*, config::*, debug::*, input::*, loading::*, localization::*,
     metadata::*, platform::*, session::*, ui::*, utils::*, *,
 };
+pub use anyhow::Context;
 pub use jumpy_core::bevy_prelude::*;
 
 pub use {

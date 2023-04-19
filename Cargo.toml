@@ -89,6 +89,7 @@ rustls                 = { version = "0.20.7", features = ["dangerous_configurat
 postcard               = { version = "1.0.4", features = ["alloc"] }
 bytes                  = "1.4.0"
 ping-rs                = "0.1.2"
+bones_matchmaker_proto = "0.1.0"
 
 # Optimize dependencies even in development
 [profile.dev.package."*"]

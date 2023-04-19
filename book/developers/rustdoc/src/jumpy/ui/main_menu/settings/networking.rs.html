@@ -56,6 +56,8 @@
 <a href="#55" id="55">55</a>
 <a href="#56" id="56">56</a>
 <a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>networking_settings_ui(
@@ -84,7 +86,9 @@
         }
 
         <span class="kw">let </span>text_box = <span class="kw-2">&amp;</span>ui.add(
-            egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>settings.matchmaking_server).font(normal_font.clone()),
+            egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>settings.matchmaking_server)
+                .font(normal_font.clone())
+                .desired_width(ui.available_width() - bigger_font.size * <span class="number">2.0</span>),
         );
         <span class="kw">let </span>first_bottom_button = bottom_buttons.iter().next().unwrap();
         <span class="kw">let </span>last_bottom_button = bottom_buttons.iter().last().unwrap();

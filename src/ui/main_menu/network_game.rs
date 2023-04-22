@@ -609,7 +609,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                             *matchmaking_server = params
                                 .storage
                                 .get::<Settings>(Settings::STORAGE_KEY)
-                                .unwrap()
+                                .unwrap_or_else(|| params.game.default_settings.clone())
                                 .matchmaking_server;
                         }
 
@@ -734,9 +734,10 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                         match status {
                             Status::Idle => (),
                             Status::Searching => {
-                                ONLINE_MATCHMAKER
-                                    .try_send(networking::OnlineMatchmakerRequest::StopSearch)
-                                    .unwrap();
+                                if let Err(err) = ONLINE_MATCHMAKER.try_send(networking::OnlineMatchmakerRequest::StopSearch){
+                                    error!("Error stopping search: {:?}", err);
+                                }
+
                                 *status = Status::Idle;
                             }
                             Status::Joining => {

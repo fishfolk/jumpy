@@ -734,9 +734,13 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                         match status {
                             Status::Idle => (),
                             Status::Searching => {
-                                ONLINE_MATCHMAKER
-                                    .try_send(networking::OnlineMatchmakerRequest::StopSearch)
-                                    .unwrap();
+                                match ONLINE_MATCHMAKER.try_send(networking::OnlineMatchmakerRequest::StopSearch){
+                                    Ok(_) => (),
+                                    Err(err) => {
+                                        error!("Error stopping search: {:?}", err);
+                                    }
+                                }
+
                                 *status = Status::Idle;
                             }
                             Status::Joining => {

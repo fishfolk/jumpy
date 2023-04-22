@@ -9,3 +9,4 @@ book/dist
 trace-*.json
 perf.data*
 callgrind.out*
+.cargo

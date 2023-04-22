@@ -609,7 +609,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                             *matchmaking_server = params
                                 .storage
                                 .get::<Settings>(Settings::STORAGE_KEY)
-                                .unwrap()
+                                .unwrap_or_else(|| params.game.default_settings.clone())
                                 .matchmaking_server;
                         }
 

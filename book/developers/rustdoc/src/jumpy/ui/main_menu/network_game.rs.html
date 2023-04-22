@@ -767,6 +767,7 @@
 <a href="#766" id="766">766</a>
 <a href="#767" id="767">767</a>
 <a href="#768" id="768">768</a>
+<a href="#769" id="769">769</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     net::{IpAddr, Ipv4Addr},
     time::Duration,
@@ -1378,7 +1379,7 @@
                             <span class="kw-2">*</span>matchmaking_server = params
                                 .storage
                                 .get::&lt;Settings&gt;(Settings::STORAGE_KEY)
-                                .unwrap()
+                                .unwrap_or_else(|| params.game.default_settings.clone())
                                 .matchmaking_server;
                         }
 
@@ -1503,9 +1504,10 @@
                         <span class="kw">match </span>status {
                             Status::Idle =&gt; (),
                             Status::Searching =&gt; {
-                                ONLINE_MATCHMAKER
-                                    .try_send(networking::OnlineMatchmakerRequest::StopSearch)
-                                    .unwrap();
+                                <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = ONLINE_MATCHMAKER.try_send(networking::OnlineMatchmakerRequest::StopSearch){
+                                    <span class="macro">error!</span>(<span class="string">&quot;Error stopping search: {:?}&quot;</span>, err);
+                                }
+
                                 <span class="kw-2">*</span>status = Status::Idle;
                             }
                             Status::Joining =&gt; {

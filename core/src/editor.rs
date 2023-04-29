@@ -1,3 +1,4 @@
+use crate::impl_system_param;
 use crate::{map::z_depth_for_map_layer, prelude::*};
 
 pub fn install(session: &mut CoreSession) {
@@ -6,74 +7,8 @@ pub fn install(session: &mut CoreSession) {
         .add_system_to_stage(CoreStage::PreUpdate, handle_editor_input);
 }
 
-/// Macro to "derive" ( not really a derive macro ) SystemParam for a struct.
-macro_rules! impl_system_param {
-    (
-        pub struct $t:ident<'a> {
-            $(
-                $( #[$attrs:meta] )*
-                $f_name:ident: $f_ty:ty
-            ),*
-            $(,)?
-        }
-    ) => {
-        pub struct $t<'a> {
-            $(
-                $( #[$attrs] )*
-                pub $f_name: $f_ty
-            ),*
-        }
-
-        impl<'a> SystemParam for $t<'a> {
-            type State = (
-                $(
-                    <$f_ty as SystemParam>::State
-                ),*
-            );
-            type Param<'p> = $t<'p>;
-
-            fn initialize(world: &mut World) {
-                $(
-                    <$f_ty as SystemParam>::initialize(world);
-                )*
-            }
-
-            fn get_state(world: &World) -> Self::State {
-                (
-                    $(
-                        <$f_ty as SystemParam>::get_state(world)
-                    ),*
-                )
-            }
-
-            fn borrow(state: &mut Self::State) -> Self::Param<'_> {
-                let (
-                    $(
-                        $f_name
-                    ),*
-                ) = state;
-                let (
-                    $(
-                        $f_name
-                    ),*
-                ) = (
-                    $(
-                        <$f_ty as SystemParam>::borrow($f_name)
-                    ),*
-                );
-
-                Self::Param {
-                    $(
-                        $f_name
-                    ),*
-                }
-            }
-        }
-    };
-}
-
 impl_system_param! {
-    pub struct MapInterface<'a> {
+    pub struct MapManager<'a> {
         commands: Commands<'a>,
         entities: ResMut<'a, Entities>,
         spawned_map_meta: ResMut<'a, SpawnedMapMeta>,
@@ -86,7 +21,7 @@ impl_system_param! {
     }
 }
 
-impl<'a> MapInterface<'a> {
+impl<'a> MapManager<'a> {
     fn create_element(
         &mut self,
         element_meta_handle: &Handle<ElementMeta>,
@@ -288,7 +223,7 @@ impl<'a> MapInterface<'a> {
     }
 }
 
-fn handle_editor_input(player_inputs: Res<PlayerInputs>, mut map_interface: MapInterface) {
+fn handle_editor_input(player_inputs: Res<PlayerInputs>, mut map_manager: MapManager) {
     for player in &player_inputs.players {
         if let Some(editor_input) = &player.editor_input {
             match editor_input {
@@ -297,26 +232,26 @@ fn handle_editor_input(player_inputs: Res<PlayerInputs>, mut map_interface: MapI
                     translation,
                     layer,
                 } => {
-                    map_interface.create_element(handle, translation, *layer as usize);
+                    map_manager.create_element(handle, translation, *layer as usize);
                 }
                 EditorInput::CreateLayer { id } => {
-                    map_interface.create_layer(id.clone());
+                    map_manager.create_layer(id.clone());
                 }
                 EditorInput::DeleteLayer { layer } => {
-                    map_interface.delete_layer(*layer as usize);
+                    map_manager.delete_layer(*layer as usize);
                 }
                 EditorInput::RenameLayer {
                     layer,
                     name: new_name,
-                } => map_interface.rename_layer(*layer as usize, new_name),
+                } => map_manager.rename_layer(*layer as usize, new_name),
                 EditorInput::MoveEntity { entity, pos } => {
-                    map_interface.move_element(*entity, pos);
+                    map_manager.move_element(*entity, pos);
                 }
                 EditorInput::DeleteEntity { entity } => {
-                    map_interface.delete_element(*entity);
+                    map_manager.delete_element(*entity);
                 }
                 EditorInput::SetTilemap { layer, handle } => {
-                    map_interface.set_layer_tilemap(*layer as usize, handle);
+                    map_manager.set_layer_tilemap(*layer as usize, handle);
                 }
                 EditorInput::SetTile {
                     layer,
@@ -324,13 +259,13 @@ fn handle_editor_input(player_inputs: Res<PlayerInputs>, mut map_interface: MapI
                     tilemap_tile_idx,
                     collision,
                 } => {
-                    map_interface.set_tile(*layer as usize, *pos, tilemap_tile_idx, *collision);
+                    map_manager.set_tile(*layer as usize, *pos, tilemap_tile_idx, *collision);
                 }
                 EditorInput::MoveLayer { layer, down } => {
-                    map_interface.swap_layer(*layer as usize, *down)
+                    map_manager.swap_layer(*layer as usize, *down)
                 }
                 EditorInput::RenameMap { name } => {
-                    map_interface.rename_map(name.clone());
+                    map_manager.rename_map(name.clone());
                 }
             }
         }

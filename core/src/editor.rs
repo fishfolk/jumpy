@@ -87,9 +87,15 @@ impl_system_param! {
 }
 
 impl<'a> MapInterface<'a> {
-    fn create_element(&mut self, element_meta_handle: &Handle<ElementMeta>, translation: &Vec2, layer_index: usize) {
+    fn create_element(
+        &mut self,
+        element_meta_handle: &Handle<ElementMeta>,
+        translation: &Vec2,
+        layer_index: usize,
+    ) {
         let entity = self.entities.create();
-        self.element_handles.insert(entity, ElementHandle(element_meta_handle.clone()));
+        self.element_handles
+            .insert(entity, ElementHandle(element_meta_handle.clone()));
         let z_depth = z_depth_for_map_layer(layer_index);
         self.transforms.insert(
             entity,
@@ -105,14 +111,20 @@ impl<'a> MapInterface<'a> {
     fn create_layer(&mut self, name: String) {
         let entity = self.entities.create();
         let layer_index = self.spawned_map_meta.layer_names.len();
-        self.spawned_map_meta.layer_names = self.spawned_map_meta
+        self.spawned_map_meta.layer_names = self
+            .spawned_map_meta
             .layer_names
             .clone()
             .iter()
             .cloned()
             .chain([name])
             .collect();
-        self.spawned_map_layer_metas.insert(entity, SpawnedMapLayerMeta { layer_idx: layer_index });
+        self.spawned_map_layer_metas.insert(
+            entity,
+            SpawnedMapLayerMeta {
+                layer_idx: layer_index,
+            },
+        );
         self.tile_layers.insert(
             entity,
             TileLayer::new(
@@ -123,17 +135,14 @@ impl<'a> MapInterface<'a> {
         );
         self.transforms.insert(
             entity,
-            Transform::from_translation(Vec3::new(
-                0.0,
-                0.0,
-                z_depth_for_map_layer(layer_index),
-            )),
+            Transform::from_translation(Vec3::new(0.0, 0.0, z_depth_for_map_layer(layer_index))),
         );
     }
     fn delete_layer(&mut self, layer_index: usize) {
         let layer_count = self.spawned_map_meta.layer_names.len();
         let layers_to_decrement = layer_count - layer_index;
-        self.spawned_map_meta.layer_names = self.spawned_map_meta
+        self.spawned_map_meta.layer_names = self
+            .spawned_map_meta
             .layer_names
             .clone()
             .iter()
@@ -163,14 +172,15 @@ impl<'a> MapInterface<'a> {
             self.entities.kill(ent);
         });
     }
-    fn rename_layer(&mut self, layer_index: usize, name: &String) {
-        self.spawned_map_meta.layer_names = self.spawned_map_meta
+    fn rename_layer(&mut self, layer_index: usize, name: &str) {
+        self.spawned_map_meta.layer_names = self
+            .spawned_map_meta
             .layer_names
             .clone()
             .iter()
             .cloned()
             .enumerate()
-            .map(|(i, n)| if i == layer_index { name.clone() } else { n })
+            .map(|(i, n)| if i == layer_index { name.to_owned() } else { n })
             .collect();
     }
     fn move_element(&mut self, entity: Entity, position: &Vec2) {
@@ -182,9 +192,10 @@ impl<'a> MapInterface<'a> {
         self.entities.kill(entity);
     }
     fn set_layer_tilemap(&mut self, layer_index: usize, tilemap: &Option<Handle<Atlas>>) {
-        if let Some((_, (tile_layer, _))) = self.entities
+        if let Some((_, (tile_layer, _))) = self
+            .entities
             .iter_with((&mut self.tile_layers, &self.spawned_map_layer_metas))
-            .find(|x| x.1.1.layer_idx == layer_index)
+            .find(|x| x.1 .1.layer_idx == layer_index)
         {
             if let Some(handle) = tilemap {
                 tile_layer.atlas = handle.clone();
@@ -193,10 +204,17 @@ impl<'a> MapInterface<'a> {
             }
         };
     }
-    fn set_tile(&mut self, layer_index: usize, position: UVec2, tilemap_tile_index: &Option<usize>, tile_collision_kind: TileCollisionKind) {
-        if let Some((_, (tile_layer, _))) = self.entities
+    fn set_tile(
+        &mut self,
+        layer_index: usize,
+        position: UVec2,
+        tilemap_tile_index: &Option<usize>,
+        tile_collision_kind: TileCollisionKind,
+    ) {
+        if let Some((_, (tile_layer, _))) = self
+            .entities
             .iter_with((&mut self.tile_layers, &self.spawned_map_layer_metas))
-            .find(|x| x.1.1.layer_idx == layer_index)
+            .find(|x| x.1 .1.layer_idx == layer_index)
         {
             if let Some(entity) = tile_layer.get(position) {
                 if let Some(idx) = tilemap_tile_index.as_ref() {
@@ -235,21 +253,26 @@ impl<'a> MapInterface<'a> {
                 }
             }
 
-            self.commands.add(move |mut collision_world: CollisionWorld| {
-                collision_world.update_tile(layer_index, position);
-            });
+            self.commands
+                .add(move |mut collision_world: CollisionWorld| {
+                    collision_world.update_tile(layer_index, position);
+                });
         };
     }
     fn swap_layer(&mut self, layer_index: usize, is_downward: bool) {
         let origin_layer_index = layer_index;
-        let other_layer_index = if is_downward { origin_layer_index + 1 } else { origin_layer_index - 1 };
+        let other_layer_index = if is_downward {
+            origin_layer_index + 1
+        } else {
+            origin_layer_index - 1
+        };
         let mut layer_names = self.spawned_map_meta.layer_names.to_vec();
         layer_names.swap(origin_layer_index, other_layer_index);
         self.spawned_map_meta.layer_names = layer_names.into_iter().collect();
 
-        for (_, (transform, layer_meta)) in
-            self.entities
-                .iter_with((&mut self.transforms, &mut self.spawned_map_layer_metas))
+        for (_, (transform, layer_meta)) in self
+            .entities
+            .iter_with((&mut self.transforms, &mut self.spawned_map_layer_metas))
         {
             if layer_meta.layer_idx == origin_layer_index {
                 layer_meta.layer_idx = other_layer_index;
@@ -265,10 +288,7 @@ impl<'a> MapInterface<'a> {
     }
 }
 
-fn handle_editor_input(
-    player_inputs: Res<PlayerInputs>,
-    mut map_interface: MapInterface
-) {
+fn handle_editor_input(player_inputs: Res<PlayerInputs>, mut map_interface: MapInterface) {
     for player in &player_inputs.players {
         if let Some(editor_input) = &player.editor_input {
             match editor_input {
@@ -288,9 +308,7 @@ fn handle_editor_input(
                 EditorInput::RenameLayer {
                     layer,
                     name: new_name,
-                } => {
-                    map_interface.rename_layer(*layer as usize, new_name)
-                }
+                } => map_interface.rename_layer(*layer as usize, new_name),
                 EditorInput::MoveEntity { entity, pos } => {
                     map_interface.move_element(*entity, pos);
                 }

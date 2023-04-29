@@ -39,6 +39,7 @@ pub mod player;
 pub mod random;
 pub mod session;
 pub mod utils;
+pub mod map_constructor;
 
 /// The target fixed frames-per-second that the game sumulation runs at.
 pub const FPS: f32 = 60.0;

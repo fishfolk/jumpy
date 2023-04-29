@@ -128,7 +128,7 @@ fn handle_editor_input(
                 EditorInput::SetTilemap { layer, handle } => {
                     if let Some((_ent, (tile_layer, _))) = entities
                         .iter_with((&mut tile_layers, &spawned_map_layer_metas))
-                        .find(|x| x.1 .1.layer_idx == *layer as usize)
+                        .find(|x| x.1.1.layer_idx == *layer as usize)
                     {
                         if let Some(handle) = handle {
                             tile_layer.atlas = handle.clone();
@@ -148,7 +148,7 @@ fn handle_editor_input(
 
                     if let Some((_ent, (tile_layer, _))) = entities
                         .iter_with((&mut tile_layers, &spawned_map_layer_metas))
-                        .find(|x| x.1 .1.layer_idx == layer)
+                        .find(|x| x.1.1.layer_idx == layer)
                     {
                         if let Some(ent) = tile_layer.get(pos) {
                             if let Some(idx) = tilemap_tile_idx.as_ref() {
@@ -213,6 +213,8 @@ fn handle_editor_input(
                 }
                 EditorInput::RenameMap { name } => {
                     spawned_map_meta.name = name.clone().into();
+                }
+                EditorInput::RandomizeTiles { width, height, tile_entities_per_y_per_x, element_entities_per_y_per_x } => {
                 }
             }
         }

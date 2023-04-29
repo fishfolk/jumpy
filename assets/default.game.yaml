@@ -33,7 +33,7 @@ main_menu:
   menu_width: 350
 
 default_settings:
-  matchmaking_server: localhost:8943
+  matchmaking_server: matchmaker.bones.fishfolk.org:65534
   player_controls:
     # Gamepad controls
     gamepad:

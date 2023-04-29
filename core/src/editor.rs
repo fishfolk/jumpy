@@ -6,9 +6,74 @@ pub fn install(session: &mut CoreSession) {
         .add_system_to_stage(CoreStage::PreUpdate, handle_editor_input);
 }
 
-// TODO move these structs to their own file
-//impl_system_param! {
-    struct MapInterface<'a> {
+/// Macro to "derive" ( not really a derive macro ) SystemParam for a struct.
+macro_rules! impl_system_param {
+    (
+        pub struct $t:ident<'a> {
+            $(
+                $( #[$attrs:meta] )*
+                $f_name:ident: $f_ty:ty
+            ),*
+            $(,)?
+        }
+    ) => {
+        pub struct $t<'a> {
+            $(
+                $( #[$attrs] )*
+                pub $f_name: $f_ty
+            ),*
+        }
+
+        impl<'a> SystemParam for $t<'a> {
+            type State = (
+                $(
+                    <$f_ty as SystemParam>::State
+                ),*
+            );
+            type Param<'p> = $t<'p>;
+
+            fn initialize(world: &mut World) {
+                $(
+                    <$f_ty as SystemParam>::initialize(world);
+                )*
+            }
+
+            fn get_state(world: &World) -> Self::State {
+                (
+                    $(
+                        <$f_ty as SystemParam>::get_state(world)
+                    ),*
+                )
+            }
+
+            fn borrow(state: &mut Self::State) -> Self::Param<'_> {
+                let (
+                    $(
+                        $f_name
+                    ),*
+                ) = state;
+                let (
+                    $(
+                        $f_name
+                    ),*
+                ) = (
+                    $(
+                        <$f_ty as SystemParam>::borrow($f_name)
+                    ),*
+                );
+
+                Self::Param {
+                    $(
+                        $f_name
+                    ),*
+                }
+            }
+        }
+    };
+}
+
+impl_system_param! {
+    pub struct MapInterface<'a> {
         commands: Commands<'a>,
         entities: ResMut<'a, Entities>,
         spawned_map_meta: ResMut<'a, SpawnedMapMeta>,
@@ -19,7 +84,7 @@ pub fn install(session: &mut CoreSession) {
         tiles: CompMut<'a, Tile>,
         tile_collisions: CompMut<'a, TileCollisionKind>
     }
-//}
+}
 
 impl<'a> MapInterface<'a> {
     fn create_element(&mut self, element_meta_handle: &Handle<ElementMeta>, translation: &Vec2, layer_index: usize) {
@@ -98,14 +163,14 @@ impl<'a> MapInterface<'a> {
             self.entities.kill(ent);
         });
     }
-    fn rename_layer(&mut self, layer_index: usize, name: String) {
+    fn rename_layer(&mut self, layer_index: usize, name: &String) {
         self.spawned_map_meta.layer_names = self.spawned_map_meta
             .layer_names
             .clone()
             .iter()
             .cloned()
             .enumerate()
-            .map(|(i, n)| if i == layer_index { name } else { n })
+            .map(|(i, n)| if i == layer_index { name.clone() } else { n })
             .collect();
     }
     fn move_element(&mut self, entity: Entity, position: &Vec2) {
@@ -224,7 +289,7 @@ fn handle_editor_input(
                     layer,
                     name: new_name,
                 } => {
-                    map_interface.rename_layer(*layer as usize, new_name.clone())
+                    map_interface.rename_layer(*layer as usize, new_name)
                 }
                 EditorInput::MoveEntity { entity, pos } => {
                     map_interface.move_element(*entity, pos);

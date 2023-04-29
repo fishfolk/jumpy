@@ -222,9 +222,9 @@ dependencies = [
 
 [[package]]
 name = "async-executor"
-version = "1.5.0"
+version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17adb73da160dfb475c183343c8cccd80721ea5a605d3eb57125f0a7b7a92d0b"
+checksum = "6fa3dc5f2a8564f07759c008b9109dc0d39de92a88d5588b8a5036d286383afb"
 dependencies = [
  "async-lock",
  "async-task",
@@ -1175,6 +1175,15 @@ dependencies = [
  "noise",
  "serde",
  "type_ulid",
+]
+
+[[package]]
+name = "bones_matchmaker_proto"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bff7e71011db4da9f456122f586cf576ee42b249b26a5b2a840eee2141c4ef38"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -2760,6 +2769,7 @@ dependencies = [
  "bones_bevy_asset",
  "bones_bevy_renderer",
  "bones_lib",
+ "bones_matchmaker_proto",
  "bytemuck",
  "bytes",
  "clap",

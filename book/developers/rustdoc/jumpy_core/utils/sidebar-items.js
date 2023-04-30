@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["EaseFunction",""]],"fn":[["sine_between","Clamps a sin wave between a minimum and maximum value."]],"struct":[["Ease","Simple easing calculator"],["Rect",""]]};
+window.SIDEBAR_ITEMS = {"enum":[["EaseFunction",""]],"fn":[["sine_between","Clamps a sin wave between a minimum and maximum value."]],"macro":[["impl_system_param","Macro to “derive” ( not really a derive macro ) SystemParam for a struct."]],"struct":[["Ease","Simple easing calculator"],["Rect",""]]};

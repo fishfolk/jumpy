@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["install",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["MapManager",""]]};

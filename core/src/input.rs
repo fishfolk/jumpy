@@ -60,6 +60,18 @@ pub struct PlayerControl {
     pub slide_just_pressed: bool,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TileLayer {
+    pub idx: u8,
+    pub located_tiles: Vec<(UVec2, (Option<usize>, TileCollisionKind))>
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ElementLayer {
+    pub idx: u8,
+    pub located_elements: Vec<(Vec2, Handle<ElementMeta>)>
+}
+
 /// The editor inputs that a player may make.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum EditorInput {
@@ -124,4 +136,8 @@ pub enum EditorInput {
     RenameMap {
         name: String,
     },
+    RandomizeTiles {
+        tile_layers: Vec<TileLayer>,
+        element_layers: Vec<ElementLayer>
+    }
 }

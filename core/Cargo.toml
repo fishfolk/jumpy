@@ -22,7 +22,7 @@ serde           = { version = "1.0.152", features = ["derive"] }
 tracing         = "0.1.37"
 petgraph        = { version = "0.6", features = ["graphmap"], default-features = false }
 indexmap        = "1.9.3"
-shiftnanigans   = { version = "0.3.1" }
+shiftnanigans   = { version = "0.3.2" }
 
 [dependencies.bevy]
 default-features = false

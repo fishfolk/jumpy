@@ -1,10 +1,8 @@
-use bones_lib::prelude::{CompMut, Transform};
-
-use crate::prelude::{LoadedMap, SpawnedMapLayerMeta};
+use crate::{editor::MapManager};
 
 pub mod shiftnanigans;
 
-trait MapConstructor {
-    fn construct_map(&self, &mut spawned_map_layer_metas: CompMut<SpawnedMapLayerMeta>, &mut transforms: CompMut<Transform>) -> LoadedMap;
+pub trait MapConstructor {
+    fn construct_map(&self, map_manager: &mut MapManager);
 }
 

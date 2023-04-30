@@ -14,6 +14,9 @@ use proto::*;
 pub use lan::*;
 mod lan;
 
+pub use online::*;
+mod online;
+
 pub struct NetworkingPlugin;
 
 impl Plugin for NetworkingPlugin {

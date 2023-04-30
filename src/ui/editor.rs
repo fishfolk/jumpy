@@ -4,7 +4,7 @@ use bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use bones_bevy_renderer::BevyBonesEntity;
-use jumpy_core::physics::TileCollisionKind;
+use jumpy_core::{physics::TileCollisionKind, input::{TileLayer, ElementLayer}};
 
 use crate::prelude::*;
 
@@ -556,6 +556,24 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                             ui.label(format!("{x} x {y}"));
                         });
                     }
+                });
+
+                body.row(row_height, |mut row| {
+                    row.col(|ui| {
+                        if ui
+                            .button(&format!("{}", params.localization.get("randomize")))
+                            .clicked()
+                        {
+                            let tile_layers: Vec<TileLayer> = vec![];
+                            let element_layers: Vec<ElementLayer> = vec![];
+
+                            **params.editor_input =
+                                Some(EditorInput::RandomizeTiles {
+                                    tile_layers,
+                                    element_layers
+                                });
+                        }
+                    });
                 });
             });
         });

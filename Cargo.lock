@@ -222,9 +222,9 @@ dependencies = [
 
 [[package]]
 name = "async-executor"
-version = "1.5.0"
+version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17adb73da160dfb475c183343c8cccd80721ea5a605d3eb57125f0a7b7a92d0b"
+checksum = "6fa3dc5f2a8564f07759c008b9109dc0d39de92a88d5588b8a5036d286383afb"
 dependencies = [
  "async-lock",
  "async-task",
@@ -1198,6 +1198,15 @@ dependencies = [
  "noise",
  "serde",
  "type_ulid",
+]
+
+[[package]]
+name = "bones_matchmaker_proto"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bff7e71011db4da9f456122f586cf576ee42b249b26a5b2a840eee2141c4ef38"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -2854,6 +2863,7 @@ dependencies = [
  "bones_bevy_asset",
  "bones_bevy_renderer",
  "bones_lib",
+ "bones_matchmaker_proto",
  "bytemuck",
  "bytes",
  "clap",
@@ -4059,22 +4069,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "quanta"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20afe714292d5e879d8b12740aa223c6a88f118af41870e8b6196e39a02238a8"
-dependencies = [
- "crossbeam-utils",
- "libc",
- "mach",
- "once_cell",
- "raw-cpuid",
- "wasi 0.10.2+wasi-snapshot-preview1",
- "web-sys",
- "winapi",
-]
-
-[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4282,15 +4276,6 @@ dependencies = [
  "parry2d",
  "rustc-hash",
  "simba 0.8.0",
-]
-
-[[package]]
-name = "raw-cpuid"
-version = "10.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c297679cb867470fa8c9f67dbba74a78d78e3e98d7cf2b08d6d71540f797332"
-dependencies = [
- "bitflags",
 ]
 
 [[package]]
@@ -4703,9 +4688,9 @@ dependencies = [
 
 [[package]]
 name = "shiftnanigans"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d55c4cd54a3e965a5b6e466d9d0d2b02b071190146181a4443a51a0c330e9ba"
+checksum = "ea8055933853f4a57344bdd8d20e56fb68d4413958cb006bf4bd2870d1d78525"
 dependencies = [
  "bitvec",
  "fastrand",
@@ -4716,7 +4701,6 @@ dependencies = [
  "pretty_env_logger",
  "rstest",
  "rusymbols",
- "time-graph",
  "uuid",
 ]
 
@@ -5060,28 +5044,6 @@ name = "time-core"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e153e1f1acaef8acc537e68b44906d2db6436e2b35ac2c6b42640fff91f00fd"
-
-[[package]]
-name = "time-graph"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de7f620711b3502e7378d8b394096ab43a2bb4b7f84aabf0de20aaa5024b295f"
-dependencies = [
- "once_cell",
- "petgraph",
- "quanta",
- "time-graph-macros",
-]
-
-[[package]]
-name = "time-graph-macros"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75b90b0da204877a450b4ce7efe72765080b5055779660d3ec08f1bf891e3ce5"
-dependencies = [
- "quote",
- "syn 1.0.109",
-]
 
 [[package]]
 name = "time-macros"
@@ -5439,12 +5401,6 @@ name = "wasi"
 version = "0.9.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
-
-[[package]]
-name = "wasi"
-version = "0.10.2+wasi-snapshot-preview1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd6fbd9a79829dd1ad0cc20627bf1ed606756a7f77edff7b66b7064f9cb327c6"
 
 [[package]]
 name = "wasi"

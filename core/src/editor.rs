@@ -227,6 +227,9 @@ impl<'a> MapManager<'a> {
     pub fn get_size(&self) -> UVec2 {
         self.spawned_map_meta.grid_size
     }
+    pub fn get_layers_total(&self) -> usize {
+        self.spawned_map_meta.layer_names.len()
+    }
 }
 
 fn handle_editor_input(player_inputs: Res<PlayerInputs>, mut map_manager: MapManager) {

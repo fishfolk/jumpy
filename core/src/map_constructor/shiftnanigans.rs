@@ -10,9 +10,7 @@ use shiftnanigans::pixel_board::{
 };
 
 pub struct ShiftnanigansMapConstructor {
-    pixel_board_randomizer: PixelBoardRandomizer<PixelType>,
-    original_width: u32,
-    original_height: u32
+    pixel_board_randomizer: PixelBoardRandomizer<PixelType>
 }
 
 impl ShiftnanigansMapConstructor {
@@ -171,9 +169,7 @@ impl ShiftnanigansMapConstructor {
             });
 
         ShiftnanigansMapConstructor {
-            pixel_board_randomizer: PixelBoardRandomizer::new(pixel_board),
-            original_width: map_size.x,
-            original_height: map_size.y
+            pixel_board_randomizer: PixelBoardRandomizer::new(pixel_board)
         }
     }
 }
@@ -182,6 +178,26 @@ impl MapConstructor for ShiftnanigansMapConstructor {
     fn construct_map(&self, map_manager: &mut MapManager) {
         let random_pixel_board = self.pixel_board_randomizer.get_random_pixel_board();
 
+        let map_size = map_manager.get_size();
+        let layers_total = map_manager.get_layers_total();
+
+        // remove all tiles
+        let empty_tile: Option<usize> = Option::None;
+        for y in 0..map_size.y {
+            for x in 0..map_size.x {
+                let position = UVec2 { x, y };
+                for layer_index in 0..layers_total {
+                    map_manager.set_tile(layer_index, position, &empty_tile, crate::physics::TileCollisionKind::Empty);
+                }
+            }
+        }
+
+        // place all tiles
+        for y in 0..random_pixel_board.get_height() {
+            for x in 0..random_pixel_board.get_width() {
+
+            }
+        }
 
         todo!()
     }
@@ -276,7 +292,8 @@ struct PixelType {
 
 impl Pixel for PixelType {
     fn get_invalid_location_offsets_for_other_pixel(&self, other_pixel: &Self) -> Vec<(i16, i16)> {
-        let mut invalid_location_offsets: Vec<(i16, i16)> = Vec::new();
+        let invalid_location_offsets: Vec<(i16, i16)> = Vec::new();
+        // TODO add invalid location offsets as needed
         self.grouped_pixels
             .iter()
             .for_each(|gp| {

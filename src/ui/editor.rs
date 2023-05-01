@@ -1,13 +1,10 @@
 use std::marker::PhantomData;
-
 use bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use bones_bevy_renderer::BevyBonesEntity;
 use jumpy_core::{physics::TileCollisionKind, input::{TileLayer, ElementLayer}};
-
 use crate::prelude::*;
-
 use super::{widget, widgets::bordered_button::BorderedButton, WidgetSystem};
 
 pub struct EditorPlugin;
@@ -564,8 +561,8 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                             .button(&format!("{}", params.localization.get("randomize")))
                             .clicked()
                         {
-                            let tile_layers: Vec<TileLayer> = vec![];
-                            let element_layers: Vec<ElementLayer> = vec![];
+                            let mut tile_layers: Vec<TileLayer> = vec![];
+                            let mut element_layers: Vec<ElementLayer> = vec![];
 
                             if let Some(map) = map_meta {
                                 map.layers
@@ -585,10 +582,10 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                                             };
                                             tile_layers.push(tile_layer);
                                         }
-                                        let located_elements: Vec<(Vec2, Handle<ElementMeta>)> = layer.elements
+                                        let located_elements: Vec<(Vec2, bones_lib::prelude::Handle<ElementMeta>)> = layer.elements
                                             .iter()
                                             .map(|element| {
-                                                (element.pos, element.element)
+                                                (element.pos, element.element.clone())
                                             })
                                             .collect();
                                         if located_elements.len() != 0 {

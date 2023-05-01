@@ -62,13 +62,13 @@ pub struct PlayerControl {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TileLayer {
-    pub idx: u8,
-    pub located_tiles: Vec<(UVec2, (Option<usize>, TileCollisionKind))>
+    pub layer_index: usize,
+    pub located_tiles: Vec<(UVec2, u32, TileCollisionKind)>
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ElementLayer {
-    pub idx: u8,
+    pub layer_index: usize,
     pub located_elements: Vec<(Vec2, Handle<ElementMeta>)>
 }
 

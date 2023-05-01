@@ -190,7 +190,7 @@ impl MapConstructor for ShiftnanigansMapConstructor {
 /// The tile as it exists in the map
 struct Tile {
     layer_index: usize,
-    tilemap_tile_index: Option<usize>
+    tilemap_tile_index: u32
 }
 
 /// An element at a location within the map
@@ -225,8 +225,8 @@ impl UngroupedPixel {
                             tile.0.y == y {
 
                             entity_types.push(LayerPixelEntityType::Tile(Tile {
-                                layer_index: tile_layer.idx as usize,
-                                tilemap_tile_index: tile.1.0
+                                layer_index: tile_layer.layer_index,
+                                tilemap_tile_index: tile.1
                             }));
                         }
                     });
@@ -243,7 +243,7 @@ impl UngroupedPixel {
 
                             // TODO determine which element this is in 'element'
                             entity_types.push(LayerPixelEntityType::Element(Element {
-                                layer_index: element_layer.idx as usize,
+                                layer_index: element_layer.layer_index,
                                 element_meta_handle: element.1.clone(),
                                 position: Vec2::new(element.0.x - x as f32, element.0.y - y as f32)
                             }));

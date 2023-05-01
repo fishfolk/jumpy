@@ -567,6 +567,40 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                             let tile_layers: Vec<TileLayer> = vec![];
                             let element_layers: Vec<ElementLayer> = vec![];
 
+                            if let Some(map) = map_meta {
+                                map.layers
+                                    .iter()
+                                    .enumerate()
+                                    .for_each(|(layer_index, layer)| {
+                                        let located_tiles: Vec<(UVec2, u32, TileCollisionKind)> = layer.tiles
+                                            .iter()
+                                            .map(|tile| {
+                                                (tile.pos, tile.idx, tile.collision)
+                                            })
+                                            .collect();
+                                        if located_tiles.len() != 0 {
+                                            let tile_layer = TileLayer {
+                                                layer_index,
+                                                located_tiles,
+                                            };
+                                            tile_layers.push(tile_layer);
+                                        }
+                                        let located_elements: Vec<(Vec2, Handle<ElementMeta>)> = layer.elements
+                                            .iter()
+                                            .map(|element| {
+                                                (element.pos, element.element)
+                                            })
+                                            .collect();
+                                        if located_elements.len() != 0 {
+                                            let element_layer = ElementLayer {
+                                                layer_index,
+                                                located_elements
+                                            };
+                                            element_layers.push(element_layer);
+                                        }
+                                    });
+                            }
+
                             **params.editor_input =
                                 Some(EditorInput::RandomizeTiles {
                                     tile_layers,

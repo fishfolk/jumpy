@@ -32,6 +32,7 @@ impl<'a> MapManager<'a> {
         layer_index: usize,
     ) {
         let entity = self.entities.create();
+        // TODO remove element handles as the underlying elements are removed
         self.element_handles
             .insert(entity, ElementHandle(element_meta_handle.clone()));
         let z_depth = z_depth_for_map_layer(layer_index);
@@ -229,6 +230,24 @@ impl<'a> MapManager<'a> {
     }
     pub fn get_layers_total(&self) -> usize {
         self.spawned_map_meta.layer_names.len()
+    }
+    pub fn clear_tiles(&mut self) {
+        let empty_tile: Option<usize> = Option::None;
+        for y in 0..map_size.y {
+            for x in 0..map_size.x {
+                let position = UVec2 { x, y };
+                for layer_index in 0..layers_total {
+                    self.set_tile(layer_index, position, &empty_tile, crate::physics::TileCollisionKind::Empty);
+                }
+            }
+        }
+    }
+    pub fn clear_elements(&mut self) {
+        self.entities
+            .iter_with(&mut self.element_handles)
+            .for_each(|(entity, element_handle)| {
+                self.entities.kill(entity);
+            });
     }
 }
 

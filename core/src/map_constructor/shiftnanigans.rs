@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{editor::MapManager, metadata::ElementMeta, input::{TileLayer, ElementLayer}};
+use crate::{editor::MapManager, metadata::ElementMeta, input::{TileLayer, ElementLayer}, physics::TileCollisionKind};
 use super::MapConstructor;
 use bones_lib::prelude::{Handle};
 use glam::{UVec2, Vec2};
@@ -182,31 +182,52 @@ impl MapConstructor for ShiftnanigansMapConstructor {
         let layers_total = map_manager.get_layers_total();
 
         // remove all tiles
-        let empty_tile: Option<usize> = Option::None;
-        for y in 0..map_size.y {
-            for x in 0..map_size.x {
-                let position = UVec2 { x, y };
-                for layer_index in 0..layers_total {
-                    map_manager.set_tile(layer_index, position, &empty_tile, crate::physics::TileCollisionKind::Empty);
+        map_manager.clear_tiles();
+
+        // remove all elements
+        map_manager.clear_elements();
+
+        // place all tiles and elements
+        for y in 0..random_pixel_board.get_height() {
+            for x in 0..random_pixel_board.get_width() {
+                if random_pixel_board.exists(x, y) {
+                    let wrapped_pixel = random_pixel_board.get(x, y).unwrap();
+                    let borrowed_pixel: &PixelType = &wrapped_pixel.borrow();
+                    borrowed_pixel.grouped_pixels
+                        .iter()
+                        .for_each(|gp| {
+                            gp.ungrouped_pixel.layer_pixel_entity_types
+                                .iter()
+                                .for_each(|lpet| {
+                                    match lpet {
+                                        LayerPixelEntityType::Tile(tile) => {
+                                            let position = UVec2 {
+                                                x: x as u32 + gp.ungrouped_pixel_location.x,
+                                                y: y as u32 + gp.ungrouped_pixel_location.y
+                                            };
+                                            map_manager.set_tile(tile.layer_index, position, &Some(tile.tilemap_tile_index as usize), tile.tile_collision_kind);
+                                        },
+                                        LayerPixelEntityType::Element(element) => {
+                                            let position = Vec2 {
+                                                x: x as f32 + gp.ungrouped_pixel_location.x as f32 + element.position.x,
+                                                y: y as f32 + gp.ungrouped_pixel_location.y as f32 + element.position.y
+                                            };
+                                            map_manager.create_element(&element.element_meta_handle, &position, element.layer_index);
+                                        }
+                                    }
+                                });
+                        });
                 }
             }
         }
-
-        // place all tiles
-        for y in 0..random_pixel_board.get_height() {
-            for x in 0..random_pixel_board.get_width() {
-
-            }
-        }
-
-        todo!()
     }
 }
 
 /// The tile as it exists in the map
 struct Tile {
     layer_index: usize,
-    tilemap_tile_index: u32
+    tilemap_tile_index: u32,
+    tile_collision_kind: TileCollisionKind
 }
 
 /// An element at a location within the map
@@ -242,7 +263,8 @@ impl UngroupedPixel {
 
                             entity_types.push(LayerPixelEntityType::Tile(Tile {
                                 layer_index: tile_layer.layer_index,
-                                tilemap_tile_index: tile.1
+                                tilemap_tile_index: tile.1,
+                                tile_collision_kind: tile.2
                             }));
                         }
                     });

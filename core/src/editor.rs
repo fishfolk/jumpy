@@ -1,6 +1,6 @@
 use crate::map_constructor::MapConstructor;
 use crate::map_constructor::shiftnanigans::ShiftnanigansMapConstructor;
-use crate::{impl_system_param, map_constructor};
+use crate::{impl_system_param};
 use crate::{map::z_depth_for_map_layer, prelude::*};
 
 pub fn install(session: &mut CoreSession) {
@@ -233,19 +233,25 @@ impl<'a> MapManager<'a> {
     }
     pub fn clear_tiles(&mut self) {
         let empty_tile: Option<usize> = Option::None;
-        for y in 0..map_size.y {
-            for x in 0..map_size.x {
+        for y in 0..self.spawned_map_meta.grid_size.y {
+            for x in 0..self.spawned_map_meta.grid_size.x {
                 let position = UVec2 { x, y };
-                for layer_index in 0..layers_total {
+                for layer_index in 0..self.spawned_map_meta.layer_names.len() {
                     self.set_tile(layer_index, position, &empty_tile, crate::physics::TileCollisionKind::Empty);
                 }
             }
         }
     }
     pub fn clear_elements(&mut self) {
+        let mut to_kill: Vec<Entity> = Vec::new();
         self.entities
             .iter_with(&mut self.element_handles)
-            .for_each(|(entity, element_handle)| {
+            .for_each(|(entity, _)| {
+                to_kill.push(entity);
+            });
+        to_kill
+            .into_iter()
+            .for_each(|entity| {
                 self.entities.kill(entity);
             });
     }

@@ -178,9 +178,6 @@ impl MapConstructor for ShiftnanigansMapConstructor {
     fn construct_map(&self, map_manager: &mut MapManager) {
         let random_pixel_board = self.pixel_board_randomizer.get_random_pixel_board();
 
-        let map_size = map_manager.get_size();
-        let layers_total = map_manager.get_layers_total();
-
         // remove all tiles
         map_manager.clear_tiles();
 
@@ -313,7 +310,7 @@ struct PixelType {
 //  also include the entity identifier
 
 impl Pixel for PixelType {
-    fn get_invalid_location_offsets_for_other_pixel(&self, other_pixel: &Self) -> Vec<(i16, i16)> {
+    fn get_invalid_location_offsets_for_other_pixel(&self, _: &Self) -> Vec<(i16, i16)> {
         let invalid_location_offsets: Vec<(i16, i16)> = Vec::new();
         // TODO add invalid location offsets as needed
         self.grouped_pixels

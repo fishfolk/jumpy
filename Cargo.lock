@@ -2750,7 +2750,7 @@ dependencies = [
 
 [[package]]
 name = "jumpy"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -2817,7 +2817,7 @@ dependencies = [
 
 [[package]]
 name = "jumpy_core"
-version = "0.1.0"
+version = "0.7.0"
 dependencies = [
  "bevy",
  "bones_bevy_asset",

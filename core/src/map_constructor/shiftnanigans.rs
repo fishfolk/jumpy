@@ -10,7 +10,10 @@ use shiftnanigans::pixel_board::{
 };
 
 pub struct ShiftnanigansMapConstructor {
-    pixel_board_randomizer: PixelBoardRandomizer<PixelType>
+    pixel_board_randomizer: PixelBoardRandomizer<PixelType>,
+    original_pixel_board: PixelBoard<PixelType>,
+    compressed_top_height: usize,
+    compressed_left_width: usize
 }
 
 impl ShiftnanigansMapConstructor {
@@ -169,7 +172,10 @@ impl ShiftnanigansMapConstructor {
             });
 
         ShiftnanigansMapConstructor {
-            pixel_board_randomizer: PixelBoardRandomizer::new(pixel_board)
+            pixel_board_randomizer: PixelBoardRandomizer::new(pixel_board.clone()),
+            original_pixel_board: pixel_board,
+            compressed_top_height: top_height,
+            compressed_left_width: left_width
         }
     }
 }
@@ -178,42 +184,65 @@ impl MapConstructor for ShiftnanigansMapConstructor {
     fn construct_map(&self, map_manager: &mut MapManager) {
         let random_pixel_board = self.pixel_board_randomizer.get_random_pixel_board();
 
+        // TODO remove this line once fully reloading the identical pixel board works
+        let random_pixel_board = self.original_pixel_board.clone();
+
         // remove all tiles
         map_manager.clear_tiles();
 
         // remove all elements
         map_manager.clear_elements();
 
-        // place all tiles and elements
-        for y in 0..random_pixel_board.get_height() {
-            for x in 0..random_pixel_board.get_width() {
-                if random_pixel_board.exists(x, y) {
-                    let wrapped_pixel = random_pixel_board.get(x, y).unwrap();
-                    let borrowed_pixel: &PixelType = &wrapped_pixel.borrow();
-                    borrowed_pixel.grouped_pixels
-                        .iter()
-                        .for_each(|gp| {
-                            gp.ungrouped_pixel.layer_pixel_entity_types
-                                .iter()
-                                .for_each(|lpet| {
-                                    match lpet {
-                                        LayerPixelEntityType::Tile(tile) => {
-                                            let position = UVec2 {
-                                                x: x as u32 + gp.ungrouped_pixel_location.x,
-                                                y: y as u32 + gp.ungrouped_pixel_location.y
-                                            };
-                                            map_manager.set_tile(tile.layer_index, position, &Some(tile.tilemap_tile_index as usize), tile.tile_collision_kind);
-                                        },
-                                        LayerPixelEntityType::Element(element) => {
-                                            let position = Vec2 {
-                                                x: x as f32 + gp.ungrouped_pixel_location.x as f32 + element.position.x,
-                                                y: y as f32 + gp.ungrouped_pixel_location.y as f32 + element.position.y
-                                            };
-                                            map_manager.create_element(&element.element_meta_handle, &position, element.layer_index);
+        if false {
+            // place all tiles and elements
+            for y in 0..random_pixel_board.get_height() {
+                for x in 0..random_pixel_board.get_width() {
+                    if random_pixel_board.exists(x, y) {
+                        let wrapped_pixel = random_pixel_board.get(x, y).unwrap();
+                        let borrowed_pixel: &PixelType = &wrapped_pixel.borrow();
+                        let top_left_position: UVec2 = borrowed_pixel.grouped_pixels.first().unwrap().ungrouped_pixel_location;
+
+                        // calculate the x and y that the grouped pixels uncompress to
+                        let uncompressed_y: usize;
+                        if y == 0 {
+                            uncompressed_y = 0;
+                        }
+                        else {
+                            uncompressed_y = y + self.compressed_top_height;
+                        }
+                        let uncompressed_x: usize;
+                        if x == 0 {
+                            uncompressed_x = 0;
+                        }
+                        else {
+                            uncompressed_x = x + self.compressed_left_width;
+                        }
+
+                        borrowed_pixel.grouped_pixels
+                            .iter()
+                            .for_each(|gp| {
+                                gp.ungrouped_pixel.layer_pixel_entity_types
+                                    .iter()
+                                    .for_each(|lpet| {
+                                        match lpet {
+                                            LayerPixelEntityType::Tile(tile) => {
+                                                let position = UVec2 {
+                                                    x: uncompressed_x as u32 + gp.ungrouped_pixel_location.x - top_left_position.x,
+                                                    y: uncompressed_y as u32 + gp.ungrouped_pixel_location.y - top_left_position.y
+                                                };
+                                                map_manager.set_tile(tile.layer_index, position, &Some(tile.tilemap_tile_index as usize), tile.tile_collision_kind);
+                                            },
+                                            LayerPixelEntityType::Element(element) => {
+                                                let position = Vec2 {
+                                                    x: uncompressed_x as f32 + gp.ungrouped_pixel_location.x as f32 - top_left_position.x as f32 + element.position.x,
+                                                    y: uncompressed_y as f32 + gp.ungrouped_pixel_location.y as f32 - top_left_position.y as f32 + element.position.y
+                                                };
+                                                map_manager.create_element(&element.element_meta_handle, &position, element.layer_index);
+                                            }
                                         }
-                                    }
-                                });
-                        });
+                                    });
+                            });
+                    }
                 }
             }
         }

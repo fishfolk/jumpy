@@ -249,9 +249,13 @@ impl<'a> MapManager<'a> {
             .for_each(|(entity, _)| {
                 to_kill.push(entity);
             });
+
         to_kill
             .into_iter()
             .for_each(|entity| {
+                self.element_handles.remove(entity);
+                self.transforms.remove(entity);
+                self.spawned_map_layer_metas.remove(entity);
                 self.entities.kill(entity);
             });
     }

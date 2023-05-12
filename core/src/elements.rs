@@ -1,3 +1,5 @@
+use std::sync::Mutex;
+
 use crate::prelude::*;
 
 pub mod crab;
@@ -35,6 +37,20 @@ pub struct DehydrateOutOfBounds(pub Entity);
 #[derive(Clone, TypeUlid, Deref, DerefMut, Default)]
 #[ulid = "01GP421CHN323T2614F19PA5E9"]
 pub struct ElementHandle(pub Handle<ElementMeta>);
+
+#[derive(Clone, TypeUlid)]
+#[ulid = "01GP584Z9WN5P0RG2A82MV93P1"]
+pub struct ElementKillCallback {
+    pub system: Arc<Mutex<System>>,
+}
+
+impl ElementKillCallback {
+    pub fn new<Args>(system: impl IntoSystem<Args, ()>) -> Self {
+        ElementKillCallback {
+            system: Arc::new(Mutex::new(system.system())),
+        }
+    }
+}
 
 pub fn install(session: &mut CoreSession) {
     session

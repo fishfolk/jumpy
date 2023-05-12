@@ -1,4 +1,4 @@
-use std::{sync::Mutex, time::Duration};
+use std::time::Duration;
 
 use crate::{prelude::*, random::GlobalRng};
 
@@ -13,7 +13,6 @@ pub fn install(session: &mut CoreSession) {
 #[ulid = "01GTF48H2WEFC3GSED8V7JNN0K"]
 pub struct FishSchool {
     fish: Vec<Entity>,
-    pub kill_callback: Arc<Mutex<System>>,
 }
 
 #[derive(Clone, TypeUlid, Debug)]
@@ -42,6 +41,7 @@ pub fn hydrate(
     mut colliders: CompMut<Collider>,
     mut atlas_sprites: CompMut<AtlasSprite>,
     mut animated_sprites: CompMut<AnimatedSprite>,
+    mut element_kill_callbacks: CompMut<ElementKillCallback>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -146,15 +146,11 @@ pub fn hydrate(
 
                 fish_ents.push(fish_ent);
             }
-            fish_schools.insert(
+            element_kill_callbacks.insert(
                 fish_school_ent,
-                FishSchool {
-                    fish: fish_ents,
-                    kill_callback: Arc::new(Mutex::new(
-                        fish_school_kill_callback(fish_school_ent).system(),
-                    )),
-                },
+                ElementKillCallback::new(fish_school_kill_callback(fish_school_ent)),
             );
+            fish_schools.insert(fish_school_ent, FishSchool { fish: fish_ents });
         }
     }
 }

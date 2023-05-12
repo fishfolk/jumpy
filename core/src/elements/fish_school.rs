@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{sync::Mutex, time::Duration};
 
 use crate::{prelude::*, random::GlobalRng};
 
@@ -9,9 +9,12 @@ pub fn install(session: &mut CoreSession) {
         .add_system_to_stage(CoreStage::PostUpdate, update_fish_schools);
 }
 
-#[derive(Default, Clone, TypeUlid, Debug, Deref, DerefMut)]
+#[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GTF48H2WEFC3GSED8V7JNN0K"]
-pub struct FishSchool(Vec<Entity>);
+pub struct FishSchool {
+    fish: Vec<Entity>,
+    pub kill_callback: Arc<Mutex<System>>,
+}
 
 #[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GTF49M4WVD4B3G8W9QVV2JCX"]
@@ -143,7 +146,15 @@ pub fn hydrate(
 
                 fish_ents.push(fish_ent);
             }
-            fish_schools.insert(fish_school_ent, FishSchool(fish_ents));
+            fish_schools.insert(
+                fish_school_ent,
+                FishSchool {
+                    fish: fish_ents,
+                    kill_callback: Arc::new(Mutex::new(
+                        fish_school_kill_callback(fish_school_ent).system(),
+                    )),
+                },
+            );
         }
     }
 }
@@ -173,7 +184,10 @@ pub fn update_fish_schools(
         else { continue };
 
         let transform = transforms.get(school_ent).unwrap();
-        let mut fish_transforms = school.iter().map(|entity| transforms.get(*entity).unwrap());
+        let mut fish_transforms = school
+            .fish
+            .iter()
+            .map(|entity| transforms.get(*entity).unwrap());
         let Some(fish_transform) = fish_transforms.next() else {continue};
 
         let mut school_bounds_min = fish_transform.translation.xy();
@@ -193,7 +207,7 @@ pub fn update_fish_schools(
         let is_grouped = size.x.max(size.y) < *school_size;
         let spawn_pos = transform.translation.xy();
 
-        for fish_ent in school.iter() {
+        for fish_ent in school.fish.iter() {
             let flee = collision_world
                 .actor_collisions(*fish_ent)
                 .into_iter()
@@ -301,4 +315,25 @@ pub fn update_fish_schools(
             transform.translation.y = pos.y;
         }
     }
+}
+
+fn fish_school_kill_callback(entity: Entity) -> System {
+    (move |mut entities: ResMut<Entities>, mut fish_school: CompMut<FishSchool>| {
+        let mut to_kill: Vec<Entity> = Vec::new();
+        fish_school
+            .get_mut(entity)
+            .unwrap()
+            .fish
+            .iter()
+            .copied()
+            .for_each(|fish_entity| {
+                to_kill.push(fish_entity);
+            });
+        to_kill.push(entity);
+
+        to_kill.into_iter().for_each(|entity| {
+            entities.kill(entity);
+        });
+    })
+    .system()
 }

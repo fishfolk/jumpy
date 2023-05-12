@@ -1,4 +1,5 @@
 use crate::impl_system_param;
+use crate::prelude::fish_school::FishSchool;
 use crate::{map::z_depth_for_map_layer, prelude::*};
 
 pub fn install(session: &mut CoreSession) {
@@ -17,7 +18,8 @@ impl_system_param! {
         spawned_map_layer_metas: CompMut<'a, SpawnedMapLayerMeta>,
         tile_layers: CompMut<'a, TileLayer>,
         tiles: CompMut<'a, Tile>,
-        tile_collisions: CompMut<'a, TileCollisionKind>
+        tile_collisions: CompMut<'a, TileCollisionKind>,
+        fish_school: CompMut<'a, FishSchool>
     }
 }
 
@@ -124,7 +126,14 @@ impl<'a> MapManager<'a> {
         transform.translation.y = position.y;
     }
     fn delete_element(&mut self, entity: Entity) {
-        self.entities.kill(entity);
+        if let Some(fish_school) = self.fish_school.get_mut(entity) {
+            let kill_callback = fish_school.kill_callback.clone();
+            self.commands
+                .add(move |world: &World| (kill_callback.lock().unwrap().run)(world).unwrap());
+        } else {
+            // this entity does not contain a kill callback
+            self.entities.kill(entity);
+        }
     }
     fn set_layer_tilemap(&mut self, layer_index: usize, tilemap: &Option<Handle<Atlas>>) {
         if let Some((_, (tile_layer, _))) = self

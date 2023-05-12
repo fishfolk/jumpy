@@ -9,7 +9,7 @@ pub fn install(session: &mut CoreSession) {
         .add_system_to_stage(CoreStage::PostUpdate, update_fish_schools);
 }
 
-#[derive(Clone, TypeUlid, Debug)]
+#[derive(Default, Clone, TypeUlid, Debug, Deref, DerefMut)]
 #[ulid = "01GTF48H2WEFC3GSED8V7JNN0K"]
 pub struct FishSchool {
     fish: Vec<Entity>,

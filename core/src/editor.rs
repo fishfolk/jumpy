@@ -18,7 +18,8 @@ impl_system_param! {
         tile_layers: CompMut<'a, TileLayer>,
         tiles: CompMut<'a, Tile>,
         tile_collisions: CompMut<'a, TileCollisionKind>,
-        element_kill_callbacks: Comp<'a, ElementKillCallback>
+        element_kill_callbacks: Comp<'a, ElementKillCallback>,
+        spawners: Comp<'a, Spawner>
     }
 }
 
@@ -125,13 +126,20 @@ impl<'a> MapManager<'a> {
         transform.translation.y = position.y;
     }
     fn delete_element(&mut self, entity: Entity) {
-        if let Some(element_kill_callback) = self.element_kill_callbacks.get(entity) {
-            let system = element_kill_callback.system.clone();
-            self.commands
-                .add(move |world: &World| (system.lock().unwrap().run)(world).unwrap());
-        } else {
-            // this entity does not contain a kill callback
-            self.entities.kill(entity);
+        let mut entities: Vec<Entity> = vec![entity];
+        if let Some(spawner) = self.spawners.get(entity) {
+            // TODO recursively search for nested spawners
+            entities.extend(spawner.spawned_elements.iter().copied());
+        }
+        for entity in entities {
+            if let Some(element_kill_callback) = self.element_kill_callbacks.get(entity) {
+                let system = element_kill_callback.system.clone();
+                self.commands
+                    .add(move |world: &World| (system.lock().unwrap().run)(world).unwrap());
+            } else {
+                // this entity does not contain a kill callback
+                self.entities.kill(entity);
+            }
         }
     }
     fn set_layer_tilemap(&mut self, layer_index: usize, tilemap: &Option<Handle<Atlas>>) {

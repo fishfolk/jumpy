@@ -39,7 +39,7 @@ pub struct DehydrateOutOfBounds(pub Entity);
 pub struct ElementHandle(pub Handle<ElementMeta>);
 
 #[derive(Clone, TypeUlid)]
-#[ulid = "01GP584Z9WN5P0RG2A82MV93P1"]
+#[ulid = "01H0AYCRP3QZKBJX6NQMCET8J6"]
 pub struct ElementKillCallback {
     pub system: Arc<Mutex<System>>,
 }
@@ -49,6 +49,18 @@ impl ElementKillCallback {
         ElementKillCallback {
             system: Arc::new(Mutex::new(system.system())),
         }
+    }
+}
+
+#[derive(Clone, TypeUlid)]
+#[ulid = "01H0AQGTZCVZJXPF2KSR73TQTR"]
+pub struct Spawner {
+    pub spawned_elements: Vec<Entity>
+}
+
+impl Spawner {
+    pub fn new(spawned_elements: Vec<Entity>) -> Self {
+        Spawner { spawned_elements }
     }
 }
 

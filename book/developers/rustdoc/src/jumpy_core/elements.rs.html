@@ -77,7 +77,25 @@
 <a href="#76" id="76">76</a>
 <a href="#77" id="77">77</a>
 <a href="#78" id="78">78</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+</pre><pre class="rust"><code><span class="kw">use </span>std::sync::Mutex;
+
+<span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub mod </span>crab;
 <span class="kw">pub mod </span>crate_item;
@@ -114,6 +132,20 @@
 </span><span class="attr">#[derive(Clone, TypeUlid, Deref, DerefMut, Default)]
 #[ulid = <span class="string">&quot;01GP421CHN323T2614F19PA5E9&quot;</span>]
 </span><span class="kw">pub struct </span>ElementHandle(<span class="kw">pub </span>Handle&lt;ElementMeta&gt;);
+
+<span class="attr">#[derive(Clone, TypeUlid)]
+#[ulid = <span class="string">&quot;01GP584Z9WN5P0RG2A82MV93P1&quot;</span>]
+</span><span class="kw">pub struct </span>ElementKillCallback {
+    <span class="kw">pub </span>system: Arc&lt;Mutex&lt;System&gt;&gt;,
+}
+
+<span class="kw">impl </span>ElementKillCallback {
+    <span class="kw">pub fn </span>new&lt;Args&gt;(system: <span class="kw">impl </span>IntoSystem&lt;Args, ()&gt;) -&gt; <span class="self">Self </span>{
+        ElementKillCallback {
+            system: Arc::new(Mutex::new(system.system())),
+        }
+    }
+}
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     session

@@ -272,6 +272,14 @@
 <a href="#271" id="271">271</a>
 <a href="#272" id="272">272</a>
 <a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::impl_system_param;
 <span class="kw">use crate</span>::{map::z_depth_for_map_layer, prelude::<span class="kw-2">*</span>};
 
@@ -291,7 +299,8 @@
         spawned_map_layer_metas: CompMut&lt;<span class="lifetime">&#39;a</span>, SpawnedMapLayerMeta&gt;,
         tile_layers: CompMut&lt;<span class="lifetime">&#39;a</span>, TileLayer&gt;,
         tiles: CompMut&lt;<span class="lifetime">&#39;a</span>, Tile&gt;,
-        tile_collisions: CompMut&lt;<span class="lifetime">&#39;a</span>, TileCollisionKind&gt;
+        tile_collisions: CompMut&lt;<span class="lifetime">&#39;a</span>, TileCollisionKind&gt;,
+        element_kill_callbacks: Comp&lt;<span class="lifetime">&#39;a</span>, ElementKillCallback&gt;
     }
 }
 
@@ -398,7 +407,14 @@
         transform.translation.y = position.y;
     }
     <span class="kw">fn </span>delete_element(<span class="kw-2">&amp;mut </span><span class="self">self</span>, entity: Entity) {
-        <span class="self">self</span>.entities.kill(entity);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(element_kill_callback) = <span class="self">self</span>.element_kill_callbacks.get(entity) {
+            <span class="kw">let </span>system = element_kill_callback.system.clone();
+            <span class="self">self</span>.commands
+                .add(<span class="kw">move </span>|world: <span class="kw-2">&amp;</span>World| (system.lock().unwrap().run)(world).unwrap());
+        } <span class="kw">else </span>{
+            <span class="comment">// this entity does not contain a kill callback
+            </span><span class="self">self</span>.entities.kill(entity);
+        }
     }
     <span class="kw">fn </span>set_layer_tilemap(<span class="kw-2">&amp;mut </span><span class="self">self</span>, layer_index: usize, tilemap: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Handle&lt;Atlas&gt;&gt;) {
         <span class="kw">if let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, (tile_layer, <span class="kw">_</span>))) = <span class="self">self

@@ -11,7 +11,9 @@ pub fn install(session: &mut CoreSession) {
 
 #[derive(Default, Clone, TypeUlid, Debug, Deref, DerefMut)]
 #[ulid = "01GTF48H2WEFC3GSED8V7JNN0K"]
-pub struct FishSchool(Vec<Entity>);
+pub struct FishSchool {
+    fish: Vec<Entity>,
+}
 
 #[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GTF49M4WVD4B3G8W9QVV2JCX"]
@@ -39,6 +41,7 @@ pub fn hydrate(
     mut colliders: CompMut<Collider>,
     mut atlas_sprites: CompMut<AtlasSprite>,
     mut animated_sprites: CompMut<AnimatedSprite>,
+    mut element_kill_callbacks: CompMut<ElementKillCallback>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -143,7 +146,11 @@ pub fn hydrate(
 
                 fish_ents.push(fish_ent);
             }
-            fish_schools.insert(fish_school_ent, FishSchool(fish_ents));
+            element_kill_callbacks.insert(
+                fish_school_ent,
+                ElementKillCallback::new(fish_school_kill_callback(fish_school_ent)),
+            );
+            fish_schools.insert(fish_school_ent, FishSchool { fish: fish_ents });
         }
     }
 }
@@ -173,7 +180,10 @@ pub fn update_fish_schools(
         else { continue };
 
         let transform = transforms.get(school_ent).unwrap();
-        let mut fish_transforms = school.iter().map(|entity| transforms.get(*entity).unwrap());
+        let mut fish_transforms = school
+            .fish
+            .iter()
+            .map(|entity| transforms.get(*entity).unwrap());
         let Some(fish_transform) = fish_transforms.next() else {continue};
 
         let mut school_bounds_min = fish_transform.translation.xy();
@@ -193,7 +203,7 @@ pub fn update_fish_schools(
         let is_grouped = size.x.max(size.y) < *school_size;
         let spawn_pos = transform.translation.xy();
 
-        for fish_ent in school.iter() {
+        for fish_ent in school.fish.iter() {
             let flee = collision_world
                 .actor_collisions(*fish_ent)
                 .into_iter()
@@ -301,4 +311,20 @@ pub fn update_fish_schools(
             transform.translation.y = pos.y;
         }
     }
+}
+
+fn fish_school_kill_callback(entity: Entity) -> System {
+    (move |mut entities: ResMut<Entities>, mut fish_school: CompMut<FishSchool>| {
+        fish_school
+            .get_mut(entity)
+            .unwrap()
+            .fish
+            .iter()
+            .copied()
+            .for_each(|fish_entity| {
+                entities.kill(fish_entity);
+            });
+        entities.kill(entity);
+    })
+    .system()
 }

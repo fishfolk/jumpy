@@ -30,16 +30,17 @@ fn hydrate(
     mut item_throws: CompMut<ItemThrow>,
     mut item_grabs: CompMut<ItemGrab>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
+    mut spawners: CompMut<Spawner>
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
     not_hydrated_bitset.bit_and(element_handles.bitset());
 
-    let spawners = entities
+    let spawner_entities = entities
         .iter_with_bitset(&not_hydrated_bitset)
         .collect::<Vec<_>>();
 
-    for spawner_ent in spawners {
+    for spawner_ent in spawner_entities {
         let transform = *transforms.get(spawner_ent).unwrap();
         let element_handle = element_handles.get(spawner_ent).unwrap();
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -100,6 +101,10 @@ fn hydrate(
                     gravity: game_meta.physics.gravity,
                     ..default()
                 },
+            );
+            spawners.insert(
+                spawner_ent,
+                Spawner::new(vec![entity])
             );
         }
     }

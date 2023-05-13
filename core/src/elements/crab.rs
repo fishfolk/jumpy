@@ -50,7 +50,7 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut animated_sprites: CompMut<AnimatedSprite>,
-    mut spawners: CompMut<Spawner>
+    mut spawners: CompMut<Spawner>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -117,10 +117,7 @@ fn hydrate(
                 },
             );
 
-            spawners.insert(
-                spawner_ent,
-                Spawner::new(vec![entity])
-            );
+            spawners.insert(spawner_ent, Spawner::new(vec![entity]));
         }
     }
 }
@@ -328,4 +325,3 @@ fn finished_playing(
 ) -> Option<bool> {
     (!repeat).then(|| *index == frames.len() - 1 && *timer > 1.0 / fps.max(f32::MIN_POSITIVE))
 }
-

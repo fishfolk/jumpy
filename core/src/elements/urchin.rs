@@ -21,7 +21,7 @@ fn hydrate(
     mut sprites: CompMut<Sprite>,
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
-    mut spawners: CompMut<Spawner>
+    mut spawners: CompMut<Spawner>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -76,10 +76,7 @@ fn hydrate(
                     ..default()
                 },
             );
-            spawners.insert(
-                spawner_ent,
-                Spawner::new(vec![entity])
-            );
+            spawners.insert(spawner_ent, Spawner::new(vec![entity]));
         }
     }
 }

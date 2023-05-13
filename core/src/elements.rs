@@ -55,7 +55,7 @@ impl ElementKillCallback {
 #[derive(Clone, TypeUlid)]
 #[ulid = "01H0AQGTZCVZJXPF2KSR73TQTR"]
 pub struct Spawner {
-    pub spawned_elements: Vec<Entity>
+    pub spawned_elements: Vec<Entity>,
 }
 
 impl Spawner {

@@ -65,6 +65,7 @@ map_elements:
   - /elements/item/kick_bomb/kick_bomb.element.yaml
   - /elements/item/mine/mine.element.yaml
   - /elements/item/musket/musket.element.yaml
+  - /elements/item/blunderbass/blunderbass.element.yaml
   - /elements/item/stomp_boots/stomp_boots.element.yaml
   - /elements/item/sword/sword.element.yaml
 

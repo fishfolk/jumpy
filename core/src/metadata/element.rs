@@ -295,6 +295,8 @@ pub enum BuiltinElementKind {
         shoot_atlas: Handle<Atlas>,
         shoot_sound: Handle<AudioSource>,
         empty_shoot_sound: Handle<AudioSource>,
+        spread: f32,
+        num_bullets: usize,
     },
     SlipperySeaweed {
         atlas: Handle<Atlas>,

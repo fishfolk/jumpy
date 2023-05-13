@@ -1,11 +1,11 @@
-name: Musket
+name: blunderbass
 category: Weapons
 builtin: !Musket
-  atlas: ./musket.atlas.yaml
+  atlas: ./blunderbass.atlas.yaml
 
   max_ammo: 4
   cooldown: 600ms
-  bullet_meta: ./bullet/musket.bullet.yaml
+  bullet_meta: ./bullet/blunderbass.bullet.yaml
 
   shoot_fps: 15
   shoot_frames: 3
@@ -14,7 +14,7 @@ builtin: !Musket
   shoot_sound: ./shoot/shoot.ogg
   empty_shoot_sound_volume: 0.1
   empty_shoot_sound: ./shoot/gun_empty.ogg
-  shoot_atlas: ./shoot/musket_shoot.atlas.yaml
+  shoot_atlas: ./shoot/blunderbass_shoot.atlas.yaml
 
   bounciness: 0.3
   can_rotate: true
@@ -23,3 +23,5 @@ builtin: !Musket
   angular_velocity: 0.1
   throw_velocity: 6
   grab_offset: [23, 0]
+  spread: 0.0
+  num_bullets: 1

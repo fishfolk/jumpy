@@ -1,4 +1,5 @@
 use std::time::Duration;
+use rand::Rng;
 
 use crate::prelude::*;
 
@@ -56,6 +57,8 @@ fn hydrate(
             bounciness,
             throw_velocity,
             angular_velocity,
+            spread,
+            num_bullets
             ..
         } = &element_meta.builtin
         {
@@ -82,6 +85,8 @@ fn hydrate(
                 Musket {
                     ammo: *max_ammo,
                     cooldown: Timer::new(Duration::from_millis(0), TimerMode::Once),
+                    spread: *spread,
+                    num_bullets: *num_bullets,
                 },
             );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
@@ -138,6 +143,8 @@ fn update(
             empty_shoot_sound,
             shoot_sound_volume,
             empty_shoot_sound_volume,
+            spread,
+            num_bullets
             ..
         } = &element_meta.builtin else {
             unreachable!();
@@ -217,20 +224,24 @@ fn update(
                             lifetimes.insert(ent, Lifetime::new(shoot_lifetime));
                         }
 
-                        // spawn bullet
-                        {
+                        // spawn bullets
+                        for _ in 0..musket.num_bullets {
+                            let bullet_direction = if player_flip_x { -1.0 } else { 1.0 };
+                            let bullet_spread = musket.spread * (random::<f32>() - 0.5) * 2.0;
+                            let bullet_rotation = bullet_direction + bullet_spread;
+
                             let ent = entities.create();
                             bullets.insert(
                                 ent,
                                 Bullet {
                                     owner: player,
-                                    direction: if player_flip_x { -1.0 } else { 1.0 },
+                                    direction: bullet_rotation,
                                 },
                             );
                             transforms.insert(ent, shoot_animation_transform);
                             bullet_handles.insert(ent, BulletHandle(bullet_meta.clone()));
                         }
-                    },
+                    }
                 );
             }
         }

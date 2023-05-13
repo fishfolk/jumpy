@@ -315,7 +315,6 @@ pub fn update_fish_schools(
 
 fn fish_school_kill_callback(entity: Entity) -> System {
     (move |mut entities: ResMut<Entities>, mut fish_school: CompMut<FishSchool>| {
-        let mut to_kill: Vec<Entity> = Vec::new();
         fish_school
             .get_mut(entity)
             .unwrap()
@@ -323,13 +322,9 @@ fn fish_school_kill_callback(entity: Entity) -> System {
             .iter()
             .copied()
             .for_each(|fish_entity| {
-                to_kill.push(fish_entity);
+                entities.kill(fish_entity);
             });
-        to_kill.push(entity);
-
-        to_kill.into_iter().for_each(|entity| {
-            entities.kill(entity);
-        });
+        entities.kill(entity);
     })
     .system()
 }

@@ -323,6 +323,9 @@
 <a href="#322" id="322">322</a>
 <a href="#323" id="323">323</a>
 <a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, random::GlobalRng};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
@@ -375,16 +378,17 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
+    <span class="kw-2">mut </span>spawners: CompMut&lt;Spawner&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
     not_hydrated_bitset.bit_and(element_handles.bitset());
 
-    <span class="kw">let </span>spawners = entities
+    <span class="kw">let </span>spawner_entities = entities
         .iter_with_bitset(<span class="kw-2">&amp;</span>not_hydrated_bitset)
         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
-    <span class="kw">for </span>spawner_ent <span class="kw">in </span>spawners {
+    <span class="kw">for </span>spawner_ent <span class="kw">in </span>spawner_entities {
         <span class="kw">let </span>transform = <span class="kw-2">*</span>transforms.get(spawner_ent).unwrap();
         <span class="kw">let </span>element_handle = element_handles.get(spawner_ent).unwrap();
         <span class="kw">let </span><span class="prelude-val">Some</span>(element_meta) = element_assets.get(<span class="kw-2">&amp;</span>element_handle.get_bevy_handle()) <span class="kw">else </span>{
@@ -440,6 +444,8 @@
                     ..default()
                 },
             );
+
+            spawners.insert(spawner_ent, Spawner::new(<span class="macro">vec!</span>[entity]));
         }
     }
 }

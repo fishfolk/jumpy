@@ -89,13 +89,7 @@
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
 <a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
-<a href="#92" id="92">92</a>
-<a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::sync::Mutex;
-
-<span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub mod </span>crab;
 <span class="kw">pub mod </span>crate_item;
@@ -134,16 +128,14 @@
 </span><span class="kw">pub struct </span>ElementHandle(<span class="kw">pub </span>Handle&lt;ElementMeta&gt;);
 
 <span class="attr">#[derive(Clone, TypeUlid)]
-#[ulid = <span class="string">&quot;01GP584Z9WN5P0RG2A82MV93P1&quot;</span>]
-</span><span class="kw">pub struct </span>ElementKillCallback {
-    <span class="kw">pub </span>system: Arc&lt;Mutex&lt;System&gt;&gt;,
+#[ulid = <span class="string">&quot;01H0AQGTZCVZJXPF2KSR73TQTR&quot;</span>]
+</span><span class="kw">pub struct </span>Spawner {
+    <span class="kw">pub </span>spawned_elements: Vec&lt;Entity&gt;,
 }
 
-<span class="kw">impl </span>ElementKillCallback {
-    <span class="kw">pub fn </span>new&lt;Args&gt;(system: <span class="kw">impl </span>IntoSystem&lt;Args, ()&gt;) -&gt; <span class="self">Self </span>{
-        ElementKillCallback {
-            system: Arc::new(Mutex::new(system.system())),
-        }
+<span class="kw">impl </span>Spawner {
+    <span class="kw">pub fn </span>new(spawned_elements: Vec&lt;Entity&gt;) -&gt; <span class="self">Self </span>{
+        Spawner { spawned_elements }
     }
 }
 

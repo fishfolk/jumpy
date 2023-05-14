@@ -41,17 +41,17 @@ pub fn hydrate(
     mut colliders: CompMut<Collider>,
     mut atlas_sprites: CompMut<AtlasSprite>,
     mut animated_sprites: CompMut<AnimatedSprite>,
-    mut element_kill_callbacks: CompMut<ElementKillCallback>,
+    mut spawners: CompMut<Spawner>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
     not_hydrated_bitset.bit_and(element_handles.bitset());
 
-    let spawners = entities
+    let spawner_entities = entities
         .iter_with_bitset(&not_hydrated_bitset)
         .collect::<Vec<_>>();
 
-    for spawner_ent in spawners {
+    for spawner_ent in spawner_entities {
         let transform = *transforms.get(spawner_ent).unwrap();
         let element_handle = element_handles.get(spawner_ent).unwrap();
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -146,11 +146,13 @@ pub fn hydrate(
 
                 fish_ents.push(fish_ent);
             }
-            element_kill_callbacks.insert(
+            fish_schools.insert(
                 fish_school_ent,
-                ElementKillCallback::new(fish_school_kill_callback(fish_school_ent)),
+                FishSchool {
+                    fish: fish_ents.clone(),
+                },
             );
-            fish_schools.insert(fish_school_ent, FishSchool { fish: fish_ents });
+            spawners.insert(fish_school_ent, Spawner::new(fish_ents));
         }
     }
 }
@@ -311,20 +313,4 @@ pub fn update_fish_schools(
             transform.translation.y = pos.y;
         }
     }
-}
-
-fn fish_school_kill_callback(entity: Entity) -> System {
-    (move |mut entities: ResMut<Entities>, mut fish_school: CompMut<FishSchool>| {
-        fish_school
-            .get_mut(entity)
-            .unwrap()
-            .fish
-            .iter()
-            .copied()
-            .for_each(|fish_entity| {
-                entities.kill(fish_entity);
-            });
-        entities.kill(entity);
-    })
-    .system()
 }

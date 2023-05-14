@@ -33,16 +33,17 @@ fn hydrate(
     mut animation_banks: CompMut<AnimationBankSprite>,
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
+    mut spawners: CompMut<Spawner>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
     not_hydrated_bitset.bit_and(element_handles.bitset());
 
-    let spawners = entities
+    let spawner_entities = entities
         .iter_with_bitset(&not_hydrated_bitset)
         .collect::<Vec<_>>();
 
-    for spawner_ent in spawners {
+    for spawner_ent in spawner_entities {
         let transform = *transforms.get(spawner_ent).unwrap();
         let element_handle = element_handles.get(spawner_ent).unwrap();
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -114,6 +115,7 @@ fn hydrate(
                     last_animation: key!("hide"),
                 },
             );
+            spawners.insert(spawner_ent, Spawner::new(vec![entity]));
         }
     }
 }

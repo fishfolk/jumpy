@@ -130,22 +130,30 @@ impl<'a> MapManager<'a> {
             let system = element_kill_callback.system.clone();
             self.commands
                 .add(move |world: &World| (system.lock().unwrap().run)(world).unwrap());
-        }
-        else {
+        } else {
             if let Some(spawner) = self.spawners.get(entity) {
                 // search for other spawners in the same group
-                let is_last_spawner_from_group = self.spawners.iter().filter(|other_spawner| spawner.group_identifier == other_spawner.group_identifier).count() == 1;
+                let is_last_spawner_from_group = self
+                    .spawners
+                    .iter()
+                    .filter(|other_spawner| {
+                        spawner.group_identifier == other_spawner.group_identifier
+                    })
+                    .peekable()
+                    .peek()
+                    .is_some();
 
                 if is_last_spawner_from_group {
                     spawner.spawned_elements.iter().copied().for_each(|entity| {
                         // TODO recursively search for nested spawners
 
-                        if let Some(element_kill_callback) = self.element_kill_callbacks.get(entity) {
+                        if let Some(element_kill_callback) = self.element_kill_callbacks.get(entity)
+                        {
                             let system = element_kill_callback.system.clone();
-                            self.commands
-                                .add(move |world: &World| (system.lock().unwrap().run)(world).unwrap());
-                        }
-                        else {
+                            self.commands.add(move |world: &World| {
+                                (system.lock().unwrap().run)(world).unwrap()
+                            });
+                        } else {
                             self.entities.kill(entity);
                         }
                     });

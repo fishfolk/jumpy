@@ -65,10 +65,16 @@ pub struct Spawner {
 
 impl Spawner {
     pub fn new(spawned_elements: Vec<Entity>) -> Self {
-        Spawner { spawned_elements, group_identifier: Uuid::new_v4().to_string() }
+        Spawner {
+            spawned_elements,
+            group_identifier: Uuid::new_v4().to_string(),
+        }
     }
     pub fn new_grouped(spawned_elements: Vec<Entity>, group_identifier: String) -> Self {
-        Spawner { spawned_elements, group_identifier }
+        Spawner {
+            spawned_elements,
+            group_identifier,
+        }
     }
 }
 

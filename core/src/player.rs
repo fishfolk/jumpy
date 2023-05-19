@@ -1,6 +1,11 @@
 use std::collections::VecDeque;
 
-use crate::{item::ItemGrabbed, physics::KinematicBody, prelude::{*, player_spawner::PlayerSpawner}, random::GlobalRng};
+use crate::{
+    item::ItemGrabbed,
+    physics::KinematicBody,
+    prelude::{player_spawner::PlayerSpawner, *},
+    random::GlobalRng,
+};
 
 mod state;
 use bones_lib::animation::AnimationBankSprite;
@@ -168,7 +173,7 @@ impl PlayerCommand {
                player_indexes: Comp<PlayerIdx>,
                player_layers: Comp<PlayerLayers>,
                player_spawners: Comp<PlayerSpawner>,
-               mut spawners: CompMut<Spawner>,| {
+               mut spawners: CompMut<Spawner>| {
             if player_indexes.contains(player) {
                 entities
                     .iter_with(&attachments)

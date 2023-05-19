@@ -40,15 +40,16 @@ fn hydrate(
             player_spawners.insert(entity, PlayerSpawner);
 
             // try to find one other spawner and store the existing player entities
-            if let Some((_, (_, first_spawner))) = entities
-                .iter_with((&player_spawners, &spawners))
-                .next() {
-
+            if let Some((_, (_, first_spawner))) =
+                entities.iter_with((&player_spawners, &spawners)).next()
+            {
                 // all of the player spawners share the same group identifier
-                let spawner = Spawner::new_grouped(first_spawner.spawned_elements.clone(), first_spawner.group_identifier.clone());
+                let spawner = Spawner::new_grouped(
+                    first_spawner.spawned_elements.clone(),
+                    first_spawner.group_identifier.clone(),
+                );
                 spawners.insert(entity, spawner);
-            }
-            else {
+            } else {
                 let spawner = Spawner::new(vec![]);
                 spawners.insert(entity, spawner);
             }
@@ -118,7 +119,9 @@ fn update(
 }
 
 fn player_kill_callback(player_entity: Entity) -> System {
-    (move |mut entities: ResMut<Entities>, attachments: Comp<Attachment>, player_layers: Comp<PlayerLayers>| {
+    (move |mut entities: ResMut<Entities>,
+           attachments: Comp<Attachment>,
+           player_layers: Comp<PlayerLayers>| {
         entities
             .iter_with(&attachments)
             .filter(|(_, attachment)| attachment.entity == player_entity)

@@ -133,17 +133,15 @@ impl<'a> MapManager<'a> {
         } else {
             if let Some(spawner) = self.spawners.get(entity) {
                 // search for other spawners in the same group
-                let is_last_spawner_from_group = self
+                let grouped_spawners_count = self
                     .spawners
                     .iter()
                     .filter(|other_spawner| {
                         spawner.group_identifier == other_spawner.group_identifier
                     })
-                    .peekable()
-                    .peek()
-                    .is_some();
+                    .count();
 
-                if is_last_spawner_from_group {
+                if grouped_spawners_count == 1 {
                     spawner.spawned_elements.iter().copied().for_each(|entity| {
                         // TODO recursively search for nested spawners
 

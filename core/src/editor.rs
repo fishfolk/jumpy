@@ -19,6 +19,7 @@ impl_system_param! {
         tiles: CompMut<'a, Tile>,
         tile_collisions: CompMut<'a, TileCollisionKind>,
         spawners: Comp<'a, Spawner>,
+        element_kill_callbacks: Comp<'a, ElementKillCallback>,
     }
 }
 
@@ -125,13 +126,33 @@ impl<'a> MapManager<'a> {
         transform.translation.y = position.y;
     }
     fn delete_element(&mut self, entity: Entity) {
-        if let Some(spawner) = self.spawners.get(entity) {
-            // TODO recursively search for nested spawners
-            spawner.spawned_elements.iter().copied().for_each(|entity| {
-                self.entities.kill(entity);
-            });
+        if let Some(element_kill_callback) = self.element_kill_callbacks.get(entity) {
+            let system = element_kill_callback.system.clone();
+            self.commands
+                .add(move |world: &World| (system.lock().unwrap().run)(world).unwrap());
         }
-        self.entities.kill(entity);
+        else {
+            if let Some(spawner) = self.spawners.get(entity) {
+                // search for other spawners in the same group
+                let is_last_spawner_from_group = self.spawners.iter().filter(|other_spawner| spawner.group_identifier == other_spawner.group_identifier).count() == 1;
+
+                if is_last_spawner_from_group {
+                    spawner.spawned_elements.iter().copied().for_each(|entity| {
+                        // TODO recursively search for nested spawners
+
+                        if let Some(element_kill_callback) = self.element_kill_callbacks.get(entity) {
+                            let system = element_kill_callback.system.clone();
+                            self.commands
+                                .add(move |world: &World| (system.lock().unwrap().run)(world).unwrap());
+                        }
+                        else {
+                            self.entities.kill(entity);
+                        }
+                    });
+                }
+            }
+            self.entities.kill(entity);
+        }
     }
     fn set_layer_tilemap(&mut self, layer_index: usize, tilemap: &Option<Handle<Atlas>>) {
         if let Some((_, (tile_layer, _))) = self

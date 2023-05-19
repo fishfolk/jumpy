@@ -23,6 +23,7 @@ fn hydrate(
     element_handles: Comp<ElementHandle>,
     element_assets: BevyAssets<ElementMeta>,
     mut player_spawners: CompMut<PlayerSpawner>,
+    mut spawners: CompMut<Spawner>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -37,6 +38,20 @@ fn hydrate(
         if let BuiltinElementKind::PlayerSpawner = &element_meta.builtin {
             hydrated.insert(entity, MapElementHydrated);
             player_spawners.insert(entity, PlayerSpawner);
+
+            // try to find one other spawner and store the existing player entities
+            if let Some((_, (_, first_spawner))) = entities
+                .iter_with((&player_spawners, &spawners))
+                .next() {
+
+                // all of the player spawners share the same group identifier
+                let spawner = Spawner::new_grouped(first_spawner.spawned_elements.clone(), first_spawner.group_identifier.clone());
+                spawners.insert(entity, spawner);
+            }
+            else {
+                let spawner = Spawner::new(vec![]);
+                spawners.insert(entity, spawner);
+            }
         }
     }
 }
@@ -50,6 +65,8 @@ fn update(
     mut transforms: CompMut<Transform>,
     player_inputs: Res<PlayerInputs>,
     mut invincibles: CompMut<Invincibility>,
+    mut spawners: CompMut<Spawner>,
+    mut element_kill_callbacks: CompMut<ElementKillCallback>,
 ) {
     let alive_players = entities
         .iter_with(&player_indexes)
@@ -83,6 +100,38 @@ fn update(
                 player_ent,
                 Invincibility::new(game_meta.config.respawn_invincibility_time),
             );
+
+            // store this player entity within each spawner
+            entities
+                .iter_with(&player_spawners)
+                .for_each(|(spawner_entity, _)| {
+                    if let Some(spawner) = spawners.get_mut(spawner_entity) {
+                        spawner.spawned_elements.push(player_ent);
+                    }
+                });
+            element_kill_callbacks.insert(
+                player_ent,
+                ElementKillCallback::new(player_kill_callback(player_ent)),
+            );
         }
     }
+}
+
+fn player_kill_callback(player_entity: Entity) -> System {
+    (move |mut entities: ResMut<Entities>, attachments: Comp<Attachment>, player_layers: Comp<PlayerLayers>| {
+        entities
+            .iter_with(&attachments)
+            .filter(|(_, attachment)| attachment.entity == player_entity)
+            .map(|(entity, _)| entity)
+            .collect::<Vec<_>>()
+            .iter()
+            .for_each(|entity| {
+                entities.kill(*entity);
+            });
+        let layers = player_layers.get(player_entity).unwrap();
+        entities.kill(layers.fin_ent);
+        entities.kill(layers.face_ent);
+        entities.kill(player_entity);
+    })
+    .system()
 }

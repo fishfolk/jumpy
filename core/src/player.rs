@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::{item::ItemGrabbed, physics::KinematicBody, prelude::*, random::GlobalRng};
+use crate::{item::ItemGrabbed, physics::KinematicBody, prelude::{*, player_spawner::PlayerSpawner}, random::GlobalRng};
 
 mod state;
 use bones_lib::animation::AnimationBankSprite;
@@ -166,7 +166,9 @@ impl PlayerCommand {
         (move |mut entities: ResMut<Entities>,
                attachments: Comp<Attachment>,
                player_indexes: Comp<PlayerIdx>,
-               player_layers: Comp<PlayerLayers>| {
+               player_layers: Comp<PlayerLayers>,
+               player_spawners: Comp<PlayerSpawner>,
+               mut spawners: CompMut<Spawner>,| {
             if player_indexes.contains(player) {
                 entities
                     .iter_with(&attachments)
@@ -181,6 +183,15 @@ impl PlayerCommand {
                 entities.kill(layers.fin_ent);
                 entities.kill(layers.face_ent);
                 entities.kill(player);
+
+                // remove player from all player spawners
+                entities
+                    .iter_with(&player_spawners)
+                    .for_each(|(player_spawner_entity, _)| {
+                        if let Some(spawner) = spawners.get_mut(player_spawner_entity) {
+                            spawner.spawned_elements.retain(|entity| *entity != player);
+                        }
+                    });
             } else {
                 warn!("Tried to despawn non-player entity.");
             }

@@ -1,3 +1,7 @@
+use std::sync::Mutex;
+
+use ::bevy::utils::Uuid;
+
 use crate::prelude::*;
 
 pub mod crab;
@@ -37,14 +41,34 @@ pub struct DehydrateOutOfBounds(pub Entity);
 pub struct ElementHandle(pub Handle<ElementMeta>);
 
 #[derive(Clone, TypeUlid)]
+#[ulid = "01GP584Z9WN5P0RG2A82MV93P1"]
+pub struct ElementKillCallback {
+    pub system: Arc<Mutex<System>>,
+}
+
+impl ElementKillCallback {
+    pub fn new<Args>(system: impl IntoSystem<Args, ()>) -> Self {
+        ElementKillCallback {
+            system: Arc::new(Mutex::new(system.system())),
+        }
+    }
+}
+
+#[derive(Clone, TypeUlid)]
 #[ulid = "01H0AQGTZCVZJXPF2KSR73TQTR"]
 pub struct Spawner {
+    /// The spawned elements that should be killed when this spawner is killed
     pub spawned_elements: Vec<Entity>,
+    /// The group identifier where all of the elements are meant to be shared between them
+    pub group_identifier: String,
 }
 
 impl Spawner {
     pub fn new(spawned_elements: Vec<Entity>) -> Self {
-        Spawner { spawned_elements }
+        Spawner { spawned_elements, group_identifier: Uuid::new_v4().to_string() }
+    }
+    pub fn new_grouped(spawned_elements: Vec<Entity>, group_identifier: String) -> Self {
+        Spawner { spawned_elements, group_identifier }
     }
 }
 

@@ -190,7 +190,7 @@ impl PlayerCommand {
                 entities.kill(player);
 
                 // remove player from all player spawners
-                spawner_manager.remove_spawned_entity_from_grouped_spawner(player, &player_spawners);
+                spawner_manager.remove_spawned_entity_from_grouped_spawner(player, &player_spawners, &entities);
             } else {
                 warn!("Tried to despawn non-player entity.");
             }

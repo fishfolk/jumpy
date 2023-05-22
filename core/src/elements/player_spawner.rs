@@ -39,7 +39,7 @@ fn hydrate(
             hydrated.insert(entity, MapElementHydrated);
             player_spawners.insert(entity, PlayerSpawner);
 
-            spawner_manager.insert_grouped_spawner(entity, vec![], &player_spawners);
+            spawner_manager.insert_grouped_spawner(entity, vec![], &player_spawners, &entities);
         }
     }
 }
@@ -94,7 +94,7 @@ fn update(
                 ElementKillCallback::new(player_kill_callback(player_ent)),
             );
 
-            spawner_manager.insert_spawned_entity_into_grouped_spawner(player_ent, &player_spawners);
+            spawner_manager.insert_spawned_entity_into_grouped_spawner(player_ent, &player_spawners, &entities);
         }
     }
 }

@@ -132,7 +132,7 @@ impl<'a> MapManager<'a> {
                 .add(move |world: &World| (system.lock().unwrap().run)(world).unwrap());
         } else if self.spawner_manager.is_entity_a_spawner(entity) {
             // if the entity is a spawner, there are specific rules around how child entities may be killed
-            self.spawner_manager.kill_spawner_entity(entity);
+            self.spawner_manager.kill_spawner_entity(entity, &mut self.entities);
         }
         else {
             self.entities.kill(entity);

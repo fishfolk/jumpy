@@ -94,7 +94,11 @@ fn update(
                 ElementKillCallback::new(player_kill_callback(player_ent)),
             );
 
-            spawner_manager.insert_spawned_entity_into_grouped_spawner(player_ent, &player_spawners, &entities);
+            spawner_manager.insert_spawned_entity_into_grouped_spawner(
+                player_ent,
+                &player_spawners,
+                &entities,
+            );
         }
     }
 }

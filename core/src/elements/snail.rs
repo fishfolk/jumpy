@@ -33,7 +33,7 @@ fn hydrate(
     mut animation_banks: CompMut<AnimationBankSprite>,
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
-    mut spawners: CompMut<Spawner>,
+    mut spawner_manager: SpawnerManager,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -115,7 +115,7 @@ fn hydrate(
                     last_animation: key!("hide"),
                 },
             );
-            spawners.insert(spawner_ent, Spawner::new(vec![entity]));
+            spawner_manager.insert_ungrouped_spawner(spawner_ent, vec![entity])
         }
     }
 }

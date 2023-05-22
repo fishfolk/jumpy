@@ -35,7 +35,7 @@ fn hydrate(
     mut item_throws: CompMut<ItemThrow>,
     mut item_grabs: CompMut<ItemGrab>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
-    mut spawners: CompMut<Spawner>,
+    mut spawner_manager: SpawnerManager,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -93,7 +93,7 @@ fn hydrate(
                     ..default()
                 },
             );
-            spawners.insert(spawner_ent, Spawner::new(vec![entity]));
+            spawner_manager.insert_ungrouped_spawner(spawner_ent, vec![entity])
         }
     }
 }

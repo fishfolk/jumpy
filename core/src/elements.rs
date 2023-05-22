@@ -1,8 +1,8 @@
 use std::sync::Mutex;
 
-use ::bevy::utils::Uuid;
+use ::bevy::{utils::{Uuid, HashMap}, prelude::Resource};
 
-use crate::prelude::*;
+use crate::{prelude::*, impl_system_param};
 
 pub mod crab;
 pub mod crate_item;
@@ -57,24 +57,140 @@ impl ElementKillCallback {
 #[derive(Clone, TypeUlid)]
 #[ulid = "01H0AQGTZCVZJXPF2KSR73TQTR"]
 pub struct Spawner {
-    /// The spawned elements that should be killed when this spawner is killed
-    pub spawned_elements: Vec<Entity>,
     /// The group identifier where all of the elements are meant to be shared between them
     pub group_identifier: String,
 }
 
+impl Default for Spawner {
+    fn default() -> Self {
+        Self { group_identifier: Uuid::new_v4().to_string() }
+    }
+}
+
 impl Spawner {
-    pub fn new(spawned_elements: Vec<Entity>) -> Self {
+    pub fn new() -> Self {
         Spawner {
-            spawned_elements,
             group_identifier: Uuid::new_v4().to_string(),
         }
     }
-    pub fn new_grouped(spawned_elements: Vec<Entity>, group_identifier: String) -> Self {
+    pub fn new_grouped(group_identifier: String) -> Self {
         Spawner {
-            spawned_elements,
             group_identifier,
         }
+    }
+}
+
+#[derive(Resource, TypeUlid, Clone, Default)]
+#[ulid = "01H11SA5GRF6Y6N20XKB8JR5TE"]
+pub struct SpawnerEntities {
+    pub entities_per_spawner_group_identifier: HashMap<String, Vec<Entity>>
+}
+
+impl_system_param! {
+    pub struct SpawnerManager<'a> {
+        commands: Commands<'a>,
+        entities: ResMut<'a, Entities>,
+        spawners: CompMut<'a, Spawner>,
+        spawner_entities: ResMut<'a, SpawnerEntities>,
+        element_kill_callbacks: Comp<'a, ElementKillCallback>,
+    }
+}
+
+impl<'a> SpawnerManager<'a> {
+    /// Stores the spawned elements as having been spawned by the provided entity, finding an existing spawner element, if it exists, to group these spawned elements with.
+    pub fn insert_grouped_spawner<T: EcsData + TypeUlid>(&mut self, entity: Entity, mut spawned_elements: Vec<Entity>, spawner_elements: &CompMut<T>) {
+        // try to find one other spawner and store the existing player entities
+        if let Some((_, (_, first_spawner))) =
+           self.entities.iter_with((spawner_elements, &self.spawners)).next()
+        {
+            // all of the player spawners share the same group identifier
+            let spawner = Spawner::new_grouped(
+                first_spawner.group_identifier.clone(),
+            );
+
+            // add the spawned elements to the existing resource
+            self.spawner_entities.entities_per_spawner_group_identifier
+                .get_mut(&spawner.group_identifier)
+                .expect("The spawner group should already exist in the SpawnerEntities resource.")
+                .append(&mut spawned_elements);
+
+            self.spawners.insert(entity, spawner);
+        } else {
+            let spawner = Spawner::new();
+
+            // add the spawned elements to the newly created resource
+            self.spawner_entities.entities_per_spawner_group_identifier
+                .insert(spawner.group_identifier.clone(), spawned_elements);
+
+            self.spawners.insert(entity, spawner);
+        }
+    }
+    /// Stores the spawned elements as having been spawned by the provided entity
+    pub fn insert_ungrouped_spawner(&mut self, entity: Entity, spawned_elements: Vec<Entity>) {
+        let spawner = Spawner::new();
+
+        // add the spawned elements to the newly created resource
+        self.spawner_entities.entities_per_spawner_group_identifier
+            .insert(spawner.group_identifier.clone(), spawned_elements);
+
+        self.spawners.insert(entity, spawner);
+    }
+    /// Stores the spawned elements as having come from the same group of spawners as the spawner_elements.
+    pub fn insert_spawned_entity_into_grouped_spawner<T: EcsData + TypeUlid>(&mut self, spawned_entity: Entity, spawner_elements: &Comp<T>) {
+        let (_, (_, spawner)) = self.entities
+            .iter_with((spawner_elements, &self.spawners))
+            .next()
+            .expect("There should already exist at least one spawner of the type provided.");
+        self.spawner_entities.entities_per_spawner_group_identifier
+            .get_mut(&spawner.group_identifier)
+            .expect("There should exist a cooresponding SpawnerEntities for this spawner group identifier.")
+            .push(spawned_entity);
+    }
+    /// Removes that spawned entity from the spawner entities resource
+    pub fn remove_spawned_entity_from_grouped_spawner<T: EcsData + TypeUlid>(&mut self, spawned_entity: Entity, spawner_elements: &Comp<T>) {
+        let (_, (_, spawner)) = self.entities
+            .iter_with((spawner_elements, &self.spawners))
+            .next()
+            .expect("There should already exist at least one spawner of the type provided.");
+        self.spawner_entities.entities_per_spawner_group_identifier
+            .get_mut(&spawner.group_identifier)
+            .expect("There should exist a cooresponding SpawnerEntities for this spawner group identifier.")
+            .retain(|entity| *entity != spawned_entity);
+    }
+    /// Returns if the entity provided is a spawner
+    pub fn is_entity_a_spawner(&self, entity: Entity) -> bool {
+        return self.spawners.contains(entity);
+    }
+    /// Kills the provided spawner entity and any spawned entities (if applicable)
+    pub fn kill_spawner_entity(&mut self, spawner_entity: Entity) {
+        let spawner = self.spawners.get(spawner_entity).expect("The spawner must exist in order to be deleted.");
+        let grouped_spawners_count = self
+            .spawners
+            .iter()
+            .filter(|other_spawner| {
+                spawner.group_identifier == other_spawner.group_identifier
+            })
+            .count();
+        if grouped_spawners_count == 1 {
+            let entities_per_spawner_group_identifier = self.spawner_entities
+                .entities_per_spawner_group_identifier
+                .remove(&spawner.group_identifier)
+                .expect("The spawner still exists to be deleted, so there should be a cooresponding vector of spawned entities.");
+
+            entities_per_spawner_group_identifier
+                .into_iter()
+                .for_each(|spawned_entity| {
+                    if let Some(element_kill_callback) = self.element_kill_callbacks.get(spawned_entity) {
+                        let system = element_kill_callback.system.clone();
+                        self.commands.add(move |world: &World| {
+                            (system.lock().unwrap().run)(world).unwrap()
+                        });
+                    } else {
+                        self.entities.kill(spawned_entity);
+                    }
+                });
+        }
+        self.entities.kill(spawner_entity);
     }
 }
 

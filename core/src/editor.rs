@@ -18,8 +18,8 @@ impl_system_param! {
         tile_layers: CompMut<'a, TileLayer>,
         tiles: CompMut<'a, Tile>,
         tile_collisions: CompMut<'a, TileCollisionKind>,
-        spawners: Comp<'a, Spawner>,
         element_kill_callbacks: Comp<'a, ElementKillCallback>,
+        spawner_manager: SpawnerManager<'a>,
     }
 }
 
@@ -130,33 +130,11 @@ impl<'a> MapManager<'a> {
             let system = element_kill_callback.system.clone();
             self.commands
                 .add(move |world: &World| (system.lock().unwrap().run)(world).unwrap());
-        } else {
-            if let Some(spawner) = self.spawners.get(entity) {
-                // search for other spawners in the same group
-                let grouped_spawners_count = self
-                    .spawners
-                    .iter()
-                    .filter(|other_spawner| {
-                        spawner.group_identifier == other_spawner.group_identifier
-                    })
-                    .count();
-
-                if grouped_spawners_count == 1 {
-                    spawner.spawned_elements.iter().copied().for_each(|entity| {
-                        // TODO recursively search for nested spawners
-
-                        if let Some(element_kill_callback) = self.element_kill_callbacks.get(entity)
-                        {
-                            let system = element_kill_callback.system.clone();
-                            self.commands.add(move |world: &World| {
-                                (system.lock().unwrap().run)(world).unwrap()
-                            });
-                        } else {
-                            self.entities.kill(entity);
-                        }
-                    });
-                }
-            }
+        } else if self.spawner_manager.is_entity_a_spawner(entity) {
+            // if the entity is a spawner, there are specific rules around how child entities may be killed
+            self.spawner_manager.kill_spawner_entity(entity);
+        }
+        else {
             self.entities.kill(entity);
         }
     }

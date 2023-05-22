@@ -173,7 +173,7 @@ impl PlayerCommand {
                player_indexes: Comp<PlayerIdx>,
                player_layers: Comp<PlayerLayers>,
                player_spawners: Comp<PlayerSpawner>,
-               mut spawners: CompMut<Spawner>| {
+               mut spawner_manager: SpawnerManager| {
             if player_indexes.contains(player) {
                 entities
                     .iter_with(&attachments)
@@ -190,13 +190,7 @@ impl PlayerCommand {
                 entities.kill(player);
 
                 // remove player from all player spawners
-                entities
-                    .iter_with(&player_spawners)
-                    .for_each(|(player_spawner_entity, _)| {
-                        if let Some(spawner) = spawners.get_mut(player_spawner_entity) {
-                            spawner.spawned_elements.retain(|entity| *entity != player);
-                        }
-                    });
+                spawner_manager.remove_spawned_entity_from_grouped_spawner(player, &player_spawners);
             } else {
                 warn!("Tried to despawn non-player entity.");
             }

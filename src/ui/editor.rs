@@ -561,10 +561,10 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                             .button(&format!("{}", params.localization.get("randomize")))
                             .clicked()
                         {
-                            let mut tile_layers: Vec<TileLayer> = vec![];
-                            let mut element_layers: Vec<ElementLayer> = vec![];
-
                             if let Some(map) = map_meta {
+                                let mut tile_layers: Vec<TileLayer> = vec![];
+                                let mut element_layers: Vec<ElementLayer> = vec![];
+
                                 map.layers
                                     .iter()
                                     .enumerate()
@@ -585,7 +585,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                                         let located_elements: Vec<(Vec2, bones_lib::prelude::Handle<ElementMeta>)> = layer.elements
                                             .iter()
                                             .map(|element| {
-                                                (element.pos, element.element.clone())
+                                                (Vec2::new(element.pos.x / map.tile_size.x as f32, element.pos.y / map.tile_size.y as f32), element.element.clone())
                                             })
                                             .collect();
                                         if located_elements.len() != 0 {
@@ -596,13 +596,14 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                                             element_layers.push(element_layer);
                                         }
                                     });
-                            }
 
-                            **params.editor_input =
-                                Some(EditorInput::RandomizeTiles {
-                                    tile_layers,
-                                    element_layers
-                                });
+                                **params.editor_input =
+                                    Some(EditorInput::RandomizeTiles {
+                                        tile_layers,
+                                        element_layers,
+                                        tile_size: map.tile_size
+                                    });
+                            }
                         }
                     });
                 });

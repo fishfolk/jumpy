@@ -138,6 +138,7 @@ pub enum EditorInput {
     },
     RandomizeTiles {
         tile_layers: Vec<TileLayer>,
-        element_layers: Vec<ElementLayer>
+        element_layers: Vec<ElementLayer>,
+        tile_size: Vec2
     }
 }

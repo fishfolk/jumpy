@@ -13,11 +13,12 @@ pub struct ShiftnanigansMapConstructor {
     pixel_board_randomizer: PixelBoardRandomizer<PixelType>,
     original_pixel_board: PixelBoard<PixelType>,
     compressed_top_height: usize,
-    compressed_left_width: usize
+    compressed_left_width: usize,
+    tile_size: Vec2
 }
 
 impl ShiftnanigansMapConstructor {
-    pub fn new(map_size: UVec2, tile_layers: &Vec<TileLayer>, element_layers: &Vec<ElementLayer>) -> ShiftnanigansMapConstructor {
+    pub fn new(map_size: UVec2, tile_size: Vec2, tile_layers: &Vec<TileLayer>, element_layers: &Vec<ElementLayer>) -> ShiftnanigansMapConstructor {
 
         // . map tiles and elements into pixel types
         // . run pixel randomizer
@@ -175,7 +176,8 @@ impl ShiftnanigansMapConstructor {
             pixel_board_randomizer: PixelBoardRandomizer::new(pixel_board.clone()),
             original_pixel_board: pixel_board,
             compressed_top_height: top_height,
-            compressed_left_width: left_width
+            compressed_left_width: left_width,
+            tile_size,
         }
     }
 }
@@ -193,7 +195,7 @@ impl MapConstructor for ShiftnanigansMapConstructor {
         // remove all elements
         map_manager.clear_elements();
 
-        if false {
+        if true {
             // place all tiles and elements
             for y in 0..random_pixel_board.get_height() {
                 for x in 0..random_pixel_board.get_width() {
@@ -234,8 +236,8 @@ impl MapConstructor for ShiftnanigansMapConstructor {
                                             },
                                             LayerPixelEntityType::Element(element) => {
                                                 let position = Vec2 {
-                                                    x: uncompressed_x as f32 + gp.ungrouped_pixel_location.x as f32 - top_left_position.x as f32 + element.position.x,
-                                                    y: uncompressed_y as f32 + gp.ungrouped_pixel_location.y as f32 - top_left_position.y as f32 + element.position.y
+                                                    x: (uncompressed_x as f32 + gp.ungrouped_pixel_location.x as f32 - top_left_position.x as f32 + element.position.x) * self.tile_size.x,
+                                                    y: (uncompressed_y as f32 + gp.ungrouped_pixel_location.y as f32 - top_left_position.y as f32 + element.position.y) * self.tile_size.y
                                                 };
                                                 map_manager.create_element(&element.element_meta_handle, &position, element.layer_index);
                                             }

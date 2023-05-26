@@ -216,6 +216,9 @@ impl<'a> SpawnerManager<'a> {
                 });
         }
         entities.kill(spawner_entity);
+
+        // remove the spawner_entity from spawners so that subsequent calls to this function behave appropriately
+        self.spawners.remove(spawner_entity);
     }
 }
 

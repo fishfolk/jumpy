@@ -100,7 +100,7 @@ fn hydrate_crates(
                 ..default()
             },
         );
-        spawner_manager.insert_ungrouped_spawner(spawner_entity, vec![entity])
+        spawner_manager.create_spawner(spawner_entity, vec![entity])
     }
 }
 

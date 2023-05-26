@@ -39,7 +39,7 @@ fn hydrate(
             hydrated.insert(entity, MapElementHydrated);
             player_spawners.insert(entity, PlayerSpawner);
 
-            spawner_manager.insert_grouped_spawner(entity, vec![], &player_spawners, &entities);
+            spawner_manager.create_grouped_spawner(entity, vec![], &player_spawners, &entities);
         }
     }
 }

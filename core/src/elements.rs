@@ -98,7 +98,7 @@ impl_system_param! {
 
 impl<'a> SpawnerManager<'a> {
     /// Stores the spawned elements as having been spawned by the provided entity, finding an existing spawner element, if it exists, to group these spawned elements with.
-    pub fn insert_grouped_spawner<T: EcsData + TypeUlid>(
+    pub fn create_grouped_spawner<T: EcsData + TypeUlid>(
         &mut self,
         entity: Entity,
         mut spawned_elements: Vec<Entity>,
@@ -133,7 +133,7 @@ impl<'a> SpawnerManager<'a> {
         }
     }
     /// Stores the spawned elements as having been spawned by the provided entity
-    pub fn insert_ungrouped_spawner(&mut self, entity: Entity, spawned_elements: Vec<Entity>) {
+    pub fn create_spawner(&mut self, entity: Entity, spawned_elements: Vec<Entity>) {
         let spawner = Spawner::new();
 
         // add the spawned elements to the newly created resource

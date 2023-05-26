@@ -152,7 +152,7 @@ pub fn hydrate(
                     fish: fish_ents.clone(),
                 },
             );
-            spawner_manager.insert_ungrouped_spawner(fish_school_ent, fish_ents);
+            spawner_manager.create_spawner(fish_school_ent, fish_ents);
         }
     }
 }

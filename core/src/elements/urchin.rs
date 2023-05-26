@@ -76,7 +76,7 @@ fn hydrate(
                     ..default()
                 },
             );
-            spawner_manager.insert_ungrouped_spawner(spawner_ent, vec![entity])
+            spawner_manager.create_spawner(spawner_ent, vec![entity])
         }
     }
 }

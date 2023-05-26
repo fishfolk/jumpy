@@ -358,7 +358,7 @@
     <span class="kw-2">mut </span>colliders: CompMut&lt;Collider&gt;,
     <span class="kw-2">mut </span>atlas_sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
-    <span class="kw-2">mut </span>spawners: CompMut&lt;Spawner&gt;,
+    <span class="kw-2">mut </span>spawner_manager: SpawnerManager,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -469,7 +469,7 @@
                     fish: fish_ents.clone(),
                 },
             );
-            spawners.insert(fish_school_ent, Spawner::new(fish_ents));
+            spawner_manager.create_spawner(fish_school_ent, fish_ents);
         }
     }
 }

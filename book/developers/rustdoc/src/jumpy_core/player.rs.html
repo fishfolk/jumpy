@@ -741,9 +741,28 @@
 <a href="#740" id="740">740</a>
 <a href="#741" id="741">741</a>
 <a href="#742" id="742">742</a>
+<a href="#743" id="743">743</a>
+<a href="#744" id="744">744</a>
+<a href="#745" id="745">745</a>
+<a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a>
+<a href="#753" id="753">753</a>
+<a href="#754" id="754">754</a>
+<a href="#755" id="755">755</a>
+<a href="#756" id="756">756</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::VecDeque;
 
-<span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>, random::GlobalRng};
+<span class="kw">use crate</span>::{
+    item::ItemGrabbed,
+    physics::KinematicBody,
+    prelude::{player_spawner::PlayerSpawner, <span class="kw-2">*</span>},
+    random::GlobalRng,
+};
 
 <span class="kw">mod </span>state;
 <span class="kw">use </span>bones_lib::animation::AnimationBankSprite;
@@ -909,7 +928,9 @@
         (<span class="kw">move </span>|<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
                attachments: Comp&lt;Attachment&gt;,
                player_indexes: Comp&lt;PlayerIdx&gt;,
-               player_layers: Comp&lt;PlayerLayers&gt;| {
+               player_layers: Comp&lt;PlayerLayers&gt;,
+               player_spawners: Comp&lt;PlayerSpawner&gt;,
+               <span class="kw-2">mut </span>spawner_manager: SpawnerManager| {
             <span class="kw">if </span>player_indexes.contains(player) {
                 entities
                     .iter_with(<span class="kw-2">&amp;</span>attachments)
@@ -924,6 +945,13 @@
                 entities.kill(layers.fin_ent);
                 entities.kill(layers.face_ent);
                 entities.kill(player);
+
+                <span class="comment">// remove player from all player spawners
+                </span>spawner_manager.remove_spawned_entity_from_grouped_spawner(
+                    player,
+                    <span class="kw-2">&amp;</span>player_spawners,
+                    <span class="kw-2">&amp;</span>entities,
+                );
             } <span class="kw">else </span>{
                 <span class="macro">warn!</span>(<span class="string">&quot;Tried to despawn non-player entity.&quot;</span>);
             }

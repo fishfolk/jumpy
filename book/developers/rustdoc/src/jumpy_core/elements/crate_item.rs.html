@@ -387,7 +387,7 @@
     <span class="kw-2">mut </span>item_throws: CompMut&lt;ItemThrow&gt;,
     <span class="kw-2">mut </span>item_grabs: CompMut&lt;ItemGrab&gt;,
     <span class="kw-2">mut </span>respawn_points: CompMut&lt;DehydrateOutOfBounds&gt;,
-    <span class="kw-2">mut </span>spawners: CompMut&lt;Spawner&gt;,
+    <span class="kw-2">mut </span>spawner_manager: SpawnerManager,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -448,7 +448,7 @@
                 ..default()
             },
         );
-        spawners.insert(spawner_entity, Spawner::new(<span class="macro">vec!</span>[entity]));
+        spawner_manager.create_spawner(spawner_entity, <span class="macro">vec!</span>[entity])
     }
 }
 

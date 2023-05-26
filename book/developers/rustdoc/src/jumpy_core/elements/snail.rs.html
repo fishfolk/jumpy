@@ -281,7 +281,7 @@
     <span class="kw-2">mut </span>animation_banks: CompMut&lt;AnimationBankSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
-    <span class="kw-2">mut </span>spawners: CompMut&lt;Spawner&gt;,
+    <span class="kw-2">mut </span>spawner_manager: SpawnerManager,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -363,7 +363,7 @@
                     last_animation: <span class="macro">key!</span>(<span class="string">&quot;hide&quot;</span>),
                 },
             );
-            spawners.insert(spawner_ent, Spawner::new(<span class="macro">vec!</span>[entity]));
+            spawner_manager.create_spawner(spawner_ent, <span class="macro">vec!</span>[entity])
         }
     }
 }

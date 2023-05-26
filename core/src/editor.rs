@@ -1,6 +1,6 @@
 use crate::map_constructor::MapConstructor;
 use crate::map_constructor::shiftnanigans::ShiftnanigansMapConstructor;
-use crate::{impl_system_param};
+use crate::impl_system_param;
 use crate::{map::z_depth_for_map_layer, prelude::*};
 
 pub fn install(session: &mut CoreSession) {
@@ -20,7 +20,9 @@ impl_system_param! {
         tile_layers: CompMut<'a, TileLayer>,
         tiles: CompMut<'a, Tile>,
         tile_collisions: CompMut<'a, TileCollisionKind>,
-        map: Res<'a, LoadedMap>
+        map: Res<'a, LoadedMap>,
+        element_kill_callbacks: Comp<'a, ElementKillCallback>,
+        spawner_manager: SpawnerManager<'a>,
     }
 }
 
@@ -128,7 +130,21 @@ impl<'a> MapManager<'a> {
         transform.translation.y = position.y;
     }
     pub fn delete_element(&mut self, entity: Entity) {
-        self.entities.kill(entity);
+        if let Some(element_kill_callback) = self.element_kill_callbacks.get(entity) {
+            let system = element_kill_callback.system.clone();
+            self.commands
+                .add(move |world: &World| (system.lock().unwrap().run)(world).unwrap());
+        } else if self.spawner_manager.is_entity_a_spawner(entity) {
+            // if the entity is a spawner, there are specific rules around how child entities may be killed
+            self.spawner_manager.kill_spawner_entity(
+                entity,
+                &mut self.entities,
+                &self.element_kill_callbacks,
+                &mut self.commands,
+            );
+        } else {
+            self.entities.kill(entity);
+        }
     }
     pub fn set_layer_tilemap(&mut self, layer_index: usize, tilemap: &Option<Handle<Atlas>>) {
         if let Some((_, (tile_layer, _))) = self
@@ -253,10 +269,7 @@ impl<'a> MapManager<'a> {
         to_kill
             .into_iter()
             .for_each(|entity| {
-                self.element_handles.remove(entity);
-                self.transforms.remove(entity);
-                self.spawned_map_layer_metas.remove(entity);
-                self.entities.kill(entity);
+                self.delete_element(entity);
             });
     }
 }
@@ -305,8 +318,8 @@ fn handle_editor_input(player_inputs: Res<PlayerInputs>, mut map_manager: MapMan
                 EditorInput::RenameMap { name } => {
                     map_manager.rename_map(name.clone());
                 }
-                EditorInput::RandomizeTiles { tile_layers, element_layers } => {
-                    let map_constructor = ShiftnanigansMapConstructor::new(map_manager.get_size(), tile_layers, element_layers);
+                EditorInput::RandomizeTiles { tile_layers, element_layers, tile_size } => {
+                    let map_constructor = ShiftnanigansMapConstructor::new(map_manager.get_size(), *tile_size, tile_layers, element_layers);
                     map_constructor.construct_map(&mut map_manager);
                 }
             }

@@ -11,7 +11,9 @@ pub fn install(session: &mut CoreSession) {
 
 #[derive(Default, Clone, TypeUlid, Debug, Deref, DerefMut)]
 #[ulid = "01GTF48H2WEFC3GSED8V7JNN0K"]
-pub struct FishSchool(Vec<Entity>);
+pub struct FishSchool {
+    fish: Vec<Entity>,
+}
 
 #[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GTF49M4WVD4B3G8W9QVV2JCX"]
@@ -39,16 +41,17 @@ pub fn hydrate(
     mut colliders: CompMut<Collider>,
     mut atlas_sprites: CompMut<AtlasSprite>,
     mut animated_sprites: CompMut<AnimatedSprite>,
+    mut spawner_manager: SpawnerManager,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
     not_hydrated_bitset.bit_and(element_handles.bitset());
 
-    let spawners = entities
+    let spawner_entities = entities
         .iter_with_bitset(&not_hydrated_bitset)
         .collect::<Vec<_>>();
 
-    for spawner_ent in spawners {
+    for spawner_ent in spawner_entities {
         let transform = *transforms.get(spawner_ent).unwrap();
         let element_handle = element_handles.get(spawner_ent).unwrap();
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -143,7 +146,13 @@ pub fn hydrate(
 
                 fish_ents.push(fish_ent);
             }
-            fish_schools.insert(fish_school_ent, FishSchool(fish_ents));
+            fish_schools.insert(
+                fish_school_ent,
+                FishSchool {
+                    fish: fish_ents.clone(),
+                },
+            );
+            spawner_manager.create_spawner(fish_school_ent, fish_ents);
         }
     }
 }
@@ -173,7 +182,10 @@ pub fn update_fish_schools(
         else { continue };
 
         let transform = transforms.get(school_ent).unwrap();
-        let mut fish_transforms = school.iter().map(|entity| transforms.get(*entity).unwrap());
+        let mut fish_transforms = school
+            .fish
+            .iter()
+            .map(|entity| transforms.get(*entity).unwrap());
         let Some(fish_transform) = fish_transforms.next() else {continue};
 
         let mut school_bounds_min = fish_transform.translation.xy();
@@ -193,7 +205,7 @@ pub fn update_fish_schools(
         let is_grouped = size.x.max(size.y) < *school_size;
         let spawn_pos = transform.translation.xy();
 
-        for fish_ent in school.iter() {
+        for fish_ent in school.fish.iter() {
             let flee = collision_world
                 .actor_collisions(*fish_ent)
                 .into_iter()

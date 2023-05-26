@@ -15,7 +15,7 @@ use crate::{
     ui::ui_input::MenuAction,
 };
 
-use self::settings::{ModifiedSettings, SettingsTab};
+use self::settings::ModifiedSettings;
 
 use super::{
     widget,
@@ -149,14 +149,6 @@ impl Default for MenuPage {
     fn default() -> Self {
         Self::Home
     }
-}
-
-impl SettingsTab {
-    const TABS: &'static [(Self, &'static str)] = &[
-        (Self::Controls, "controls"),
-        (Self::Networking, "networking"), // For now, hide the sound tab because we don't have it working yet.
-                                          // (Self::Sound, "sound")
-    ];
 }
 
 /// Render the main menu UI

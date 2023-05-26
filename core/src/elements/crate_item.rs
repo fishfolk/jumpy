@@ -39,18 +39,19 @@ fn hydrate_crates(
     mut item_throws: CompMut<ItemThrow>,
     mut item_grabs: CompMut<ItemGrab>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
+    mut spawner_manager: SpawnerManager,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
     not_hydrated_bitset.bit_and(element_handles.bitset());
 
-    let spawners = entities
+    let spawner_entities = entities
         .iter_with_bitset(&not_hydrated_bitset)
         .collect::<Vec<_>>();
 
-    for spawner in spawners {
-        let transform = *transforms.get(spawner).unwrap();
-        let element_handle = element_handles.get(spawner).unwrap();
+    for spawner_entity in spawner_entities {
+        let transform = *transforms.get(spawner_entity).unwrap();
+        let element_handle = element_handles.get(spawner_entity).unwrap();
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else{
             continue;
         };
@@ -67,7 +68,7 @@ fn hydrate_crates(
             continue;
         };
 
-        hydrated.insert(spawner, MapElementHydrated);
+        hydrated.insert(spawner_entity, MapElementHydrated);
 
         let entity = entities.create();
         items.insert(entity, Item);
@@ -82,7 +83,7 @@ fn hydrate_crates(
             },
         );
         atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-        respawn_points.insert(entity, DehydrateOutOfBounds(spawner));
+        respawn_points.insert(entity, DehydrateOutOfBounds(spawner_entity));
         transforms.insert(entity, transform);
         element_handles.insert(entity, element_handle.clone());
         hydrated.insert(entity, MapElementHydrated);
@@ -99,6 +100,7 @@ fn hydrate_crates(
                 ..default()
             },
         );
+        spawner_manager.create_spawner(spawner_entity, vec![entity])
     }
 }
 

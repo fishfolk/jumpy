@@ -41,7 +41,7 @@ pub fn hydrate(
     mut colliders: CompMut<Collider>,
     mut atlas_sprites: CompMut<AtlasSprite>,
     mut animated_sprites: CompMut<AnimatedSprite>,
-    mut spawners: CompMut<Spawner>,
+    mut spawner_manager: SpawnerManager,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -152,7 +152,7 @@ pub fn hydrate(
                     fish: fish_ents.clone(),
                 },
             );
-            spawners.insert(fish_school_ent, Spawner::new(fish_ents));
+            spawner_manager.create_spawner(fish_school_ent, fish_ents);
         }
     }
 }

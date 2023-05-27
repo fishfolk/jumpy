@@ -8,6 +8,7 @@ pub struct JumpySessionPlugin;
 
 /// Stage label for the game session stages
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+#[system_set(base)]
 pub enum SessionStage {
     /// Update the game session.
     Update,

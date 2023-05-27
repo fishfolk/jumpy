@@ -31,7 +31,7 @@ impl HasBonesWorld for Session {
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 #[system_set(base)]
-pub struct CoreUpdate;
+pub struct JumpyCoreUpdate;
 
 pub fn main() {
     App::new()
@@ -52,10 +52,10 @@ pub fn main() {
         .add_system(load)
         .init_resource::<Snapshot>()
         .add_system(snapshot_restore)
-        .configure_set(CoreUpdate.before(CoreSet::Update))
+        .configure_set(JumpyCoreUpdate.before(CoreSet::Update))
         .add_systems(
             (update_input, update_game, play_sounds)
-                .in_base_set(CoreUpdate)
+                .in_base_set(JumpyCoreUpdate)
                 .distributive_run_if(on_timer(Duration::from_secs_f32(1.0 / 60.0))),
         )
         .run();

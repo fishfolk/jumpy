@@ -60,16 +60,6 @@ pub enum GameEditorState {
     Visible,
 }
 
-#[derive(SystemSet, Eq, PartialEq, Hash, Debug, Clone)]
-pub enum RollbackStage {
-    Input,
-    First,
-    PreUpdate,
-    Update,
-    PostUpdate,
-    Last,
-}
-
 pub fn main() {
     // Load engine config. This will parse CLI arguments or web query string so we want to do it
     // before we create the app to make sure everything is in order.

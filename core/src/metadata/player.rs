@@ -62,16 +62,16 @@ pub struct PlayerStatsMeta {
 #[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct PlayerSoundsMeta {
-    pub land_volume: f32,
+    pub land_volume: f64,
     pub land: Handle<AudioSource>,
 
-    pub jump_volume: f32,
+    pub jump_volume: f64,
     pub jump: Handle<AudioSource>,
 
-    pub grab_volume: f32,
+    pub grab_volume: f64,
     pub grab: Handle<AudioSource>,
 
-    pub drop_volume: f32,
+    pub drop_volume: f64,
     pub drop: Handle<AudioSource>,
 }
 

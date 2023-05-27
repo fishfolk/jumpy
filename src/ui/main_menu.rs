@@ -66,7 +66,7 @@ pub fn setup_main_menu(
     session_manager.stop();
 
     // Make sure the game editor is hidden
-    commands.insert_resource(NextState(GameEditorState::Hidden));
+    commands.insert_resource(NextState(Some(GameEditorState::Hidden)));
 
     // Spawn menu background
     let bg_handle = game.main_menu.background_image.image.inner.clone_weak();
@@ -216,7 +216,7 @@ struct HomeMenu<'w, 's> {
     modified_settings: ResMut<'w, ModifiedSettings>,
     game: Res<'w, GameMeta>,
     localization: Res<'w, Localization>,
-    app_exit: EventWriter<'w, 's, AppExit>,
+    app_exit: EventWriter<'w, AppExit>,
     storage: ResMut<'w, Storage>,
 }
 
@@ -308,13 +308,13 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                         {
                             params
                                 .commands
-                                .insert_resource(NextState(GameEditorState::Visible));
+                                .insert_resource(NextState(Some(GameEditorState::Visible)));
                             params
                                 .commands
-                                .insert_resource(NextState(EngineState::InGame));
+                                .insert_resource(NextState(Some(EngineState::InGame)));
                             params
                                 .commands
-                                .insert_resource(NextState(InGameState::Playing));
+                                .insert_resource(NextState(Some(InGameState::Playing)));
                         }
                     });
 

@@ -17,33 +17,31 @@ pub struct PausePlugin;
 impl Plugin for PausePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PauseMenuPage>()
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                unpause_system
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(InGameState::Paused),
+            .add_systems(
+                (
+                    unpause_system
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(InGameState::Paused)),
+                    pause_system
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(GameEditorState::Hidden))
+                        .run_if(in_state(InGameState::Playing)),
+                )
+                    .in_base_set(CoreSet::PostUpdate),
             )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                pause_system
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(GameEditorState::Hidden)
-                    .run_in_state(InGameState::Playing),
-            )
-            .add_system_to_stage(
-                CoreStage::Update,
-                pause_menu_default
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(InGameState::Paused)
-                    .run_if_resource_equals(PauseMenuPage::Default),
-            )
-            .add_system_to_stage(
-                CoreStage::Update,
-                pause_menu_map_select
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(InGameState::Paused)
-                    .run_if_resource_equals(PauseMenuPage::MapSelect)
-                    .at_end(),
+            .add_systems(
+                (
+                    pause_menu_default
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(InGameState::Paused))
+                        .run_if(resource_equals(PauseMenuPage::Default)),
+                    pause_menu_map_select
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(InGameState::Paused))
+                        .run_if(resource_equals(PauseMenuPage::MapSelect))
+                        .at_end(),
+                )
+                    .in_base_set(CoreSet::Update),
             );
     }
 }
@@ -52,7 +50,7 @@ impl Plugin for PausePlugin {
 fn pause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(NextState(InGameState::Paused));
+        commands.insert_resource(NextState(Some(InGameState::Paused)));
     }
 }
 
@@ -65,7 +63,7 @@ fn unpause_system(
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
         *pause_page = default();
-        commands.insert_resource(NextState(InGameState::Playing));
+        commands.insert_resource(NextState(Some(InGameState::Playing)));
     }
 }
 
@@ -137,7 +135,7 @@ pub fn pause_menu_default(
                         continue_button = continue_button.focus_by_default(ui);
 
                         if continue_button.clicked() {
-                            commands.insert_resource(NextState(InGameState::Playing));
+                            commands.insert_resource(NextState(Some(InGameState::Playing)));
                         }
 
                         ui.scope(|ui| {
@@ -163,7 +161,7 @@ pub fn pause_menu_default(
                             .clicked()
                             {
                                 session_manager.restart();
-                                commands.insert_resource(NextState(InGameState::Playing));
+                                commands.insert_resource(NextState(Some(InGameState::Playing)));
                             }
                         });
 
@@ -176,8 +174,8 @@ pub fn pause_menu_default(
                             .show(ui)
                             .clicked()
                             {
-                                commands.insert_resource(NextState(GameEditorState::Visible));
-                                commands.insert_resource(NextState(InGameState::Playing));
+                                commands.insert_resource(NextState(Some(GameEditorState::Visible)));
+                                commands.insert_resource(NextState(Some(InGameState::Playing)));
                             }
                         });
 
@@ -190,7 +188,7 @@ pub fn pause_menu_default(
                         .clicked()
                         {
                             // Show the main menu
-                            commands.insert_resource(NextState(EngineState::MainMenu));
+                            commands.insert_resource(NextState(Some(EngineState::MainMenu)));
                             ui.ctx().clear_focus();
                         }
                     });

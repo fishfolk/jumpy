@@ -168,7 +168,7 @@ impl<'a> Widget for BorderedButton<'a> {
 
         // Focus the button automatically when it is hovered and the mouse is moving
         if response.hovered()
-            && ui.ctx().input().pointer.velocity().length_sq() > 0.0
+            && ui.ctx().input(|i| i.pointer.velocity().length_sq() > 0.0)
             && focus_on_hover
         {
             response.request_focus();

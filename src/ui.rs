@@ -1,4 +1,4 @@
-use bevy::ecs::system::SystemState;
+use bevy::{ecs::system::SystemState, window::PrimaryWindow};
 
 use crate::prelude::*;
 
@@ -175,13 +175,13 @@ pub struct DisableMenuInput(pub bool);
 
 fn handle_menu_input(
     disable_menu_input: Res<DisableMenuInput>,
-    mut windows: ResMut<Windows>,
+    mut windows: Query<&Window, With<PrimaryWindow>>,
     input: Query<&ActionState<MenuAction>>,
     keyboard: Res<Input<KeyCode>>,
     mut egui_inputs: ResMut<bevy_egui::EguiRenderInputContainer>,
     adjacencies: Res<WidgetAdjacencies>,
     mut egui_ctx: ResMut<bevy_egui::EguiContext>,
-    editor_state: Res<CurrentState<GameEditorState>>,
+    editor_state: Res<State<GameEditorState>>,
 ) {
     let input = input.single();
 
@@ -222,6 +222,7 @@ fn handle_menu_input(
         events.push(egui::Event::Key {
             key: egui::Key::Enter,
             pressed: true,
+            repeat: false,
             modifiers: egui::Modifiers::NONE,
         });
     }
@@ -233,12 +234,14 @@ fn handle_menu_input(
             events.push(egui::Event::Key {
                 key: egui::Key::Tab,
                 pressed: true,
+                repeat: false,
                 modifiers: egui::Modifiers::SHIFT,
             });
         } else if input.just_pressed(MenuAction::Down) || input.just_pressed(MenuAction::Right) {
             events.push(egui::Event::Key {
                 key: egui::Key::Tab,
                 pressed: true,
+                repeat: false,
                 modifiers: egui::Modifiers::NONE,
             });
         }

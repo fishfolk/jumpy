@@ -28,19 +28,6 @@ impl Plugin for JumpySessionPlugin {
                 collect_local_input.pipe(update_game),
                 play_sounds,
             ));
-        // .add_stage_before(
-        //     CoreStage::Update,
-        //     SessionStage::Update,
-        //     SystemStage::single_threaded()
-        //         .with_system(
-        //             ensure_2_players
-        //                 .run_in_state(EngineState::InGame)
-        //                 .run_in_state(InGameState::Playing),
-        //         )
-        //         .with_system(collect_local_input.pipe(update_game))
-        //         .with_system(play_sounds)
-        //         .with_run_criteria(session_run_criteria),
-        // );
     }
 }
 
@@ -290,10 +277,10 @@ fn update_game(world: &mut World) {
     let Some(mut session) = world.remove_resource::<Session>() else {
         return;
     };
-    if world.resource::<CurrentState<EngineState>>().0 != EngineState::InGame {
+    if world.resource::<State<EngineState>>().0 != EngineState::InGame {
         return;
     }
-    if world.resource::<CurrentState<InGameState>>().0 != InGameState::Playing {
+    if world.resource::<State<InGameState>>().0 != InGameState::Playing {
         return;
     }
 
@@ -308,8 +295,8 @@ fn update_game(world: &mut World) {
                 let mut cameras = world.query_filtered::<&mut Camera, With<MenuCamera>>();
                 cameras.for_each_mut(world, |mut camera| camera.is_active = true);
                 world.insert_resource(MenuPage::Home);
-                world.insert_resource(NextState(EngineState::MainMenu));
-                world.insert_resource(NextState(InGameState::Playing));
+                world.insert_resource(NextState(Some(EngineState::MainMenu)));
+                world.insert_resource(NextState(Some(InGameState::Playing)));
             }
         }
 

@@ -19,7 +19,7 @@ pub struct MapSelectMenu<'w, 's> {
     game: Res<'w, GameMeta>,
     core: Res<'w, CoreMetaArc>,
     player_select_state: Res<'w, super::player_select::PlayerSelectState>,
-    game_state: Res<'w, CurrentState<EngineState>>,
+    game_state: Res<'w, State<EngineState>>,
     pause_page: ResMut<'w, PauseMenuPage>,
     commands: Commands<'w, 's>,
     localization: Res<'w, Localization>,
@@ -173,10 +173,10 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
 
                                         params
                                             .commands
-                                            .insert_resource(NextState(EngineState::InGame));
+                                            .insert_resource(NextState(Some(EngineState::InGame)));
                                         params
                                             .commands
-                                            .insert_resource(NextState(InGameState::Playing));
+                                            .insert_resource(NextState(Some(InGameState::Playing)));
 
                                         #[cfg(not(target_arch = "wasm32"))]
                                         if let Some(socket) = &params.network_socket {
@@ -237,12 +237,12 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                                 map_meta,
                                                 player_info,
                                             });
-                                            params
-                                                .commands
-                                                .insert_resource(NextState(EngineState::InGame));
-                                            params
-                                                .commands
-                                                .insert_resource(NextState(InGameState::Playing));
+                                            params.commands.insert_resource(NextState(Some(
+                                                EngineState::InGame,
+                                            )));
+                                            params.commands.insert_resource(NextState(Some(
+                                                InGameState::Playing,
+                                            )));
                                         };
                                     }
                                 }
@@ -300,10 +300,10 @@ fn handle_match_setup_messages(params: &mut MapSelectMenu) {
                         );
                         params
                             .commands
-                            .insert_resource(NextState(EngineState::InGame));
+                            .insert_resource(NextState(Some(EngineState::InGame)));
                         params
                             .commands
-                            .insert_resource(NextState(InGameState::Playing));
+                            .insert_resource(NextState(Some(InGameState::Playing)));
                     }
                 },
                 Err(e) => warn!("Ignoring network message that was not understood: {e}"),

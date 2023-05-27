@@ -223,7 +223,7 @@ fn play_sounds(audio: Res<bevy_kira_audio::Audio>, session: Option<Res<Session>>
             } => {
                 audio
                     .play(sound_source.get_bevy_handle_untyped().typed())
-                    .with_volume(volume.into());
+                    .with_volume(volume);
             }
         }
     }

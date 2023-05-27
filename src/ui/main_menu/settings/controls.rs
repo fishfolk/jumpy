@@ -1,3 +1,4 @@
+use bevy::input::gamepad::{GamepadAxisChangedEvent, GamepadEvent};
 use egui_extras::Column;
 
 use super::*;
@@ -329,7 +330,7 @@ fn format_input(input: &InputKind) -> String {
 pub struct ControlInputBindingEvents<'w, 's> {
     keys: Res<'w, Input<KeyCode>>,
     gamepad_buttons: Res<'w, Input<GamepadButton>>,
-    gamepad_events: EventReader<'w, 's, GamepadEvent>,
+    gamepad_events: EventReader<'w, 's, bevy::input::gamepad::GamepadEvent>,
     mouse: Res<'w, Input<MouseButton>>,
 }
 
@@ -370,13 +371,17 @@ impl<'w, 's> ControlInputBindingEvents<'w, 's> {
                 } else {
                     // Look for axes tilted more than 0.5 in either direction.
                     for gamepad_event in self.gamepad_events.iter() {
-                        if let GamepadEventType::AxisChanged(axis, value) = gamepad_event.event_type
+                        if let GamepadEvent::Axis(GamepadAxisChangedEvent {
+                            axis_type,
+                            value,
+                            ..
+                        }) = gamepad_event.event_type
                         {
                             // Create an axis positive movement binding
                             if value > 0.5 {
                                 return Ok(Some(
                                     SingleAxis {
-                                        axis_type: axis.into(),
+                                        axis_type,
                                         positive_low: 0.1,
                                         negative_low: -1.0,
                                         value: None,
@@ -387,7 +392,7 @@ impl<'w, 's> ControlInputBindingEvents<'w, 's> {
                             } else if value < -0.5 {
                                 return Ok(Some(
                                     SingleAxis {
-                                        axis_type: axis.into(),
+                                        axis_type,
                                         positive_low: 1.0,
                                         negative_low: -0.1,
                                         value: None,

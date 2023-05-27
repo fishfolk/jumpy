@@ -1,4 +1,4 @@
-use bevy::{ecs::schedule::ShouldRun, utils::Instant};
+use bevy::utils::Instant;
 use downcast_rs::{impl_downcast, Downcast};
 use jumpy_core::input::PlayerControl;
 
@@ -7,7 +7,7 @@ use crate::{main_menu::MenuPage, prelude::*};
 pub struct JumpySessionPlugin;
 
 /// Stage label for the game session stages
-#[derive(StageLabel)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum SessionStage {
     /// Update the game session.
     Update,
@@ -18,36 +18,46 @@ impl Plugin for JumpySessionPlugin {
         app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::<Session>::with_sync_time(false))
             .add_plugin(jumpy_core::metadata::JumpyCoreAssetsPlugin)
             .init_resource::<CurrentEditorInput>()
-            .add_stage_before(
-                CoreStage::Update,
-                SessionStage::Update,
-                SystemStage::single_threaded()
-                    .with_system(
-                        ensure_2_players
-                            .run_in_state(EngineState::InGame)
-                            .run_in_state(InGameState::Playing),
-                    )
-                    .with_system(collect_local_input.pipe(update_game))
-                    .with_system(play_sounds)
-                    .with_run_criteria(session_run_criteria),
-            );
+            .configure_set(
+                SessionStage::Update
+                    .before(CoreSet::Update)
+                    .run_if(session_run_criteria),
+            )
+            .add_systems((
+                ensure_2_players.run_if(in_state(EngineState::InGame)),
+                collect_local_input.pipe(update_game),
+                play_sounds,
+            ));
+        // .add_stage_before(
+        //     CoreStage::Update,
+        //     SessionStage::Update,
+        //     SystemStage::single_threaded()
+        //         .with_system(
+        //             ensure_2_players
+        //                 .run_in_state(EngineState::InGame)
+        //                 .run_in_state(InGameState::Playing),
+        //         )
+        //         .with_system(collect_local_input.pipe(update_game))
+        //         .with_system(play_sounds)
+        //         .with_run_criteria(session_run_criteria),
+        // );
     }
 }
 
 fn session_run_criteria(
     time: Res<Time>,
     session: Option<ResMut<Session>>,
-    in_game_state: Res<CurrentState<InGameState>>,
-    engine_state: Res<CurrentState<EngineState>>,
-) -> ShouldRun {
+    in_game_state: Res<State<InGameState>>,
+    engine_state: Res<State<EngineState>>,
+) -> bool {
     if let Some(mut session) = session {
         if engine_state.0 == EngineState::InGame && in_game_state.0 == InGameState::Playing {
             session.run_criteria(&time)
         } else {
-            ShouldRun::No
+            false
         }
     } else {
-        ShouldRun::No
+        false
     }
 }
 
@@ -67,7 +77,7 @@ pub trait SessionRunner: Sync + Send + Downcast {
     }
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl);
     fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError>;
-    fn run_criteria(&mut self, time: &Time) -> ShouldRun;
+    fn run_criteria(&mut self, time: &Time) -> bool;
     /// Returns the player index of the player if we are in a network game.
     ///
     /// In a network game, we currently only allow for one local player, so this allows the session
@@ -119,7 +129,7 @@ impl SessionRunner for LocalSessionRunner {
 
         Ok(())
     }
-    fn run_criteria(&mut self, time: &Time) -> ShouldRun {
+    fn run_criteria(&mut self, time: &Time) -> bool {
         const STEP: f64 = 1.0 / jumpy_core::FPS as f64;
         let delta = time.delta_seconds_f64();
         if self.loop_start.is_none() {
@@ -135,14 +145,14 @@ impl SessionRunner for LocalSessionRunner {
                 warn!("Frame took too long: couldn't keep up with fixed update.");
                 self.accumulator = 0.0;
                 self.loop_start = None;
-                ShouldRun::No
+                false
             } else {
                 self.accumulator -= STEP;
-                ShouldRun::YesAndCheckAgain
+                true
             }
         } else {
             self.loop_start = None;
-            ShouldRun::No
+            false
         }
     }
     fn network_player_idx(&mut self) -> Option<usize> {
@@ -187,9 +197,9 @@ impl<'w, 's> SessionManager<'w, 's> {
         self.commands.insert_resource(session);
         self.menu_camera.for_each_mut(|mut x| x.is_active = false);
         self.commands
-            .insert_resource(NextState(InGameState::Playing));
+            .insert_resource(NextState(Some(InGameState::Playing)));
         self.commands
-            .insert_resource(NextState(EngineState::InGame));
+            .insert_resource(NextState(Some(EngineState::InGame)));
     }
 
     /// Restart a game session without changing the settings

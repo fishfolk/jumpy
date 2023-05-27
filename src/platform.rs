@@ -4,7 +4,6 @@ use crate::prelude::*;
 
 use async_channel::{Receiver, Sender};
 use bevy::utils::HashMap;
-use iyes_loopless::prelude::*;
 use serde::{de::DeserializeOwned, Serialize};
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -42,7 +41,7 @@ pub fn load_storage(
     } else if storage.is_loaded() {
         debug!("Done loading platform storage");
         // Load game
-        commands.insert_resource(NextState(EngineState::LoadingGameData));
+        commands.insert_resource(NextState(Some(EngineState::LoadingGameData)));
     }
 }
 

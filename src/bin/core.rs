@@ -2,9 +2,13 @@
 //!
 //! It is a demonstration of the minimal code required to run Jumpy core.
 
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
-use bevy::{prelude::*, time::FixedTimestep};
+use bevy::{
+    prelude::*,
+    time::common_conditions::on_timer,
+    window::{PrimaryWindow, WindowMode},
+};
 use bevy_kira_audio::prelude::*;
 use bones_bevy_renderer::*;
 
@@ -25,6 +29,10 @@ impl HasBonesWorld for Session {
     }
 }
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+#[system_set(base)]
+pub struct CoreUpdate;
+
 pub fn main() {
     App::new()
         .add_plugins(
@@ -44,14 +52,11 @@ pub fn main() {
         .add_system(load)
         .init_resource::<Snapshot>()
         .add_system(snapshot_restore)
-        .add_stage_before(
-            CoreStage::Update,
-            "update",
-            SystemStage::single_threaded()
-                .with_system(update_input)
-                .with_system(update_game)
-                .with_system(play_sounds)
-                .with_run_criteria(FixedTimestep::step(1.0 / 60.0)),
+        .configure_set(CoreUpdate.before(CoreSet::Update))
+        .add_systems(
+            (update_input, update_game, play_sounds)
+                .in_base_set(CoreUpdate)
+                .distributive_run_if(on_timer(Duration::from_secs_f32(1.0 / 60.0))),
         )
         .run();
 }
@@ -115,18 +120,18 @@ fn load(
 fn update_input(
     session: Option<ResMut<Session>>,
     keyboard: Res<Input<KeyCode>>,
-    mut windows: ResMut<Windows>,
+    mut window_q: Query<&Window, With<PrimaryWindow>>,
 ) {
     let Some(mut session) = session else {
         return;
     };
 
     if keyboard.just_pressed(KeyCode::F11) {
-        if let Some(window) = windows.get_primary_mut() {
-            window.set_mode(match window.mode() {
+        if let Ok(window) = window_q.get_single_mut() {
+            window.mode = match window.mode {
                 WindowMode::BorderlessFullscreen => WindowMode::Windowed,
                 _ => WindowMode::BorderlessFullscreen,
-            });
+            };
         }
     }
 

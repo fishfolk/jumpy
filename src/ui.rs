@@ -24,14 +24,15 @@ impl Plugin for JumpyUiPlugin {
             .add_plugin(pause_menu::PausePlugin)
             .init_resource::<WidgetAdjacencies>()
             .init_resource::<DisableMenuInput>()
-            .add_system_to_stage(
-                CoreStage::PreUpdate,
-                handle_menu_input
-                    .run_if_resource_exists::<GameMeta>()
-                    .after(leafwing_input_manager::plugin::InputManagerSystem::Update)
-                    .after(bevy_egui::EguiSystem::ProcessInput)
-                    .before(bevy_egui::EguiSystem::BeginFrame),
-            )
+            .add_system(handle_menu_input.in_set())
+            // .add_system_to_stage(
+            //     CoreStage::PreUpdate,
+            //     handle_menu_input
+            //         .run_if_resource_exists::<GameMeta>()
+            //         .after(leafwing_input_manager::plugin::InputManagerSystem::Update)
+            //         .after(bevy_egui::EguiSystem::ProcessInput)
+            //         .before(bevy_egui::EguiSystem::BeginFrame),
+            // )
             .add_system(update_egui_fonts)
             .add_system(update_ui_scale.run_if_resource_exists::<GameMeta>());
     }

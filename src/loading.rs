@@ -25,11 +25,11 @@ impl Plugin for JumpyLoadingPlugin {
 
         // Configure hot reload
         if ENGINE_CONFIG.hot_reload {
-            app.add_system_to_stage(CoreStage::Last, hot_reload_game)
-                .add_system_set_to_stage(
-                    CoreStage::Last,
-                    ConditionSet::new().run_in_state(EngineState::InGame).into(),
-                );
+            app.add_systems((hot_reload_game).in_base_set(CoreSet::Last));
+            // .add_system_set_to_stage(
+            //     CoreStage::Last,
+            //     ConditionSet::new().run_in_state(EngineState::InGame).into(),
+            // );
         }
     }
 }
@@ -194,7 +194,7 @@ impl<'w, 's> GameLoader<'w, 's> {
             }
 
             // Transition to the main menu when we are done
-            commands.insert_resource(NextState(EngineState::MainMenu));
+            commands.insert_resource(NextState(Some(EngineState::MainMenu)));
         }
 
         // Set the locale resource

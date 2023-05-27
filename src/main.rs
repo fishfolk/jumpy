@@ -37,7 +37,7 @@ pub mod networking;
 pub mod prelude;
 pub use prelude::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States)]
 pub enum EngineState {
     LoadingPlatformStorage,
     LoadingGameData,
@@ -57,7 +57,7 @@ pub enum GameEditorState {
     Visible,
 }
 
-#[derive(StageLabel, Eq, PartialEq, Hash)]
+#[derive(SystemSet, Eq, PartialEq, Hash)]
 pub enum RollbackStage {
     Input,
     First,
@@ -85,11 +85,11 @@ pub fn main() {
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
-                    window: WindowDescriptor {
+                    primary_window: Some(Window {
                         title: "Fish Folk: Jumpy".to_string(),
                         fit_canvas_to_parent: true,
                         ..default()
-                    },
+                    }),
                     ..default()
                 })
                 .set(ImagePlugin::default_nearest())

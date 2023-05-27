@@ -19,7 +19,7 @@ glam            = { version = "0.23.0", features = ["bytemuck", "libm"] }
 hex             = "0.4.3"
 humantime-serde = "1"
 indexmap        = "1.9.3"
-nalgebra        = { version = "0.32", features = ["convert-glam022"] }
+nalgebra        = { version = "0.32", features = ["convert-glam023"] }
 ordered-float   = "3.4.0"
 petgraph        = { version = "0.6", features = ["graphmap"], default-features = false }
 puffin          = "0.16"

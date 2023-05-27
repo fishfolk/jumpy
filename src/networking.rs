@@ -311,9 +311,9 @@ impl crate::session::SessionRunner for GgrsSessionRunner {
         Ok(())
     }
 
-    fn run_criteria(&mut self, time: &Time) -> bevy::ecs::schedule::ShouldRun {
+    fn run_criteria(&mut self, time: &Time) -> bool {
         self.delta = time.delta_seconds();
-        bevy::ecs::schedule::ShouldRun::Yes
+        true
     }
 
     fn network_player_idx(&mut self) -> Option<usize> {

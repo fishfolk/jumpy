@@ -17,7 +17,7 @@ pub struct JumpyPlatformPlugin;
 impl Plugin for JumpyPlatformPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Storage>()
-            .add_system(load_storage.run_in_state(EngineState::LoadingPlatformStorage));
+            .add_system(load_storage.run_if(in_state(EngineState::LoadingPlatformStorage)));
     }
 }
 

@@ -36,21 +36,6 @@ fn sync_core_debug_settings(session: Option<ResMut<Session>>, settings: Res<Core
     }
 }
 
-// #[derive(Deref, DerefMut, Default)]
-// pub struct ShowNetworkVisualizer(pub bool);
-
-// fn network_visualizer_window(
-//     show: Res<ShowNetworkVisualizer>,
-//     mut egui_context: ResMut<EguiContext>,
-//     mut visualizer: ResMut<RenetServerVisualizer<200>>,
-//     server: Res<RenetServer>,
-// ) {
-//     if **show {
-//         visualizer.update(&server);
-//         visualizer.show_window(egui_context.ctx_mut());
-//     }
-// }
-
 #[derive(Resource, Default)]
 struct ShowDebugWindows {
     pub frame_time_diagnostics: bool,
@@ -65,16 +50,14 @@ struct BonesSnapshot(Option<bones::World>);
 fn debug_tools_window(
     mut core_debug_settings: ResMut<CoreDebugSettings>,
     mut visible: Local<bool>,
-    mut egui_context: ResMut<EguiContext>,
     mut show_debug_windows: ResMut<ShowDebugWindows>,
     localization: Res<Localization>,
     input: Res<Input<KeyCode>>,
     mut show_inspector: ResMut<WorldInspectorEnabled>,
     mut bones_world_snapshot: ResMut<BonesSnapshot>,
     mut session: Option<ResMut<Session>>,
+    mut egui_ctxs: EguiContexts,
 ) {
-    let ctx = egui_context.ctx_mut();
-
     // Toggle debug window visibility
     if input.just_pressed(KeyCode::F12) {
         *visible = !*visible;
@@ -110,7 +93,7 @@ fn debug_tools_window(
         // ID is needed because title comes from localizaition which can change
         .id(egui::Id::new("debug_tools"))
         .open(&mut visible)
-        .show(ctx, |ui| {
+        .show(egui_ctxs.ctx_mut(), |ui| {
             // Show collision shapes
             ui.checkbox(
                 &mut core_debug_settings.show_kinematic_colliders,
@@ -198,19 +181,17 @@ impl Default for FrameDiagState {
 
 fn frame_diagnostic_window(
     mut state: Local<FrameDiagState>,
-    mut egui_context: ResMut<EguiContext>,
     mut show: ResMut<ShowDebugWindows>,
     diagnostics: Res<Diagnostics>,
     localization: Res<Localization>,
+    mut egui_ctx: EguiContexts,
 ) {
     if show.frame_time_diagnostics {
-        let ctx = egui_context.ctx_mut();
-
         egui::Window::new(&localization.get("frame-diagnostics"))
             .id(egui::Id::new("frame_diagnostics"))
             .default_width(500.0)
             .open(&mut show.frame_time_diagnostics)
-            .show(ctx, |ui| {
+            .show(egui_ctx.ctx_mut(), |ui| {
                 if ui.button(&localization.get("reset-min-max")).clicked() {
                     *state = default();
                 }
@@ -261,15 +242,15 @@ fn frame_diagnostic_window(
 
 fn profiler_window(
     mut show: ResMut<ShowDebugWindows>,
-    mut egui_context: ResMut<EguiContext>,
     localization: Res<Localization>,
+    mut egui_ctx: EguiContexts,
 ) {
     puffin::set_scopes_on(show.profiler);
     if show.profiler {
         egui::Window::new(&localization.get("profiler"))
             .id(egui::Id::new("profiler"))
             .open(&mut show.profiler)
-            .show(egui_context.ctx_mut(), |ui| {
+            .show(egui_ctx.ctx_mut(), |ui| {
                 puffin_egui::profiler_ui(ui);
             });
     }

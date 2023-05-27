@@ -120,14 +120,14 @@ fn load(
 fn update_input(
     session: Option<ResMut<Session>>,
     keyboard: Res<Input<KeyCode>>,
-    mut window_q: Query<&Window, With<PrimaryWindow>>,
+    mut window_q: Query<&mut Window, With<PrimaryWindow>>,
 ) {
     let Some(mut session) = session else {
         return;
     };
 
     if keyboard.just_pressed(KeyCode::F11) {
-        if let Ok(window) = window_q.get_single_mut() {
+        if let Ok(mut window) = window_q.get_single_mut() {
             window.mode = match window.mode {
                 WindowMode::BorderlessFullscreen => WindowMode::Windowed,
                 _ => WindowMode::BorderlessFullscreen,

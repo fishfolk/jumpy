@@ -59,7 +59,7 @@ pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
         quinn::EndpointConfig::default(),
         Some(server_config),
         socket,
-        quinn_runtime_bevy::BevyIoTaskPoolExecutor,
+        Arc::new(quinn_runtime_bevy::BevyIoTaskPoolExecutor),
     )
     .unwrap();
 

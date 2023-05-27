@@ -375,13 +375,16 @@ impl<'w, 's> ControlInputBindingEvents<'w, 's> {
                             axis_type,
                             value,
                             ..
-                        }) = gamepad_event.event_type
+                        }) = gamepad_event
                         {
                             // Create an axis positive movement binding
-                            if value > 0.5 {
+                            if value > &0.5 {
                                 return Ok(Some(
                                     SingleAxis {
-                                        axis_type,
+                                        axis_type:
+                                            leafwing_input_manager::axislike::AxisType::Gamepad(
+                                                *axis_type,
+                                            ),
                                         positive_low: 0.1,
                                         negative_low: -1.0,
                                         value: None,
@@ -389,10 +392,13 @@ impl<'w, 's> ControlInputBindingEvents<'w, 's> {
                                     .into(),
                                 ));
                             // Create an axis negative movement binding
-                            } else if value < -0.5 {
+                            } else if value < &-0.5 {
                                 return Ok(Some(
                                     SingleAxis {
-                                        axis_type,
+                                        axis_type:
+                                            leafwing_input_manager::axislike::AxisType::Gamepad(
+                                                *axis_type,
+                                            ),
                                         positive_low: 1.0,
                                         negative_low: -0.1,
                                         value: None,

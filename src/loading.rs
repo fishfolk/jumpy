@@ -1,5 +1,5 @@
 use bevy::ecs::system::SystemParam;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 use bevy_fluent::Locale;
 use leafwing_input_manager::{
     axislike::{AxisType, SingleAxis},
@@ -19,17 +19,17 @@ impl Plugin for JumpyLoadingPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup).add_system(
             load_game
-                .run_in_state(EngineState::LoadingGameData)
+                .run_if(in_state(EngineState::LoadingGameData))
                 .run_if(core_assets_loaded),
         );
 
         // Configure hot reload
         if ENGINE_CONFIG.hot_reload {
-            app.add_systems((hot_reload_game).in_base_set(CoreSet::Last));
-            // .add_system_set_to_stage(
-            //     CoreStage::Last,
-            //     ConditionSet::new().run_in_state(EngineState::InGame).into(),
-            // );
+            app.add_system(
+                hot_reload_game
+                    .in_base_set(CoreSet::Last)
+                    .run_if(in_state(EngineState::InGame)),
+            );
         }
     }
 }
@@ -120,12 +120,12 @@ pub struct GameLoader<'w, 's> {
     game_handle: Res<'w, GameMetaHandle>,
     game_assets: ResMut<'w, Assets<GameMeta>>,
     core_assets: ResMut<'w, Assets<CoreMeta>>,
-    egui_ctx: ResMut<'w, EguiContext>,
     events: EventReader<'w, 's, AssetEvent<GameMeta>>,
     // active_scripts: ResMut<'w, ActiveScripts>,
     storage: ResMut<'w, Storage>,
     player_assets: ResMut<'w, Assets<PlayerMeta>>,
     texture_atlas_assets: Res<'w, Assets<TextureAtlas>>,
+    egui_ctx: EguiContexts<'w, 's>,
 }
 
 impl<'w, 's> GameLoader<'w, 's> {

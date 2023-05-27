@@ -1,3 +1,4 @@
+use bevy::window::PrimaryWindow;
 use bevy_egui::*;
 use bevy_fluent::Localization;
 
@@ -38,8 +39,7 @@ impl Plugin for PausePlugin {
                     pause_menu_map_select
                         .run_if(in_state(EngineState::InGame))
                         .run_if(in_state(InGameState::Paused))
-                        .run_if(resource_equals(PauseMenuPage::MapSelect))
-                        .at_end(),
+                        .run_if(resource_equals(PauseMenuPage::MapSelect)),
                 )
                     .in_base_set(CoreSet::Update),
             );
@@ -76,20 +76,20 @@ pub enum PauseMenuPage {
 
 pub fn pause_menu_default(
     mut commands: Commands,
-    mut egui_context: ResMut<EguiContext>,
     game: Res<GameMeta>,
     localization: Res<Localization>,
     map_handle: Query<&AssetHandle<MapMeta>>,
     map_assets: Res<Assets<MapMeta>>,
     mut pause_page: ResMut<PauseMenuPage>,
     mut session_manager: SessionManager,
+    mut contexts: EguiContexts,
 ) {
     let is_online = false;
     let ui_theme = &game.ui_theme;
 
     egui::CentralPanel::default()
         .frame(egui::Frame::none())
-        .show(egui_context.ctx_mut(), |ui| {
+        .show(contexts.ctx_mut(), |ui| {
             let screen_rect = ui.max_rect();
 
             let pause_menu_width = game.main_menu.menu_width;
@@ -197,11 +197,14 @@ pub fn pause_menu_default(
 }
 
 fn pause_menu_map_select(world: &mut World) {
-    world.resource_scope(|world: &mut World, mut egui_ctx: Mut<EguiContext>| {
-        egui::CentralPanel::default()
-            .frame(egui::Frame::none())
-            .show(egui_ctx.ctx_mut(), |ui| {
-                widget::<MapSelectMenu>(world, ui, WidgetId::new("map-select"), false);
-            });
-    });
+    let mut egui_context = world
+        .query_filtered::<&mut EguiContext, With<PrimaryWindow>>()
+        .single(world)
+        .clone();
+
+    egui::CentralPanel::default()
+        .frame(egui::Frame::none())
+        .show(egui_context.get_mut(), |ui| {
+            widget::<MapSelectMenu>(world, ui, WidgetId::new("map-select"), false);
+        });
 }

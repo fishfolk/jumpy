@@ -1,4 +1,8 @@
-use bevy::{ecs::system::SystemState, window::PrimaryWindow};
+use bevy::{
+    ecs::system::SystemState,
+    window::{PrimaryWindow, WindowMode},
+};
+use bevy_egui::EguiContexts;
 
 use crate::prelude::*;
 
@@ -24,17 +28,16 @@ impl Plugin for JumpyUiPlugin {
             .add_plugin(pause_menu::PausePlugin)
             .init_resource::<WidgetAdjacencies>()
             .init_resource::<DisableMenuInput>()
-            .add_system(handle_menu_input.in_set())
-            // .add_system_to_stage(
-            //     CoreStage::PreUpdate,
-            //     handle_menu_input
-            //         .run_if_resource_exists::<GameMeta>()
-            //         .after(leafwing_input_manager::plugin::InputManagerSystem::Update)
-            //         .after(bevy_egui::EguiSystem::ProcessInput)
-            //         .before(bevy_egui::EguiSystem::BeginFrame),
-            // )
+            .add_system(
+                handle_menu_input
+                    .run_if(resource_exists::<GameMeta>())
+                    .in_base_set(CoreSet::PreUpdate)
+                    .before(bevy_egui::EguiSet::BeginFrame)
+                    .after(bevy_egui::EguiSet::ProcessInput)
+                    .after(leafwing_input_manager::plugin::InputManagerSystem::Update),
+            )
             .add_system(update_egui_fonts)
-            .add_system(update_ui_scale.run_if_resource_exists::<GameMeta>());
+            .add_system(update_ui_scale.run_if(resource_exists::<GameMeta>()));
     }
 }
 
@@ -175,119 +178,118 @@ pub struct DisableMenuInput(pub bool);
 
 fn handle_menu_input(
     disable_menu_input: Res<DisableMenuInput>,
-    mut windows: Query<&Window, With<PrimaryWindow>>,
+    mut windows: Query<&mut Window, With<PrimaryWindow>>,
     input: Query<&ActionState<MenuAction>>,
     keyboard: Res<Input<KeyCode>>,
-    mut egui_inputs: ResMut<bevy_egui::EguiRenderInputContainer>,
+    mut egui_inputs: Query<&mut bevy_egui::EguiInput, With<PrimaryWindow>>,
     adjacencies: Res<WidgetAdjacencies>,
-    mut egui_ctx: ResMut<bevy_egui::EguiContext>,
     editor_state: Res<State<GameEditorState>>,
+    mut egui_ctx: EguiContexts,
 ) {
     let input = input.single();
 
     // Handle fullscreen toggling
     if input.just_pressed(MenuAction::ToggleFullscreen) {
-        if let Some(window) = windows.get_primary_mut() {
-            window.set_mode(match window.mode() {
+        if let Ok(mut window) = windows.get_single_mut() {
+            window.mode = match window.mode {
                 WindowMode::BorderlessFullscreen => WindowMode::Windowed,
                 _ => WindowMode::BorderlessFullscreen,
-            });
+            };
         }
     }
 
-    let events = &mut egui_inputs
-        .get_mut(&bevy::window::WindowId::primary())
-        .unwrap()
-        .events;
-
-    if **disable_menu_input {
-        events.retain(|event| match event {
-            egui::Event::Key { key, .. } => key == &egui::Key::Escape,
-            _ => true,
-        });
-        return;
-    }
-
-    // TODO: This might not be the best way to do this, but here we prevent spacebar presses from
-    // comming to Egui while the editor is visible. This is to prevent you pressing spacebar to jump
-    // the player and inadvertently clicking a button and closing the map, losing your work.
-    if editor_state.0 == GameEditorState::Visible {
-        events.retain(|event| match event {
-            egui::Event::Key { key, .. } => key != &egui::Key::Space,
-            _ => true,
-        });
-    }
-
-    if input.just_pressed(MenuAction::Confirm) {
-        events.push(egui::Event::Key {
-            key: egui::Key::Enter,
-            pressed: true,
-            repeat: false,
-            modifiers: egui::Modifiers::NONE,
-        });
-    }
-
-    // Helper to fall back on using tab order instead of adjacency map to determine next focused
-    // widget.
-    let mut tab_fallback = || {
-        if input.just_pressed(MenuAction::Up) || input.just_pressed(MenuAction::Left) {
-            events.push(egui::Event::Key {
-                key: egui::Key::Tab,
-                pressed: true,
-                repeat: false,
-                modifiers: egui::Modifiers::SHIFT,
+    if let Ok(mut inputs) = egui_inputs.get_single_mut() {
+        if **disable_menu_input {
+            inputs.events.retain(|event| match event {
+                egui::Event::Key { key, .. } => key == &egui::Key::Escape,
+                _ => true,
             });
-        } else if input.just_pressed(MenuAction::Down) || input.just_pressed(MenuAction::Right) {
-            events.push(egui::Event::Key {
-                key: egui::Key::Tab,
+            return;
+        }
+
+        // TODO: This might not be the best way to do this, but here we prevent spacebar presses from
+        // comming to Egui while the editor is visible. This is to prevent you pressing spacebar to jump
+        // the player and inadvertently clicking a button and closing the map, losing your work.
+        if editor_state.0 == GameEditorState::Visible {
+            inputs.events.retain(|event| match event {
+                egui::Event::Key { key, .. } => key != &egui::Key::Space,
+                _ => true,
+            });
+        }
+
+        if input.just_pressed(MenuAction::Confirm) {
+            inputs.events.push(egui::Event::Key {
+                key: egui::Key::Enter,
                 pressed: true,
                 repeat: false,
                 modifiers: egui::Modifiers::NONE,
             });
         }
-    };
 
-    let mut memory = egui_ctx.ctx_mut().memory();
-    let focused = memory.focus();
-    let is_text_box = focused
-        .map(|id| adjacencies.text_boxes.contains(&id))
-        .unwrap_or(false);
+        // Helper to fall back on using tab order instead of adjacency map to determine next focused
+        // widget.
+        let mut tab_fallback = || {
+            if input.just_pressed(MenuAction::Up) || input.just_pressed(MenuAction::Left) {
+                inputs.events.push(egui::Event::Key {
+                    key: egui::Key::Tab,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::SHIFT,
+                });
+            } else if input.just_pressed(MenuAction::Down) || input.just_pressed(MenuAction::Right)
+            {
+                inputs.events.push(egui::Event::Key {
+                    key: egui::Key::Tab,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                });
+            }
+        };
 
-    if !(is_text_box
-        && (keyboard.pressed(KeyCode::Up)
-            || keyboard.pressed(KeyCode::Down)
-            || keyboard.pressed(KeyCode::Left)
-            || keyboard.pressed(KeyCode::Right)))
-    {
-        if let Some(adjacency) = memory.focus().and_then(|id| adjacencies.map.get(&id)) {
-            if input.just_pressed(MenuAction::Up) {
-                if let Some(adjacent) = adjacency.up {
-                    memory.request_focus(adjacent);
+        egui_ctx.ctx_mut().memory_mut(|memory| {
+            let focused = memory.focus();
+            let is_text_box = focused
+                .map(|id| adjacencies.text_boxes.contains(&id))
+                .unwrap_or(false);
+
+            if !(is_text_box
+                && (keyboard.pressed(KeyCode::Up)
+                    || keyboard.pressed(KeyCode::Down)
+                    || keyboard.pressed(KeyCode::Left)
+                    || keyboard.pressed(KeyCode::Right)))
+            {
+                if let Some(adjacency) = memory.focus().and_then(|id| adjacencies.map.get(&id)) {
+                    if input.just_pressed(MenuAction::Up) {
+                        if let Some(adjacent) = adjacency.up {
+                            memory.request_focus(adjacent);
+                        } else {
+                            tab_fallback()
+                        }
+                    } else if input.just_pressed(MenuAction::Down) {
+                        if let Some(adjacent) = adjacency.down {
+                            memory.request_focus(adjacent);
+                        } else {
+                            tab_fallback()
+                        }
+                    } else if input.just_pressed(MenuAction::Left) {
+                        if let Some(adjacent) = adjacency.left {
+                            memory.request_focus(adjacent);
+                        } else {
+                            tab_fallback()
+                        }
+                    } else if input.just_pressed(MenuAction::Right) {
+                        if let Some(adjacent) = adjacency.right {
+                            memory.request_focus(adjacent);
+                        } else {
+                            tab_fallback()
+                        }
+                    }
                 } else {
-                    tab_fallback()
-                }
-            } else if input.just_pressed(MenuAction::Down) {
-                if let Some(adjacent) = adjacency.down {
-                    memory.request_focus(adjacent);
-                } else {
-                    tab_fallback()
-                }
-            } else if input.just_pressed(MenuAction::Left) {
-                if let Some(adjacent) = adjacency.left {
-                    memory.request_focus(adjacent);
-                } else {
-                    tab_fallback()
-                }
-            } else if input.just_pressed(MenuAction::Right) {
-                if let Some(adjacent) = adjacency.right {
-                    memory.request_focus(adjacent);
-                } else {
-                    tab_fallback()
+                    tab_fallback();
                 }
             }
-        } else {
-            tab_fallback();
-        }
+        });
     }
 }
 
@@ -299,11 +301,11 @@ pub struct EguiFontDefinitions(pub egui::FontDefinitions);
 /// [`GameMeta`], inserting the font data into the egui context.
 fn update_egui_fonts(
     mut font_queue: Local<Vec<Handle<EguiFont>>>,
-    mut egui_ctx: ResMut<bevy_egui::EguiContext>,
     egui_font_definitions: Option<ResMut<EguiFontDefinitions>>,
     game: Option<Res<GameMeta>>,
     mut events: EventReader<AssetEvent<EguiFont>>,
     assets: Res<Assets<EguiFont>>,
+    mut contexts: EguiContexts,
 ) {
     // Add any newly updated/created fonts to the queue
     for event in events.iter() {
@@ -333,7 +335,7 @@ fn update_egui_fonts(
                 // Get the font asset
                 if let Some(font) = assets.get(&handle) {
                     // And insert it into the Egui font definitions
-                    let ctx = egui_ctx.ctx_mut();
+                    let ctx = contexts.ctx_mut();
                     egui_font_definitions
                         .font_data
                         .insert(font_name.clone(), font.0.clone());
@@ -354,10 +356,10 @@ fn update_egui_fonts(
 fn update_ui_scale(
     game_meta: Res<GameMeta>,
     mut egui_settings: ResMut<bevy_egui::EguiSettings>,
-    windows: Res<Windows>,
+    windows: Query<&Window, With<PrimaryWindow>>,
     projection: Query<&OrthographicProjection, With<MenuCamera>>,
 ) {
-    if let Some(window) = windows.get_primary() {
+    if let Ok(window) = windows.get_single() {
         if let Ok(projection) = projection.get_single() {
             match projection.scaling_mode {
                 bevy::render::camera::ScalingMode::FixedVertical(height) => {
@@ -370,9 +372,16 @@ fn update_ui_scale(
                     let scale = window_width / width;
                     egui_settings.scale_factor = (scale * game_meta.ui_theme.scale) as f64;
                 }
-                bevy::render::camera::ScalingMode::Auto { .. } => (),
-                bevy::render::camera::ScalingMode::None => (),
-                bevy::render::camera::ScalingMode::WindowSize => (),
+                bevy::render::camera::ScalingMode::Fixed { width, height } => {
+                    let window_width = window.width();
+                    let window_height = window.height();
+                    let scale = window_width / width;
+                    let scale = scale.min(window_height / height);
+                    egui_settings.scale_factor = (scale * game_meta.ui_theme.scale) as f64;
+                }
+                bevy::render::camera::ScalingMode::AutoMin { .. } => (),
+                bevy::render::camera::ScalingMode::AutoMax { .. } => (),
+                bevy::render::camera::ScalingMode::WindowSize(..) => (),
             }
         }
     }

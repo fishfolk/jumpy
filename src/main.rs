@@ -37,27 +37,30 @@ pub mod networking;
 pub mod prelude;
 pub use prelude::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
 pub enum EngineState {
+    #[default]
     LoadingPlatformStorage,
     LoadingGameData,
     MainMenu,
     InGame,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
 pub enum InGameState {
+    #[default]
     Playing,
     Paused,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
 pub enum GameEditorState {
+    #[default]
     Hidden,
     Visible,
 }
 
-#[derive(SystemSet, Eq, PartialEq, Hash)]
+#[derive(SystemSet, Eq, PartialEq, Hash, Debug, Clone)]
 pub enum RollbackStage {
     Input,
     First,
@@ -78,9 +81,9 @@ pub fn main() {
         // Initialize resources
         .insert_resource(ClearColor(Color::BLACK))
         // Set initial game state
-        .add_loopless_state(EngineState::LoadingPlatformStorage)
-        .add_loopless_state(InGameState::Playing)
-        .add_loopless_state(GameEditorState::Hidden)
+        .add_state::<EngineState>()
+        .add_state::<InGameState>()
+        .add_state::<GameEditorState>()
         // Install plugins
         .add_plugins(
             DefaultPlugins

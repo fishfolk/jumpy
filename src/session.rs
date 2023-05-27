@@ -21,7 +21,8 @@ impl Plugin for JumpySessionPlugin {
             .configure_set(
                 SessionStage::Update
                     .before(CoreSet::Update)
-                    .run_if(session_run_criteria),
+                    // .run_if(session_run_criteria) // TODO FIX
+                    .run_if(resource_exists::<Session>()),
             )
             .add_systems((
                 ensure_2_players.run_if(in_state(EngineState::InGame)),
@@ -33,16 +34,12 @@ impl Plugin for JumpySessionPlugin {
 
 fn session_run_criteria(
     time: Res<Time>,
-    session: Option<ResMut<Session>>,
+    mut session: ResMut<Session>,
     in_game_state: Res<State<InGameState>>,
     engine_state: Res<State<EngineState>>,
 ) -> bool {
-    if let Some(mut session) = session {
-        if engine_state.0 == EngineState::InGame && in_game_state.0 == InGameState::Playing {
-            session.run_criteria(&time)
-        } else {
-            false
-        }
+    if engine_state.0 == EngineState::InGame && in_game_state.0 == InGameState::Playing {
+        session.run_criteria(&time)
     } else {
         false
     }
@@ -330,7 +327,7 @@ fn play_sounds(audio: Res<AudioChannel<EffectsChannel>>, session: Option<ResMut<
             } => {
                 audio
                     .play(sound_source.get_bevy_handle_untyped().typed())
-                    .with_volume(volume.into());
+                    .with_volume(volume);
             }
         }
     }

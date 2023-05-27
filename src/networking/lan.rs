@@ -175,7 +175,7 @@ async fn lan_matchmaker(
                     .expect("Could not connect to server");
 
                 // Wait for match to start
-                let uni = conn.accept_uni().await.unwrap();
+                let mut uni = conn.accept_uni().await.unwrap();
                 let bytes = uni.read_to_end(20).await.unwrap();
                 let message: MatchmakerNetMsg = postcard::from_bytes(&bytes).unwrap();
 
@@ -366,7 +366,7 @@ impl LanSocket {
                                 break;
                             }
                             either::Either::Right(result) => match result {
-                                Ok(stream) => {
+                                Ok(mut stream) => {
                                     let data =
                                         stream.read_to_end(4096).await.expect("Network read error");
 

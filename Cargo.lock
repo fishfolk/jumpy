@@ -5852,8 +5852,3 @@ dependencies = [
  "libc",
  "pkg-config",
 ]
-
-[[patch.unused]]
-name = "bevy_simple_tilemap"
-version = "0.10.1"
-source = "git+https://github.com/forbjok/bevy_simple_tilemap.git?rev=963d447fa1fd2d6f89228106275b7086840be762#963d447fa1fd2d6f89228106275b7086840be762"

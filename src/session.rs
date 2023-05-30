@@ -1,7 +1,6 @@
 use bevy::utils::Instant;
 use downcast_rs::{impl_downcast, Downcast};
 use jumpy_core::input::PlayerControl;
-use parking_lot::Mutex;
 
 use crate::{main_menu::MenuPage, prelude::*};
 
@@ -17,33 +16,51 @@ pub enum SessionStage {
 
 impl Plugin for JumpySessionPlugin {
     fn build(&self, app: &mut App) {
+        let mut session_schedule = Schedule::new();
+        session_schedule.add_systems((
+            ensure_2_players,
+            collect_local_input.pipe(update_game),
+            play_sounds,
+        ));
+
         app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::<Session>::with_sync_time(false))
             .add_plugin(jumpy_core::metadata::JumpyCoreAssetsPlugin)
             .init_resource::<CurrentEditorInput>()
             .configure_set(
                 SessionStage::Update
                     .before(CoreSet::Update)
-                    .run_if(session_run_criteria) // TODO FIX
+                    .run_if(in_state(InGameState::Playing))
+                    .run_if(in_state(EngineState::InGame))
                     .run_if(resource_exists::<Session>()),
             )
-            .add_systems((
-                ensure_2_players.run_if(in_state(EngineState::InGame)),
-                collect_local_input.pipe(update_game),
-                play_sounds,
-            ));
-    }
-}
+            .add_system(move |world: &mut World| {
+                let in_correct_state = {
+                    world.resource::<State<EngineState>>().0 == EngineState::InGame
+                        && world.resource::<State<InGameState>>().0 == InGameState::Playing
+                };
 
-fn session_run_criteria(
-    time: Res<Time>,
-    session: Res<Session>,
-    in_game_state: Res<State<InGameState>>,
-    engine_state: Res<State<EngineState>>,
-) -> bool {
-    if engine_state.0 == EngineState::InGame && in_game_state.0 == InGameState::Playing {
-        session.run_criteria(&time)
-    } else {
-        false
+                if !in_correct_state {
+                    return;
+                }
+
+                loop {
+                    let should_run =
+                        world.resource_scope(|world: &mut World, mut session: Mut<Session>| {
+                            session.run_criteria(world.resource::<Time>())
+                        });
+
+                    match should_run {
+                        ShouldRun::Yes => {
+                            session_schedule.run(world);
+                            break;
+                        }
+                        ShouldRun::No => break,
+                        ShouldRun::YesAndCheckAgain => {
+                            session_schedule.run(world);
+                        }
+                    }
+                }
+            });
     }
 }
 
@@ -63,7 +80,7 @@ pub trait SessionRunner: Sync + Send + Downcast {
     }
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl);
     fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError>;
-    fn run_criteria(&self, time: &Time) -> bool;
+    fn run_criteria(&mut self, time: &Time) -> ShouldRun;
     /// Returns the player index of the player if we are in a network game.
     ///
     /// In a network game, we currently only allow for one local player, so this allows the session
@@ -79,78 +96,77 @@ pub enum SessionError {
     Disconnected,
 }
 
-pub struct LocalSessionRunnerState {
+pub struct LocalSessionRunner {
+    pub core: CoreSession,
     pub accumulator: f64,
     pub loop_start: Option<Instant>,
 }
-
-pub struct LocalSessionRunner(Arc<Mutex<LocalSessionRunnerState>>, CoreSession);
 
 impl LocalSessionRunner {
     fn new(core: CoreSession) -> Self
     where
         Self: Sized,
     {
-        Self(
-            Arc::new(Mutex::new(LocalSessionRunnerState {
-                accumulator: default(),
-                loop_start: default(),
-            })),
+        LocalSessionRunner {
             core,
-        )
+            accumulator: default(),
+            loop_start: default(),
+        }
     }
+}
 
-    fn core(&mut self) -> &mut CoreSession {
-        &mut self.1
-    }
+/// Indicates whether or not a session advance should be run.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ShouldRun {
+    Yes,
+    No,
+    YesAndCheckAgain,
 }
 
 impl SessionRunner for LocalSessionRunner {
     fn core_session(&mut self) -> &mut CoreSession {
-        self.core()
+        &mut self.core
     }
 
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl) {
-        self.core().update_input(|inputs| {
+        self.core.update_input(|inputs| {
             inputs.players[player_idx].control = control;
         });
     }
 
     fn restart(&mut self) {
-        self.core().restart();
+        self.core.restart();
     }
 
     fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError> {
-        self.core().advance(bevy_world);
+        self.core.advance(bevy_world);
 
         Ok(())
     }
-    fn run_criteria(&self, time: &Time) -> bool {
-        let mut self_lock = self.0.lock();
-
+    fn run_criteria(&mut self, time: &Time) -> ShouldRun {
         const STEP: f64 = 1.0 / jumpy_core::FPS as f64;
         let delta = time.delta_seconds_f64();
-        if self_lock.loop_start.is_none() {
-            self_lock.accumulator += delta;
+        if self.loop_start.is_none() {
+            self.accumulator += delta;
         }
 
-        if self_lock.accumulator >= STEP {
-            let start = self_lock.loop_start.get_or_insert_with(Instant::now);
+        if self.accumulator >= STEP {
+            let start = self.loop_start.get_or_insert_with(Instant::now);
 
             let loop_too_long = (Instant::now() - *start).as_secs_f64() > STEP;
 
             if loop_too_long {
                 warn!("Frame took too long: couldn't keep up with fixed update.");
-                self_lock.accumulator = 0.0;
-                self_lock.loop_start = None;
-                false
+                self.accumulator = 0.0;
+                self.loop_start = None;
+                ShouldRun::No
             } else {
-                self_lock.accumulator -= STEP;
-                true
+                self.accumulator -= STEP;
+                ShouldRun::YesAndCheckAgain
             }
         } else {
-            self_lock.loop_start = None;
-            false
+            self.loop_start = None;
+            ShouldRun::No
         }
     }
     fn network_player_idx(&mut self) -> Option<usize> {
@@ -237,20 +253,16 @@ fn ensure_2_players(session: Option<ResMut<Session>>, core_meta: Res<CoreMetaArc
 
 /// Update the input to the game session.
 fn collect_local_input(
-    session: Option<ResMut<Session>>,
+    mut session: ResMut<Session>,
     player_input_collectors: Query<(&PlayerInputCollector, &ActionState<PlayerAction>)>,
     mut current_editor_input: ResMut<CurrentEditorInput>,
 ) {
-    let Some(mut session) = session else {
-        return;
-    };
-
     let network_player_idx = session.network_player_idx();
 
     if let Some(local_session) = session.downcast_mut::<LocalSessionRunner>() {
         // TODO: Handle editor input for non-local sessions.
         let editor_input = current_editor_input.take();
-        local_session.core().update_input(|inputs| {
+        local_session.core.update_input(|inputs| {
             inputs.players[0].editor_input = editor_input;
         });
     }
@@ -285,15 +297,7 @@ fn collect_local_input(
 
 /// Update the game session simulation.
 fn update_game(world: &mut World) {
-    let Some(mut session) = world.remove_resource::<Session>() else {
-        return;
-    };
-    if world.resource::<State<EngineState>>().0 != EngineState::InGame {
-        return;
-    }
-    if world.resource::<State<InGameState>>().0 != InGameState::Playing {
-        return;
-    }
+    let mut session = world.remove_resource::<Session>().unwrap();
 
     // Advance the game session
     if let Err(e) = session.advance(world) {

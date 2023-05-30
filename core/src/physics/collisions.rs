@@ -538,7 +538,7 @@ impl<'a> CollisionWorld<'a> {
     /// platforms.
     pub fn descent(&mut self, entity: Entity) {
         if self.actors.contains(entity) {
-            let mut collider = self.colliders.get_mut(entity).unwrap();
+            let collider = self.colliders.get_mut(entity).unwrap();
             collider.descent = true;
         }
     }

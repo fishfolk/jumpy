@@ -44,7 +44,7 @@ pub fn main() {
                 }),
         )
         .add_plugin(AudioPlugin)
-        .add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default())
+        .add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin)
         .add_plugin(bevy::diagnostic::LogDiagnosticsPlugin::default())
         .add_plugin(BonesRendererPlugin::<Session>::new())
         .add_plugin(JumpyCoreAssetsPlugin)

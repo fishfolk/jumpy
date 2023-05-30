@@ -1,6 +1,7 @@
 use bevy::utils::Instant;
 use downcast_rs::{impl_downcast, Downcast};
 use jumpy_core::input::PlayerControl;
+use parking_lot::Mutex;
 
 use crate::{main_menu::MenuPage, prelude::*};
 
@@ -22,7 +23,7 @@ impl Plugin for JumpySessionPlugin {
             .configure_set(
                 SessionStage::Update
                     .before(CoreSet::Update)
-                    // .run_if(session_run_criteria) // TODO FIX
+                    .run_if(session_run_criteria) // TODO FIX
                     .run_if(resource_exists::<Session>()),
             )
             .add_systems((
@@ -35,7 +36,7 @@ impl Plugin for JumpySessionPlugin {
 
 fn session_run_criteria(
     time: Res<Time>,
-    mut session: ResMut<Session>,
+    session: Res<Session>,
     in_game_state: Res<State<InGameState>>,
     engine_state: Res<State<EngineState>>,
 ) -> bool {
@@ -62,7 +63,7 @@ pub trait SessionRunner: Sync + Send + Downcast {
     }
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl);
     fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError>;
-    fn run_criteria(&mut self, time: &Time) -> bool;
+    fn run_criteria(&self, time: &Time) -> bool;
     /// Returns the player index of the player if we are in a network game.
     ///
     /// In a network game, we currently only allow for one local player, so this allows the session
@@ -78,65 +79,77 @@ pub enum SessionError {
     Disconnected,
 }
 
-pub struct LocalSessionRunner {
-    pub core: CoreSession,
+pub struct LocalSessionRunnerState {
     pub accumulator: f64,
     pub loop_start: Option<Instant>,
 }
+
+pub struct LocalSessionRunner(Arc<Mutex<LocalSessionRunnerState>>, CoreSession);
 
 impl LocalSessionRunner {
     fn new(core: CoreSession) -> Self
     where
         Self: Sized,
     {
-        LocalSessionRunner {
+        Self(
+            Arc::new(Mutex::new(LocalSessionRunnerState {
+                accumulator: default(),
+                loop_start: default(),
+            })),
             core,
-            accumulator: default(),
-            loop_start: default(),
-        }
+        )
+    }
+
+    fn core(&mut self) -> &mut CoreSession {
+        &mut self.1
     }
 }
 
 impl SessionRunner for LocalSessionRunner {
     fn core_session(&mut self) -> &mut CoreSession {
-        &mut self.core
+        self.core()
     }
+
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl) {
-        self.core.update_input(|inputs| {
+        self.core().update_input(|inputs| {
             inputs.players[player_idx].control = control;
         });
     }
+
     fn restart(&mut self) {
-        self.core.restart();
+        self.core().restart();
     }
+
     fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError> {
-        self.core.advance(bevy_world);
+        self.core().advance(bevy_world);
 
         Ok(())
     }
-    fn run_criteria(&mut self, time: &Time) -> bool {
+    fn run_criteria(&self, time: &Time) -> bool {
+        let mut self_lock = self.0.lock();
+
         const STEP: f64 = 1.0 / jumpy_core::FPS as f64;
         let delta = time.delta_seconds_f64();
-        if self.loop_start.is_none() {
-            self.accumulator += delta;
+        if self_lock.loop_start.is_none() {
+            self_lock.accumulator += delta;
         }
 
-        if self.accumulator >= STEP {
-            let start = self.loop_start.get_or_insert_with(Instant::now);
+        if self_lock.accumulator >= STEP {
+            let start = self_lock.loop_start.get_or_insert_with(Instant::now);
 
             let loop_too_long = (Instant::now() - *start).as_secs_f64() > STEP;
 
             if loop_too_long {
                 warn!("Frame took too long: couldn't keep up with fixed update.");
-                self.accumulator = 0.0;
-                self.loop_start = None;
+                self_lock.accumulator = 0.0;
+                self_lock.loop_start = None;
                 false
             } else {
-                self.accumulator -= STEP;
+                self_lock.accumulator -= STEP;
                 true
             }
         } else {
-            self.loop_start = None;
+            self_lock.loop_start = None;
             false
         }
     }
@@ -237,7 +250,7 @@ fn collect_local_input(
     if let Some(local_session) = session.downcast_mut::<LocalSessionRunner>() {
         // TODO: Handle editor input for non-local sessions.
         let editor_input = current_editor_input.take();
-        local_session.core.update_input(|inputs| {
+        local_session.core().update_input(|inputs| {
             inputs.players[0].editor_input = editor_input;
         });
     }

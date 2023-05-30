@@ -2839,6 +2839,7 @@ dependencies = [
  "normalize-path",
  "numquant",
  "once_cell",
+ "parking_lot 0.12.1",
  "peg",
  "ping-rs",
  "postcard",

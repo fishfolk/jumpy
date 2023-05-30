@@ -91,6 +91,7 @@ bytes                  = "1.4.0"
 ggrs                   = { version = "0.9.3", features = ["sync-send"] }
 mdns-sd                = { version = "0.7.1", default-features = false }
 numquant               = "0.2.0"
+parking_lot            = "0.12"
 ping-rs                = "0.1.2"
 postcard               = { version = "1.0.4", features = ["alloc"] }
 quinn                  = { version = "0.10", default-features = false, features = ["tls-rustls"] }

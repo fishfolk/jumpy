@@ -2,6 +2,7 @@
 
 use ggrs::P2PSession;
 use jumpy_core::input::PlayerControl;
+use parking_lot::Mutex;
 use rand::Rng;
 
 use crate::prelude::*;
@@ -114,20 +115,21 @@ pub enum SocketTarget {
 }
 
 /// [`SessionRunner`] implementation that uses [`ggrs`] for network play.
-pub struct GgrsSessionRunner {
-    pub last_player_input: PlayerControl,
-    pub core: CoreSession,
-    pub session: P2PSession<GgrsConfig>,
-    pub player_is_local: [bool; MAX_PLAYERS],
-    pub delta: f32,
+pub struct GgrsSessionRunnerState {
     pub accumulator: f32,
+    pub delta: f32,
+    pub session: P2PSession<GgrsConfig>,
+    pub last_player_input: PlayerControl,
+    pub player_is_local: [bool; MAX_PLAYERS],
 }
+
+pub struct GgrsSessionRunner(Arc<Mutex<GgrsSessionRunnerState>>, CoreSession);
 
 /// The info required to create a [`GgrsSessionRunner`].
 pub struct GgrsSessionRunnerInfo {
+    pub player_count: usize,
     pub socket: BoxedNonBlockingSocket,
     pub player_is_local: [bool; MAX_PLAYERS],
-    pub player_count: usize,
 }
 
 impl GgrsSessionRunner {
@@ -153,14 +155,16 @@ impl GgrsSessionRunner {
 
         let session = builder.start_p2p_session(info.socket).unwrap();
 
-        Self {
-            last_player_input: PlayerControl::default(),
+        GgrsSessionRunner(
+            Arc::new(Mutex::new(GgrsSessionRunnerState {
+                session,
+                delta: default(),
+                accumulator: default(),
+                player_is_local: info.player_is_local,
+                last_player_input: PlayerControl::default(),
+            })),
             core,
-            session,
-            player_is_local: info.player_is_local,
-            accumulator: default(),
-            delta: default(),
-        }
+        )
     }
 }
 
@@ -176,29 +180,31 @@ fn get_dense_input(control: &PlayerControl) -> DensePlayerControl {
 
 impl crate::session::SessionRunner for GgrsSessionRunner {
     fn core_session(&mut self) -> &mut CoreSession {
-        &mut self.core
+        &mut self.1
     }
 
     fn restart(&mut self) {
-        self.core.restart()
+        self.1.restart()
     }
 
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl) {
-        if !self.player_is_local[player_idx] {
+        if !self.0.lock().player_is_local[player_idx] {
             return;
         }
-        self.last_player_input = control;
+
+        self.0.lock().last_player_input = control;
     }
 
     fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError> {
         const STEP: f32 = 1.0 / (jumpy_core::FPS * NETWORK_FRAME_RATE_FACTOR);
-        let delta = self.delta;
+        let delta = self.0.lock().delta;
         let local_player_idx = self.network_player_idx().unwrap();
 
-        self.accumulator += delta;
+        let mut self_lock = self.0.lock();
+        self_lock.accumulator += delta;
 
         let mut skip_frames = 0;
-        for event in self.session.events() {
+        for event in self_lock.session.events() {
             match event {
                 ggrs::GGRSEvent::Synchronizing { addr, total, count } => {
                     info!(player=%addr, %total, progress=%count, "Syncing network player");
@@ -232,33 +238,42 @@ impl crate::session::SessionRunner for GgrsSessionRunner {
             }
         }
 
+        drop(self_lock);
+        let mut self_lock = self.0.lock();
+        let core = &mut self.1;
+
         loop {
-            self.session
-                .add_local_input(local_player_idx, get_dense_input(&self.last_player_input))
+            self.0
+                .lock()
+                .session
+                .add_local_input(
+                    local_player_idx,
+                    get_dense_input(&self_lock.last_player_input),
+                )
                 .unwrap();
-            if self.accumulator >= STEP {
-                self.accumulator -= STEP;
+            if self_lock.accumulator >= STEP {
+                self_lock.accumulator -= STEP;
 
                 if skip_frames > 0 {
                     skip_frames = skip_frames.saturating_sub(1);
                     continue;
                 }
 
-                match self.session.advance_frame() {
+                match self.0.lock().session.advance_frame() {
                     Ok(requests) => {
                         for request in requests {
                             match request {
                                 ggrs::GGRSRequest::SaveGameState { cell, frame } => {
-                                    cell.save(frame, Some(self.core.world.clone()), None)
+                                    cell.save(frame, Some(core.world.clone()), None)
                                 }
                                 ggrs::GGRSRequest::LoadGameState { cell, .. } => {
                                     let world = cell.load().unwrap_or_default();
-                                    self.core.world = world;
+                                    core.world = world;
                                 }
                                 ggrs::GGRSRequest::AdvanceFrame {
                                     inputs: network_inputs,
                                 } => {
-                                    self.core.update_input(|inputs| {
+                                    core.update_input(|inputs| {
                                         for (player_idx, (input, _status)) in
                                             network_inputs.into_iter().enumerate()
                                         {
@@ -288,7 +303,7 @@ impl crate::session::SessionRunner for GgrsSessionRunner {
                                             control.just_moved = !was_moving && is_moving;
                                         }
                                     });
-                                    self.core.advance(bevy_world);
+                                    core.advance(bevy_world);
                                 }
                             }
                         }
@@ -311,15 +326,15 @@ impl crate::session::SessionRunner for GgrsSessionRunner {
         Ok(())
     }
 
-    fn run_criteria(&mut self, time: &Time) -> bool {
-        self.delta = time.delta_seconds();
+    fn run_criteria(&self, time: &Time) -> bool {
+        self.0.lock().delta = time.delta_seconds();
         true
     }
 
     fn network_player_idx(&mut self) -> Option<usize> {
         // We are the first local player
         for i in 0..MAX_PLAYERS {
-            if self.player_is_local[i] {
+            if self.0.lock().player_is_local[i] {
                 return Some(i);
             }
         }

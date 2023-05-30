@@ -175,8 +175,8 @@ fn update_thrown_crates(
     invincibles: CompMut<Invincibility>,
     time: Res<Time>,
 ) {
-    for (entity, (thrown_crate, element_handle, transform, atlas_sprite, body, spawner)) in
-        entities.iter_with((
+    for (entity, (thrown_crate, element_handle, transform, atlas_sprite, body, spawner)) in entities
+        .iter_with((
             &mut thrown_crates,
             &element_handles,
             &transforms,

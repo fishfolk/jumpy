@@ -63,13 +63,13 @@ pub struct PlayerControl {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TileLayer {
     pub layer_index: usize,
-    pub located_tiles: Vec<(UVec2, u32, TileCollisionKind)>
+    pub located_tiles: Vec<(UVec2, u32, TileCollisionKind)>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ElementLayer {
     pub layer_index: usize,
-    pub located_elements: Vec<(Vec2, Handle<ElementMeta>)>
+    pub located_elements: Vec<(Vec2, Handle<ElementMeta>)>,
 }
 
 /// The editor inputs that a player may make.
@@ -139,6 +139,6 @@ pub enum EditorInput {
     RandomizeTiles {
         tile_layers: Vec<TileLayer>,
         element_layers: Vec<ElementLayer>,
-        tile_size: Vec2
-    }
+        tile_size: Vec2,
+    },
 }

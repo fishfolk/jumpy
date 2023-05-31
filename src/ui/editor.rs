@@ -1,11 +1,14 @@
-use std::marker::PhantomData;
+use super::{widget, widgets::bordered_button::BorderedButton, WidgetSystem};
+use crate::prelude::*;
 use bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use bones_bevy_renderer::BevyBonesEntity;
-use jumpy_core::{physics::TileCollisionKind, input::{TileLayer, ElementLayer}};
-use crate::prelude::*;
-use super::{widget, widgets::bordered_button::BorderedButton, WidgetSystem};
+use jumpy_core::{
+    input::{ElementLayer, TileLayer},
+    physics::TileCollisionKind,
+};
+use std::marker::PhantomData;
 
 pub struct EditorPlugin;
 
@@ -557,10 +560,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
 
                 body.row(row_height, |mut row| {
                     row.col(|ui| {
-                        if ui
-                            .button(&format!("{}", params.localization.get("randomize")))
-                            .clicked()
-                        {
+                        if ui.button(&params.localization.get("randomize")).clicked() {
                             if let Some(map) = map_meta {
                                 let mut tile_layers: Vec<TileLayer> = vec![];
                                 let mut element_layers: Vec<ElementLayer> = vec![];
@@ -569,40 +569,49 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                                     .iter()
                                     .enumerate()
                                     .for_each(|(layer_index, layer)| {
-                                        let located_tiles: Vec<(UVec2, u32, TileCollisionKind)> = layer.tiles
-                                            .iter()
-                                            .map(|tile| {
-                                                (tile.pos, tile.idx, tile.collision)
-                                            })
-                                            .collect();
-                                        if located_tiles.len() != 0 {
+                                        let located_tiles: Vec<(UVec2, u32, TileCollisionKind)> =
+                                            layer
+                                                .tiles
+                                                .iter()
+                                                .map(|tile| (tile.pos, tile.idx, tile.collision))
+                                                .collect();
+                                        if !located_tiles.is_empty() {
                                             let tile_layer = TileLayer {
                                                 layer_index,
                                                 located_tiles,
                                             };
                                             tile_layers.push(tile_layer);
                                         }
-                                        let located_elements: Vec<(Vec2, bones_lib::prelude::Handle<ElementMeta>)> = layer.elements
+                                        let located_elements: Vec<(
+                                            Vec2,
+                                            bones_lib::prelude::Handle<ElementMeta>,
+                                        )> = layer
+                                            .elements
                                             .iter()
                                             .map(|element| {
-                                                (Vec2::new(element.pos.x / map.tile_size.x as f32, element.pos.y / map.tile_size.y as f32), element.element.clone())
+                                                (
+                                                    Vec2::new(
+                                                        element.pos.x / map.tile_size.x,
+                                                        element.pos.y / map.tile_size.y,
+                                                    ),
+                                                    element.element.clone(),
+                                                )
                                             })
                                             .collect();
-                                        if located_elements.len() != 0 {
+                                        if !located_elements.is_empty() {
                                             let element_layer = ElementLayer {
                                                 layer_index,
-                                                located_elements
+                                                located_elements,
                                             };
                                             element_layers.push(element_layer);
                                         }
                                     });
 
-                                **params.editor_input =
-                                    Some(EditorInput::RandomizeTiles {
-                                        tile_layers,
-                                        element_layers,
-                                        tile_size: map.tile_size
-                                    });
+                                **params.editor_input = Some(EditorInput::RandomizeTiles {
+                                    tile_layers,
+                                    element_layers,
+                                    tile_size: map.tile_size,
+                                });
                             }
                         }
                     });

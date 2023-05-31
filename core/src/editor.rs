@@ -1,6 +1,6 @@
-use crate::map_constructor::MapConstructor;
-use crate::map_constructor::shiftnanigans::ShiftnanigansMapConstructor;
 use crate::impl_system_param;
+use crate::map_constructor::shiftnanigans::ShiftnanigansMapConstructor;
+use crate::map_constructor::MapConstructor;
 use crate::{map::z_depth_for_map_layer, prelude::*};
 
 pub fn install(session: &mut CoreSession) {
@@ -253,7 +253,12 @@ impl<'a> MapManager<'a> {
             for x in 0..self.spawned_map_meta.grid_size.x {
                 let position = UVec2 { x, y };
                 for layer_index in 0..self.spawned_map_meta.layer_names.len() {
-                    self.set_tile(layer_index, position, &empty_tile, crate::physics::TileCollisionKind::Empty);
+                    self.set_tile(
+                        layer_index,
+                        position,
+                        &empty_tile,
+                        crate::physics::TileCollisionKind::Empty,
+                    );
                 }
             }
         }
@@ -266,11 +271,9 @@ impl<'a> MapManager<'a> {
                 to_kill.push(entity);
             });
 
-        to_kill
-            .into_iter()
-            .for_each(|entity| {
-                self.delete_element(entity);
-            });
+        to_kill.into_iter().for_each(|entity| {
+            self.delete_element(entity);
+        });
     }
 }
 
@@ -318,8 +321,17 @@ fn handle_editor_input(player_inputs: Res<PlayerInputs>, mut map_manager: MapMan
                 EditorInput::RenameMap { name } => {
                     map_manager.rename_map(name.clone());
                 }
-                EditorInput::RandomizeTiles { tile_layers, element_layers, tile_size } => {
-                    let map_constructor = ShiftnanigansMapConstructor::new(map_manager.get_size(), *tile_size, tile_layers, element_layers);
+                EditorInput::RandomizeTiles {
+                    tile_layers,
+                    element_layers,
+                    tile_size,
+                } => {
+                    let map_constructor = ShiftnanigansMapConstructor::new(
+                        map_manager.get_size(),
+                        *tile_size,
+                        tile_layers,
+                        element_layers,
+                    );
                     map_constructor.construct_map(&mut map_manager);
                 }
             }

@@ -39,7 +39,7 @@ impl Plugin for JumpySessionPlugin {
                         && world.resource::<State<InGameState>>().0 == InGameState::Playing
                 };
 
-                if !in_correct_state {
+                if !in_correct_state || !world.contains_resource::<Session>() {
                     return;
                 }
 
@@ -235,18 +235,16 @@ impl<'w, 's> SessionManager<'w, 's> {
 ///
 /// This is primarily for the editor, which may be started without going through the player
 /// selection screen.
-fn ensure_2_players(session: Option<ResMut<Session>>, core_meta: Res<CoreMetaArc>) {
-    if let Some(mut session) = session {
-        let player_inputs = session
-            .world()
-            .resource::<jumpy_core::input::PlayerInputs>();
-        let mut player_inputs = player_inputs.borrow_mut();
+fn ensure_2_players(mut session: ResMut<Session>, core_meta: Res<CoreMetaArc>) {
+    let player_inputs = session
+        .world()
+        .resource::<jumpy_core::input::PlayerInputs>();
+    let mut player_inputs = player_inputs.borrow_mut();
 
-        if player_inputs.players.iter().all(|x| !x.active) {
-            for i in 0..2 {
-                player_inputs.players[i].active = true;
-                player_inputs.players[i].selected_player = core_meta.players[i].clone();
-            }
+    if player_inputs.players.iter().all(|x| !x.active) {
+        for i in 0..2 {
+            player_inputs.players[i].active = true;
+            player_inputs.players[i].selected_player = core_meta.players[i].clone();
         }
     }
 }
@@ -323,11 +321,7 @@ fn update_game(world: &mut World) {
 }
 
 /// Play sounds from the game session.
-fn play_sounds(audio: Res<AudioChannel<EffectsChannel>>, session: Option<ResMut<Session>>) {
-    let Some(mut session) = session else {
-        return;
-    };
-
+fn play_sounds(audio: Res<AudioChannel<EffectsChannel>>, mut session: ResMut<Session>) {
     // Get the sound queue out of the world
     let queue = session
         .world()

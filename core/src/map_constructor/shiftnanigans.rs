@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{editor::MapManager, metadata::ElementMeta, input::{TileLayer, ElementLayer}, physics::TileCollisionKind};
 use super::MapConstructor;
-use bones_lib::prelude::{Handle};
+use bones_lib::prelude::Handle;
 use glam::{UVec2, Vec2};
 use shiftnanigans::pixel_board::{
     pixel_board_randomizer::PixelBoardRandomizer,
@@ -11,7 +11,6 @@ use shiftnanigans::pixel_board::{
 
 pub struct ShiftnanigansMapConstructor {
     pixel_board_randomizer: PixelBoardRandomizer<PixelType>,
-    original_pixel_board: PixelBoard<PixelType>,
     compressed_top_height: usize,
     compressed_left_width: usize,
     tile_size: Vec2
@@ -174,7 +173,6 @@ impl ShiftnanigansMapConstructor {
 
         ShiftnanigansMapConstructor {
             pixel_board_randomizer: PixelBoardRandomizer::new(pixel_board.clone()),
-            original_pixel_board: pixel_board,
             compressed_top_height: top_height,
             compressed_left_width: left_width,
             tile_size,
@@ -206,14 +204,28 @@ impl MapConstructor for ShiftnanigansMapConstructor {
                         uncompressed_y = 0;
                     }
                     else {
-                        uncompressed_y = y + self.compressed_top_height;
+                        let top_offset: usize;
+                        if self.compressed_top_height == 0 {
+                            top_offset = 0;
+                        }
+                        else {
+                            top_offset = self.compressed_top_height - 1;
+                        }
+                        uncompressed_y = y + top_offset;
                     }
                     let uncompressed_x: usize;
                     if x == 0 {
                         uncompressed_x = 0;
                     }
                     else {
-                        uncompressed_x = x + self.compressed_left_width;
+                        let left_offset: usize;
+                        if self.compressed_left_width == 0 {
+                            left_offset = 0;
+                        }
+                        else {
+                            left_offset = self.compressed_left_width - 1;
+                        }
+                        uncompressed_x = x + left_offset;
                     }
 
                     borrowed_pixel.grouped_pixels

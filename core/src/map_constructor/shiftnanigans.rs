@@ -310,11 +310,11 @@ impl UngroupedPixel {
                 element_layer.located_elements
                     .iter()
                     .for_each(|element| {
-                        // TODO grab elements nearby this location
+                        // grab elements nearby this location
                         if element.0.x as u32 == x &&
                             element.0.y as u32 == y {
 
-                            // TODO determine which element this is in 'element'
+                            // TODO determine which element this is in 'element' for custom spacing requirements
                             entity_types.push(LayerPixelEntityType::Element(Element {
                                 layer_index: element_layer.layer_index,
                                 element_meta_handle: element.1.clone(),
@@ -343,9 +343,6 @@ struct GroupedPixel {
 struct PixelType {
     grouped_pixels: Vec<GroupedPixel>
 }
-
-// TODO pickup here: change the pixel type to potentially contain walls and non-walls in the same pixel
-//  also include the entity identifier
 
 impl Pixel for PixelType {
     fn get_invalid_location_offsets_for_other_pixel(&self, _: &Self) -> Vec<(i16, i16)> {

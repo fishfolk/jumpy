@@ -9,20 +9,19 @@ bones_bevy_asset = "0.2"
 bones_lib        = { version = "0.2", features = ["serde"] }
 type_ulid        = "0.2"
 
-bytemuck        = { version = "1.12.3", features = ["derive"] }
-csscolorparser  = "0.6.2"
-glam            = { version = "0.23.0", features = ["bytemuck", "libm"] }
-hex             = "0.4.3"
-humantime-serde = "1"
-indexmap        = "1.9.3"
+bytemuck        = { version = "1.12", features = ["derive"] }
+csscolorparser  = "0.6"
+glam            = { version = "0.23", features = ["bytemuck", "libm"] }
+humantime-serde = "1.0"
+indexmap        = "1.9"
 nalgebra        = { version = "0.32", features = ["convert-glam023"] }
-ordered-float   = "3.4.0"
+ordered-float   = "3.4"
 petgraph        = { version = "0.6", features = ["graphmap"], default-features = false }
 puffin          = "0.16"
-rapier2d        = { version = "0.17.1", features = ["enhanced-determinism", "debug-render"] }
-serde           = { version = "1.0.152", features = ["derive"] }
-tracing         = "0.1.37"
-shiftnanigans   = { version = "0.3.2" }
+rapier2d        = { version = "0.17", features = ["enhanced-determinism", "debug-render"] }
+serde           = { version = "1.0", features = ["derive"] }
+tracing         = "0.1"
+shiftnanigans   = { version = "0.3" }
 
 [dependencies.bevy]
 default-features = false
@@ -32,3 +31,10 @@ version          = "0.10"
 [dependencies.turborand]
 features = ["atomic"]
 version  = "0.10"
+
+[package.metadata.cargo-machete]
+ignored = [
+    "nalgebra", # Needed to add the `convert-glam023` feature
+    "humantime_serde", # false positive
+    "type_ulid", # false positive
+]

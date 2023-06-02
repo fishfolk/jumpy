@@ -4,7 +4,6 @@ use crate::prelude::*;
 
 use async_channel::{Receiver, Sender};
 use bevy::utils::HashMap;
-use iyes_loopless::prelude::*;
 use serde::{de::DeserializeOwned, Serialize};
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -18,7 +17,7 @@ pub struct JumpyPlatformPlugin;
 impl Plugin for JumpyPlatformPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Storage>()
-            .add_system(load_storage.run_in_state(EngineState::LoadingPlatformStorage));
+            .add_system(load_storage.run_if(in_state(EngineState::LoadingPlatformStorage)));
     }
 }
 
@@ -42,7 +41,7 @@ pub fn load_storage(
     } else if storage.is_loaded() {
         debug!("Done loading platform storage");
         // Load game
-        commands.insert_resource(NextState(EngineState::LoadingGameData));
+        commands.insert_resource(NextState(Some(EngineState::LoadingGameData)));
     }
 }
 

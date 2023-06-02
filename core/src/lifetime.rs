@@ -39,7 +39,7 @@ impl Lifetime {
 /// Despawns entities that have an expired lifetime
 fn lifetime_system(mut entities: ResMut<Entities>, mut lifetimes: CompMut<Lifetime>) {
     let mut to_kill = Vec::new();
-    for (entity, mut lifetime) in &mut entities.iter_with(&mut lifetimes) {
+    for (entity, lifetime) in &mut entities.iter_with(&mut lifetimes) {
         lifetime.age += 1.0 / FPS;
         if lifetime.age > lifetime.lifetime {
             to_kill.push(entity);

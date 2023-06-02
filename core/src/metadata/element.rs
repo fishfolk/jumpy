@@ -49,7 +49,7 @@ pub struct BulletMeta {
 
     pub lifetime: f32,
     pub explosion_fps: f32,
-    pub explosion_volume: f32,
+    pub explosion_volume: f64,
     pub explosion_lifetime: f32,
     pub explosion_frames: usize,
     pub explosion_atlas: Handle<Atlas>,
@@ -77,9 +77,9 @@ pub enum BuiltinElementKind {
         explosion_frames: usize,
         explosion_fps: f32,
         explosion_sound: Handle<AudioSource>,
-        explosion_volume: f32,
+        explosion_volume: f64,
         fuse_sound: Handle<AudioSource>,
-        fuse_sound_volume: f32,
+        fuse_sound_volume: f64,
         /// The time in seconds before a grenade explodes
         fuse_time: f32,
         #[serde(default)]
@@ -161,7 +161,7 @@ pub enum BuiltinElementKind {
     Sproinger {
         atlas: Handle<Atlas>,
         sound: Handle<AudioSource>,
-        sound_volume: f32,
+        sound_volume: f64,
         body_size: Vec2,
         spring_velocity: f32,
     },
@@ -169,7 +169,7 @@ pub enum BuiltinElementKind {
     Sword {
         atlas: Handle<Atlas>,
         sound: Handle<AudioSource>,
-        sound_volume: f32,
+        sound_volume: f64,
         body_size: Vec2,
         fin_anim: Key,
         #[serde(default)]
@@ -190,9 +190,9 @@ pub enum BuiltinElementKind {
         breaking_anim_fps: f32,
 
         break_sound: Handle<AudioSource>,
-        break_sound_volume: f32,
+        break_sound_volume: f64,
         bounce_sound: Handle<AudioSource>,
-        bounce_sound_volume: f32,
+        bounce_sound_volume: f64,
 
         throw_velocity: f32,
 
@@ -216,14 +216,14 @@ pub enum BuiltinElementKind {
         explosion_lifetime: f32,
         explosion_frames: usize,
         explosion_fps: f32,
-        explosion_volume: f32,
+        explosion_volume: f64,
         explosion_sound: Handle<AudioSource>,
 
         /// The delay after throwing the mine, before it becomes armed and will blow up on contact.
         arm_delay: f32,
         armed_frames: usize,
         armed_fps: f32,
-        arm_sound_volume: f32,
+        arm_sound_volume: f64,
         arm_sound: Handle<AudioSource>,
 
         throw_velocity: f32,
@@ -252,9 +252,9 @@ pub enum BuiltinElementKind {
         explosion_frames: usize,
         explosion_fps: f32,
         explosion_sound: Handle<AudioSource>,
-        explosion_volume: f32,
+        explosion_volume: f64,
         fuse_sound: Handle<AudioSource>,
-        fuse_sound_volume: f32,
+        fuse_sound_volume: f64,
         /// The time in seconds before a grenade explodes
         #[serde(with = "humantime_serde")]
         fuse_time: Duration,
@@ -290,8 +290,8 @@ pub enum BuiltinElementKind {
         shoot_fps: f32,
         shoot_lifetime: f32,
         shoot_frames: usize,
-        shoot_sound_volume: f32,
-        empty_shoot_sound_volume: f32,
+        shoot_sound_volume: f64,
+        empty_shoot_sound_volume: f64,
         shoot_atlas: Handle<Atlas>,
         shoot_sound: Handle<AudioSource>,
         empty_shoot_sound: Handle<AudioSource>,

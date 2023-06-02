@@ -37,34 +37,27 @@ pub mod networking;
 pub mod prelude;
 pub use prelude::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
 pub enum EngineState {
+    #[default]
     LoadingPlatformStorage,
     LoadingGameData,
     MainMenu,
     InGame,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
 pub enum InGameState {
+    #[default]
     Playing,
     Paused,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
 pub enum GameEditorState {
+    #[default]
     Hidden,
     Visible,
-}
-
-#[derive(StageLabel, Eq, PartialEq, Hash)]
-pub enum RollbackStage {
-    Input,
-    First,
-    PreUpdate,
-    Update,
-    PostUpdate,
-    Last,
 }
 
 pub fn main() {
@@ -78,18 +71,18 @@ pub fn main() {
         // Initialize resources
         .insert_resource(ClearColor(Color::BLACK))
         // Set initial game state
-        .add_loopless_state(EngineState::LoadingPlatformStorage)
-        .add_loopless_state(InGameState::Playing)
-        .add_loopless_state(GameEditorState::Hidden)
+        .add_state::<EngineState>()
+        .add_state::<InGameState>()
+        .add_state::<GameEditorState>()
         // Install plugins
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
-                    window: WindowDescriptor {
+                    primary_window: Some(Window {
                         title: "Fish Folk: Jumpy".to_string(),
                         fit_canvas_to_parent: true,
                         ..default()
-                    },
+                    }),
                     ..default()
                 })
                 .set(ImagePlugin::default_nearest())

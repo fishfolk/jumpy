@@ -17,7 +17,7 @@ impl Plugin for JumpyAudioPlugin {
             .add_audio_channel::<MusicChannel>()
             .add_audio_channel::<EffectsChannel>()
             .add_startup_system(setup_audio_defaults)
-            .add_system(music_system.run_if_resource_exists::<GameMeta>());
+            .add_system(music_system.run_if(resource_exists::<GameMeta>()));
     }
 }
 
@@ -71,7 +71,7 @@ fn music_system(
     mut music_state: ResMut<MusicState>,
     mut audio_instances: ResMut<Assets<AudioInstance>>,
     music: Res<AudioChannel<MusicChannel>>,
-    engine_state: Res<CurrentState<EngineState>>,
+    engine_state: Res<State<EngineState>>,
     menu_page: Res<MenuPage>,
 ) {
     if shuffled_fight_music.is_empty() || engine_state.is_changed() {

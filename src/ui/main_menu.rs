@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 use bevy::{
     app::AppExit,
     ecs::system::{SystemParam, SystemState},
+    window::PrimaryWindow,
 };
 use bevy_egui::*;
 use bevy_fluent::Localization;
@@ -42,13 +43,11 @@ impl Plugin for MainMenuPlugin {
             .init_resource::<settings::SettingsTab>()
             .init_resource::<settings::ModifiedSettings>()
             .init_resource::<player_select::PlayerSelectState>()
-            .add_system(
-                main_menu_system
-                    .run_in_state(EngineState::MainMenu)
-                    .at_end(),
-            )
-            .add_enter_system(EngineState::MainMenu, setup_main_menu)
-            .add_exit_system(EngineState::MainMenu, clean_up_main_menu);
+            .add_systems((
+                main_menu_system.run_if(in_state(EngineState::MainMenu)),
+                setup_main_menu.in_schedule(OnEnter(EngineState::MainMenu)),
+                clean_up_main_menu.in_schedule(OnExit(EngineState::MainMenu)),
+            ));
     }
 }
 
@@ -66,7 +65,7 @@ pub fn setup_main_menu(
     session_manager.stop();
 
     // Make sure the game editor is hidden
-    commands.insert_resource(NextState(GameEditorState::Hidden));
+    commands.insert_resource(NextState(Some(GameEditorState::Hidden)));
 
     // Spawn menu background
     let bg_handle = game.main_menu.background_image.image.inner.clone_weak();
@@ -153,13 +152,16 @@ impl Default for MenuPage {
 
 /// Render the main menu UI
 pub fn main_menu_system(world: &mut World) {
-    world.resource_scope(|world: &mut World, mut egui_ctx: Mut<EguiContext>| {
-        egui::CentralPanel::default()
-            .frame(egui::Frame::none())
-            .show(egui_ctx.ctx_mut(), |ui| {
-                widget::<MainMenu>(world, ui, WidgetId::new("main-menu"), ());
-            });
-    });
+    let mut egui_context = world
+        .query_filtered::<&mut EguiContext, With<PrimaryWindow>>()
+        .single(world)
+        .clone();
+
+    egui::CentralPanel::default()
+        .frame(egui::Frame::none())
+        .show(egui_context.get_mut(), |ui| {
+            widget::<MainMenu>(world, ui, WidgetId::new("main-menu"), ());
+        });
 }
 
 #[derive(SystemParam)]
@@ -216,7 +218,7 @@ struct HomeMenu<'w, 's> {
     modified_settings: ResMut<'w, ModifiedSettings>,
     game: Res<'w, GameMeta>,
     localization: Res<'w, Localization>,
-    app_exit: EventWriter<'w, 's, AppExit>,
+    app_exit: EventWriter<'w, AppExit>,
     storage: ResMut<'w, Storage>,
 }
 
@@ -308,13 +310,13 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                         {
                             params
                                 .commands
-                                .insert_resource(NextState(GameEditorState::Visible));
+                                .insert_resource(NextState(Some(GameEditorState::Visible)));
                             params
                                 .commands
-                                .insert_resource(NextState(EngineState::InGame));
+                                .insert_resource(NextState(Some(EngineState::InGame)));
                             params
                                 .commands
-                                .insert_resource(NextState(InGameState::Playing));
+                                .insert_resource(NextState(Some(InGameState::Playing)));
                         }
                     });
 

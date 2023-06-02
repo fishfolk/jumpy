@@ -1,6 +1,6 @@
 use super::{widget, widgets::bordered_button::BorderedButton, WidgetSystem};
 use crate::prelude::*;
-use bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
+use bevy::{ecs::system::SystemParam, math::Vec3Swizzles, window::PrimaryWindow};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use bones_bevy_renderer::BevyBonesEntity;
@@ -17,11 +17,10 @@ impl Plugin for EditorPlugin {
         app.init_resource::<EditorState>()
             .add_system(
                 editor_ui_system
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(GameEditorState::Visible)
-                    .at_end(),
+                    .run_if(in_state(EngineState::InGame))
+                    .run_if(in_state(GameEditorState::Visible)),
             )
-            .add_exit_system(GameEditorState::Visible, cleanup_editor);
+            .add_system(cleanup_editor.in_schedule(OnExit(GameEditorState::Visible)));
     }
 }
 
@@ -170,8 +169,8 @@ pub fn editor_ui_system(world: &mut World) {
     let cursor_pos = {
         let mut camera_query =
             world.query_filtered::<(&Camera, &Transform), With<BevyBonesEntity>>();
-        let windows = world.resource::<Windows>();
-        let window = windows.primary();
+        let mut windows = world.query_filtered::<&Window, With<PrimaryWindow>>();
+        let Ok(window) = windows.get_single(world) else { return };
         camera_query
             .get_single(world)
             .ok()
@@ -196,32 +195,35 @@ pub fn editor_ui_system(world: &mut World) {
     let mut state = world.resource_mut::<EditorState>();
     state.cursor.current_pos = cursor_pos;
 
-    world.resource_scope(|world: &mut World, mut egui_ctx: Mut<EguiContext>| {
-        let ctx = egui_ctx.ctx_mut();
+    let mut egui_context = world
+        .query_filtered::<&mut EguiContext, With<PrimaryWindow>>()
+        .single(world)
+        .clone();
 
-        egui::TopBottomPanel::top("top-bar").show(ctx, |ui| {
-            widget::<EditorTopBar>(world, ui, "editor-top-bar".into(), ());
+    let egui_ctx = egui_context.get_mut();
+
+    egui::TopBottomPanel::top("top-bar").show(egui_ctx, |ui| {
+        widget::<EditorTopBar>(world, ui, "editor-top-bar".into(), ());
+    });
+
+    egui::SidePanel::left("left-toolbar")
+        .width_range(40.0..=40.0)
+        .resizable(false)
+        .show(egui_ctx, |ui| {
+            widget::<EditorLeftToolbar>(world, ui, "editor-left-toolbar".into(), ());
         });
 
-        egui::SidePanel::left("left-toolbar")
-            .width_range(40.0..=40.0)
-            .resizable(false)
-            .show(ctx, |ui| {
-                widget::<EditorLeftToolbar>(world, ui, "editor-left-toolbar".into(), ());
-            });
+    egui::SidePanel::right("right-toolbar")
+        .min_width(125.0)
+        .show(egui_ctx, |ui| {
+            widget::<EditorRightToolbar>(world, ui, "editor-right-toolbar".into(), ());
+        });
 
-        egui::SidePanel::right("right-toolbar")
-            .min_width(125.0)
-            .show(ctx, |ui| {
-                widget::<EditorRightToolbar>(world, ui, "editor-right-toolbar".into(), ());
-            });
-
-        egui::CentralPanel::default()
-            .frame(egui::Frame::none())
-            .show(ctx, |ui| {
-                widget::<EditorCentralPanel>(world, ui, "editor-central-panel".into(), ());
-            });
-    });
+    egui::CentralPanel::default()
+        .frame(egui::Frame::none())
+        .show(egui_ctx, |ui| {
+            widget::<EditorCentralPanel>(world, ui, "editor-central-panel".into(), ());
+        });
 }
 
 type CameraQuery<'w, 's> = Query<
@@ -312,7 +314,7 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                 if ui.button(&params.localization.get("main-menu")).clicked() {
                     params
                         .commands
-                        .insert_resource(NextState(EngineState::MainMenu));
+                        .insert_resource(NextState(Some(EngineState::MainMenu)));
                 }
 
                 ui.scope(|ui| {
@@ -320,7 +322,7 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                     if ui.button(&params.localization.get("play")).clicked() {
                         params
                             .commands
-                            .insert_resource(NextState(GameEditorState::Hidden));
+                            .insert_resource(NextState(Some(GameEditorState::Hidden)));
                     }
                     if ui.button(&params.localization.get("export")).clicked() {
                         *params.show_map_export_window = true;
@@ -339,10 +341,11 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                         });
                         params
                             .commands
-                            .insert_resource(NextState(InGameState::Playing));
+                            .insert_resource(NextState(Some(InGameState::Playing)));
                     }
                     if ui.button(&params.localization.get("save")).clicked()
-                        || (ui.input().key_down(egui::Key::S) && ui.input().modifiers.command)
+                        || (ui.input(|i| i.key_down(egui::Key::S))
+                            && ui.input(|i| i.modifiers.command))
                     {
                         if let Some(map) = params.map_export.0.as_ref() {
                             let mut user_maps: UserMapStorage = params
@@ -695,7 +698,9 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                                 struct EditingLayerName {
                                     name: String,
                                 }
-                                let edit_data = ui.data().get_temp::<EditingLayerName>(response.id);
+                                let edit_data =
+                                    ui.data_mut(|d| d.get_temp::<EditingLayerName>(response.id));
+
                                 if let Some(mut data) = edit_data {
                                     let output =
                                         egui::TextEdit::singleline(&mut data.name).show(ui);
@@ -713,28 +718,30 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                                             new_state,
                                         );
                                     }
-                                    if ui.input().key_pressed(egui::Key::Enter) {
-                                        ui.data().remove::<EditingLayerName>(response.id);
+                                    if ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                                        ui.data_mut(|d| d.remove::<EditingLayerName>(response.id));
                                         **params.editor_input = Some(EditorInput::RenameLayer {
                                             layer: i as u8,
                                             name: data.name,
                                         });
-                                    } else if ui.input().key_pressed(egui::Key::Escape)
+                                    } else if ui.input(|i| i.key_pressed(egui::Key::Escape))
                                         || output.response.clicked_elsewhere()
                                     {
-                                        ui.data().remove::<EditingLayerName>(response.id);
+                                        ui.data_mut(|d| d.remove::<EditingLayerName>(response.id));
                                     } else {
-                                        ui.data().insert_temp(response.id, data);
+                                        ui.data_mut(|d| d.insert_temp(response.id, data));
                                     }
                                 } else {
                                     ui.label(&layer.id);
                                     if response.double_clicked() {
-                                        ui.data().insert_temp(
-                                            response.id,
-                                            EditingLayerName {
-                                                name: layer.id.clone(),
-                                            },
-                                        );
+                                        ui.data_mut(|d| {
+                                            d.insert_temp(
+                                                response.id,
+                                                EditingLayerName {
+                                                    name: layer.id.clone(),
+                                                },
+                                            )
+                                        });
                                     }
                                 }
                             });
@@ -1087,31 +1094,33 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
 
             // Move camera
             let camera_zoom = {
-                let cursor_icon = ui.output().cursor_icon;
-                let input = ui.input();
-                let ctrl_modifier = input.modifiers.command;
-                let pointer = &input.pointer;
-                let editor_camera_pos = &mut params.state.camera;
-                // Handle camera zoom
-                let hovered = pointer
-                    .hover_pos()
-                    .map(|pos| map_response_rect.contains(pos))
-                    .unwrap_or_default();
-                if hovered {
-                    editor_camera_pos.height -= input.scroll_delta.y;
-                    editor_camera_pos.height = editor_camera_pos.height.max(10.0);
-                }
-                let zoom = editor_camera_pos.height / core_meta.camera.default_height;
+                let cursor_icon = ui.output(|o| o.cursor_icon);
+                let (zoom, panning, ctrl_modifier) = ui.input_mut(|input| {
+                    let ctrl_modifier = input.modifiers.command;
+                    let pointer = &input.pointer;
+                    let editor_camera_pos = &mut params.state.camera;
+                    // Handle camera zoom
+                    let hovered = pointer
+                        .hover_pos()
+                        .map(|pos| map_response_rect.contains(pos))
+                        .unwrap_or_default();
+                    if hovered {
+                        editor_camera_pos.height -= input.scroll_delta.y;
+                        editor_camera_pos.height = editor_camera_pos.height.max(10.0);
+                    }
+                    let zoom = editor_camera_pos.height / core_meta.camera.default_height;
 
-                // Handle camera pan
-                let panning = pointer.is_moving()
-                    && (pointer.middle_down() || (ctrl_modifier && pointer.primary_down()));
-                if panning {
-                    let drag_delta = pointer.delta() * params.game.ui_theme.scale * zoom;
-                    editor_camera_pos.pos.x -= drag_delta.x;
-                    editor_camera_pos.pos.y += drag_delta.y;
-                }
-                drop(input);
+                    // Handle camera pan
+                    let panning = pointer.is_moving()
+                        && (pointer.middle_down() || (ctrl_modifier && pointer.primary_down()));
+                    if panning {
+                        let drag_delta = pointer.delta() * params.game.ui_theme.scale * zoom;
+                        editor_camera_pos.pos.x -= drag_delta.x;
+                        editor_camera_pos.pos.y += drag_delta.y;
+                    }
+
+                    (zoom, panning, ctrl_modifier)
+                });
 
                 // Handle cursor
                 //
@@ -1161,7 +1170,7 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                     )
                     .unwrap();
 
-            let screen_rect = ui.input().screen_rect();
+            let screen_rect = ui.input(|i| i.screen_rect);
             let window_size = screen_rect.size();
 
             // Map element tool
@@ -1194,7 +1203,7 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
 
                 // Element context menu
                 map_response.context_menu(|ui| {
-                    if ui.input().pointer.secondary_clicked() {
+                    if ui.input(|i| i.pointer.secondary_clicked()) {
                         params.state.cursor.context_click_pos = params.state.cursor.current_pos;
                     }
                     ui.menu_button(
@@ -1271,29 +1280,32 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                     }
                     let drag_id = egui::Id::from("element_drag");
                     if response.drag_started() {
-                        ui.data().insert_temp(
-                            drag_id,
-                            ElementDrag {
-                                offset: params.state.cursor.current_pos.unwrap()
-                                    - translation.truncate(),
-                            },
-                        );
+                        ui.data_mut(|d| {
+                            d.insert_temp(
+                                drag_id,
+                                ElementDrag {
+                                    offset: params.state.cursor.current_pos.unwrap()
+                                        - translation.truncate(),
+                                },
+                            )
+                        });
                     } else if response.drag_released() {
-                        ui.data().remove::<ElementDrag>(drag_id);
+                        ui.data_mut(|d| d.remove::<ElementDrag>(drag_id));
                     }
 
                     let half_pixel_offset = Vec2::new(
                         if grab_size.x % 2.0 != 0.0 { 0.5 } else { 0.0 },
                         if grab_size.y % 2.0 != 0.0 { 0.5 } else { 0.0 },
                     );
-                    let snap_to_grid = ui.input().modifiers.shift_only();
-                    let ctrl_modifier = ui.input().modifiers.command;
+                    let snap_to_grid = ui.input(|i| i.modifiers.shift_only());
+                    let ctrl_modifier = ui.input(|i| i.modifiers.command);
 
                     let default_color = if response.dragged_by(egui::PointerButton::Primary)
-                        && map_response_rect.contains(ui.input().pointer.hover_pos().unwrap())
+                        && map_response_rect.contains(ui.input(|i| i.pointer.hover_pos().unwrap()))
                         && !ctrl_modifier
                     {
-                        let element_drag: ElementDrag = ui.data().get_temp(drag_id).unwrap();
+                        let element_drag: ElementDrag =
+                            ui.data_mut(|d| d.get_temp(drag_id).unwrap());
 
                         let new_pos =
                             params.state.cursor.current_pos.unwrap() - element_drag.offset;
@@ -1377,7 +1389,7 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
 
                         let tile_xy = (cursor_pos / map.tile_size).floor().as_uvec2();
                         if response.dragged_by(egui::PointerButton::Primary)
-                            && !ui.input().modifiers.command
+                            && !ui.input(|i| i.modifiers.command)
                         {
                             **params.editor_input = Some(EditorInput::SetTile {
                                 layer: params.state.current_layer_idx as u8,
@@ -1429,22 +1441,21 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                         );
                     }
 
-                    if ui
-                        .input()
-                        .pointer
-                        .hover_pos()
-                        .map(|pos| rect.contains(pos))
-                        .unwrap_or(false)
-                        && !ui.input().modifiers.command
+                    if ui.input(|i| {
+                        i.pointer
+                            .hover_pos()
+                            .map(|pos| rect.contains(pos))
+                            .unwrap_or(false)
+                    }) && !ui.input(|i| i.modifiers.command)
                     {
-                        if ui.input().pointer.primary_down() {
+                        if ui.input(|i| i.pointer.primary_down()) {
                             **params.editor_input = Some(EditorInput::SetTile {
                                 layer: params.state.current_layer_idx as u8,
                                 pos: tile_xy,
                                 tilemap_tile_idx: Some(tile.idx as usize),
                                 collision: params.state.current_collision,
                             });
-                        } else if ui.input().pointer.secondary_down() {
+                        } else if ui.input(|i| i.pointer.secondary_down()) {
                             **params.editor_input = Some(EditorInput::SetTile {
                                 layer: params.state.current_layer_idx as u8,
                                 pos: tile_xy,

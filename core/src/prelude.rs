@@ -7,7 +7,7 @@ pub use {
     bones_bevy_asset::{BevyAssets, BonesBevyAsset, BonesBevyAssetLoad},
     bones_lib::prelude::*,
     bytemuck::{Pod, Zeroable},
-    glam::*,
+    // glam::*,
     serde::{Deserialize, Serialize},
     std::sync::Arc,
     tracing::{debug, error, info, trace, warn},

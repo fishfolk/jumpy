@@ -1,4 +1,4 @@
-use bevy::{ecs::schedule::ShouldRun, utils::Instant};
+use bevy::utils::Instant;
 use downcast_rs::{impl_downcast, Downcast};
 use jumpy_core::input::PlayerControl;
 
@@ -7,7 +7,8 @@ use crate::{main_menu::MenuPage, prelude::*};
 pub struct JumpySessionPlugin;
 
 /// Stage label for the game session stages
-#[derive(StageLabel)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+#[system_set(base)]
 pub enum SessionStage {
     /// Update the game session.
     Update,
@@ -15,39 +16,51 @@ pub enum SessionStage {
 
 impl Plugin for JumpySessionPlugin {
     fn build(&self, app: &mut App) {
+        let mut session_schedule = Schedule::new();
+        session_schedule.add_systems((
+            ensure_2_players,
+            collect_local_input.pipe(update_game),
+            play_sounds,
+        ));
+
         app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::<Session>::with_sync_time(false))
             .add_plugin(jumpy_core::metadata::JumpyCoreAssetsPlugin)
             .init_resource::<CurrentEditorInput>()
-            .add_stage_before(
-                CoreStage::Update,
-                SessionStage::Update,
-                SystemStage::single_threaded()
-                    .with_system(
-                        ensure_2_players
-                            .run_in_state(EngineState::InGame)
-                            .run_in_state(InGameState::Playing),
-                    )
-                    .with_system(collect_local_input.pipe(update_game))
-                    .with_system(play_sounds)
-                    .with_run_criteria(session_run_criteria),
-            );
-    }
-}
+            .configure_set(
+                SessionStage::Update
+                    .before(CoreSet::Update)
+                    .run_if(in_state(InGameState::Playing))
+                    .run_if(in_state(EngineState::InGame))
+                    .run_if(resource_exists::<Session>()),
+            )
+            .add_system(move |world: &mut World| {
+                let in_correct_state = {
+                    world.resource::<State<EngineState>>().0 == EngineState::InGame
+                        && world.resource::<State<InGameState>>().0 == InGameState::Playing
+                };
 
-fn session_run_criteria(
-    time: Res<Time>,
-    session: Option<ResMut<Session>>,
-    in_game_state: Res<CurrentState<InGameState>>,
-    engine_state: Res<CurrentState<EngineState>>,
-) -> ShouldRun {
-    if let Some(mut session) = session {
-        if engine_state.0 == EngineState::InGame && in_game_state.0 == InGameState::Playing {
-            session.run_criteria(&time)
-        } else {
-            ShouldRun::No
-        }
-    } else {
-        ShouldRun::No
+                if !in_correct_state || !world.contains_resource::<Session>() {
+                    return;
+                }
+
+                loop {
+                    let should_run =
+                        world.resource_scope(|world: &mut World, mut session: Mut<Session>| {
+                            session.run_criteria(world.resource::<Time>())
+                        });
+
+                    match should_run {
+                        ShouldRun::Yes => {
+                            session_schedule.run(world);
+                            break;
+                        }
+                        ShouldRun::No => break,
+                        ShouldRun::YesAndCheckAgain => {
+                            session_schedule.run(world);
+                        }
+                    }
+                }
+            });
     }
 }
 
@@ -102,18 +115,29 @@ impl LocalSessionRunner {
     }
 }
 
+/// Indicates whether or not a session advance should be run.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ShouldRun {
+    Yes,
+    No,
+    YesAndCheckAgain,
+}
+
 impl SessionRunner for LocalSessionRunner {
     fn core_session(&mut self) -> &mut CoreSession {
         &mut self.core
     }
+
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl) {
         self.core.update_input(|inputs| {
             inputs.players[player_idx].control = control;
         });
     }
+
     fn restart(&mut self) {
         self.core.restart();
     }
+
     fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError> {
         self.core.advance(bevy_world);
 
@@ -187,9 +211,9 @@ impl<'w, 's> SessionManager<'w, 's> {
         self.commands.insert_resource(session);
         self.menu_camera.for_each_mut(|mut x| x.is_active = false);
         self.commands
-            .insert_resource(NextState(InGameState::Playing));
+            .insert_resource(NextState(Some(InGameState::Playing)));
         self.commands
-            .insert_resource(NextState(EngineState::InGame));
+            .insert_resource(NextState(Some(EngineState::InGame)));
     }
 
     /// Restart a game session without changing the settings
@@ -211,32 +235,26 @@ impl<'w, 's> SessionManager<'w, 's> {
 ///
 /// This is primarily for the editor, which may be started without going through the player
 /// selection screen.
-fn ensure_2_players(session: Option<ResMut<Session>>, core_meta: Res<CoreMetaArc>) {
-    if let Some(mut session) = session {
-        let player_inputs = session
-            .world()
-            .resource::<jumpy_core::input::PlayerInputs>();
-        let mut player_inputs = player_inputs.borrow_mut();
+fn ensure_2_players(mut session: ResMut<Session>, core_meta: Res<CoreMetaArc>) {
+    let player_inputs = session
+        .world()
+        .resource::<jumpy_core::input::PlayerInputs>();
+    let mut player_inputs = player_inputs.borrow_mut();
 
-        if player_inputs.players.iter().all(|x| !x.active) {
-            for i in 0..2 {
-                player_inputs.players[i].active = true;
-                player_inputs.players[i].selected_player = core_meta.players[i].clone();
-            }
+    if player_inputs.players.iter().all(|x| !x.active) {
+        for i in 0..2 {
+            player_inputs.players[i].active = true;
+            player_inputs.players[i].selected_player = core_meta.players[i].clone();
         }
     }
 }
 
 /// Update the input to the game session.
 fn collect_local_input(
-    session: Option<ResMut<Session>>,
+    mut session: ResMut<Session>,
     player_input_collectors: Query<(&PlayerInputCollector, &ActionState<PlayerAction>)>,
     mut current_editor_input: ResMut<CurrentEditorInput>,
 ) {
-    let Some(mut session) = session else {
-        return;
-    };
-
     let network_player_idx = session.network_player_idx();
 
     if let Some(local_session) = session.downcast_mut::<LocalSessionRunner>() {
@@ -277,15 +295,7 @@ fn collect_local_input(
 
 /// Update the game session simulation.
 fn update_game(world: &mut World) {
-    let Some(mut session) = world.remove_resource::<Session>() else {
-        return;
-    };
-    if world.resource::<CurrentState<EngineState>>().0 != EngineState::InGame {
-        return;
-    }
-    if world.resource::<CurrentState<InGameState>>().0 != InGameState::Playing {
-        return;
-    }
+    let mut session = world.remove_resource::<Session>().unwrap();
 
     // Advance the game session
     if let Err(e) = session.advance(world) {
@@ -298,8 +308,8 @@ fn update_game(world: &mut World) {
                 let mut cameras = world.query_filtered::<&mut Camera, With<MenuCamera>>();
                 cameras.for_each_mut(world, |mut camera| camera.is_active = true);
                 world.insert_resource(MenuPage::Home);
-                world.insert_resource(NextState(EngineState::MainMenu));
-                world.insert_resource(NextState(InGameState::Playing));
+                world.insert_resource(NextState(Some(EngineState::MainMenu)));
+                world.insert_resource(NextState(Some(InGameState::Playing)));
             }
         }
 
@@ -311,11 +321,7 @@ fn update_game(world: &mut World) {
 }
 
 /// Play sounds from the game session.
-fn play_sounds(audio: Res<AudioChannel<EffectsChannel>>, session: Option<ResMut<Session>>) {
-    let Some(mut session) = session else {
-        return;
-    };
-
+fn play_sounds(audio: Res<AudioChannel<EffectsChannel>>, mut session: ResMut<Session>) {
     // Get the sound queue out of the world
     let queue = session
         .world()
@@ -333,7 +339,7 @@ fn play_sounds(audio: Res<AudioChannel<EffectsChannel>>, session: Option<ResMut<
             } => {
                 audio
                     .play(sound_source.get_bevy_handle_untyped().typed())
-                    .with_volume(volume.into());
+                    .with_volume(volume);
             }
         }
     }

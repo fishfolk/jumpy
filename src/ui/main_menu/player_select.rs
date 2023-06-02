@@ -608,7 +608,7 @@ fn player_image(
     atlas_assets: &Assets<TextureAtlas>,
     egui_textures: &PlayerAtlasEguiTextures,
 ) {
-    let time = ui.ctx().input().time as f32;
+    let time = ui.ctx().input(|i| i.time as f32);
     let width = ui.available_width();
     let available_height = ui.available_width();
 

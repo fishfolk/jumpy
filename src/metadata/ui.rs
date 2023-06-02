@@ -90,11 +90,12 @@ pub struct WidgetStyle {
 impl WidgetStyle {
     pub fn get_egui_widget_visuals(&self, border_radius: f32) -> egui::style::WidgetVisuals {
         egui::style::WidgetVisuals {
+            expansion: self.expansion,
             bg_fill: self.bg_fill.into_egui(),
+            weak_bg_fill: self.bg_fill.into_egui(), // TODO: Does this need to be different?
             bg_stroke: egui::Stroke::new(2.0, self.bg_stroke.into_egui()),
             fg_stroke: egui::Stroke::new(2.0, self.text.into_egui()),
             rounding: egui::Rounding::same(border_radius),
-            expansion: self.expansion,
         }
     }
 }

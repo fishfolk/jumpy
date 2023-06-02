@@ -58,7 +58,7 @@ async fn online_matchmaker(
                     .unwrap();
 
                 // Send a match request to the server
-                let (mut send, recv) = conn.open_bi().await.unwrap();
+                let (mut send, mut recv) = conn.open_bi().await.unwrap();
 
                 let message = MatchmakerRequest::RequestMatch(MatchInfo {
                     client_count: player_count.try_into().unwrap(),
@@ -106,7 +106,7 @@ async fn online_matchmaker(
 
                         // Matchmaker message
                         either::Either::Right(recv) => {
-                            let recv = recv.unwrap();
+                            let mut recv = recv.unwrap();
                             let message = recv.read_to_end(256).await.unwrap();
                             let message: MatchmakerResponse =
                                 postcard::from_bytes(&message).unwrap();
@@ -242,7 +242,7 @@ impl OnlineSocket {
                             break;
                         }
                         either::Either::Right(result) => match result {
-                            Ok(stream) => {
+                            Ok(mut stream) => {
                                 let data =
                                     stream.read_to_end(4096).await.expect("Network read error");
                                 let message: bones_matchmaker_proto::RecvProxyMessage =

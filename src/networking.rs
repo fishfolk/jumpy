@@ -59,7 +59,7 @@ pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
         quinn::EndpointConfig::default(),
         Some(server_config),
         socket,
-        quinn_runtime_bevy::BevyIoTaskPoolExecutor,
+        Arc::new(quinn_runtime_bevy::BevyIoTaskPoolExecutor),
     )
     .unwrap();
 
@@ -311,9 +311,9 @@ impl crate::session::SessionRunner for GgrsSessionRunner {
         Ok(())
     }
 
-    fn run_criteria(&mut self, time: &Time) -> bevy::ecs::schedule::ShouldRun {
+    fn run_criteria(&mut self, time: &Time) -> ShouldRun {
         self.delta = time.delta_seconds();
-        bevy::ecs::schedule::ShouldRun::Yes
+        ShouldRun::Yes
     }
 
     fn network_player_idx(&mut self) -> Option<usize> {

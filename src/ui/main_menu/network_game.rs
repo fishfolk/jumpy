@@ -105,6 +105,7 @@ pub struct ServerInfo {
     pub ping: Option<u16>,
 }
 
+#[derive(Clone)]
 pub enum MatchKind {
     Lan(LanMode),
     Online(OnlineState),
@@ -116,7 +117,7 @@ impl Default for MatchKind {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub enum LanMode {
     #[default]
     Join,
@@ -126,7 +127,7 @@ pub enum LanMode {
     },
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 pub struct OnlineState {
     player_count: usize,
     matchmaking_server: String,
@@ -143,7 +144,7 @@ impl Default for OnlineState {
     }
 }
 
-#[derive(Default, PartialEq, Eq)]
+#[derive(Default, PartialEq, Eq, Clone, Copy)]
 pub enum SearchState {
     #[default]
     Connecting,
@@ -602,7 +603,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                     MatchKind::Online(OnlineState {
                         player_count,
                         matchmaking_server,
-                        search_state,
+                        mut search_state,
                     }) => {
                         // Get the matchmaking server from the settings.
                         if matchmaking_server.is_empty() {
@@ -667,10 +668,10 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                             while let Ok(message) = ONLINE_MATCHMAKER.try_recv() {
                                 match message {
                                     networking::OnlineMatchmakerResponse::Searching => {
-                                        *search_state = SearchState::Searching
+                                        search_state = SearchState::Searching
                                     }
                                     networking::OnlineMatchmakerResponse::PlayerCount(count) => {
-                                        *search_state = SearchState::WaitingForPlayers(count)
+                                        search_state = SearchState::WaitingForPlayers(count)
                                     }
                                     networking::OnlineMatchmakerResponse::GameStarting {
                                         online_socket,
@@ -683,7 +684,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                         ));
 
                                         *status = default();
-                                        *search_state = default();
+                                        search_state = default();
                                         *params.menu_page = MenuPage::PlayerSelect;
                                     }
                                 }
@@ -700,7 +701,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                     ONLINE_MATCHMAKER
                                         .try_send(networking::OnlineMatchmakerRequest::StopSearch)
                                         .unwrap();
-                                    *search_state = default();
+                                    search_state = default();
                                     *status = Status::Idle;
                                 }
 

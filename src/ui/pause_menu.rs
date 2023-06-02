@@ -1,3 +1,4 @@
+use bevy::window::PrimaryWindow;
 use bevy_egui::*;
 use bevy_fluent::Localization;
 
@@ -17,33 +18,30 @@ pub struct PausePlugin;
 impl Plugin for PausePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PauseMenuPage>()
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                unpause_system
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(InGameState::Paused),
+            .add_systems(
+                (
+                    unpause_system
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(InGameState::Paused)),
+                    pause_system
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(GameEditorState::Hidden))
+                        .run_if(in_state(InGameState::Playing)),
+                )
+                    .in_base_set(CoreSet::PostUpdate),
             )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                pause_system
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(GameEditorState::Hidden)
-                    .run_in_state(InGameState::Playing),
-            )
-            .add_system_to_stage(
-                CoreStage::Update,
-                pause_menu_default
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(InGameState::Paused)
-                    .run_if_resource_equals(PauseMenuPage::Default),
-            )
-            .add_system_to_stage(
-                CoreStage::Update,
-                pause_menu_map_select
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(InGameState::Paused)
-                    .run_if_resource_equals(PauseMenuPage::MapSelect)
-                    .at_end(),
+            .add_systems(
+                (
+                    pause_menu_default
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(InGameState::Paused))
+                        .run_if(resource_equals(PauseMenuPage::Default)),
+                    pause_menu_map_select
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(InGameState::Paused))
+                        .run_if(resource_equals(PauseMenuPage::MapSelect)),
+                )
+                    .in_base_set(CoreSet::Update),
             );
     }
 }
@@ -52,7 +50,7 @@ impl Plugin for PausePlugin {
 fn pause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(NextState(InGameState::Paused));
+        commands.insert_resource(NextState(Some(InGameState::Paused)));
     }
 }
 
@@ -65,7 +63,7 @@ fn unpause_system(
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
         *pause_page = default();
-        commands.insert_resource(NextState(InGameState::Playing));
+        commands.insert_resource(NextState(Some(InGameState::Playing)));
     }
 }
 
@@ -78,20 +76,20 @@ pub enum PauseMenuPage {
 
 pub fn pause_menu_default(
     mut commands: Commands,
-    mut egui_context: ResMut<EguiContext>,
     game: Res<GameMeta>,
     localization: Res<Localization>,
     map_handle: Query<&AssetHandle<MapMeta>>,
     map_assets: Res<Assets<MapMeta>>,
     mut pause_page: ResMut<PauseMenuPage>,
     mut session_manager: SessionManager,
+    mut contexts: EguiContexts,
 ) {
     let is_online = false;
     let ui_theme = &game.ui_theme;
 
     egui::CentralPanel::default()
         .frame(egui::Frame::none())
-        .show(egui_context.ctx_mut(), |ui| {
+        .show(contexts.ctx_mut(), |ui| {
             let screen_rect = ui.max_rect();
 
             let pause_menu_width = game.main_menu.menu_width;
@@ -137,7 +135,7 @@ pub fn pause_menu_default(
                         continue_button = continue_button.focus_by_default(ui);
 
                         if continue_button.clicked() {
-                            commands.insert_resource(NextState(InGameState::Playing));
+                            commands.insert_resource(NextState(Some(InGameState::Playing)));
                         }
 
                         ui.scope(|ui| {
@@ -163,7 +161,7 @@ pub fn pause_menu_default(
                             .clicked()
                             {
                                 session_manager.restart();
-                                commands.insert_resource(NextState(InGameState::Playing));
+                                commands.insert_resource(NextState(Some(InGameState::Playing)));
                             }
                         });
 
@@ -176,8 +174,8 @@ pub fn pause_menu_default(
                             .show(ui)
                             .clicked()
                             {
-                                commands.insert_resource(NextState(GameEditorState::Visible));
-                                commands.insert_resource(NextState(InGameState::Playing));
+                                commands.insert_resource(NextState(Some(GameEditorState::Visible)));
+                                commands.insert_resource(NextState(Some(InGameState::Playing)));
                             }
                         });
 
@@ -190,7 +188,7 @@ pub fn pause_menu_default(
                         .clicked()
                         {
                             // Show the main menu
-                            commands.insert_resource(NextState(EngineState::MainMenu));
+                            commands.insert_resource(NextState(Some(EngineState::MainMenu)));
                             ui.ctx().clear_focus();
                         }
                     });
@@ -199,11 +197,14 @@ pub fn pause_menu_default(
 }
 
 fn pause_menu_map_select(world: &mut World) {
-    world.resource_scope(|world: &mut World, mut egui_ctx: Mut<EguiContext>| {
-        egui::CentralPanel::default()
-            .frame(egui::Frame::none())
-            .show(egui_ctx.ctx_mut(), |ui| {
-                widget::<MapSelectMenu>(world, ui, WidgetId::new("map-select"), false);
-            });
-    });
+    let mut egui_context = world
+        .query_filtered::<&mut EguiContext, With<PrimaryWindow>>()
+        .single(world)
+        .clone();
+
+    egui::CentralPanel::default()
+        .frame(egui::Frame::none())
+        .show(egui_context.get_mut(), |ui| {
+            widget::<MapSelectMenu>(world, ui, WidgetId::new("map-select"), false);
+        });
 }

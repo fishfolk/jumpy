@@ -102,8 +102,10 @@ impl CoreSession {
 
         // Update the window resource
         let window_resource = self.world.resource::<Window>();
-        let bevy_windows = bevy_world.resource::<::bevy::window::Windows>();
-        if let Some(window) = bevy_windows.get_primary() {
+        let mut bevy_windows = bevy_world
+            .query_filtered::<&::bevy::window::Window, ::bevy::prelude::With<::bevy::window::PrimaryWindow>>();
+
+        if let Ok(window) = bevy_windows.get_single_mut(bevy_world) {
             window_resource.borrow_mut().size = Vec2::new(window.width(), window.height());
         }
 

@@ -31,7 +31,7 @@ jobs:
       - uses: jetli/wasm-bindgen-action@v0.1.0
         name: 🔧 Wasm Bindgen
         with:
-          version: "0.2.84"
+          version: "0.2.86"
 
       - uses: actions/cache@v3
         name: ♻️ Cache Cargo

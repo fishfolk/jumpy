@@ -5,13 +5,9 @@ name    = "jumpy_core"
 version = "0.7.0"
 
 [dependencies]
-# bones_bevy_asset = "0.1"
-# bones_lib        = { version = "0.1", features = ["serde"] }
-# type_ulid        = "0.1"
-
-bones_bevy_asset = { path = "../../bones/crates/bones_bevy_asset" }
-bones_lib        = { path = "../../bones", features = ["serde"] }
-type_ulid        = { path = "../../bones/crates/type_ulid" }
+bones_bevy_asset = "0.2"
+bones_lib        = { version = "0.2", features = ["serde"] }
+type_ulid        = "0.2"
 
 bytemuck        = { version = "1.12.3", features = ["derive"] }
 csscolorparser  = "0.6.2"

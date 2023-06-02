@@ -1207,6 +1207,8 @@ dependencies = [
 [[package]]
 name = "bones_asset"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "31f4623b77d4b881819e64baaf26089013f926a441605ea7659e4b67d35e15d5"
 dependencies = [
  "bevy_asset",
  "bones_bevy_utils",
@@ -1219,6 +1221,8 @@ dependencies = [
 [[package]]
 name = "bones_bevy_asset"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4b9dfcf33aee19b7c61cc5a01293504acc5e683163177255eea51b6aeff88656"
 dependencies = [
  "bevy_app",
  "bevy_asset",
@@ -1238,6 +1242,8 @@ dependencies = [
 [[package]]
 name = "bones_bevy_asset_macros"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09c56106e7019deb3a4d187866752d458203e768bf92c0696fa4b89cba18e9e2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1249,6 +1255,8 @@ dependencies = [
 [[package]]
 name = "bones_bevy_renderer"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76a2aa16fad0d8ef2ced59837faeef7d30184a21820af5335d9743f9804e263c"
 dependencies = [
  "bevy",
  "bevy_prototype_lyon",
@@ -1265,6 +1273,8 @@ dependencies = [
 [[package]]
 name = "bones_bevy_utils"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c224bf3211ef9716225c90ab920a65815cae034e56e8c0369138e441aeabd824"
 dependencies = [
  "bevy_ecs",
  "type_ulid",
@@ -1273,6 +1283,8 @@ dependencies = [
 [[package]]
 name = "bones_ecs"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "84fa22a3c0fc8a0d5c6fafa015ca9755afa3f266936b7be7ee2bbd21f88e04a1"
 dependencies = [
  "aligned-vec",
  "anyhow",
@@ -1291,6 +1303,8 @@ dependencies = [
 [[package]]
 name = "bones_input"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34b3a885f63adcce7a2097a035c603775652f10582d6b086db62a94445074412"
 dependencies = [
  "bevy",
  "bones_bevy_utils",
@@ -1302,6 +1316,8 @@ dependencies = [
 [[package]]
 name = "bones_lib"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "efd1d4185abb6b6f310ed6511153562e627f616b0ec76aebd97d0c674bf49b9b"
 dependencies = [
  "bones_asset",
  "bones_bevy_utils",
@@ -1325,6 +1341,8 @@ dependencies = [
 [[package]]
 name = "bones_render"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5110ce96de5d5474f48a1770ea54a60a5fdfc2de94b9ebdf5f2d7263453b8d0e"
 dependencies = [
  "bevy_render",
  "bevy_transform",
@@ -3818,22 +3836,22 @@ dependencies = [
 
 [[package]]
 name = "pin-project"
-version = "1.0.12"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad29a609b6bcd67fee905812e544992d216af9d755757c05ed2d0e15a74c6ecc"
+checksum = "c95a7476719eab1e366eaf73d0260af3021184f18177925b07f54b30089ceead"
 dependencies = [
  "pin-project-internal",
 ]
 
 [[package]]
 name = "pin-project-internal"
-version = "1.0.12"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "069bdb1e05adc7a8990dce9cc75370895fbe4e3d58b9b73bf1aee56359344a55"
+checksum = "39407670928234ebc5e6e580247dd567ad73a3578460c5990f9503df207e8f07"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 1.0.109",
+ "syn 2.0.13",
 ]
 
 [[package]]
@@ -4049,6 +4067,8 @@ dependencies = [
 [[package]]
 name = "quinn_runtime_bevy"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07483e0846c9ad53e823f0d5f1638b6853f5bf1df212bbb8ead79ff9785de380"
 dependencies = [
  "async-executor",
  "async-io",
@@ -4476,9 +4496,9 @@ dependencies = [
 
 [[package]]
 name = "security-framework"
-version = "2.8.2"
+version = "2.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a332be01508d814fed64bf28f798a146d73792121129962fdf335bb3c49a4254"
+checksum = "1fc758eb7bffce5b308734e9b0c1468893cae9ff70ebf13e7090be8dcbcc83a8"
 dependencies = [
  "bitflags",
  "core-foundation",
@@ -4489,9 +4509,9 @@ dependencies = [
 
 [[package]]
 name = "security-framework-sys"
-version = "2.8.0"
+version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31c9bb296072e961fcbd8853511dd39c2d8be2deb1e17c6860b1d30732b323b4"
+checksum = "f51d0c0d83bec45f16480d0ce0058397a69e48fcdc52d1dc8855fb68acbd31a7"
 dependencies = [
  "core-foundation-sys 0.8.3",
  "libc",
@@ -5086,6 +5106,8 @@ dependencies = [
 [[package]]
 name = "type_ulid"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5a87db4bdcccfb04d822e736ef808a78a7549c1486c105e371cb73b278c24ae"
 dependencies = [
  "type_ulid_macros",
  "ulid",
@@ -5094,6 +5116,8 @@ dependencies = [
 [[package]]
 name = "type_ulid_macros"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c65b0fa9e298ac8f3d2ae0593c3a2ffb78db8184b5d3c9640dfbd9a0617b6a53"
 dependencies = [
  "proc-macro2",
  "quote",

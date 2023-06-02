@@ -126,6 +126,23 @@
 <a href="#125" id="125">125</a>
 <a href="#126" id="126">126</a>
 <a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, MAX_PLAYERS};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
@@ -186,6 +203,18 @@
 
     <span class="kw">pub </span>slide_pressed: bool,
     <span class="kw">pub </span>slide_just_pressed: bool,
+}
+
+<span class="attr">#[derive(Clone, Debug, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>TileLayer {
+    <span class="kw">pub </span>layer_index: usize,
+    <span class="kw">pub </span>located_tiles: Vec&lt;(UVec2, u32, TileCollisionKind)&gt;,
+}
+
+<span class="attr">#[derive(Clone, Debug, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>ElementLayer {
+    <span class="kw">pub </span>layer_index: usize,
+    <span class="kw">pub </span>located_elements: Vec&lt;(Vec2, Handle&lt;ElementMeta&gt;)&gt;,
 }
 
 <span class="doccomment">/// The editor inputs that a player may make.
@@ -251,6 +280,11 @@
     },
     RenameMap {
         name: String,
+    },
+    RandomizeTiles {
+        tile_layers: Vec&lt;TileLayer&gt;,
+        element_layers: Vec&lt;ElementLayer&gt;,
+        tile_size: Vec2,
     },
 }
 </code></pre></div>

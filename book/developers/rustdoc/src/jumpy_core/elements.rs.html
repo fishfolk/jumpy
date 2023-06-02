@@ -260,6 +260,9 @@
 <a href="#259" id="259">259</a>
 <a href="#260" id="260">260</a>
 <a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::sync::Mutex;
 
 <span class="kw">use </span>::bevy::{
@@ -478,6 +481,9 @@
                 });
         }
         entities.kill(spawner_entity);
+
+        <span class="comment">// remove the spawner_entity from spawners so that subsequent calls to this function behave appropriately
+        </span><span class="self">self</span>.spawners.remove(spawner_entity);
     }
 }
 

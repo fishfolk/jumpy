@@ -1,4 +1,6 @@
 use crate::impl_system_param;
+use crate::map_constructor::shiftnanigans::ShiftnanigansMapConstructor;
+use crate::map_constructor::MapConstructor;
 use crate::{map::z_depth_for_map_layer, prelude::*};
 
 pub fn install(session: &mut CoreSession) {
@@ -18,19 +20,21 @@ impl_system_param! {
         tile_layers: CompMut<'a, TileLayer>,
         tiles: CompMut<'a, Tile>,
         tile_collisions: CompMut<'a, TileCollisionKind>,
+        map: Res<'a, LoadedMap>,
         element_kill_callbacks: Comp<'a, ElementKillCallback>,
         spawner_manager: SpawnerManager<'a>,
     }
 }
 
 impl<'a> MapManager<'a> {
-    fn create_element(
+    pub fn create_element(
         &mut self,
         element_meta_handle: &Handle<ElementMeta>,
         translation: &Vec2,
         layer_index: usize,
     ) {
         let entity = self.entities.create();
+        // TODO remove element handles as the underlying elements are removed
         self.element_handles
             .insert(entity, ElementHandle(element_meta_handle.clone()));
         let z_depth = z_depth_for_map_layer(layer_index);
@@ -45,7 +49,7 @@ impl<'a> MapManager<'a> {
             },
         );
     }
-    fn create_layer(&mut self, name: String) {
+    pub fn create_layer(&mut self, name: String) {
         let entity = self.entities.create();
         let layer_index = self.spawned_map_meta.layer_names.len();
         self.spawned_map_meta.layer_names = self
@@ -75,7 +79,7 @@ impl<'a> MapManager<'a> {
             Transform::from_translation(Vec3::new(0.0, 0.0, z_depth_for_map_layer(layer_index))),
         );
     }
-    fn delete_layer(&mut self, layer_index: usize) {
+    pub fn delete_layer(&mut self, layer_index: usize) {
         let layer_count = self.spawned_map_meta.layer_names.len();
         let layers_to_decrement = layer_count - layer_index;
         self.spawned_map_meta.layer_names = self
@@ -109,7 +113,7 @@ impl<'a> MapManager<'a> {
             self.entities.kill(ent);
         });
     }
-    fn rename_layer(&mut self, layer_index: usize, name: &str) {
+    pub fn rename_layer(&mut self, layer_index: usize, name: &str) {
         self.spawned_map_meta.layer_names = self
             .spawned_map_meta
             .layer_names
@@ -120,12 +124,12 @@ impl<'a> MapManager<'a> {
             .map(|(i, n)| if i == layer_index { name.to_owned() } else { n })
             .collect();
     }
-    fn move_element(&mut self, entity: Entity, position: &Vec2) {
+    pub fn move_element(&mut self, entity: Entity, position: &Vec2) {
         let transform = self.transforms.get_mut(entity).unwrap();
         transform.translation.x = position.x;
         transform.translation.y = position.y;
     }
-    fn delete_element(&mut self, entity: Entity) {
+    pub fn delete_element(&mut self, entity: Entity) {
         if let Some(element_kill_callback) = self.element_kill_callbacks.get(entity) {
             let system = element_kill_callback.system.clone();
             self.commands
@@ -142,7 +146,7 @@ impl<'a> MapManager<'a> {
             self.entities.kill(entity);
         }
     }
-    fn set_layer_tilemap(&mut self, layer_index: usize, tilemap: &Option<Handle<Atlas>>) {
+    pub fn set_layer_tilemap(&mut self, layer_index: usize, tilemap: &Option<Handle<Atlas>>) {
         if let Some((_, (tile_layer, _))) = self
             .entities
             .iter_with((&mut self.tile_layers, &self.spawned_map_layer_metas))
@@ -155,7 +159,7 @@ impl<'a> MapManager<'a> {
             }
         };
     }
-    fn set_tile(
+    pub fn set_tile(
         &mut self,
         layer_index: usize,
         position: UVec2,
@@ -210,7 +214,7 @@ impl<'a> MapManager<'a> {
                 });
         };
     }
-    fn swap_layer(&mut self, layer_index: usize, is_downward: bool) {
+    pub fn swap_layer(&mut self, layer_index: usize, is_downward: bool) {
         let origin_layer_index = layer_index;
         let other_layer_index = if is_downward {
             origin_layer_index + 1
@@ -234,8 +238,42 @@ impl<'a> MapManager<'a> {
             }
         }
     }
-    fn rename_map(&mut self, name: String) {
+    pub fn rename_map(&mut self, name: String) {
         self.spawned_map_meta.name = name.into();
+    }
+    pub fn get_size(&self) -> UVec2 {
+        self.spawned_map_meta.grid_size
+    }
+    pub fn get_layers_total(&self) -> usize {
+        self.spawned_map_meta.layer_names.len()
+    }
+    pub fn clear_tiles(&mut self) {
+        let empty_tile: Option<usize> = Option::None;
+        for y in 0..self.spawned_map_meta.grid_size.y {
+            for x in 0..self.spawned_map_meta.grid_size.x {
+                let position = UVec2 { x, y };
+                for layer_index in 0..self.spawned_map_meta.layer_names.len() {
+                    self.set_tile(
+                        layer_index,
+                        position,
+                        &empty_tile,
+                        crate::physics::TileCollisionKind::Empty,
+                    );
+                }
+            }
+        }
+    }
+    pub fn clear_elements(&mut self) {
+        let mut to_kill: Vec<Entity> = Vec::new();
+        self.entities
+            .iter_with(&mut self.element_handles)
+            .for_each(|(entity, _)| {
+                to_kill.push(entity);
+            });
+
+        to_kill.into_iter().for_each(|entity| {
+            self.delete_element(entity);
+        });
     }
 }
 
@@ -282,6 +320,19 @@ fn handle_editor_input(player_inputs: Res<PlayerInputs>, mut map_manager: MapMan
                 }
                 EditorInput::RenameMap { name } => {
                     map_manager.rename_map(name.clone());
+                }
+                EditorInput::RandomizeTiles {
+                    tile_layers,
+                    element_layers,
+                    tile_size,
+                } => {
+                    let map_constructor = ShiftnanigansMapConstructor::new(
+                        map_manager.get_size(),
+                        *tile_size,
+                        tile_layers,
+                        element_layers,
+                    );
+                    map_constructor.construct_map(&mut map_manager);
                 }
             }
         }

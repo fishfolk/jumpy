@@ -17,6 +17,7 @@ delete-element = Delete Element
 toggle-visibility = Toggle Visibility
 delete-layer = Delete Layer
 delete = Delete
+randomize = Randomize
 
 create = Create
 layer-kind = Layer Kind

@@ -33,6 +33,7 @@ pub mod input;
 pub mod item;
 pub mod lifetime;
 pub mod map;
+pub mod map_constructor;
 pub mod metadata;
 pub mod physics;
 pub mod player;

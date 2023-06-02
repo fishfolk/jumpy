@@ -22,6 +22,7 @@ puffin          = "0.16"
 rapier2d        = { version = "0.17.1", features = ["enhanced-determinism", "debug-render"] }
 serde           = { version = "1.0.152", features = ["derive"] }
 tracing         = "0.1.37"
+shiftnanigans   = { version = "0.3.2" }
 
 [dependencies.bevy]
 default-features = false

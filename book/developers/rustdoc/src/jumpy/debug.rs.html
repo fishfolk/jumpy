@@ -42,7 +42,10 @@
 <a href="#41" id="41">41</a>
 <a href="#42" id="42">42</a>
 <a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>bevy::window::PrimaryWindow;
+<span class="kw">use </span>bevy_egui::EguiContext;
 <span class="kw">use </span>bevy_inspector_egui::{bevy_inspector, inspector_egui_impls};
 
 <span class="kw">pub struct </span>JumpyDebugPlugin;
@@ -54,9 +57,7 @@
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
         app.init_resource::&lt;WorldInspectorEnabled&gt;()
             .add_system(world_inspector)
-            .add_system_to_stage(CoreStage::Last, || {
-                puffin::GlobalProfiler::lock().new_frame();
-            });
+            .add_system((|| puffin::GlobalProfiler::lock().new_frame()).in_base_set(CoreSet::Last));
 
         <span class="kw">let </span>type_registry = app.world.resource::&lt;bevy::app::AppTypeRegistry&gt;();
         <span class="kw">let </span><span class="kw-2">mut </span>type_registry = type_registry.write();
@@ -72,13 +73,14 @@
         <span class="kw">return</span>;
     }
 
-    <span class="kw">let </span>egui_context = world
-        .resource_mut::&lt;bevy_egui::EguiContext&gt;()
-        .ctx_mut()
+    <span class="kw">let </span><span class="kw-2">mut </span>egui_context = world
+        .query_filtered::&lt;<span class="kw-2">&amp;mut </span>EguiContext, With&lt;PrimaryWindow&gt;&gt;()
+        .single(world)
         .clone();
+
     egui::Window::new(<span class="string">&quot;World Inspector&quot;</span>)
         .default_size(egui::vec2(<span class="number">400.0</span>, <span class="number">400.0</span>))
-        .show(<span class="kw-2">&amp;</span>egui_context, |ui| {
+        .show(egui_context.get_mut(), |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 bevy_inspector::ui_for_world(world, ui);
                 ui.allocate_space(ui.available_size());

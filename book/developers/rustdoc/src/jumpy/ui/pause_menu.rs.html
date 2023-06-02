@@ -208,7 +208,9 @@
 <a href="#207" id="207">207</a>
 <a href="#208" id="208">208</a>
 <a href="#209" id="209">209</a>
-</pre><pre class="rust"><code><span class="kw">use </span>bevy_egui::<span class="kw-2">*</span>;
+<a href="#210" id="210">210</a>
+</pre><pre class="rust"><code><span class="kw">use </span>bevy::window::PrimaryWindow;
+<span class="kw">use </span>bevy_egui::<span class="kw-2">*</span>;
 <span class="kw">use </span>bevy_fluent::Localization;
 
 <span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, widgets::EguiResponseExt};
@@ -227,33 +229,30 @@
 <span class="kw">impl </span>Plugin <span class="kw">for </span>PausePlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
         app.init_resource::&lt;PauseMenuPage&gt;()
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                unpause_system
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(InGameState::Paused),
+            .add_systems(
+                (
+                    unpause_system
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(InGameState::Paused)),
+                    pause_system
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(GameEditorState::Hidden))
+                        .run_if(in_state(InGameState::Playing)),
+                )
+                    .in_base_set(CoreSet::PostUpdate),
             )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                pause_system
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(GameEditorState::Hidden)
-                    .run_in_state(InGameState::Playing),
-            )
-            .add_system_to_stage(
-                CoreStage::Update,
-                pause_menu_default
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(InGameState::Paused)
-                    .run_if_resource_equals(PauseMenuPage::Default),
-            )
-            .add_system_to_stage(
-                CoreStage::Update,
-                pause_menu_map_select
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(InGameState::Paused)
-                    .run_if_resource_equals(PauseMenuPage::MapSelect)
-                    .at_end(),
+            .add_systems(
+                (
+                    pause_menu_default
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(InGameState::Paused))
+                        .run_if(resource_equals(PauseMenuPage::Default)),
+                    pause_menu_map_select
+                        .run_if(in_state(EngineState::InGame))
+                        .run_if(in_state(InGameState::Paused))
+                        .run_if(resource_equals(PauseMenuPage::MapSelect)),
+                )
+                    .in_base_set(CoreSet::Update),
             );
     }
 }
@@ -262,7 +261,7 @@
 </span><span class="kw">fn </span>pause_system(<span class="kw-2">mut </span>commands: Commands, input: Query&lt;<span class="kw-2">&amp;</span>ActionState&lt;MenuAction&gt;&gt;) {
     <span class="kw">let </span>input = input.single();
     <span class="kw">if </span>input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(NextState(InGameState::Paused));
+        commands.insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Paused)));
     }
 }
 
@@ -275,7 +274,7 @@
     <span class="kw">let </span>input = input.single();
     <span class="kw">if </span>input.just_pressed(MenuAction::Pause) {
         <span class="kw-2">*</span>pause_page = default();
-        commands.insert_resource(NextState(InGameState::Playing));
+        commands.insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Playing)));
     }
 }
 
@@ -288,20 +287,20 @@
 
 <span class="kw">pub fn </span>pause_menu_default(
     <span class="kw-2">mut </span>commands: Commands,
-    <span class="kw-2">mut </span>egui_context: ResMut&lt;EguiContext&gt;,
     game: Res&lt;GameMeta&gt;,
     localization: Res&lt;Localization&gt;,
     map_handle: Query&lt;<span class="kw-2">&amp;</span>AssetHandle&lt;MapMeta&gt;&gt;,
     map_assets: Res&lt;Assets&lt;MapMeta&gt;&gt;,
     <span class="kw-2">mut </span>pause_page: ResMut&lt;PauseMenuPage&gt;,
     <span class="kw-2">mut </span>session_manager: SessionManager,
+    <span class="kw-2">mut </span>contexts: EguiContexts,
 ) {
     <span class="kw">let </span>is_online = <span class="bool-val">false</span>;
     <span class="kw">let </span>ui_theme = <span class="kw-2">&amp;</span>game.ui_theme;
 
     egui::CentralPanel::default()
         .frame(egui::Frame::none())
-        .show(egui_context.ctx_mut(), |ui| {
+        .show(contexts.ctx_mut(), |ui| {
             <span class="kw">let </span>screen_rect = ui.max_rect();
 
             <span class="kw">let </span>pause_menu_width = game.main_menu.menu_width;
@@ -347,7 +346,7 @@
                         continue_button = continue_button.focus_by_default(ui);
 
                         <span class="kw">if </span>continue_button.clicked() {
-                            commands.insert_resource(NextState(InGameState::Playing));
+                            commands.insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Playing)));
                         }
 
                         ui.scope(|ui| {
@@ -373,7 +372,7 @@
                             .clicked()
                             {
                                 session_manager.restart();
-                                commands.insert_resource(NextState(InGameState::Playing));
+                                commands.insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Playing)));
                             }
                         });
 
@@ -386,8 +385,8 @@
                             .show(ui)
                             .clicked()
                             {
-                                commands.insert_resource(NextState(GameEditorState::Visible));
-                                commands.insert_resource(NextState(InGameState::Playing));
+                                commands.insert_resource(NextState(<span class="prelude-val">Some</span>(GameEditorState::Visible)));
+                                commands.insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Playing)));
                             }
                         });
 
@@ -400,7 +399,7 @@
                         .clicked()
                         {
                             <span class="comment">// Show the main menu
-                            </span>commands.insert_resource(NextState(EngineState::MainMenu));
+                            </span>commands.insert_resource(NextState(<span class="prelude-val">Some</span>(EngineState::MainMenu)));
                             ui.ctx().clear_focus();
                         }
                     });
@@ -409,13 +408,16 @@
 }
 
 <span class="kw">fn </span>pause_menu_map_select(world: <span class="kw-2">&amp;mut </span>World) {
-    world.resource_scope(|world: <span class="kw-2">&amp;mut </span>World, <span class="kw-2">mut </span>egui_ctx: Mut&lt;EguiContext&gt;| {
-        egui::CentralPanel::default()
-            .frame(egui::Frame::none())
-            .show(egui_ctx.ctx_mut(), |ui| {
-                widget::&lt;MapSelectMenu&gt;(world, ui, WidgetId::new(<span class="string">&quot;map-select&quot;</span>), <span class="bool-val">false</span>);
-            });
-    });
+    <span class="kw">let </span><span class="kw-2">mut </span>egui_context = world
+        .query_filtered::&lt;<span class="kw-2">&amp;mut </span>EguiContext, With&lt;PrimaryWindow&gt;&gt;()
+        .single(world)
+        .clone();
+
+    egui::CentralPanel::default()
+        .frame(egui::Frame::none())
+        .show(egui_context.get_mut(), |ui| {
+            widget::&lt;MapSelectMenu&gt;(world, ui, WidgetId::new(<span class="string">&quot;map-select&quot;</span>), <span class="bool-val">false</span>);
+        });
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

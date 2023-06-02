@@ -412,7 +412,7 @@
                     .unwrap();
 
                 <span class="comment">// Send a match request to the server
-                </span><span class="kw">let </span>(<span class="kw-2">mut </span>send, recv) = conn.open_bi().<span class="kw">await</span>.unwrap();
+                </span><span class="kw">let </span>(<span class="kw-2">mut </span>send, <span class="kw-2">mut </span>recv) = conn.open_bi().<span class="kw">await</span>.unwrap();
 
                 <span class="kw">let </span>message = MatchmakerRequest::RequestMatch(MatchInfo {
                     client_count: player_count.try_into().unwrap(),
@@ -460,7 +460,7 @@
 
                         <span class="comment">// Matchmaker message
                         </span>either::Either::Right(recv) =&gt; {
-                            <span class="kw">let </span>recv = recv.unwrap();
+                            <span class="kw">let </span><span class="kw-2">mut </span>recv = recv.unwrap();
                             <span class="kw">let </span>message = recv.read_to_end(<span class="number">256</span>).<span class="kw">await</span>.unwrap();
                             <span class="kw">let </span>message: MatchmakerResponse =
                                 postcard::from_bytes(<span class="kw-2">&amp;</span>message).unwrap();
@@ -596,7 +596,7 @@
                             <span class="kw">break</span>;
                         }
                         either::Either::Right(result) =&gt; <span class="kw">match </span>result {
-                            <span class="prelude-val">Ok</span>(stream) =&gt; {
+                            <span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>stream) =&gt; {
                                 <span class="kw">let </span>data =
                                     stream.read_to_end(<span class="number">4096</span>).<span class="kw">await</span>.expect(<span class="string">&quot;Network read error&quot;</span>);
                                 <span class="kw">let </span>message: bones_matchmaker_proto::RecvProxyMessage =

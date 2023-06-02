@@ -667,7 +667,7 @@
                     </span>.expect(<span class="string">&quot;Could not connect to server&quot;</span>);
 
                 <span class="comment">// Wait for match to start
-                </span><span class="kw">let </span>uni = conn.accept_uni().<span class="kw">await</span>.unwrap();
+                </span><span class="kw">let </span><span class="kw-2">mut </span>uni = conn.accept_uni().<span class="kw">await</span>.unwrap();
                 <span class="kw">let </span>bytes = uni.read_to_end(<span class="number">20</span>).<span class="kw">await</span>.unwrap();
                 <span class="kw">let </span>message: MatchmakerNetMsg = postcard::from_bytes(<span class="kw-2">&amp;</span>bytes).unwrap();
 
@@ -858,7 +858,7 @@
                                 <span class="kw">break</span>;
                             }
                             either::Either::Right(result) =&gt; <span class="kw">match </span>result {
-                                <span class="prelude-val">Ok</span>(stream) =&gt; {
+                                <span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>stream) =&gt; {
                                     <span class="kw">let </span>data =
                                         stream.read_to_end(<span class="number">4096</span>).<span class="kw">await</span>.expect(<span class="string">&quot;Network read error&quot;</span>);
 

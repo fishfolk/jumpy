@@ -3,12 +3,13 @@
 <h2 id="examples"><a href="#examples">Examples</a></h2>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bevy_ecs::prelude::<span class="kw-2">*</span>;
 
+<span class="kw">fn </span>return1() -&gt; u64 { <span class="number">1 </span>}
+
 return1
     .pipe(system_adapter::new(u32::try_from))
     .pipe(system_adapter::unwrap)
     .pipe(print);
 
-<span class="kw">fn </span>return1() -&gt; u64 { <span class="number">1 </span>}
 <span class="kw">fn </span>print(In(x): In&lt;<span class="kw">impl </span>std::fmt::Debug&gt;) {
     <span class="macro">println!</span>(<span class="string">&quot;{x:?}&quot;</span>);
 }</code></pre></div>

@@ -427,14 +427,12 @@
 <a href="#426" id="426">426</a>
 <a href="#427" id="427">427</a>
 <a href="#428" id="428">428</a>
-<a href="#429" id="429">429</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Systems and utilities related to specific platform support or platform abstractions
 
 </span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">use </span>async_channel::{Receiver, Sender};
 <span class="kw">use </span>bevy::utils::HashMap;
-<span class="kw">use </span>iyes_loopless::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>serde::{de::DeserializeOwned, Serialize};
 
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
@@ -448,7 +446,7 @@
 <span class="kw">impl </span>Plugin <span class="kw">for </span>JumpyPlatformPlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
         app.init_resource::&lt;Storage&gt;()
-            .add_system(load_storage.run_in_state(EngineState::LoadingPlatformStorage));
+            .add_system(load_storage.run_if(in_state(EngineState::LoadingPlatformStorage)));
     }
 }
 
@@ -472,7 +470,7 @@
     </span>} <span class="kw">else if </span>storage.is_loaded() {
         <span class="macro">debug!</span>(<span class="string">&quot;Done loading platform storage&quot;</span>);
         <span class="comment">// Load game
-        </span>commands.insert_resource(NextState(EngineState::LoadingGameData));
+        </span>commands.insert_resource(NextState(<span class="prelude-val">Some</span>(EngineState::LoadingGameData)));
     }
 }
 

@@ -339,7 +339,13 @@
 <a href="#338" id="338">338</a>
 <a href="#339" id="339">339</a>
 <a href="#340" id="340">340</a>
-</pre><pre class="rust"><code><span class="kw">use </span>bevy::{ecs::schedule::ShouldRun, utils::Instant};
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+</pre><pre class="rust"><code><span class="kw">use </span>bevy::utils::Instant;
 <span class="kw">use </span>downcast_rs::{impl_downcast, Downcast};
 <span class="kw">use </span>jumpy_core::input::PlayerControl;
 
@@ -348,7 +354,8 @@
 <span class="kw">pub struct </span>JumpySessionPlugin;
 
 <span class="doccomment">/// Stage label for the game session stages
-</span><span class="attr">#[derive(StageLabel)]
+</span><span class="attr">#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+#[system_set(base)]
 </span><span class="kw">pub enum </span>SessionStage {
     <span class="doccomment">/// Update the game session.
     </span>Update,
@@ -356,39 +363,51 @@
 
 <span class="kw">impl </span>Plugin <span class="kw">for </span>JumpySessionPlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
+        <span class="kw">let </span><span class="kw-2">mut </span>session_schedule = Schedule::new();
+        session_schedule.add_systems((
+            ensure_2_players,
+            collect_local_input.pipe(update_game),
+            play_sounds,
+        ));
+
         app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::&lt;Session&gt;::with_sync_time(<span class="bool-val">false</span>))
             .add_plugin(jumpy_core::metadata::JumpyCoreAssetsPlugin)
             .init_resource::&lt;CurrentEditorInput&gt;()
-            .add_stage_before(
-                CoreStage::Update,
-                SessionStage::Update,
-                SystemStage::single_threaded()
-                    .with_system(
-                        ensure_2_players
-                            .run_in_state(EngineState::InGame)
-                            .run_in_state(InGameState::Playing),
-                    )
-                    .with_system(collect_local_input.pipe(update_game))
-                    .with_system(play_sounds)
-                    .with_run_criteria(session_run_criteria),
-            );
-    }
-}
+            .configure_set(
+                SessionStage::Update
+                    .before(CoreSet::Update)
+                    .run_if(in_state(InGameState::Playing))
+                    .run_if(in_state(EngineState::InGame))
+                    .run_if(resource_exists::&lt;Session&gt;()),
+            )
+            .add_system(<span class="kw">move </span>|world: <span class="kw-2">&amp;mut </span>World| {
+                <span class="kw">let </span>in_correct_state = {
+                    world.resource::&lt;State&lt;EngineState&gt;&gt;().<span class="number">0 </span>== EngineState::InGame
+                        &amp;&amp; world.resource::&lt;State&lt;InGameState&gt;&gt;().<span class="number">0 </span>== InGameState::Playing
+                };
 
-<span class="kw">fn </span>session_run_criteria(
-    time: Res&lt;Time&gt;,
-    session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;,
-    in_game_state: Res&lt;CurrentState&lt;InGameState&gt;&gt;,
-    engine_state: Res&lt;CurrentState&lt;EngineState&gt;&gt;,
-) -&gt; ShouldRun {
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session {
-        <span class="kw">if </span>engine_state.<span class="number">0 </span>== EngineState::InGame &amp;&amp; in_game_state.<span class="number">0 </span>== InGameState::Playing {
-            session.run_criteria(<span class="kw-2">&amp;</span>time)
-        } <span class="kw">else </span>{
-            ShouldRun::No
-        }
-    } <span class="kw">else </span>{
-        ShouldRun::No
+                <span class="kw">if </span>!in_correct_state || !world.contains_resource::&lt;Session&gt;() {
+                    <span class="kw">return</span>;
+                }
+
+                <span class="kw">loop </span>{
+                    <span class="kw">let </span>should_run =
+                        world.resource_scope(|world: <span class="kw-2">&amp;mut </span>World, <span class="kw-2">mut </span>session: Mut&lt;Session&gt;| {
+                            session.run_criteria(world.resource::&lt;Time&gt;())
+                        });
+
+                    <span class="kw">match </span>should_run {
+                        ShouldRun::Yes =&gt; {
+                            session_schedule.run(world);
+                            <span class="kw">break</span>;
+                        }
+                        ShouldRun::No =&gt; <span class="kw">break</span>,
+                        ShouldRun::YesAndCheckAgain =&gt; {
+                            session_schedule.run(world);
+                        }
+                    }
+                }
+            });
     }
 }
 
@@ -443,18 +462,29 @@
     }
 }
 
+<span class="doccomment">/// Indicates whether or not a session advance should be run.
+</span><span class="attr">#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+</span><span class="kw">pub enum </span>ShouldRun {
+    Yes,
+    No,
+    YesAndCheckAgain,
+}
+
 <span class="kw">impl </span>SessionRunner <span class="kw">for </span>LocalSessionRunner {
     <span class="kw">fn </span>core_session(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>CoreSession {
         <span class="kw-2">&amp;mut </span><span class="self">self</span>.core
     }
+
     <span class="kw">fn </span>set_player_input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player_idx: usize, control: PlayerControl) {
         <span class="self">self</span>.core.update_input(|inputs| {
             inputs.players[player_idx].control = control;
         });
     }
+
     <span class="kw">fn </span>restart(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="self">self</span>.core.restart();
     }
+
     <span class="kw">fn </span>advance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bevy_world: <span class="kw-2">&amp;mut </span>World) -&gt; <span class="prelude-ty">Result</span>&lt;(), SessionError&gt; {
         <span class="self">self</span>.core.advance(bevy_world);
 
@@ -528,9 +558,9 @@
         <span class="self">self</span>.commands.insert_resource(session);
         <span class="self">self</span>.menu_camera.for_each_mut(|<span class="kw-2">mut </span>x| x.is_active = <span class="bool-val">false</span>);
         <span class="self">self</span>.commands
-            .insert_resource(NextState(InGameState::Playing));
+            .insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Playing)));
         <span class="self">self</span>.commands
-            .insert_resource(NextState(EngineState::InGame));
+            .insert_resource(NextState(<span class="prelude-val">Some</span>(EngineState::InGame)));
     }
 
     <span class="doccomment">/// Restart a game session without changing the settings
@@ -552,32 +582,26 @@
 ///
 /// This is primarily for the editor, which may be started without going through the player
 /// selection screen.
-</span><span class="kw">fn </span>ensure_2_players(session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;, core_meta: Res&lt;CoreMetaArc&gt;) {
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session {
-        <span class="kw">let </span>player_inputs = session
-            .world()
-            .resource::&lt;jumpy_core::input::PlayerInputs&gt;();
-        <span class="kw">let </span><span class="kw-2">mut </span>player_inputs = player_inputs.borrow_mut();
+</span><span class="kw">fn </span>ensure_2_players(<span class="kw-2">mut </span>session: ResMut&lt;Session&gt;, core_meta: Res&lt;CoreMetaArc&gt;) {
+    <span class="kw">let </span>player_inputs = session
+        .world()
+        .resource::&lt;jumpy_core::input::PlayerInputs&gt;();
+    <span class="kw">let </span><span class="kw-2">mut </span>player_inputs = player_inputs.borrow_mut();
 
-        <span class="kw">if </span>player_inputs.players.iter().all(|x| !x.active) {
-            <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">2 </span>{
-                player_inputs.players[i].active = <span class="bool-val">true</span>;
-                player_inputs.players[i].selected_player = core_meta.players[i].clone();
-            }
+    <span class="kw">if </span>player_inputs.players.iter().all(|x| !x.active) {
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">2 </span>{
+            player_inputs.players[i].active = <span class="bool-val">true</span>;
+            player_inputs.players[i].selected_player = core_meta.players[i].clone();
         }
     }
 }
 
 <span class="doccomment">/// Update the input to the game session.
 </span><span class="kw">fn </span>collect_local_input(
-    session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;,
+    <span class="kw-2">mut </span>session: ResMut&lt;Session&gt;,
     player_input_collectors: Query&lt;(<span class="kw-2">&amp;</span>PlayerInputCollector, <span class="kw-2">&amp;</span>ActionState&lt;PlayerAction&gt;)&gt;,
     <span class="kw-2">mut </span>current_editor_input: ResMut&lt;CurrentEditorInput&gt;,
 ) {
-    <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session <span class="kw">else </span>{
-        <span class="kw">return</span>;
-    };
-
     <span class="kw">let </span>network_player_idx = session.network_player_idx();
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(local_session) = session.downcast_mut::&lt;LocalSessionRunner&gt;() {
@@ -618,15 +642,7 @@
 
 <span class="doccomment">/// Update the game session simulation.
 </span><span class="kw">fn </span>update_game(world: <span class="kw-2">&amp;mut </span>World) {
-    <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = world.remove_resource::&lt;Session&gt;() <span class="kw">else </span>{
-        <span class="kw">return</span>;
-    };
-    <span class="kw">if </span>world.resource::&lt;CurrentState&lt;EngineState&gt;&gt;().<span class="number">0 </span>!= EngineState::InGame {
-        <span class="kw">return</span>;
-    }
-    <span class="kw">if </span>world.resource::&lt;CurrentState&lt;InGameState&gt;&gt;().<span class="number">0 </span>!= InGameState::Playing {
-        <span class="kw">return</span>;
-    }
+    <span class="kw">let </span><span class="kw-2">mut </span>session = world.remove_resource::&lt;Session&gt;().unwrap();
 
     <span class="comment">// Advance the game session
     </span><span class="kw">if let </span><span class="prelude-val">Err</span>(e) = session.advance(world) {
@@ -639,8 +655,8 @@
                 </span><span class="kw">let </span><span class="kw-2">mut </span>cameras = world.query_filtered::&lt;<span class="kw-2">&amp;mut </span>Camera, With&lt;MenuCamera&gt;&gt;();
                 cameras.for_each_mut(world, |<span class="kw-2">mut </span>camera| camera.is_active = <span class="bool-val">true</span>);
                 world.insert_resource(MenuPage::Home);
-                world.insert_resource(NextState(EngineState::MainMenu));
-                world.insert_resource(NextState(InGameState::Playing));
+                world.insert_resource(NextState(<span class="prelude-val">Some</span>(EngineState::MainMenu)));
+                world.insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Playing)));
             }
         }
 
@@ -652,11 +668,7 @@
 }
 
 <span class="doccomment">/// Play sounds from the game session.
-</span><span class="kw">fn </span>play_sounds(audio: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;, session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;) {
-    <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session <span class="kw">else </span>{
-        <span class="kw">return</span>;
-    };
-
+</span><span class="kw">fn </span>play_sounds(audio: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;, <span class="kw-2">mut </span>session: ResMut&lt;Session&gt;) {
     <span class="comment">// Get the sound queue out of the world
     </span><span class="kw">let </span>queue = session
         .world()
@@ -674,7 +686,7 @@
             } =&gt; {
                 audio
                     .play(sound_source.get_bevy_handle_untyped().typed())
-                    .with_volume(volume.into());
+                    .with_volume(volume);
             }
         }
     }

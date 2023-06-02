@@ -1660,9 +1660,20 @@
 <a href="#1659" id="1659">1659</a>
 <a href="#1660" id="1660">1660</a>
 <a href="#1661" id="1661">1661</a>
+<a href="#1662" id="1662">1662</a>
+<a href="#1663" id="1663">1663</a>
+<a href="#1664" id="1664">1664</a>
+<a href="#1665" id="1665">1665</a>
+<a href="#1666" id="1666">1666</a>
+<a href="#1667" id="1667">1667</a>
+<a href="#1668" id="1668">1668</a>
+<a href="#1669" id="1669">1669</a>
+<a href="#1670" id="1670">1670</a>
+<a href="#1671" id="1671">1671</a>
+<a href="#1672" id="1672">1672</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
-<span class="kw">use </span>bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
+<span class="kw">use </span>bevy::{ecs::system::SystemParam, math::Vec3Swizzles, window::PrimaryWindow};
 <span class="kw">use </span>bevy_egui::<span class="kw-2">*</span>;
 <span class="kw">use </span>bevy_fluent::Localization;
 <span class="kw">use </span>bones_bevy_renderer::BevyBonesEntity;
@@ -1679,11 +1690,10 @@
         app.init_resource::&lt;EditorState&gt;()
             .add_system(
                 editor_ui_system
-                    .run_in_state(EngineState::InGame)
-                    .run_in_state(GameEditorState::Visible)
-                    .at_end(),
+                    .run_if(in_state(EngineState::InGame))
+                    .run_if(in_state(GameEditorState::Visible)),
             )
-            .add_exit_system(GameEditorState::Visible, cleanup_editor);
+            .add_system(cleanup_editor.in_schedule(OnExit(GameEditorState::Visible)));
     }
 }
 
@@ -1832,8 +1842,8 @@
     </span><span class="kw">let </span>cursor_pos = {
         <span class="kw">let </span><span class="kw-2">mut </span>camera_query =
             world.query_filtered::&lt;(<span class="kw-2">&amp;</span>Camera, <span class="kw-2">&amp;</span>Transform), With&lt;BevyBonesEntity&gt;&gt;();
-        <span class="kw">let </span>windows = world.resource::&lt;Windows&gt;();
-        <span class="kw">let </span>window = windows.primary();
+        <span class="kw">let </span><span class="kw-2">mut </span>windows = world.query_filtered::&lt;<span class="kw-2">&amp;</span>Window, With&lt;PrimaryWindow&gt;&gt;();
+        <span class="kw">let </span><span class="prelude-val">Ok</span>(window) = windows.get_single(world) <span class="kw">else </span>{ <span class="kw">return </span>};
         camera_query
             .get_single(world)
             .ok()
@@ -1858,32 +1868,35 @@
     <span class="kw">let </span><span class="kw-2">mut </span>state = world.resource_mut::&lt;EditorState&gt;();
     state.cursor.current_pos = cursor_pos;
 
-    world.resource_scope(|world: <span class="kw-2">&amp;mut </span>World, <span class="kw-2">mut </span>egui_ctx: Mut&lt;EguiContext&gt;| {
-        <span class="kw">let </span>ctx = egui_ctx.ctx_mut();
+    <span class="kw">let </span><span class="kw-2">mut </span>egui_context = world
+        .query_filtered::&lt;<span class="kw-2">&amp;mut </span>EguiContext, With&lt;PrimaryWindow&gt;&gt;()
+        .single(world)
+        .clone();
 
-        egui::TopBottomPanel::top(<span class="string">&quot;top-bar&quot;</span>).show(ctx, |ui| {
-            widget::&lt;EditorTopBar&gt;(world, ui, <span class="string">&quot;editor-top-bar&quot;</span>.into(), ());
+    <span class="kw">let </span>egui_ctx = egui_context.get_mut();
+
+    egui::TopBottomPanel::top(<span class="string">&quot;top-bar&quot;</span>).show(egui_ctx, |ui| {
+        widget::&lt;EditorTopBar&gt;(world, ui, <span class="string">&quot;editor-top-bar&quot;</span>.into(), ());
+    });
+
+    egui::SidePanel::left(<span class="string">&quot;left-toolbar&quot;</span>)
+        .width_range(<span class="number">40.0</span>..=<span class="number">40.0</span>)
+        .resizable(<span class="bool-val">false</span>)
+        .show(egui_ctx, |ui| {
+            widget::&lt;EditorLeftToolbar&gt;(world, ui, <span class="string">&quot;editor-left-toolbar&quot;</span>.into(), ());
         });
 
-        egui::SidePanel::left(<span class="string">&quot;left-toolbar&quot;</span>)
-            .width_range(<span class="number">40.0</span>..=<span class="number">40.0</span>)
-            .resizable(<span class="bool-val">false</span>)
-            .show(ctx, |ui| {
-                widget::&lt;EditorLeftToolbar&gt;(world, ui, <span class="string">&quot;editor-left-toolbar&quot;</span>.into(), ());
-            });
+    egui::SidePanel::right(<span class="string">&quot;right-toolbar&quot;</span>)
+        .min_width(<span class="number">125.0</span>)
+        .show(egui_ctx, |ui| {
+            widget::&lt;EditorRightToolbar&gt;(world, ui, <span class="string">&quot;editor-right-toolbar&quot;</span>.into(), ());
+        });
 
-        egui::SidePanel::right(<span class="string">&quot;right-toolbar&quot;</span>)
-            .min_width(<span class="number">125.0</span>)
-            .show(ctx, |ui| {
-                widget::&lt;EditorRightToolbar&gt;(world, ui, <span class="string">&quot;editor-right-toolbar&quot;</span>.into(), ());
-            });
-
-        egui::CentralPanel::default()
-            .frame(egui::Frame::none())
-            .show(ctx, |ui| {
-                widget::&lt;EditorCentralPanel&gt;(world, ui, <span class="string">&quot;editor-central-panel&quot;</span>.into(), ());
-            });
-    });
+    egui::CentralPanel::default()
+        .frame(egui::Frame::none())
+        .show(egui_ctx, |ui| {
+            widget::&lt;EditorCentralPanel&gt;(world, ui, <span class="string">&quot;editor-central-panel&quot;</span>.into(), ());
+        });
 }
 
 <span class="kw">type </span>CameraQuery&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; = Query&lt;
@@ -1974,7 +1987,7 @@
                 <span class="kw">if </span>ui.button(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;main-menu&quot;</span>)).clicked() {
                     params
                         .commands
-                        .insert_resource(NextState(EngineState::MainMenu));
+                        .insert_resource(NextState(<span class="prelude-val">Some</span>(EngineState::MainMenu)));
                 }
 
                 ui.scope(|ui| {
@@ -1982,7 +1995,7 @@
                     <span class="kw">if </span>ui.button(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;play&quot;</span>)).clicked() {
                         params
                             .commands
-                            .insert_resource(NextState(GameEditorState::Hidden));
+                            .insert_resource(NextState(<span class="prelude-val">Some</span>(GameEditorState::Hidden)));
                     }
                     <span class="kw">if </span>ui.button(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;export&quot;</span>)).clicked() {
                         <span class="kw-2">*</span>params.show_map_export_window = <span class="bool-val">true</span>;
@@ -2001,10 +2014,11 @@
                         });
                         params
                             .commands
-                            .insert_resource(NextState(InGameState::Playing));
+                            .insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Playing)));
                     }
                     <span class="kw">if </span>ui.button(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;save&quot;</span>)).clicked()
-                        || (ui.input().key_down(egui::Key::S) &amp;&amp; ui.input().modifiers.command)
+                        || (ui.input(|i| i.key_down(egui::Key::S))
+                            &amp;&amp; ui.input(|i| i.modifiers.command))
                     {
                         <span class="kw">if let </span><span class="prelude-val">Some</span>(map) = params.map_export.<span class="number">0</span>.as_ref() {
                             <span class="kw">let </span><span class="kw-2">mut </span>user_maps: UserMapStorage = params
@@ -2298,7 +2312,9 @@
                                 </span><span class="kw">struct </span>EditingLayerName {
                                     name: String,
                                 }
-                                <span class="kw">let </span>edit_data = ui.data().get_temp::&lt;EditingLayerName&gt;(response.id);
+                                <span class="kw">let </span>edit_data =
+                                    ui.data_mut(|d| d.get_temp::&lt;EditingLayerName&gt;(response.id));
+
                                 <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>data) = edit_data {
                                     <span class="kw">let </span>output =
                                         egui::TextEdit::singleline(<span class="kw-2">&amp;mut </span>data.name).show(ui);
@@ -2316,28 +2332,30 @@
                                             new_state,
                                         );
                                     }
-                                    <span class="kw">if </span>ui.input().key_pressed(egui::Key::Enter) {
-                                        ui.data().remove::&lt;EditingLayerName&gt;(response.id);
+                                    <span class="kw">if </span>ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                                        ui.data_mut(|d| d.remove::&lt;EditingLayerName&gt;(response.id));
                                         <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::RenameLayer {
                                             layer: i <span class="kw">as </span>u8,
                                             name: data.name,
                                         });
-                                    } <span class="kw">else if </span>ui.input().key_pressed(egui::Key::Escape)
+                                    } <span class="kw">else if </span>ui.input(|i| i.key_pressed(egui::Key::Escape))
                                         || output.response.clicked_elsewhere()
                                     {
-                                        ui.data().remove::&lt;EditingLayerName&gt;(response.id);
+                                        ui.data_mut(|d| d.remove::&lt;EditingLayerName&gt;(response.id));
                                     } <span class="kw">else </span>{
-                                        ui.data().insert_temp(response.id, data);
+                                        ui.data_mut(|d| d.insert_temp(response.id, data));
                                     }
                                 } <span class="kw">else </span>{
                                     ui.label(<span class="kw-2">&amp;</span>layer.id);
                                     <span class="kw">if </span>response.double_clicked() {
-                                        ui.data().insert_temp(
-                                            response.id,
-                                            EditingLayerName {
-                                                name: layer.id.clone(),
-                                            },
-                                        );
+                                        ui.data_mut(|d| {
+                                            d.insert_temp(
+                                                response.id,
+                                                EditingLayerName {
+                                                    name: layer.id.clone(),
+                                                },
+                                            )
+                                        });
                                     }
                                 }
                             });
@@ -2690,31 +2708,33 @@
 
             <span class="comment">// Move camera
             </span><span class="kw">let </span>camera_zoom = {
-                <span class="kw">let </span>cursor_icon = ui.output().cursor_icon;
-                <span class="kw">let </span>input = ui.input();
-                <span class="kw">let </span>ctrl_modifier = input.modifiers.command;
-                <span class="kw">let </span>pointer = <span class="kw-2">&amp;</span>input.pointer;
-                <span class="kw">let </span>editor_camera_pos = <span class="kw-2">&amp;mut </span>params.state.camera;
-                <span class="comment">// Handle camera zoom
-                </span><span class="kw">let </span>hovered = pointer
-                    .hover_pos()
-                    .map(|pos| map_response_rect.contains(pos))
-                    .unwrap_or_default();
-                <span class="kw">if </span>hovered {
-                    editor_camera_pos.height -= input.scroll_delta.y;
-                    editor_camera_pos.height = editor_camera_pos.height.max(<span class="number">10.0</span>);
-                }
-                <span class="kw">let </span>zoom = editor_camera_pos.height / core_meta.camera.default_height;
+                <span class="kw">let </span>cursor_icon = ui.output(|o| o.cursor_icon);
+                <span class="kw">let </span>(zoom, panning, ctrl_modifier) = ui.input_mut(|input| {
+                    <span class="kw">let </span>ctrl_modifier = input.modifiers.command;
+                    <span class="kw">let </span>pointer = <span class="kw-2">&amp;</span>input.pointer;
+                    <span class="kw">let </span>editor_camera_pos = <span class="kw-2">&amp;mut </span>params.state.camera;
+                    <span class="comment">// Handle camera zoom
+                    </span><span class="kw">let </span>hovered = pointer
+                        .hover_pos()
+                        .map(|pos| map_response_rect.contains(pos))
+                        .unwrap_or_default();
+                    <span class="kw">if </span>hovered {
+                        editor_camera_pos.height -= input.scroll_delta.y;
+                        editor_camera_pos.height = editor_camera_pos.height.max(<span class="number">10.0</span>);
+                    }
+                    <span class="kw">let </span>zoom = editor_camera_pos.height / core_meta.camera.default_height;
 
-                <span class="comment">// Handle camera pan
-                </span><span class="kw">let </span>panning = pointer.is_moving()
-                    &amp;&amp; (pointer.middle_down() || (ctrl_modifier &amp;&amp; pointer.primary_down()));
-                <span class="kw">if </span>panning {
-                    <span class="kw">let </span>drag_delta = pointer.delta() * params.game.ui_theme.scale * zoom;
-                    editor_camera_pos.pos.x -= drag_delta.x;
-                    editor_camera_pos.pos.y += drag_delta.y;
-                }
-                drop(input);
+                    <span class="comment">// Handle camera pan
+                    </span><span class="kw">let </span>panning = pointer.is_moving()
+                        &amp;&amp; (pointer.middle_down() || (ctrl_modifier &amp;&amp; pointer.primary_down()));
+                    <span class="kw">if </span>panning {
+                        <span class="kw">let </span>drag_delta = pointer.delta() * params.game.ui_theme.scale * zoom;
+                        editor_camera_pos.pos.x -= drag_delta.x;
+                        editor_camera_pos.pos.y += drag_delta.y;
+                    }
+
+                    (zoom, panning, ctrl_modifier)
+                });
 
                 <span class="comment">// Handle cursor
                 //
@@ -2764,7 +2784,7 @@
                     )
                     .unwrap();
 
-            <span class="kw">let </span>screen_rect = ui.input().screen_rect();
+            <span class="kw">let </span>screen_rect = ui.input(|i| i.screen_rect);
             <span class="kw">let </span>window_size = screen_rect.size();
 
             <span class="comment">// Map element tool
@@ -2797,7 +2817,7 @@
 
                 <span class="comment">// Element context menu
                 </span>map_response.context_menu(|ui| {
-                    <span class="kw">if </span>ui.input().pointer.secondary_clicked() {
+                    <span class="kw">if </span>ui.input(|i| i.pointer.secondary_clicked()) {
                         params.state.cursor.context_click_pos = params.state.cursor.current_pos;
                     }
                     ui.menu_button(
@@ -2874,29 +2894,32 @@
                     }
                     <span class="kw">let </span>drag_id = egui::Id::from(<span class="string">&quot;element_drag&quot;</span>);
                     <span class="kw">if </span>response.drag_started() {
-                        ui.data().insert_temp(
-                            drag_id,
-                            ElementDrag {
-                                offset: params.state.cursor.current_pos.unwrap()
-                                    - translation.truncate(),
-                            },
-                        );
+                        ui.data_mut(|d| {
+                            d.insert_temp(
+                                drag_id,
+                                ElementDrag {
+                                    offset: params.state.cursor.current_pos.unwrap()
+                                        - translation.truncate(),
+                                },
+                            )
+                        });
                     } <span class="kw">else if </span>response.drag_released() {
-                        ui.data().remove::&lt;ElementDrag&gt;(drag_id);
+                        ui.data_mut(|d| d.remove::&lt;ElementDrag&gt;(drag_id));
                     }
 
                     <span class="kw">let </span>half_pixel_offset = Vec2::new(
                         <span class="kw">if </span>grab_size.x % <span class="number">2.0 </span>!= <span class="number">0.0 </span>{ <span class="number">0.5 </span>} <span class="kw">else </span>{ <span class="number">0.0 </span>},
                         <span class="kw">if </span>grab_size.y % <span class="number">2.0 </span>!= <span class="number">0.0 </span>{ <span class="number">0.5 </span>} <span class="kw">else </span>{ <span class="number">0.0 </span>},
                     );
-                    <span class="kw">let </span>snap_to_grid = ui.input().modifiers.shift_only();
-                    <span class="kw">let </span>ctrl_modifier = ui.input().modifiers.command;
+                    <span class="kw">let </span>snap_to_grid = ui.input(|i| i.modifiers.shift_only());
+                    <span class="kw">let </span>ctrl_modifier = ui.input(|i| i.modifiers.command);
 
                     <span class="kw">let </span>default_color = <span class="kw">if </span>response.dragged_by(egui::PointerButton::Primary)
-                        &amp;&amp; map_response_rect.contains(ui.input().pointer.hover_pos().unwrap())
+                        &amp;&amp; map_response_rect.contains(ui.input(|i| i.pointer.hover_pos().unwrap()))
                         &amp;&amp; !ctrl_modifier
                     {
-                        <span class="kw">let </span>element_drag: ElementDrag = ui.data().get_temp(drag_id).unwrap();
+                        <span class="kw">let </span>element_drag: ElementDrag =
+                            ui.data_mut(|d| d.get_temp(drag_id).unwrap());
 
                         <span class="kw">let </span>new_pos =
                             params.state.cursor.current_pos.unwrap() - element_drag.offset;
@@ -2980,7 +3003,7 @@
 
                         <span class="kw">let </span>tile_xy = (cursor_pos / map.tile_size).floor().as_uvec2();
                         <span class="kw">if </span>response.dragged_by(egui::PointerButton::Primary)
-                            &amp;&amp; !ui.input().modifiers.command
+                            &amp;&amp; !ui.input(|i| i.modifiers.command)
                         {
                             <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::SetTile {
                                 layer: params.state.current_layer_idx <span class="kw">as </span>u8,
@@ -3032,22 +3055,21 @@
                         );
                     }
 
-                    <span class="kw">if </span>ui
-                        .input()
-                        .pointer
-                        .hover_pos()
-                        .map(|pos| rect.contains(pos))
-                        .unwrap_or(<span class="bool-val">false</span>)
-                        &amp;&amp; !ui.input().modifiers.command
+                    <span class="kw">if </span>ui.input(|i| {
+                        i.pointer
+                            .hover_pos()
+                            .map(|pos| rect.contains(pos))
+                            .unwrap_or(<span class="bool-val">false</span>)
+                    }) &amp;&amp; !ui.input(|i| i.modifiers.command)
                     {
-                        <span class="kw">if </span>ui.input().pointer.primary_down() {
+                        <span class="kw">if </span>ui.input(|i| i.pointer.primary_down()) {
                             <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::SetTile {
                                 layer: params.state.current_layer_idx <span class="kw">as </span>u8,
                                 pos: tile_xy,
                                 tilemap_tile_idx: <span class="prelude-val">Some</span>(tile.idx <span class="kw">as </span>usize),
                                 collision: params.state.current_collision,
                             });
-                        } <span class="kw">else if </span>ui.input().pointer.secondary_down() {
+                        } <span class="kw">else if </span>ui.input(|i| i.pointer.secondary_down()) {
                             <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::SetTile {
                                 layer: params.state.current_layer_idx <span class="kw">as </span>u8,
                                 pos: tile_xy,

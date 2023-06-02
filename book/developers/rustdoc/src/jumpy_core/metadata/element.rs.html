@@ -362,7 +362,7 @@
 
     <span class="kw">pub </span>lifetime: f32,
     <span class="kw">pub </span>explosion_fps: f32,
-    <span class="kw">pub </span>explosion_volume: f32,
+    <span class="kw">pub </span>explosion_volume: f64,
     <span class="kw">pub </span>explosion_lifetime: f32,
     <span class="kw">pub </span>explosion_frames: usize,
     <span class="kw">pub </span>explosion_atlas: Handle&lt;Atlas&gt;,
@@ -390,9 +390,9 @@
         explosion_frames: usize,
         explosion_fps: f32,
         explosion_sound: Handle&lt;AudioSource&gt;,
-        explosion_volume: f32,
+        explosion_volume: f64,
         fuse_sound: Handle&lt;AudioSource&gt;,
-        fuse_sound_volume: f32,
+        fuse_sound_volume: f64,
         <span class="doccomment">/// The time in seconds before a grenade explodes
         </span>fuse_time: f32,
         <span class="attr">#[serde(default)]
@@ -474,7 +474,7 @@
     </span>Sproinger {
         atlas: Handle&lt;Atlas&gt;,
         sound: Handle&lt;AudioSource&gt;,
-        sound_volume: f32,
+        sound_volume: f64,
         body_size: Vec2,
         spring_velocity: f32,
     },
@@ -482,7 +482,7 @@
     </span>Sword {
         atlas: Handle&lt;Atlas&gt;,
         sound: Handle&lt;AudioSource&gt;,
-        sound_volume: f32,
+        sound_volume: f64,
         body_size: Vec2,
         fin_anim: Key,
         <span class="attr">#[serde(default)]
@@ -503,9 +503,9 @@
         breaking_anim_fps: f32,
 
         break_sound: Handle&lt;AudioSource&gt;,
-        break_sound_volume: f32,
+        break_sound_volume: f64,
         bounce_sound: Handle&lt;AudioSource&gt;,
-        bounce_sound_volume: f32,
+        bounce_sound_volume: f64,
 
         throw_velocity: f32,
 
@@ -529,14 +529,14 @@
         explosion_lifetime: f32,
         explosion_frames: usize,
         explosion_fps: f32,
-        explosion_volume: f32,
+        explosion_volume: f64,
         explosion_sound: Handle&lt;AudioSource&gt;,
 
         <span class="doccomment">/// The delay after throwing the mine, before it becomes armed and will blow up on contact.
         </span>arm_delay: f32,
         armed_frames: usize,
         armed_fps: f32,
-        arm_sound_volume: f32,
+        arm_sound_volume: f64,
         arm_sound: Handle&lt;AudioSource&gt;,
 
         throw_velocity: f32,
@@ -565,9 +565,9 @@
         explosion_frames: usize,
         explosion_fps: f32,
         explosion_sound: Handle&lt;AudioSource&gt;,
-        explosion_volume: f32,
+        explosion_volume: f64,
         fuse_sound: Handle&lt;AudioSource&gt;,
-        fuse_sound_volume: f32,
+        fuse_sound_volume: f64,
         <span class="doccomment">/// The time in seconds before a grenade explodes
         </span><span class="attr">#[serde(with = <span class="string">&quot;humantime_serde&quot;</span>)]
         </span>fuse_time: Duration,
@@ -603,8 +603,8 @@
         shoot_fps: f32,
         shoot_lifetime: f32,
         shoot_frames: usize,
-        shoot_sound_volume: f32,
-        empty_shoot_sound_volume: f32,
+        shoot_sound_volume: f64,
+        empty_shoot_sound_volume: f64,
         shoot_atlas: Handle&lt;Atlas&gt;,
         shoot_sound: Handle&lt;AudioSource&gt;,
         empty_shoot_sound: Handle&lt;AudioSource&gt;,

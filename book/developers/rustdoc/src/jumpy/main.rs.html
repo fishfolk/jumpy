@@ -127,13 +127,6 @@
 <a href="#126" id="126">126</a>
 <a href="#127" id="127">127</a>
 <a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
-<a href="#131" id="131">131</a>
-<a href="#132" id="132">132</a>
-<a href="#133" id="133">133</a>
-<a href="#134" id="134">134</a>
-<a href="#135" id="135">135</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -173,34 +166,27 @@
 <span class="kw">pub mod </span>prelude;
 <span class="kw">pub use </span>prelude::<span class="kw-2">*</span>;
 
-<span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+<span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
 </span><span class="kw">pub enum </span>EngineState {
-    LoadingPlatformStorage,
+    <span class="attr">#[default]
+    </span>LoadingPlatformStorage,
     LoadingGameData,
     MainMenu,
     InGame,
 }
 
-<span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+<span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
 </span><span class="kw">pub enum </span>InGameState {
-    Playing,
+    <span class="attr">#[default]
+    </span>Playing,
     Paused,
 }
 
-<span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+<span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
 </span><span class="kw">pub enum </span>GameEditorState {
-    Hidden,
+    <span class="attr">#[default]
+    </span>Hidden,
     Visible,
-}
-
-<span class="attr">#[derive(StageLabel, Eq, PartialEq, Hash)]
-</span><span class="kw">pub enum </span>RollbackStage {
-    Input,
-    First,
-    PreUpdate,
-    Update,
-    PostUpdate,
-    Last,
 }
 
 <span class="kw">pub fn </span>main() {
@@ -214,18 +200,18 @@
         <span class="comment">// Initialize resources
         </span>.insert_resource(ClearColor(Color::BLACK))
         <span class="comment">// Set initial game state
-        </span>.add_loopless_state(EngineState::LoadingPlatformStorage)
-        .add_loopless_state(InGameState::Playing)
-        .add_loopless_state(GameEditorState::Hidden)
+        </span>.add_state::&lt;EngineState&gt;()
+        .add_state::&lt;InGameState&gt;()
+        .add_state::&lt;GameEditorState&gt;()
         <span class="comment">// Install plugins
         </span>.add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
-                    window: WindowDescriptor {
+                    primary_window: <span class="prelude-val">Some</span>(Window {
                         title: <span class="string">&quot;Fish Folk: Jumpy&quot;</span>.to_string(),
                         fit_canvas_to_parent: <span class="bool-val">true</span>,
                         ..default()
-                    },
+                    }),
                     ..default()
                 })
                 .set(ImagePlugin::default_nearest())

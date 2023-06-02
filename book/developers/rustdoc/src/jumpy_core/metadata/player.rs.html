@@ -217,16 +217,16 @@
 <span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>PlayerSoundsMeta {
-    <span class="kw">pub </span>land_volume: f32,
+    <span class="kw">pub </span>land_volume: f64,
     <span class="kw">pub </span>land: Handle&lt;AudioSource&gt;,
 
-    <span class="kw">pub </span>jump_volume: f32,
+    <span class="kw">pub </span>jump_volume: f64,
     <span class="kw">pub </span>jump: Handle&lt;AudioSource&gt;,
 
-    <span class="kw">pub </span>grab_volume: f32,
+    <span class="kw">pub </span>grab_volume: f64,
     <span class="kw">pub </span>grab: Handle&lt;AudioSource&gt;,
 
-    <span class="kw">pub </span>drop_volume: f32,
+    <span class="kw">pub </span>drop_volume: f64,
     <span class="kw">pub </span>drop: Handle&lt;AudioSource&gt;,
 }
 

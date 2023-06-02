@@ -384,8 +384,8 @@
 
         <span class="comment">// Focus the button automatically when it is hovered and the mouse is moving
         </span><span class="kw">if </span>response.hovered()
-            &amp;&amp; ui.ctx().input().pointer.velocity().length_sq() &gt; <span class="number">0.0
-            </span>&amp;&amp; focus_on_hover
+            &amp;&amp; ui.ctx().input(|i| i.pointer.velocity().length_sq() &gt; <span class="number">0.0</span>)
+            &amp;&amp; focus_on_hover
         {
             response.request_focus();
         }

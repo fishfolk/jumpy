@@ -388,7 +388,7 @@
         quinn::EndpointConfig::default(),
         <span class="prelude-val">Some</span>(server_config),
         socket,
-        quinn_runtime_bevy::BevyIoTaskPoolExecutor,
+        Arc::new(quinn_runtime_bevy::BevyIoTaskPoolExecutor),
     )
     .unwrap();
 
@@ -640,9 +640,9 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn </span>run_criteria(<span class="kw-2">&amp;mut </span><span class="self">self</span>, time: <span class="kw-2">&amp;</span>Time) -&gt; bevy::ecs::schedule::ShouldRun {
+    <span class="kw">fn </span>run_criteria(<span class="kw-2">&amp;mut </span><span class="self">self</span>, time: <span class="kw-2">&amp;</span>Time) -&gt; ShouldRun {
         <span class="self">self</span>.delta = time.delta_seconds();
-        bevy::ecs::schedule::ShouldRun::Yes
+        ShouldRun::Yes
     }
 
     <span class="kw">fn </span>network_player_idx(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;usize&gt; {

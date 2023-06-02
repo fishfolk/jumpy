@@ -223,13 +223,22 @@
 <a href="#223" id="223">223</a>
 <a href="#224" id="224">224</a>
 <a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
 </pre><pre class="rust"><code><span class="doccomment">//! This binary isn&#39;t actually used in the game, but can be useful for debugging.
 //!
 //! It is a demonstration of the minimal code required to run Jumpy core.
 
-</span><span class="kw">use </span>std::sync::Arc;
+</span><span class="kw">use </span>std::{sync::Arc, time::Duration};
 
-<span class="kw">use </span>bevy::{prelude::<span class="kw-2">*</span>, time::FixedTimestep};
+<span class="kw">use </span>bevy::{
+    prelude::<span class="kw-2">*</span>,
+    time::common_conditions::on_timer,
+    window::{PrimaryWindow, WindowMode},
+};
 <span class="kw">use </span>bevy_kira_audio::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>bones_bevy_renderer::<span class="kw-2">*</span>;
 
@@ -250,6 +259,10 @@
     }
 }
 
+<span class="attr">#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+#[system_set(base)]
+</span><span class="kw">pub struct </span>JumpyCoreUpdate;
+
 <span class="kw">pub fn </span>main() {
     App::new()
         .add_plugins(
@@ -261,7 +274,7 @@
                 }),
         )
         .add_plugin(AudioPlugin)
-        .add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default())
+        .add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin)
         .add_plugin(bevy::diagnostic::LogDiagnosticsPlugin::default())
         .add_plugin(BonesRendererPlugin::&lt;Session&gt;::new())
         .add_plugin(JumpyCoreAssetsPlugin)
@@ -269,14 +282,11 @@
         .add_system(load)
         .init_resource::&lt;Snapshot&gt;()
         .add_system(snapshot_restore)
-        .add_stage_before(
-            CoreStage::Update,
-            <span class="string">&quot;update&quot;</span>,
-            SystemStage::single_threaded()
-                .with_system(update_input)
-                .with_system(update_game)
-                .with_system(play_sounds)
-                .with_run_criteria(FixedTimestep::step(<span class="number">1.0 </span>/ <span class="number">60.0</span>)),
+        .configure_set(JumpyCoreUpdate.before(CoreSet::Update))
+        .add_systems(
+            (update_input, update_game, play_sounds)
+                .in_base_set(JumpyCoreUpdate)
+                .distributive_run_if(on_timer(Duration::from_secs_f32(<span class="number">1.0 </span>/ <span class="number">60.0</span>))),
         )
         .run();
 }
@@ -340,18 +350,18 @@
 </span><span class="kw">fn </span>update_input(
     session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;,
     keyboard: Res&lt;Input&lt;KeyCode&gt;&gt;,
-    <span class="kw-2">mut </span>windows: ResMut&lt;Windows&gt;,
+    <span class="kw-2">mut </span>window_q: Query&lt;<span class="kw-2">&amp;mut </span>Window, With&lt;PrimaryWindow&gt;&gt;,
 ) {
     <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session <span class="kw">else </span>{
         <span class="kw">return</span>;
     };
 
     <span class="kw">if </span>keyboard.just_pressed(KeyCode::F11) {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(window) = windows.get_primary_mut() {
-            window.set_mode(<span class="kw">match </span>window.mode() {
+        <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>window) = window_q.get_single_mut() {
+            window.mode = <span class="kw">match </span>window.mode {
                 WindowMode::BorderlessFullscreen =&gt; WindowMode::Windowed,
                 <span class="kw">_ </span>=&gt; WindowMode::BorderlessFullscreen,
-            });
+            };
         }
     }
 
@@ -443,7 +453,7 @@
             } =&gt; {
                 audio
                     .play(sound_source.get_bevy_handle_untyped().typed())
-                    .with_volume(volume.into());
+                    .with_volume(volume);
             }
         }
     }

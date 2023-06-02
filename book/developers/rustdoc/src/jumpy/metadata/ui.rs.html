@@ -260,6 +260,7 @@
 <a href="#259" id="259">259</a>
 <a href="#260" id="260">260</a>
 <a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">use </span><span class="kw">crate</span>::assets::EguiFont;
@@ -352,11 +353,12 @@
 <span class="kw">impl </span>WidgetStyle {
     <span class="kw">pub fn </span>get_egui_widget_visuals(<span class="kw-2">&amp;</span><span class="self">self</span>, border_radius: f32) -&gt; egui::style::WidgetVisuals {
         egui::style::WidgetVisuals {
+            expansion: <span class="self">self</span>.expansion,
             bg_fill: <span class="self">self</span>.bg_fill.into_egui(),
-            bg_stroke: egui::Stroke::new(<span class="number">2.0</span>, <span class="self">self</span>.bg_stroke.into_egui()),
+            weak_bg_fill: <span class="self">self</span>.bg_fill.into_egui(), <span class="comment">// TODO: Does this need to be different?
+            </span>bg_stroke: egui::Stroke::new(<span class="number">2.0</span>, <span class="self">self</span>.bg_stroke.into_egui()),
             fg_stroke: egui::Stroke::new(<span class="number">2.0</span>, <span class="self">self</span>.text.into_egui()),
             rounding: egui::Rounding::same(border_radius),
-            expansion: <span class="self">self</span>.expansion,
         }
     }
 }

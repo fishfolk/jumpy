@@ -181,7 +181,7 @@
             .add_audio_channel::&lt;MusicChannel&gt;()
             .add_audio_channel::&lt;EffectsChannel&gt;()
             .add_startup_system(setup_audio_defaults)
-            .add_system(music_system.run_if_resource_exists::&lt;GameMeta&gt;());
+            .add_system(music_system.run_if(resource_exists::&lt;GameMeta&gt;()));
     }
 }
 
@@ -235,7 +235,7 @@
     <span class="kw-2">mut </span>music_state: ResMut&lt;MusicState&gt;,
     <span class="kw-2">mut </span>audio_instances: ResMut&lt;Assets&lt;AudioInstance&gt;&gt;,
     music: Res&lt;AudioChannel&lt;MusicChannel&gt;&gt;,
-    engine_state: Res&lt;CurrentState&lt;EngineState&gt;&gt;,
+    engine_state: Res&lt;State&lt;EngineState&gt;&gt;,
     menu_page: Res&lt;MenuPage&gt;,
 ) {
     <span class="kw">if </span>shuffled_fight_music.is_empty() || engine_state.is_changed() {

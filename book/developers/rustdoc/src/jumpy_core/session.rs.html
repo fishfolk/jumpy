@@ -244,6 +244,8 @@
 <a href="#243" id="243">243</a>
 <a href="#244" id="244">244</a>
 <a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// The implementation of a Jumpy game session.
@@ -348,8 +350,10 @@
 
         <span class="comment">// Update the window resource
         </span><span class="kw">let </span>window_resource = <span class="self">self</span>.world.resource::&lt;Window&gt;();
-        <span class="kw">let </span>bevy_windows = bevy_world.resource::&lt;::bevy::window::Windows&gt;();
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(window) = bevy_windows.get_primary() {
+        <span class="kw">let </span><span class="kw-2">mut </span>bevy_windows = bevy_world
+            .query_filtered::&lt;<span class="kw-2">&amp;</span>::bevy::window::Window, ::bevy::prelude::With&lt;::bevy::window::PrimaryWindow&gt;&gt;();
+
+        <span class="kw">if let </span><span class="prelude-val">Ok</span>(window) = bevy_windows.get_single_mut(bevy_world) {
             window_resource.borrow_mut().size = Vec2::new(window.width(), window.height());
         }
 

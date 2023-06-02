@@ -415,7 +415,7 @@
 <a href="#414" id="414">414</a>
 <a href="#415" id="415">415</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::ecs::system::SystemParam;
-<span class="kw">use </span>bevy_egui::{egui, EguiContext};
+<span class="kw">use </span>bevy_egui::{egui, EguiContexts};
 <span class="kw">use </span>bevy_fluent::Locale;
 <span class="kw">use </span>leafwing_input_manager::{
     axislike::{AxisType, SingleAxis},
@@ -435,17 +435,17 @@
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
         app.add_startup_system(setup).add_system(
             load_game
-                .run_in_state(EngineState::LoadingGameData)
+                .run_if(in_state(EngineState::LoadingGameData))
                 .run_if(core_assets_loaded),
         );
 
         <span class="comment">// Configure hot reload
         </span><span class="kw">if </span>ENGINE_CONFIG.hot_reload {
-            app.add_system_to_stage(CoreStage::Last, hot_reload_game)
-                .add_system_set_to_stage(
-                    CoreStage::Last,
-                    ConditionSet::new().run_in_state(EngineState::InGame).into(),
-                );
+            app.add_system(
+                hot_reload_game
+                    .in_base_set(CoreSet::Last)
+                    .run_if(in_state(EngineState::InGame)),
+            );
         }
     }
 }
@@ -536,12 +536,12 @@
     game_handle: Res&lt;<span class="lifetime">&#39;w</span>, GameMetaHandle&gt;,
     game_assets: ResMut&lt;<span class="lifetime">&#39;w</span>, Assets&lt;GameMeta&gt;&gt;,
     core_assets: ResMut&lt;<span class="lifetime">&#39;w</span>, Assets&lt;CoreMeta&gt;&gt;,
-    egui_ctx: ResMut&lt;<span class="lifetime">&#39;w</span>, EguiContext&gt;,
     events: EventReader&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>, AssetEvent&lt;GameMeta&gt;&gt;,
     <span class="comment">// active_scripts: ResMut&lt;&#39;w, ActiveScripts&gt;,
     </span>storage: ResMut&lt;<span class="lifetime">&#39;w</span>, Storage&gt;,
     player_assets: ResMut&lt;<span class="lifetime">&#39;w</span>, Assets&lt;PlayerMeta&gt;&gt;,
     texture_atlas_assets: Res&lt;<span class="lifetime">&#39;w</span>, Assets&lt;TextureAtlas&gt;&gt;,
+    egui_ctx: EguiContexts&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; GameLoader&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
@@ -610,7 +610,7 @@
             }
 
             <span class="comment">// Transition to the main menu when we are done
-            </span>commands.insert_resource(NextState(EngineState::MainMenu));
+            </span>commands.insert_resource(NextState(<span class="prelude-val">Some</span>(EngineState::MainMenu)));
         }
 
         <span class="comment">// Set the locale resource

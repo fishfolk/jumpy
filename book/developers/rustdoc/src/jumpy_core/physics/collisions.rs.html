@@ -1428,7 +1428,7 @@
     /// platforms.
     </span><span class="kw">pub fn </span>descent(<span class="kw-2">&amp;mut </span><span class="self">self</span>, entity: Entity) {
         <span class="kw">if </span><span class="self">self</span>.actors.contains(entity) {
-            <span class="kw">let </span><span class="kw-2">mut </span>collider = <span class="self">self</span>.colliders.get_mut(entity).unwrap();
+            <span class="kw">let </span>collider = <span class="self">self</span>.colliders.get_mut(entity).unwrap();
             collider.descent = <span class="bool-val">true</span>;
         }
     }

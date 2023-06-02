@@ -370,11 +370,14 @@
 <a href="#369" id="369">369</a>
 <a href="#370" id="370">370</a>
 <a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>bevy::{
     app::AppExit,
     ecs::system::{SystemParam, SystemState},
+    window::PrimaryWindow,
 };
 <span class="kw">use </span>bevy_egui::<span class="kw-2">*</span>;
 <span class="kw">use </span>bevy_fluent::Localization;
@@ -414,13 +417,11 @@
             .init_resource::&lt;settings::SettingsTab&gt;()
             .init_resource::&lt;settings::ModifiedSettings&gt;()
             .init_resource::&lt;player_select::PlayerSelectState&gt;()
-            .add_system(
-                main_menu_system
-                    .run_in_state(EngineState::MainMenu)
-                    .at_end(),
-            )
-            .add_enter_system(EngineState::MainMenu, setup_main_menu)
-            .add_exit_system(EngineState::MainMenu, clean_up_main_menu);
+            .add_systems((
+                main_menu_system.run_if(in_state(EngineState::MainMenu)),
+                setup_main_menu.in_schedule(OnEnter(EngineState::MainMenu)),
+                clean_up_main_menu.in_schedule(OnExit(EngineState::MainMenu)),
+            ));
     }
 }
 
@@ -438,7 +439,7 @@
     session_manager.stop();
 
     <span class="comment">// Make sure the game editor is hidden
-    </span>commands.insert_resource(NextState(GameEditorState::Hidden));
+    </span>commands.insert_resource(NextState(<span class="prelude-val">Some</span>(GameEditorState::Hidden)));
 
     <span class="comment">// Spawn menu background
     </span><span class="kw">let </span>bg_handle = game.main_menu.background_image.image.inner.clone_weak();
@@ -525,13 +526,16 @@
 
 <span class="doccomment">/// Render the main menu UI
 </span><span class="kw">pub fn </span>main_menu_system(world: <span class="kw-2">&amp;mut </span>World) {
-    world.resource_scope(|world: <span class="kw-2">&amp;mut </span>World, <span class="kw-2">mut </span>egui_ctx: Mut&lt;EguiContext&gt;| {
-        egui::CentralPanel::default()
-            .frame(egui::Frame::none())
-            .show(egui_ctx.ctx_mut(), |ui| {
-                widget::&lt;MainMenu&gt;(world, ui, WidgetId::new(<span class="string">&quot;main-menu&quot;</span>), ());
-            });
-    });
+    <span class="kw">let </span><span class="kw-2">mut </span>egui_context = world
+        .query_filtered::&lt;<span class="kw-2">&amp;mut </span>EguiContext, With&lt;PrimaryWindow&gt;&gt;()
+        .single(world)
+        .clone();
+
+    egui::CentralPanel::default()
+        .frame(egui::Frame::none())
+        .show(egui_context.get_mut(), |ui| {
+            widget::&lt;MainMenu&gt;(world, ui, WidgetId::new(<span class="string">&quot;main-menu&quot;</span>), ());
+        });
 }
 
 <span class="attr">#[derive(SystemParam)]
@@ -588,7 +592,7 @@
     modified_settings: ResMut&lt;<span class="lifetime">&#39;w</span>, ModifiedSettings&gt;,
     game: Res&lt;<span class="lifetime">&#39;w</span>, GameMeta&gt;,
     localization: Res&lt;<span class="lifetime">&#39;w</span>, Localization&gt;,
-    app_exit: EventWriter&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>, AppExit&gt;,
+    app_exit: EventWriter&lt;<span class="lifetime">&#39;w</span>, AppExit&gt;,
     storage: ResMut&lt;<span class="lifetime">&#39;w</span>, Storage&gt;,
 }
 
@@ -680,13 +684,13 @@
                         {
                             params
                                 .commands
-                                .insert_resource(NextState(GameEditorState::Visible));
+                                .insert_resource(NextState(<span class="prelude-val">Some</span>(GameEditorState::Visible)));
                             params
                                 .commands
-                                .insert_resource(NextState(EngineState::InGame));
+                                .insert_resource(NextState(<span class="prelude-val">Some</span>(EngineState::InGame)));
                             params
                                 .commands
-                                .insert_resource(NextState(InGameState::Playing));
+                                .insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Playing)));
                         }
                     });
 

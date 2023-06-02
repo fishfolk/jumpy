@@ -1358,7 +1358,7 @@
     atlas_assets: <span class="kw-2">&amp;</span>Assets&lt;TextureAtlas&gt;,
     egui_textures: <span class="kw-2">&amp;</span>PlayerAtlasEguiTextures,
 ) {
-    <span class="kw">let </span>time = ui.ctx().input().time <span class="kw">as </span>f32;
+    <span class="kw">let </span>time = ui.ctx().input(|i| i.time <span class="kw">as </span>f32);
     <span class="kw">let </span>width = ui.available_width();
     <span class="kw">let </span>available_height = ui.available_width();
 

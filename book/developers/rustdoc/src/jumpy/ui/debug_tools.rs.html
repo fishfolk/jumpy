@@ -256,25 +256,6 @@
 <a href="#255" id="255">255</a>
 <a href="#256" id="256">256</a>
 <a href="#257" id="257">257</a>
-<a href="#258" id="258">258</a>
-<a href="#259" id="259">259</a>
-<a href="#260" id="260">260</a>
-<a href="#261" id="261">261</a>
-<a href="#262" id="262">262</a>
-<a href="#263" id="263">263</a>
-<a href="#264" id="264">264</a>
-<a href="#265" id="265">265</a>
-<a href="#266" id="266">266</a>
-<a href="#267" id="267">267</a>
-<a href="#268" id="268">268</a>
-<a href="#269" id="269">269</a>
-<a href="#270" id="270">270</a>
-<a href="#271" id="271">271</a>
-<a href="#272" id="272">272</a>
-<a href="#273" id="273">273</a>
-<a href="#274" id="274">274</a>
-<a href="#275" id="275">275</a>
-<a href="#276" id="276">276</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::{
     diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::<span class="kw-2">*</span>,
@@ -313,22 +294,7 @@
     }
 }
 
-<span class="comment">// #[derive(Deref, DerefMut, Default)]
-// pub struct ShowNetworkVisualizer(pub bool);
-
-// fn network_visualizer_window(
-//     show: Res&lt;ShowNetworkVisualizer&gt;,
-//     mut egui_context: ResMut&lt;EguiContext&gt;,
-//     mut visualizer: ResMut&lt;RenetServerVisualizer&lt;200&gt;&gt;,
-//     server: Res&lt;RenetServer&gt;,
-// ) {
-//     if **show {
-//         visualizer.update(&amp;server);
-//         visualizer.show_window(egui_context.ctx_mut());
-//     }
-// }
-
-</span><span class="attr">#[derive(Resource, Default)]
+<span class="attr">#[derive(Resource, Default)]
 </span><span class="kw">struct </span>ShowDebugWindows {
     <span class="kw">pub </span>frame_time_diagnostics: bool,
     <span class="kw">pub </span>profiler: bool,
@@ -342,16 +308,14 @@
 </span><span class="kw">fn </span>debug_tools_window(
     <span class="kw-2">mut </span>core_debug_settings: ResMut&lt;CoreDebugSettings&gt;,
     <span class="kw-2">mut </span>visible: Local&lt;bool&gt;,
-    <span class="kw-2">mut </span>egui_context: ResMut&lt;EguiContext&gt;,
     <span class="kw-2">mut </span>show_debug_windows: ResMut&lt;ShowDebugWindows&gt;,
     localization: Res&lt;Localization&gt;,
     input: Res&lt;Input&lt;KeyCode&gt;&gt;,
     <span class="kw-2">mut </span>show_inspector: ResMut&lt;WorldInspectorEnabled&gt;,
     <span class="kw-2">mut </span>bones_world_snapshot: ResMut&lt;BonesSnapshot&gt;,
     <span class="kw-2">mut </span>session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;,
+    <span class="kw-2">mut </span>egui_ctxs: EguiContexts,
 ) {
-    <span class="kw">let </span>ctx = egui_context.ctx_mut();
-
     <span class="comment">// Toggle debug window visibility
     </span><span class="kw">if </span>input.just_pressed(KeyCode::F12) {
         <span class="kw-2">*</span>visible = !<span class="kw-2">*</span>visible;
@@ -387,7 +351,7 @@
         <span class="comment">// ID is needed because title comes from localizaition which can change
         </span>.id(egui::Id::new(<span class="string">&quot;debug_tools&quot;</span>))
         .open(<span class="kw-2">&amp;mut </span>visible)
-        .show(ctx, |ui| {
+        .show(egui_ctxs.ctx_mut(), |ui| {
             <span class="comment">// Show collision shapes
             </span>ui.checkbox(
                 <span class="kw-2">&amp;mut </span>core_debug_settings.show_kinematic_colliders,
@@ -475,19 +439,17 @@
 
 <span class="kw">fn </span>frame_diagnostic_window(
     <span class="kw-2">mut </span>state: Local&lt;FrameDiagState&gt;,
-    <span class="kw-2">mut </span>egui_context: ResMut&lt;EguiContext&gt;,
     <span class="kw-2">mut </span>show: ResMut&lt;ShowDebugWindows&gt;,
     diagnostics: Res&lt;Diagnostics&gt;,
     localization: Res&lt;Localization&gt;,
+    <span class="kw-2">mut </span>egui_ctx: EguiContexts,
 ) {
     <span class="kw">if </span>show.frame_time_diagnostics {
-        <span class="kw">let </span>ctx = egui_context.ctx_mut();
-
         egui::Window::new(<span class="kw-2">&amp;</span>localization.get(<span class="string">&quot;frame-diagnostics&quot;</span>))
             .id(egui::Id::new(<span class="string">&quot;frame_diagnostics&quot;</span>))
             .default_width(<span class="number">500.0</span>)
             .open(<span class="kw-2">&amp;mut </span>show.frame_time_diagnostics)
-            .show(ctx, |ui| {
+            .show(egui_ctx.ctx_mut(), |ui| {
                 <span class="kw">if </span>ui.button(<span class="kw-2">&amp;</span>localization.get(<span class="string">&quot;reset-min-max&quot;</span>)).clicked() {
                     <span class="kw-2">*</span>state = default();
                 }
@@ -538,15 +500,15 @@
 
 <span class="kw">fn </span>profiler_window(
     <span class="kw-2">mut </span>show: ResMut&lt;ShowDebugWindows&gt;,
-    <span class="kw-2">mut </span>egui_context: ResMut&lt;EguiContext&gt;,
     localization: Res&lt;Localization&gt;,
+    <span class="kw-2">mut </span>egui_ctx: EguiContexts,
 ) {
     puffin::set_scopes_on(show.profiler);
     <span class="kw">if </span>show.profiler {
         egui::Window::new(<span class="kw-2">&amp;</span>localization.get(<span class="string">&quot;profiler&quot;</span>))
             .id(egui::Id::new(<span class="string">&quot;profiler&quot;</span>))
             .open(<span class="kw-2">&amp;mut </span>show.profiler)
-            .show(egui_context.ctx_mut(), |ui| {
+            .show(egui_ctx.ctx_mut(), |ui| {
                 puffin_egui::profiler_ui(ui);
             });
     }

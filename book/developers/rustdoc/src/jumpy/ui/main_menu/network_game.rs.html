@@ -768,6 +768,7 @@
 <a href="#767" id="767">767</a>
 <a href="#768" id="768">768</a>
 <a href="#769" id="769">769</a>
+<a href="#770" id="770">770</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     net::{IpAddr, Ipv4Addr},
     time::Duration,
@@ -875,7 +876,8 @@
     </span><span class="kw">pub </span>ping: <span class="prelude-ty">Option</span>&lt;u16&gt;,
 }
 
-<span class="kw">pub enum </span>MatchKind {
+<span class="attr">#[derive(Clone)]
+</span><span class="kw">pub enum </span>MatchKind {
     Lan(LanMode),
     Online(OnlineState),
 }
@@ -886,7 +888,7 @@
     }
 }
 
-<span class="attr">#[derive(Default)]
+<span class="attr">#[derive(Default, Clone)]
 </span><span class="kw">pub enum </span>LanMode {
     <span class="attr">#[default]
     </span>Join,
@@ -896,7 +898,7 @@
     },
 }
 
-<span class="attr">#[derive(Eq, PartialEq)]
+<span class="attr">#[derive(Eq, PartialEq, Clone)]
 </span><span class="kw">pub struct </span>OnlineState {
     player_count: usize,
     matchmaking_server: String,
@@ -913,7 +915,7 @@
     }
 }
 
-<span class="attr">#[derive(Default, PartialEq, Eq)]
+<span class="attr">#[derive(Default, PartialEq, Eq, Clone, Copy)]
 </span><span class="kw">pub enum </span>SearchState {
     <span class="attr">#[default]
     </span>Connecting,
@@ -1372,7 +1374,7 @@
                     </span>MatchKind::Online(OnlineState {
                         player_count,
                         matchmaking_server,
-                        search_state,
+                        <span class="kw-2">mut </span>search_state,
                     }) =&gt; {
                         <span class="comment">// Get the matchmaking server from the settings.
                         </span><span class="kw">if </span>matchmaking_server.is_empty() {
@@ -1437,10 +1439,10 @@
                             <span class="kw">while let </span><span class="prelude-val">Ok</span>(message) = ONLINE_MATCHMAKER.try_recv() {
                                 <span class="kw">match </span>message {
                                     networking::OnlineMatchmakerResponse::Searching =&gt; {
-                                        <span class="kw-2">*</span>search_state = SearchState::Searching
+                                        search_state = SearchState::Searching
                                     }
                                     networking::OnlineMatchmakerResponse::PlayerCount(count) =&gt; {
-                                        <span class="kw-2">*</span>search_state = SearchState::WaitingForPlayers(count)
+                                        search_state = SearchState::WaitingForPlayers(count)
                                     }
                                     networking::OnlineMatchmakerResponse::GameStarting {
                                         online_socket,
@@ -1453,7 +1455,7 @@
                                         ));
 
                                         <span class="kw-2">*</span>status = default();
-                                        <span class="kw-2">*</span>search_state = default();
+                                        search_state = default();
                                         <span class="kw-2">*</span>params.menu_page = MenuPage::PlayerSelect;
                                     }
                                 }
@@ -1470,7 +1472,7 @@
                                     ONLINE_MATCHMAKER
                                         .try_send(networking::OnlineMatchmakerRequest::StopSearch)
                                         .unwrap();
-                                    <span class="kw-2">*</span>search_state = default();
+                                    search_state = default();
                                     <span class="kw-2">*</span>status = Status::Idle;
                                 }
 

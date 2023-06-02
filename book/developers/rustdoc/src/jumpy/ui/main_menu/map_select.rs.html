@@ -333,7 +333,7 @@
     game: Res&lt;<span class="lifetime">&#39;w</span>, GameMeta&gt;,
     core: Res&lt;<span class="lifetime">&#39;w</span>, CoreMetaArc&gt;,
     player_select_state: Res&lt;<span class="lifetime">&#39;w</span>, <span class="kw">super</span>::player_select::PlayerSelectState&gt;,
-    game_state: Res&lt;<span class="lifetime">&#39;w</span>, CurrentState&lt;EngineState&gt;&gt;,
+    game_state: Res&lt;<span class="lifetime">&#39;w</span>, State&lt;EngineState&gt;&gt;,
     pause_page: ResMut&lt;<span class="lifetime">&#39;w</span>, PauseMenuPage&gt;,
     commands: Commands&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
     localization: Res&lt;<span class="lifetime">&#39;w</span>, Localization&gt;,
@@ -487,10 +487,10 @@
 
                                         params
                                             .commands
-                                            .insert_resource(NextState(EngineState::InGame));
+                                            .insert_resource(NextState(<span class="prelude-val">Some</span>(EngineState::InGame)));
                                         params
                                             .commands
-                                            .insert_resource(NextState(InGameState::Playing));
+                                            .insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Playing)));
 
                                         <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
                                         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
@@ -551,12 +551,12 @@
                                                 map_meta,
                                                 player_info,
                                             });
-                                            params
-                                                .commands
-                                                .insert_resource(NextState(EngineState::InGame));
-                                            params
-                                                .commands
-                                                .insert_resource(NextState(InGameState::Playing));
+                                            params.commands.insert_resource(NextState(<span class="prelude-val">Some</span>(
+                                                EngineState::InGame,
+                                            )));
+                                            params.commands.insert_resource(NextState(<span class="prelude-val">Some</span>(
+                                                InGameState::Playing,
+                                            )));
                                         };
                                     }
                                 }
@@ -614,10 +614,10 @@
                         );
                         params
                             .commands
-                            .insert_resource(NextState(EngineState::InGame));
+                            .insert_resource(NextState(<span class="prelude-val">Some</span>(EngineState::InGame)));
                         params
                             .commands
-                            .insert_resource(NextState(InGameState::Playing));
+                            .insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Playing)));
                     }
                 },
                 <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(<span class="string">&quot;Ignoring network message that was not understood: {e}&quot;</span>),

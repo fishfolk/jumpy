@@ -80,7 +80,7 @@
 
 <span class="kw">impl </span>EguiContextExt <span class="kw">for </span><span class="kw-2">&amp;</span>egui::Context {
     <span class="kw">fn </span>clear_focus(<span class="self">self</span>) {
-        <span class="self">self</span>.memory().request_focus(egui::Id::null());
+        <span class="self">self</span>.memory_mut(|r| r.request_focus(egui::Id::null()));
     }
 }
 
@@ -92,8 +92,8 @@
 
 <span class="kw">impl </span>EguiResponseExt <span class="kw">for </span>egui::Response {
     <span class="kw">fn </span>focus_by_default(<span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui) -&gt; egui::Response {
-        <span class="kw">if </span>ui.ctx().memory().focus().is_none() {
-            ui.ctx().memory().request_focus(<span class="self">self</span>.id);
+        <span class="kw">if </span>ui.ctx().memory(|r| r.focus().is_none()) {
+            ui.ctx().memory_mut(|r| r.request_focus(<span class="self">self</span>.id));
 
             <span class="self">self
         </span>} <span class="kw">else </span>{

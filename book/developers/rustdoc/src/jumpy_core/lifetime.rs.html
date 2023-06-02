@@ -121,7 +121,7 @@
 <span class="doccomment">/// Despawns entities that have an expired lifetime
 </span><span class="kw">fn </span>lifetime_system(<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;, <span class="kw-2">mut </span>lifetimes: CompMut&lt;Lifetime&gt;) {
     <span class="kw">let </span><span class="kw-2">mut </span>to_kill = Vec::new();
-    <span class="kw">for </span>(entity, <span class="kw-2">mut </span>lifetime) <span class="kw">in </span><span class="kw-2">&amp;mut </span>entities.iter_with(<span class="kw-2">&amp;mut </span>lifetimes) {
+    <span class="kw">for </span>(entity, lifetime) <span class="kw">in </span><span class="kw-2">&amp;mut </span>entities.iter_with(<span class="kw-2">&amp;mut </span>lifetimes) {
         lifetime.age += <span class="number">1.0 </span>/ FPS;
         <span class="kw">if </span>lifetime.age &gt; lifetime.lifetime {
             to_kill.push(entity);

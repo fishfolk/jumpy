@@ -81,9 +81,15 @@ pub fn handle_player_state(
         // Walk in movement direction
         body.velocity.x += meta.stats.accel_walk_speed * control.move_direction.x;
         if control.move_direction.x.is_sign_positive() {
-            body.velocity.x = body.velocity.x.min(meta.stats.walk_speed);
+            body.velocity.x = body
+                .velocity
+                .x
+                .min(meta.stats.walk_speed * control.move_direction.x);
         } else {
-            body.velocity.x = body.velocity.x.max(-meta.stats.walk_speed);
+            body.velocity.x = body
+                .velocity
+                .x
+                .max(meta.stats.walk_speed * control.move_direction.x);
         }
 
         // Point in movement direction

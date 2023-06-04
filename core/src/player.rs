@@ -236,11 +236,28 @@ impl PlayerCommand {
     }
 }
 
-#[derive(Default, Clone, Debug, TypeUlid)]
+#[derive(Clone, Debug, TypeUlid)]
 #[ulid = "01GQWND0P969BCZF5JET9MY944"]
 pub struct AiPlayer {
+    /// Tick timer that is used for AI pausing logic.
+    tick: Timer,
+    /// Indicates the player is taking pause for the given number of ticks.
+    pausing: u32,
+    /// Buffers planned AI movements
     movement_buffer: Option<VecDeque<PlayerControl>>,
+    /// The player that the AI is targeting.
     target_player: Option<Entity>,
+}
+
+impl Default for AiPlayer {
+    fn default() -> Self {
+        Self {
+            tick: Timer::from_seconds(0.5, TimerMode::Repeating),
+            pausing: 0,
+            movement_buffer: Default::default(),
+            target_player: Default::default(),
+        }
+    }
 }
 
 #[derive(Debug, TypeUlid, Clone)]
@@ -289,12 +306,37 @@ fn player_ai_system(
     bodies: Comp<KinematicBody>,
     debug_settings: Res<DebugSettings>,
     rng: Res<GlobalRng>,
+    time: Res<Time>,
 ) {
-    const SWORD_SWING_DIST: f32 = 50.0;
+    const SWORD_SWING_DIST: f32 = 10.0;
+    const AI_SPEED_MULTIPLIER: f32 = 0.65;
 
     for (ai_ent, (player_idx, transform, ai_player)) in
         entities.iter_with((&player_indexes, &transforms, &mut ai_players))
     {
+        // Tick the AI timer
+        ai_player.tick.tick(time.delta());
+
+        // If a tick has elapsed
+        if ai_player.tick.just_finished() {
+            // If the player isn't pausing, then there's a 40% chance
+            if ai_player.pausing == 0 && rng.chance(0.4) {
+                // That we will pause for a random number of ticks between 0 and 2
+                ai_player.pausing = (rng.f32_normalized() * 2.0).round() as u32
+            }
+
+            // If the player is pausing
+            if ai_player.pausing > 0 {
+                // Subtract a tick from how long they should pause.
+                ai_player.pausing -= 1;
+            }
+        }
+
+        // If the player is pausing, don't have the AI move this frame.
+        if ai_player.pausing > 0 {
+            continue;
+        }
+
         let target_transform = match ai_player.target_player {
             Some(target_player) if transforms.contains(target_player) => {
                 transforms.get(target_player).unwrap()
@@ -360,6 +402,9 @@ fn player_ai_system(
                 let edge = nav_graph.edge_weight(current_node, next_node).unwrap();
                 let mut movement_buffer = edge.inputs.clone();
                 let mut first_movement = movement_buffer.pop_front().unwrap();
+
+                // Slow down the AI movement according to the fixed multiplier
+                first_movement.move_direction *= vec2(AI_SPEED_MULTIPLIER, 1.0);
 
                 // This is a hack to prevent us from getting stuck when we think we should be falling
                 // straight down and we actually need to move off of the block we're half-standing on.

@@ -95,6 +95,12 @@
 <a href="#94" id="94">94</a>
 <a href="#95" id="95">95</a>
 <a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub const </span>ID: Key = <span class="macro">key!</span>(<span class="string">&quot;core::walk&quot;</span>);
@@ -178,9 +184,15 @@
         <span class="comment">// Walk in movement direction
         </span>body.velocity.x += meta.stats.accel_walk_speed * control.move_direction.x;
         <span class="kw">if </span>control.move_direction.x.is_sign_positive() {
-            body.velocity.x = body.velocity.x.min(meta.stats.walk_speed);
+            body.velocity.x = body
+                .velocity
+                .x
+                .min(meta.stats.walk_speed * control.move_direction.x);
         } <span class="kw">else </span>{
-            body.velocity.x = body.velocity.x.max(-meta.stats.walk_speed);
+            body.velocity.x = body
+                .velocity
+                .x
+                .max(meta.stats.walk_speed * control.move_direction.x);
         }
 
         <span class="comment">// Point in movement direction

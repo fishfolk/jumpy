@@ -24,17 +24,17 @@ macro in order to register the type’s implementation of that trait.</p>
 <p>There are a few “special” identifiers that work a bit differently:</p>
 <ul>
 <li><code>#[reflect(Debug)]</code> will force the implementation of <code>Reflect::reflect_debug</code> to rely on
-the type’s <a href="../../core/fmt/macros/derive.Debug.html" title="Debug"><code>Debug</code></a> implementation.
+the type’s <a href="https://doc.rust-lang.org/1.67.0/core/fmt/macros/derive.Debug.html" title="Debug"><code>Debug</code></a> implementation.
 A custom implementation may be provided using <code>#[reflect(Debug(my_debug_func))]</code> where
 <code>my_debug_func</code> is the path to a function matching the signature:
 <code>(&amp;self, f: &amp;mut ::core::fmt::Formatter&lt;'_&gt;) -&gt; ::core::fmt::Result</code>.</li>
 <li><code>#[reflect(PartialEq)]</code> will force the implementation of <code>Reflect::reflect_partial_eq</code> to rely on
-the type’s <a href="../../core/cmp/trait.PartialEq.html" title="PartialEq"><code>PartialEq</code></a> implementation.
+the type’s <a href="https://doc.rust-lang.org/1.67.0/core/cmp/trait.PartialEq.html" title="PartialEq"><code>PartialEq</code></a> implementation.
 A custom implementation may be provided using <code>#[reflect(PartialEq(my_partial_eq_func))]</code> where
 <code>my_partial_eq_func</code> is the path to a function matching the signature:
 <code>(&amp;self, value: &amp;dyn #bevy_reflect_path::Reflect) -&gt; bool</code>.</li>
 <li><code>#[reflect(Hash)]</code> will force the implementation of <code>Reflect::reflect_hash</code> to rely on
-the type’s <a href="../../core/hash/macros/derive.Hash.html" title="Hash"><code>Hash</code></a> implementation.
+the type’s <a href="https://doc.rust-lang.org/1.67.0/core/hash/macros/derive.Hash.html" title="Hash"><code>Hash</code></a> implementation.
 A custom implementation may be provided using <code>#[reflect(Hash(my_hash_func))]</code> where
 <code>my_hash_func</code> is the path to a function matching the signature: <code>(&amp;self) -&gt; u64</code>.</li>
 <li><code>#[reflect(Default)]</code> will register the <code>ReflectDefault</code> type data as normal.
@@ -42,13 +42,13 @@ However, it will also affect how certain other operations are performed in order
 to improve performance and/or robustness.
 An example of where this is used is in the <a href="derive.FromReflect.html" title="FromReflect"><code>FromReflect</code></a> derive macro,
 where adding this attribute will cause the <code>FromReflect</code> implementation to create
-a base value using its <a href="../../core/default/trait.Default.html" title="Default"><code>Default</code></a> implementation avoiding issues with ignored fields.</li>
+a base value using its <a href="https://doc.rust-lang.org/1.67.0/core/default/trait.Default.html" title="Default"><code>Default</code></a> implementation avoiding issues with ignored fields.</li>
 </ul>
 <h3 id="reflect_value"><a href="#reflect_value"><code>#[reflect_value]</code></a></h3>
 <p>The <code>#[reflect_value]</code> attribute (which may also take the form <code>#[reflect_value(Ident)]</code>),
 denotes that the item should implement <code>Reflect</code> as though it were a base value type.
 This means that it will forgo implementing <code>Struct</code>, <code>TupleStruct</code>, or <code>Enum</code>.</p>
-<p>Furthermore, it requires that the type implements <a href="../../core/clone/trait.Clone.html" title="Clone"><code>Clone</code></a>.
+<p>Furthermore, it requires that the type implements <a href="https://doc.rust-lang.org/1.67.0/core/clone/trait.Clone.html" title="Clone"><code>Clone</code></a>.
 If planning to serialize this type using the reflection serializers,
 then the <code>Serialize</code> and <code>Deserialize</code> traits will need to be implemented and registered as well.</p>
 <h2 id="field-attributes"><a href="#field-attributes">Field Attributes</a></h2>

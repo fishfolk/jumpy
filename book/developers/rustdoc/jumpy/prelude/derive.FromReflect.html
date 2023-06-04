@@ -8,12 +8,12 @@
 <h2 id="field-attributes"><a href="#field-attributes">Field Attributes</a></h2><h3 id="reflectignore"><a href="#reflectignore"><code>#[reflect(ignore)]</code></a></h3>
 <p>The <code>#[reflect(ignore)]</code> attribute is shared with the <a href="derive.Reflect.html"><code>#[derive(Reflect)]</code></a> macro and has much of the same
 functionality in that it denotes that a field will be ignored by the reflection API.</p>
-<p>The only major difference is that using it with this derive requires that the field implements <a href="../../core/default/trait.Default.html" title="Default"><code>Default</code></a>.
+<p>The only major difference is that using it with this derive requires that the field implements <a href="https://doc.rust-lang.org/1.67.0/core/default/trait.Default.html" title="Default"><code>Default</code></a>.
 Without this requirement, there would be no way for <code>FromReflect</code> to automatically construct missing fields
 that have been ignored.</p>
 <h3 id="reflectdefault"><a href="#reflectdefault"><code>#[reflect(default)]</code></a></h3>
 <p>If a field cannot be read, this attribute specifies a default value to be used in its place.</p>
-<p>By default, this attribute denotes that the field’s type implements <a href="../../core/default/trait.Default.html" title="Default"><code>Default</code></a>.
+<p>By default, this attribute denotes that the field’s type implements <a href="https://doc.rust-lang.org/1.67.0/core/default/trait.Default.html" title="Default"><code>Default</code></a>.
 However, it can also take in a path string to a user-defined function that will return the default value.
 This takes the form: <code>#[reflect(default = &quot;path::to::my_function)]</code> where <code>my_function</code> is a parameterless
 function that must return some default value for the type.</p>

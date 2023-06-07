@@ -22,6 +22,12 @@ build-release-web basepath='':
 docs:
     RUSTDOCFLAGS="--html-in-header docs/rustdoc-mermaid-head.html" \
     cargo +nightly doc --document-private-items --workspace --no-deps
+    for link in `grep -hor 'click .* call docLink\(.*\)' target/doc | awk -F '(' '{ print $2 }' | tr -d ')'`; do \
+        if [ ! -e "target/doc/$link" ]; then \
+            echo "broken doc link in diagram: $link" 1>&2; \
+            exit 1; \
+        fi \
+    done
 
 run *args:
     cargo run -- {{args}}

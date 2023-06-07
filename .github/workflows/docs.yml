@@ -46,6 +46,13 @@ jobs:
       - name: 🔨 Build Rustdoc
         run: |
           RUSTDOCFLAGS="--html-in-header docs/rustdoc-mermaid-head.html" cargo doc --workspace --no-deps
+          # Check for broken doc links in diagrams
+          for link in `grep -hor 'click .* call docLink\(.*\)' target/doc | awk -F '(' '{ print $2 }' | tr -d ')'`; do
+              if [ ! -e "target/doc/$link" ]; then
+                  echo "broken doc link in diagram to '$link'" 1>&2;
+                  exit 1;
+              fi
+          done
           mv target/doc book/src/developers/rustdoc
 
       - name: 🛠 Build MDBook

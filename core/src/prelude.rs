@@ -1,3 +1,5 @@
+//! Common imports used throughout the crate.
+
 pub use {
     crate::{
         attachment::*, bullet::*, camera::*, damage::*, debug::*, debug::*, elements::*,

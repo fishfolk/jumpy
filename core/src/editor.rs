@@ -1,3 +1,7 @@
+//! Map editing implementation.
+//!
+//! Allows you to edit the game map while the game is running.
+
 use crate::impl_system_param;
 use crate::map_constructor::shiftnanigans::ShiftnanigansMapConstructor;
 use crate::map_constructor::MapConstructor;

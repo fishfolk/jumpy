@@ -1,3 +1,5 @@
+//! Camera controller and parallax.
+
 use crate::prelude::*;
 
 pub fn install(session: &mut CoreSession) {

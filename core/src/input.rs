@@ -1,3 +1,5 @@
+//! Player and editor input types.
+
 use crate::{prelude::*, MAX_PLAYERS};
 
 pub fn install(session: &mut CoreSession) {

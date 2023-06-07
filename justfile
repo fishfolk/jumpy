@@ -19,6 +19,10 @@ build-web basepath='':
 build-release-web basepath='':
     ./scripts/build-web.sh release
 
+docs:
+    RUSTDOCFLAGS="--html-in-header docs/rustdoc-mermaid-head.html" \
+    cargo +nightly doc --document-private-items --workspace --no-deps
+
 run *args:
     cargo run -- {{args}}
 

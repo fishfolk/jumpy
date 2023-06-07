@@ -1,3 +1,7 @@
+//! Common item code.
+//!
+//! An item is anything in the game that can be picked up by the player.
+
 use crate::prelude::*;
 
 pub fn install(session: &mut CoreSession) {

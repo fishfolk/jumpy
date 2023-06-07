@@ -1,3 +1,5 @@
+//! Map and navigation mesh implementation.
+
 use std::{
     cmp::{max, min},
     collections::VecDeque,

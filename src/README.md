@@ -1,3 +1,5 @@
+# Jumpy
+
 Jumpy is a pixel-style, tactical 2D shooter with a fishy theme.
 
 This is the project's internal developer API and architecture documentation. We want these docs to
@@ -21,31 +23,27 @@ feel like something is missing, or would like further guidance on a particular t
 
 ##### Diagrams
 
-Throughout the docs there are diagrams to explain certain topics. These may contain clickable links, highlighted in blue, that will bring you to the relevant module or struct. For example:
+Throughout the docs there are diagrams to explain certain topics. These may contain clickable links, highlighted in blue, that will bring you to the relevant module or struct. We also use a convention to indicate what kind of code object it links to, based on the shape of the box.
 
 <pre class="mermaid">
 graph LR
-  sm(SessionManager):::code
+  ex("Example Link ( Note )"):::dotted -.-> sm(SessionManager):::code
   click sm call docLink(jumpy/session/struct.SessionManager.html)
-  ex(Example Link) -.-> sm
+
+  crate:::code --> module([module]):::code --> struct(struct):::code --> concept>Concept]
 </pre>
 
-You can also pan by clicking and dragging, and zoom by holding `ctrl` and scrolling.
+You can pan the diagram by clicking and dragging or zoom by holding `ctrl` and scrolling.
 
 [gh_issue]: https://github.com/fishfolk/jumpy/issues/new
 
 ## Overall Architecture
 
-You can explore the documentation for each of the modules below to get more details on what each
-one does. Here we will outline the high-level architecture.
-
 There are a few major crates that are used in Jumpy:
 
-- [Bevy](https://bevyengine.org)
-- [Bones](https://fishfolk.org/development/bones/introduction/)
-- [Jumpy Core][jumpy_core]
-
-The overall architecture is depicted in the diagram below.
+- [Jumpy Core][jumpy_core] - Core Gameplay Logic
+- [Bones](https://fishfolk.org/development/bones/introduction/) - Core Entity Component System & Rendering Components
+- [Bevy](https://bevyengine.org) - Rendering, Asset Loading, and User Input
 
 <pre class="mermaid">
 graph TD
@@ -80,8 +78,7 @@ graph TD
       World(World):::code
       click World href "https://fishfolk.github.io/bones/rustdoc/bones_ecs/struct.World.html"
       renderingComponents("Rendering / Audio
-          Components")
-      style renderingComponents stroke-dasharray: 5
+          Components"):::dotted
       renderingComponents -.- World
     end
 
@@ -97,7 +94,8 @@ graph TD
     bones_bevy_renderer --> bevyRenderer
 
     subgraph bevy
-      bevyInput[\User Input/]
+      bevyInput[\"User Input
+      Assets"/]
       bevyRenderer[/Renderer\]
     end
   end

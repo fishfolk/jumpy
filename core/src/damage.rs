@@ -1,4 +1,4 @@
-//! Systems and components related to damage/kill zones
+//! Damage / kill regions.
 
 use crate::prelude::*;
 

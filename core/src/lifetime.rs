@@ -1,4 +1,4 @@
-//! Module providing entity lifetime components and systems
+//! Entity lifetimes for deleting an entity after a period of time.
 
 use std::time::Duration;
 

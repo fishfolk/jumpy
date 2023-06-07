@@ -1,3 +1,5 @@
+//! Physics and collision detection.
+
 use crate::prelude::*;
 
 pub use collisions::{

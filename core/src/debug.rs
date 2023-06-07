@@ -1,3 +1,5 @@
+//! Debug rendering for collision boxes, etc.
+
 use crate::prelude::*;
 use rapier2d::prelude as rapier;
 

@@ -1,18 +1,64 @@
+//! [`CoreSession`] implementation: the entrypoint for using `jumpy_core`.
+
 use crate::prelude::*;
 
-/// The implementation of a Jumpy game session.
+/// Implementation of the Jumpy match session.
 ///
-/// This session allows you to do things like:
+/// This encapsulates all of the game match logic, and is used to:
 ///
-/// - Provide input
-/// - Snapshot/Restore game state
-/// - Access the session's ECS [`World`]
+/// - Provide input to the game.
+/// - Snapshot/Restore the game state.
+/// - Access the session's ECS [`World`] ( for instance, to render the game ).
+///
+/// All of this is done **without** rendering anything. The game systems logic will create
+/// [`Sprite`] entities, etc. that may be read directly out of the [`world`][Self::world] field in
+/// in order to render the game.
+///
+/// The `bones_bevy_renderer` crate can be used to render the contained [`World`] in Bevy, as it is
+/// used in the `jumpy` crate and in the [`core_usage`
+/// example](https://github.com/fishfolk/jumpy/blob/main/examples/core_usage.rs).
+///
+/// ## Game Systems
+///
+/// When instantiated with [`CoreSession::new()`], the session will have all of the core game
+/// systems installed into it's [`stages`][Self::stages]. This is done by calling
+/// [`install_modules()`][crate::install_modules].
+///
+/// If you are contributing and want to add more systems to the game, you can do so by adding your
+/// module to the [`install_modules()`][crate::install_modules] function body, following the pattern
+/// of the existing modules already there.
+///
+/// ## `CoreMeta`
+///
+/// An important struct required to create a new session is the [`CoreMeta`] struct in
+/// [`CoreSessionInfo`].
+///
+/// [`CoreMeta`] contains the session's entire metadata tree, including items, maps, and player
+/// skins.
+///
+/// In `jumpy` this is loaded as a Bevy asset from YAMl files.
+///
+/// See the [`metadata`][crate::metadata] module for more details.
 pub struct CoreSession {
+    /// The ECS world for the session. Contains the whole gameplay state.
     pub world: World,
+    /// Contains the game systems that modify the ECS `world` every frame.
     pub stages: SystemStages,
-    pub scratch_world: Option<::bevy::ecs::world::World>,
+    /// The information necessary to initialize the session.
     pub info: CoreSessionInfo,
+    /// The number of seconds in simulation time between frames.
+    ///
+    /// **Important Note:** This sets how much time advances in the game world whenever you call
+    /// [`advance()`][Self::advance], irrespective of how much real-life time actually elapsed
+    /// between your calls to `advance()`.
+    ///
+    /// This means that you must manually provide some sort of fixed-update logic in order to make
+    /// sure that `advance()` is called as many times per second as you desire.
     pub time_step: f32,
+    /// Implementation detail.
+    ///
+    /// Used during [`advance()`][Self::advance] to borrow the bevy world.
+    pub scratch_world: Option<::bevy::ecs::world::World>,
 }
 
 /// Information needed to start a game session.
@@ -26,14 +72,17 @@ pub struct CoreSessionInfo {
     pub player_info: [Option<GameSessionPlayerInfo>; MAX_PLAYERS],
 }
 
+/// Info for a player in the [`CoreSessionInfo`] struct.
 #[derive(Debug, Clone)]
 pub struct GameSessionPlayerInfo {
+    /// The asset handle for the player skin.
     pub handle: Handle<PlayerMeta>,
+    /// Whether or not the player is an AI player.
     pub is_ai: bool,
 }
 
 impl CoreSession {
-    /// Create a new game session
+    /// Create a new [`CoreSession`].
     pub fn new(mut info: CoreSessionInfo) -> Self {
         // Create session
         let mut session = Self {

@@ -1,3 +1,8 @@
+//! Map constructor implementations.
+//!
+//! Map constructors are algorithms that can be used to create or edit game maps, usually through
+//! the jumpy editor.
+
 use crate::editor::MapManager;
 
 pub mod shiftnanigans;

@@ -1,3 +1,5 @@
+//! Miscellaneous utilities.
+
 mod easing;
 pub use easing::*;
 mod math;

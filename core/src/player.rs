@@ -1,3 +1,5 @@
+//! Player controller, states, and animation implementation.
+
 use std::collections::VecDeque;
 
 use crate::{

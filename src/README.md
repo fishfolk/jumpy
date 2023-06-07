@@ -1,3 +1,5 @@
+# Jumpy
+
 Jumpy is a pixel-style, tactical 2D shooter with a fishy theme.
 
 This is the project's internal developer API and architecture documentation. We want these docs to
@@ -21,76 +23,80 @@ feel like something is missing, or would like further guidance on a particular t
 
 ##### Diagrams
 
-Throughout the docs there are diagrams to explain certain topics. These may contain clickable links, highlighted in blue, that will bring you to the relevant module or struct. For example:
+Throughout the docs there are diagrams to explain certain topics. These may contain clickable links, highlighted in blue, that will bring you to the relevant module or struct. We also use a convention to indicate what kind of code object it links to, based on the shape of the box.
 
 <pre class="mermaid">
 graph LR
-  sm(SessionManager):::code
+  ex("Example Link ( Note )"):::dotted -.-> sm(SessionManager):::code
   click sm call docLink(jumpy/session/struct.SessionManager.html)
-  ex(Example Link) -.-> sm
+
+  crate:::code --> module([module]):::code --> struct(struct):::code --> concept>Concept]
 </pre>
 
-You can also pan by clicking and dragging, and zoom by holding `ctrl` and scrolling.
+You can pan the diagram by clicking and dragging or zoom by holding `ctrl` and scrolling.
 
 [gh_issue]: https://github.com/fishfolk/jumpy/issues/new
 
 ## Overall Architecture
 
-You can explore the documentation for each of the modules below to get more details on what each
-one does. Here we will outline the high-level architecture.
-
 There are a few major crates that are used in Jumpy:
 
-- [Bevy](https://bevyengine.org)
-- [Bones](https://fishfolk.org/development/bones/introduction/)
-- [Jumpy Core][jumpy_core]
-
-The overall architecture is depicted in the diagram below.
+- [Jumpy Core][jumpy_core] - Core Gameplay Logic
+- [Bones](https://fishfolk.org/development/bones/introduction/) - Core Entity Component System & Rendering Components
+- [Bevy](https://bevyengine.org) - Rendering, Asset Loading, and User Input
 
 <pre class="mermaid">
-graph TB
-  sm -- Input / Create / Snapshot / Restore --> cs
+graph TD
   subgraph jumpy
     direction TB
-    sm(SessionManager):::code
-    click sm call docLink(jumpy/session/struct.SessionManager.html)
-    ui(UI)
-    ed(Editor)
-    lo(Localization)
-    n(networking):::code
-    click n call docLink(jumpy/networking/index.html)
-    bkr[Bevy Kira Audio]
-    bbr[Bones Bevy Renderer]
-    bbr --> br
-    sm -.- n
+
+    SessionManager(SessionManager):::code
+    bevyInput --> SessionManager
+
+    click SessionManager call docLink(jumpy/session/struct.SessionManager.html)
+    ui([ui]):::code
+    click ui call docLink(jumpy/ui/index.html)
+    editor([editor]):::code
+    click editor call docLink(jumpy/ui/editor/index.html)
+    localization([localization]):::code
+    click localization call docLink(jumpy/localization/index.html)
+    networking([networking]):::code
+    click networking call docLink(jumpy/networking/index.html)
 
     subgraph jumpy_core
-      cs(CoreSession):::code
-      click cs call docLink(jumpy_core/session/struct.CoreSession.html)
-      gp>Gameplay Systems]
-      cs --> gp
-
+      CoreSession(CoreSession):::code
+      click CoreSession call docLink(jumpy_core/session/struct.CoreSession.html)
+      gameplaySystems>Gameplay Systems]
+      CoreSession --> gameplaySystems
     end
-    gp -- Update --> ecs
+    SessionManager --> CoreSession
+    SessionManager -.- networking
 
-    ecs -- Sound State --> bkr
-    ecs -- World State --> bbr
+    gameplaySystems -- Update --> World
+
     subgraph bones
-      ecs(World):::code
-      click ecs href "https://fishfolk.github.io/bones/rustdoc/bones_ecs/struct.World.html"
-      style rc stroke-dasharray: 5 5
-      rc("Rendering / Audio
-          Components")
-      rc -.- ecs
+      World(World):::code
+      click World href "https://fishfolk.github.io/bones/rustdoc/bones_ecs/struct.World.html"
+      renderingComponents("Rendering / Audio
+          Components"):::dotted
+      renderingComponents -.- World
     end
 
-    ui --> br
-    ed -.- ui
-    lo -.- ui
-    bi --> sm
+    World -- Sound State --> bevy_kira_audio:::code
+    World -- World State --> bones_bevy_renderer:::code
+    click bevy_kira_audio href "https://docs.rs/bevy_kira_audio/latest/bevy_kira_audio/"
+    click bones_bevy_renderer href "https://fishfolk.github.io/bones/rustdoc/bones_bevy_renderer/index.html"
+
+    ui --> bevyRenderer
+    editor -.- ui
+    localization -.- ui
+
+    bones_bevy_renderer --> bevyRenderer
+
     subgraph bevy
-      br(Renderer)
-      bi(User Input)
+      bevyInput[\"User Input
+      Assets"/]
+      bevyRenderer[/Renderer\]
     end
   end
 </pre>

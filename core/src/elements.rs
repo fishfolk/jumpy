@@ -1,3 +1,7 @@
+//! Map element implementations.
+//!
+//! A map element is anything that can be placed on the map in the editor.
+
 use std::sync::Mutex;
 
 use ::bevy::{

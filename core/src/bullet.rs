@@ -1,3 +1,5 @@
+//! Universal bullet implementation.
+
 use crate::{
     physics::collisions::{Actor, Collider, TileCollisionKind},
     prelude::*,

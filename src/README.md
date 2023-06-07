@@ -48,49 +48,57 @@ There are a few major crates that are used in Jumpy:
 The overall architecture is depicted in the diagram below.
 
 <pre class="mermaid">
-graph TB
-  sm -- Input / Create / Snapshot / Restore --> cs
+graph TD
   subgraph jumpy
     direction TB
-    sm(SessionManager):::code
-    click sm call docLink(jumpy/session/struct.SessionManager.html)
-    ui(UI)
-    ed(Editor)
-    lo(Localization)
-    n(networking):::code
-    click n call docLink(jumpy/networking/index.html)
-    bkr[Bevy Kira Audio]
-    bbr[Bones Bevy Renderer]
-    bbr --> br
-    sm -.- n
+
+    SessionManager(SessionManager):::code
+    bevyInput --> SessionManager
+
+    click SessionManager call docLink(jumpy/session/struct.SessionManager.html)
+    ui([ui]):::code
+    click ui call docLink(jumpy/ui/index.html)
+    editor([editor]):::code
+    click editor call docLink(jumpy/ui/editor/index.html)
+    localization([localization]):::code
+    click localization call docLink(jumpy/localization/index.html)
+    networking([networking]):::code
+    click networking call docLink(jumpy/networking/index.html)
 
     subgraph jumpy_core
-      cs(CoreSession):::code
-      click cs call docLink(jumpy_core/session/struct.CoreSession.html)
-      gp>Gameplay Systems]
-      cs --> gp
-
+      CoreSession(CoreSession):::code
+      click CoreSession call docLink(jumpy_core/session/struct.CoreSession.html)
+      gameplaySystems>Gameplay Systems]
+      CoreSession --> gameplaySystems
     end
-    gp -- Update --> ecs
+    SessionManager --> CoreSession
+    SessionManager -.- networking
 
-    ecs -- Sound State --> bkr
-    ecs -- World State --> bbr
+    gameplaySystems -- Update --> World
+
     subgraph bones
-      ecs(World):::code
-      click ecs href "https://fishfolk.github.io/bones/rustdoc/bones_ecs/struct.World.html"
-      style rc stroke-dasharray: 5 5
-      rc("Rendering / Audio
+      World(World):::code
+      click World href "https://fishfolk.github.io/bones/rustdoc/bones_ecs/struct.World.html"
+      renderingComponents("Rendering / Audio
           Components")
-      rc -.- ecs
+      style renderingComponents stroke-dasharray: 5
+      renderingComponents -.- World
     end
 
-    ui --> br
-    ed -.- ui
-    lo -.- ui
-    bi --> sm
+    World -- Sound State --> bevy_kira_audio:::code
+    World -- World State --> bones_bevy_renderer:::code
+    click bevy_kira_audio href "https://docs.rs/bevy_kira_audio/latest/bevy_kira_audio/"
+    click bones_bevy_renderer href "https://fishfolk.github.io/bones/rustdoc/bones_bevy_renderer/index.html"
+
+    ui --> bevyRenderer
+    editor -.- ui
+    localization -.- ui
+
+    bones_bevy_renderer --> bevyRenderer
+
     subgraph bevy
-      br(Renderer)
-      bi(User Input)
+      bevyInput[\User Input/]
+      bevyRenderer[/Renderer\]
     end
   end
 </pre>

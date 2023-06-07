@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -90,7 +92,17 @@
 <a href="#5" id="5">5</a>
 <a href="#6" id="6">6</a>
 <a href="#7" id="7">7</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::editor::MapManager;
+<a href="#8" id="8">8</a>
+<a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+<a href="#11" id="11">11</a>
+<a href="#12" id="12">12</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Map constructor implementations.
+//!
+//! Map constructors are algorithms that can be used to create or edit game maps, usually through
+//! the jumpy editor.
+
+</span><span class="kw">use </span><span class="kw">crate</span>::editor::MapManager;
 
 <span class="kw">pub mod </span>shiftnanigans;
 

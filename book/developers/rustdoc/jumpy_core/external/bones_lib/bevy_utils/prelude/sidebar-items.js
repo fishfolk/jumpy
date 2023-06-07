@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["BevyWorld","Resource that contains a bevy world."]],"trait":[["IntoBevy","Helper trait for converting bones types to Bevy types."]]};

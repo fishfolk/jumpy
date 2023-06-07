@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["AudioEvent","An audio event that may be sent to the [`AudioEvents`] resource."]],"struct":[["AudioEvents","Resource containing the audio event queue."],["AudioSource","The audio source asset type, contains no data, but [`Handle<AudioSource>`] is still useful because it uniquely represents a sound/music that may be played outside of bones."]]};

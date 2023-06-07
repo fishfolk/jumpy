@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -297,7 +299,11 @@
 <a href="#212" id="212">212</a>
 <a href="#213" id="213">213</a>
 <a href="#214" id="214">214</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Debug rendering for collision boxes, etc.
+
+</span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>rapier2d::prelude <span class="kw">as </span>rapier;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {

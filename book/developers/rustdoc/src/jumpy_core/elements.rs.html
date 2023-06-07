@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -347,7 +349,15 @@
 <a href="#262" id="262">262</a>
 <a href="#263" id="263">263</a>
 <a href="#264" id="264">264</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::sync::Mutex;
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Map element implementations.
+//!
+//! A map element is anything that can be placed on the map in the editor.
+
+</span><span class="kw">use </span>std::sync::Mutex;
 
 <span class="kw">use </span>::bevy::{
     prelude::Resource,

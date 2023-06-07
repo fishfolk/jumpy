@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -366,7 +368,15 @@
 <a href="#281" id="281">281</a>
 <a href="#282" id="282">282</a>
 <a href="#283" id="283">283</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Common item code.
+//!
+//! An item is anything in the game that can be picked up by the player.
+
+</span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     session

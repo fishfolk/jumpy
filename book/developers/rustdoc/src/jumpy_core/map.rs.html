@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -811,7 +813,11 @@
 <a href="#726" id="726">726</a>
 <a href="#727" id="727">727</a>
 <a href="#728" id="728">728</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::{
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Map and navigation mesh implementation.
+
+</span><span class="kw">use </span>std::{
     cmp::{max, min},
     collections::VecDeque,
 };

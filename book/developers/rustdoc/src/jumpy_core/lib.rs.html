@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -148,6 +150,48 @@
 <a href="#63" id="63">63</a>
 <a href="#64" id="64">64</a>
 <a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;../README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -159,6 +203,7 @@
 </span><span class="kw">mod </span>prelude;
 
 <span class="doccomment">/// Prelude for use outside the crate
+</span><span class="attr">#[doc(hidden)]
 </span><span class="kw">pub mod </span>bevy_prelude {
     <span class="kw">pub use </span>{
         <span class="kw">crate</span>::{
@@ -169,6 +214,18 @@
         },
         bones_lib::prelude <span class="kw">as </span>bones,
     };
+}
+
+<span class="doccomment">/// External crate documentation.
+///
+/// This module only exists during docs builds and serves to make it eaiser to link to relevant
+/// documentation in external crates.
+</span><span class="attr">#[cfg(doc)]
+</span><span class="kw">pub mod </span>external {
+    <span class="attr">#[doc(inline)]
+    </span><span class="kw">pub use </span>bones_bevy_asset;
+    <span class="attr">#[doc(inline)]
+    </span><span class="kw">pub use </span>bones_lib;
 }
 
 <span class="kw">pub mod </span>attachment;
@@ -193,9 +250,38 @@
 
 <span class="doccomment">/// The target fixed frames-per-second that the game sumulation runs at.
 </span><span class="kw">pub const </span>FPS: f32 = <span class="number">60.0</span>;
-<span class="kw">pub const </span>MAX_PLAYERS: usize = <span class="number">4</span>;
+<span class="doccomment">/// The maximum number of players per match.
+</span><span class="kw">pub const </span>MAX_PLAYERS: usize = <span class="number">4</span>;
 
-<span class="doccomment">/// Install game modules into the session.
+<span class="doccomment">/// Install game modules into the given [`CoreSession`][session::CoreSession].
+///
+/// Each game module should have a public install function that adds the systems needed by that
+/// module:
+///
+/// ```ignore
+/// pub fn install(session: &amp;mut crate::session::CoreSession) {
+///      session
+///         .stages
+///         .add_system_to_stage(CoreStage::Last, camera_controller);
+/// }
+/// ```
+///
+/// The module will usually contain the Rust structs for any components related to the module as
+/// well.
+///
+/// To include the module in the game, add add a line to the body of this [`install_modules()`]
+/// function that calls your module&#39;s `install()` function:
+///
+/// ```ignore
+/// pub fn install_modules(session: &amp;mut session::CoreSession) {
+///     // other modules...
+///     camera::install(session);
+/// }
+/// ```
+///
+/// Note that in some edge cases the order that the modules are installed can make a difference
+/// because it will change the order that the module systems are run, if two modules add systems to
+/// the same system stage.
 </span><span class="kw">pub fn </span>install_modules(session: <span class="kw-2">&amp;mut </span>session::CoreSession) {
     bones_lib::install(<span class="kw-2">&amp;mut </span>session.stages);
     physics::install(session);

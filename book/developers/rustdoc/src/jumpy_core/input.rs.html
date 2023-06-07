@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -227,7 +229,11 @@
 <a href="#142" id="142">142</a>
 <a href="#143" id="143">143</a>
 <a href="#144" id="144">144</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, MAX_PLAYERS};
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Player and editor input types.
+
+</span><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, MAX_PLAYERS};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     session.world.init_resource::&lt;PlayerInputs&gt;();

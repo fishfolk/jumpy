@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -99,14 +101,24 @@
 <a href="#14" id="14">14</a>
 <a href="#15" id="15">15</a>
 <a href="#16" id="16">16</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Global, deterministic random resource.
+
+</span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 <span class="kw">pub use </span>turborand::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     session.world.init_resource::&lt;GlobalRng&gt;();
 }
 
-<span class="attr">#[derive(Clone, TypeUlid, Deref, DerefMut)]
+<span class="doccomment">/// Resource that can produce deterministic, pseudo-random numbers.
+///
+/// Access in a system with [`Res&lt;GlobalRng&gt;`].
+</span><span class="attr">#[derive(Clone, TypeUlid, Deref, DerefMut)]
 #[ulid = <span class="string">&quot;01GQ0K6DDA9KKQTM3WDK1R91TE&quot;</span>]
 </span><span class="kw">pub struct </span>GlobalRng(AtomicRng);
 

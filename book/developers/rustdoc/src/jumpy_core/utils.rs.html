@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -91,7 +93,11 @@
 <a href="#6" id="6">6</a>
 <a href="#7" id="7">7</a>
 <a href="#8" id="8">8</a>
-</pre><pre class="rust"><code><span class="kw">mod </span>easing;
+<a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Miscellaneous utilities.
+
+</span><span class="kw">mod </span>easing;
 <span class="kw">pub use </span>easing::<span class="kw-2">*</span>;
 <span class="kw">mod </span>math;
 <span class="kw">pub use </span>math::<span class="kw-2">*</span>;

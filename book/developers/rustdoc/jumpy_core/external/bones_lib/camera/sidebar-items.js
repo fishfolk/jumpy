@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["install","Install the camera utilities on the given [`SystemStages`]."]],"struct":[["CameraShake","Component for an entity with camera shake."],["CameraTraumaEvents","Queue that can be used to send camera trauma events."],["ShakeNoise","Resource providing a noise source for [`CameraShake`] entities to use."]]};

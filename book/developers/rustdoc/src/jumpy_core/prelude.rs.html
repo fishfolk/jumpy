@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -98,7 +100,11 @@
 <a href="#13" id="13">13</a>
 <a href="#14" id="14">14</a>
 <a href="#15" id="15">15</a>
-</pre><pre class="rust"><code><span class="kw">pub use </span>{
+<a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Common imports used throughout the crate.
+
+</span><span class="kw">pub use </span>{
     <span class="kw">crate</span>::{
         attachment::<span class="kw-2">*</span>, bullet::<span class="kw-2">*</span>, camera::<span class="kw-2">*</span>, damage::<span class="kw-2">*</span>, debug::<span class="kw-2">*</span>, debug::<span class="kw-2">*</span>, elements::<span class="kw-2">*</span>,
         globals::<span class="kw-2">*</span>, input::<span class="kw-2">*</span>, item::<span class="kw-2">*</span>, item::<span class="kw-2">*</span>, lifetime::<span class="kw-2">*</span>, map::<span class="kw-2">*</span>, metadata::<span class="kw-2">*</span>, physics::<span class="kw-2">*</span>,

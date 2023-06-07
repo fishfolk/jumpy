@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -423,7 +425,15 @@
 <a href="#338" id="338">338</a>
 <a href="#339" id="339">339</a>
 <a href="#340" id="340">340</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::impl_system_param;
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Map editing implementation.
+//!
+//! Allows you to edit the game map while the game is running.
+
+</span><span class="kw">use </span><span class="kw">crate</span>::impl_system_param;
 <span class="kw">use </span><span class="kw">crate</span>::map_constructor::shiftnanigans::ShiftnanigansMapConstructor;
 <span class="kw">use </span><span class="kw">crate</span>::map_constructor::MapConstructor;
 <span class="kw">use crate</span>::{map::z_depth_for_map_layer, prelude::<span class="kw-2">*</span>};

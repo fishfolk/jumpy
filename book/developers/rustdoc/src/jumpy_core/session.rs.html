@@ -19,7 +19,7 @@
             const pz = panzoom(el, {
                 smoothScroll: false,
                 zoomDoubleClickSpeed: 1,
-                beforeWheel: function(e) {
+                beforeWheel: function (e) {
                     // allow wheel-zoom only if ctrl is down. Otherwise - ignore
                     var shouldIgnore = !e.ctrlKey;
                     return shouldIgnore;
@@ -66,9 +66,11 @@
         cursor: move
     }
 
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
     .code .nodeLabel {
-        font-family: monospace;
-        font-size: 0.8rem;
         color: #2dbfb8 !important;
     }
 
@@ -330,21 +332,116 @@
 <a href="#245" id="245">245</a>
 <a href="#246" id="246">246</a>
 <a href="#247" id="247">247</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+</pre><pre class="rust"><code><span class="doccomment">//! [`CoreSession`] implementation: the entrypoint for using `jumpy_core`.
 
-<span class="doccomment">/// The implementation of a Jumpy game session.
+</span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+
+<span class="doccomment">/// Implementation of the Jumpy match session.
 ///
-/// This session allows you to do things like:
+/// This encapsulates all of the game match logic, and is used to:
 ///
-/// - Provide input
-/// - Snapshot/Restore game state
-/// - Access the session&#39;s ECS [`World`]
+/// - Provide input to the game.
+/// - Snapshot/Restore the game state.
+/// - Access the session&#39;s ECS [`World`] ( for instance, to render the game ).
+///
+/// All of this is done **without** rendering anything. The game systems logic will create
+/// [`Sprite`] entities, etc. that may be read directly out of the [`world`][Self::world] field in
+/// in order to render the game.
+///
+/// The `bones_bevy_renderer` crate can be used to render the contained [`World`] in Bevy, as it is
+/// used in the `jumpy` crate and in the [`core_usage`
+/// example](https://github.com/fishfolk/jumpy/blob/main/examples/core_usage.rs).
+///
+/// ## Game Systems
+///
+/// When instantiated with [`CoreSession::new()`], the session will have all of the core game
+/// systems installed into it&#39;s [`stages`][Self::stages]. This is done by calling
+/// [`install_modules()`][crate::install_modules].
+///
+/// If you are contributing and want to add more systems to the game, you can do so by adding your
+/// module to the [`install_modules()`][crate::install_modules] function body, following the pattern
+/// of the existing modules already there.
+///
+/// ## `CoreMeta`
+///
+/// An important struct required to create a new session is the [`CoreMeta`] struct in
+/// [`CoreSessionInfo`].
+///
+/// [`CoreMeta`] contains the session&#39;s entire metadata tree, including items, maps, and player
+/// skins.
+///
+/// In `jumpy` this is loaded as a Bevy asset from YAMl files.
+///
+/// See the [`metadata`][crate::metadata] module for more details.
 </span><span class="kw">pub struct </span>CoreSession {
-    <span class="kw">pub </span>world: World,
-    <span class="kw">pub </span>stages: SystemStages,
-    <span class="kw">pub </span>scratch_world: <span class="prelude-ty">Option</span>&lt;::bevy::ecs::world::World&gt;,
-    <span class="kw">pub </span>info: CoreSessionInfo,
-    <span class="kw">pub </span>time_step: f32,
+    <span class="doccomment">/// The ECS world for the session. Contains the whole gameplay state.
+    </span><span class="kw">pub </span>world: World,
+    <span class="doccomment">/// Contains the game systems that modify the ECS `world` every frame.
+    </span><span class="kw">pub </span>stages: SystemStages,
+    <span class="doccomment">/// The information necessary to initialize the session.
+    </span><span class="kw">pub </span>info: CoreSessionInfo,
+    <span class="doccomment">/// The number of seconds in simulation time between frames.
+    ///
+    /// **Important Note:** This sets how much time advances in the game world whenever you call
+    /// [`advance()`][Self::advance], irrespective of how much real-life time actually elapsed
+    /// between your calls to `advance()`.
+    ///
+    /// This means that you must manually provide some sort of fixed-update logic in order to make
+    /// sure that `advance()` is called as many times per second as you desire.
+    </span><span class="kw">pub </span>time_step: f32,
+    <span class="doccomment">/// Implementation detail.
+    ///
+    /// Used during [`advance()`][Self::advance] to borrow the bevy world.
+    </span><span class="kw">pub </span>scratch_world: <span class="prelude-ty">Option</span>&lt;::bevy::ecs::world::World&gt;,
 }
 
 <span class="doccomment">/// Information needed to start a game session.
@@ -358,14 +455,17 @@
     </span><span class="kw">pub </span>player_info: [<span class="prelude-ty">Option</span>&lt;GameSessionPlayerInfo&gt;; MAX_PLAYERS],
 }
 
-<span class="attr">#[derive(Debug, Clone)]
+<span class="doccomment">/// Info for a player in the [`CoreSessionInfo`] struct.
+</span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>GameSessionPlayerInfo {
-    <span class="kw">pub </span>handle: Handle&lt;PlayerMeta&gt;,
-    <span class="kw">pub </span>is_ai: bool,
+    <span class="doccomment">/// The asset handle for the player skin.
+    </span><span class="kw">pub </span>handle: Handle&lt;PlayerMeta&gt;,
+    <span class="doccomment">/// Whether or not the player is an AI player.
+    </span><span class="kw">pub </span>is_ai: bool,
 }
 
 <span class="kw">impl </span>CoreSession {
-    <span class="doccomment">/// Create a new game session
+    <span class="doccomment">/// Create a new [`CoreSession`].
     </span><span class="kw">pub fn </span>new(<span class="kw-2">mut </span>info: CoreSessionInfo) -&gt; <span class="self">Self </span>{
         <span class="comment">// Create session
         </span><span class="kw">let </span><span class="kw-2">mut </span>session = <span class="self">Self </span>{

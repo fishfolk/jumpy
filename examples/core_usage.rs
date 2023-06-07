@@ -1,6 +1,8 @@
-//! This binary isn't actually used in the game, but can be useful for debugging.
+//! This is an example of running Jumpy core without the complicated wrapper presented by the
+//! `jumpy` crate.
 //!
-//! It is a demonstration of the minimal code required to run Jumpy core.
+//! This should help demonstrate what is necessary to run a core Jumpy session using just [`bevy`]
+//! and [`bones_bevy_renderer`].
 
 use std::{sync::Arc, time::Duration};
 

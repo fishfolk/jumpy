@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["core","jumpy","jumpy_core"];
+window.ALL_CRATES = ["jumpy","jumpy_core"];

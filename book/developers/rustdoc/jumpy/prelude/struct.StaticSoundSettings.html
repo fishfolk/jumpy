@@ -1,4 +1,88 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Settings for a static sound."><meta name="keywords" content="rust, rustlang, rust-lang, StaticSoundSettings"><title>StaticSoundSettings in jumpy::prelude - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc struct"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../jumpy/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../jumpy/index.html"><div class="logo-container">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Settings for a static sound."><meta name="keywords" content="rust, rustlang, rust-lang, StaticSoundSettings"><title>StaticSoundSettings in jumpy::prelude - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function(e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move
+    }
+
+    .code .nodeLabel {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc struct"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../jumpy/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../jumpy/index.html"><div class="logo-container">
                     <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2 class="location"><a href="#">StaticSoundSettings</a></h2><div class="sidebar-elems"><section><h3><a href="#fields">Fields</a></h3><ul class="block"><li><a href="#structfield.fade_in_tween">fade_in_tween</a></li><li><a href="#structfield.loop_behavior">loop_behavior</a></li><li><a href="#structfield.panning">panning</a></li><li><a href="#structfield.playback_rate">playback_rate</a></li><li><a href="#structfield.reverse">reverse</a></li><li><a href="#structfield.start_position">start_position</a></li><li><a href="#structfield.start_time">start_time</a></li><li><a href="#structfield.track">track</a></li><li><a href="#structfield.volume">volume</a></li></ul><h3><a href="#implementations">Methods</a></h3><ul class="block"><li><a href="#method.fade_in_tween">fade_in_tween</a></li><li><a href="#method.loop_behavior">loop_behavior</a></li><li><a href="#method.new">new</a></li><li><a href="#method.panning">panning</a></li><li><a href="#method.playback_rate">playback_rate</a></li><li><a href="#method.reverse">reverse</a></li><li><a href="#method.start_position">start_position</a></li><li><a href="#method.start_time">start_time</a></li><li><a href="#method.track">track</a></li><li><a href="#method.volume">volume</a></li></ul><h3><a href="#trait-implementations">Trait Implementations</a></h3><ul class="block"><li><a href="#impl-Clone-for-StaticSoundSettings">Clone</a></li><li><a href="#impl-Copy-for-StaticSoundSettings">Copy</a></li><li><a href="#impl-Debug-for-StaticSoundSettings">Debug</a></li><li><a href="#impl-Default-for-StaticSoundSettings">Default</a></li><li><a href="#impl-PartialEq%3CStaticSoundSettings%3E-for-StaticSoundSettings">PartialEq&lt;StaticSoundSettings&gt;</a></li><li><a href="#impl-StructuralPartialEq-for-StaticSoundSettings">StructuralPartialEq</a></li></ul><h3><a href="#synthetic-implementations">Auto Trait Implementations</a></h3><ul class="block"><li><a href="#impl-RefUnwindSafe-for-StaticSoundSettings">RefUnwindSafe</a></li><li><a href="#impl-Send-for-StaticSoundSettings">Send</a></li><li><a href="#impl-Sync-for-StaticSoundSettings">Sync</a></li><li><a href="#impl-Unpin-for-StaticSoundSettings">Unpin</a></li><li><a href="#impl-UnwindSafe-for-StaticSoundSettings">UnwindSafe</a></li></ul><h3><a href="#blanket-implementations">Blanket Implementations</a></h3><ul class="block"><li><a href="#impl-Any-for-StaticSoundSettings">Any</a></li><li><a href="#impl-AnyEq-for-StaticSoundSettings">AnyEq</a></li><li><a href="#impl-AsBindGroupShaderType%3CU%3E-for-StaticSoundSettings">AsBindGroupShaderType&lt;U&gt;</a></li><li><a href="#impl-Borrow%3CT%3E-for-StaticSoundSettings">Borrow&lt;T&gt;</a></li><li><a href="#impl-BorrowMut%3CT%3E-for-StaticSoundSettings">BorrowMut&lt;T&gt;</a></li><li><a href="#impl-Conv-for-StaticSoundSettings">Conv</a></li><li><a href="#impl-Downcast%3CT%3E-for-StaticSoundSettings">Downcast&lt;T&gt;</a></li><li><a href="#impl-Downcast-for-StaticSoundSettings">Downcast</a></li><li><a href="#impl-DowncastSync-for-StaticSoundSettings">DowncastSync</a></li><li><a href="#impl-Duplex%3CS%3E-for-StaticSoundSettings">Duplex&lt;S&gt;</a></li><li><a href="#impl-EcsData-for-StaticSoundSettings">EcsData</a></li><li><a href="#impl-Event-for-StaticSoundSettings">Event</a></li><li><a href="#impl-FmtForward-for-StaticSoundSettings">FmtForward</a></li><li><a href="#impl-From%3CT%3E-for-StaticSoundSettings">From&lt;T&gt;</a></li><li><a href="#impl-FromSample%3CS%3E-for-StaticSoundSettings">FromSample&lt;S&gt;</a></li><li><a href="#impl-FromWorld-for-StaticSoundSettings">FromWorld</a></li><li><a href="#impl-FromWorld-for-StaticSoundSettings-1">FromWorld</a></li><li><a href="#impl-Instrument-for-StaticSoundSettings">Instrument</a></li><li><a href="#impl-Into%3CU%3E-for-StaticSoundSettings">Into&lt;U&gt;</a></li><li><a href="#impl-IntoSample%3CT%3E-for-StaticSoundSettings">IntoSample&lt;T&gt;</a></li><li><a href="#impl-Pipe-for-StaticSoundSettings">Pipe</a></li><li><a href="#impl-Pointable-for-StaticSoundSettings">Pointable</a></li><li><a href="#impl-RawFns-for-StaticSoundSettings">RawFns</a></li><li><a href="#impl-Same%3CT%3E-for-StaticSoundSettings">Same&lt;T&gt;</a></li><li><a href="#impl-Scalar-for-StaticSoundSettings">Scalar</a></li><li><a href="#impl-SerializableAny-for-StaticSoundSettings">SerializableAny</a></li><li><a href="#impl-SupersetOf%3CSS%3E-for-StaticSoundSettings">SupersetOf&lt;SS&gt;</a></li><li><a href="#impl-Tap-for-StaticSoundSettings">Tap</a></li><li><a href="#impl-ToOwned-for-StaticSoundSettings">ToOwned</a></li><li><a href="#impl-ToSample%3CU%3E-for-StaticSoundSettings">ToSample&lt;U&gt;</a></li><li><a href="#impl-TryConv-for-StaticSoundSettings">TryConv</a></li><li><a href="#impl-TryFrom%3CU%3E-for-StaticSoundSettings">TryFrom&lt;U&gt;</a></li><li><a href="#impl-TryInto%3CU%3E-for-StaticSoundSettings">TryInto&lt;U&gt;</a></li><li><a href="#impl-TypeData-for-StaticSoundSettings">TypeData</a></li><li><a href="#impl-Upcast%3CT%3E-for-StaticSoundSettings">Upcast&lt;T&gt;</a></li><li><a href="#impl-VZip%3CV%3E-for-StaticSoundSettings">VZip&lt;V&gt;</a></li><li><a href="#impl-WithSubscriber-for-StaticSoundSettings">WithSubscriber</a></li></ul></section><h2><a href="index.html">In jumpy::prelude</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Struct <a href="../index.html">jumpy</a>::<wbr><a href="index.html">prelude</a>::<wbr><a class="struct" href="#">StaticSoundSettings</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><div class="item-decl"><pre class="rust struct"><code><div class="code-attribute">#[non_exhaustive]</div>pub struct StaticSoundSettings {
     pub start_time: StartTime,
     pub start_position: <a class="primitive" href="https://doc.rust-lang.org/1.67.0/std/primitive.f64.html">f64</a>,

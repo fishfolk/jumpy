@@ -1,4 +1,88 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="An untyped resource that may be inserted into [`UntypedResources`]."><meta name="keywords" content="rust, rustlang, rust-lang, UntypedResource"><title>UntypedResource in jumpy_core::bevy_prelude::bones - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc struct"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../jumpy_core/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../jumpy_core/index.html"><div class="logo-container">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="An untyped resource that may be inserted into [`UntypedResources`]."><meta name="keywords" content="rust, rustlang, rust-lang, UntypedResource"><title>UntypedResource in jumpy_core::bevy_prelude::bones - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function(e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move
+    }
+
+    .code .nodeLabel {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc struct"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../jumpy_core/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../jumpy_core/index.html"><div class="logo-container">
                     <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2 class="location"><a href="#">UntypedResource</a></h2><div class="sidebar-elems"><section><h3><a href="#implementations">Methods</a></h3><ul class="block"><li><a href="#method.new">new</a></li><li><a href="#method.new_raw">new_raw</a></li></ul><h3><a href="#trait-implementations">Trait Implementations</a></h3><ul class="block"><li><a href="#impl-Clone-for-UntypedResource">Clone</a></li><li><a href="#impl-Drop-for-UntypedResource">Drop</a></li><li><a href="#impl-Send-for-UntypedResource">Send</a></li><li><a href="#impl-Sync-for-UntypedResource">Sync</a></li></ul><h3><a href="#synthetic-implementations">Auto Trait Implementations</a></h3><ul class="block"><li><a href="#impl-RefUnwindSafe-for-UntypedResource">!RefUnwindSafe</a></li><li><a href="#impl-Unpin-for-UntypedResource">Unpin</a></li><li><a href="#impl-UnwindSafe-for-UntypedResource">!UnwindSafe</a></li></ul><h3><a href="#blanket-implementations">Blanket Implementations</a></h3><ul class="block"><li><a href="#impl-Any-for-UntypedResource">Any</a></li><li><a href="#impl-AsBindGroupShaderType%3CU%3E-for-UntypedResource">AsBindGroupShaderType&lt;U&gt;</a></li><li><a href="#impl-Borrow%3CT%3E-for-UntypedResource">Borrow&lt;T&gt;</a></li><li><a href="#impl-BorrowMut%3CT%3E-for-UntypedResource">BorrowMut&lt;T&gt;</a></li><li><a href="#impl-Conv-for-UntypedResource">Conv</a></li><li><a href="#impl-Downcast%3CT%3E-for-UntypedResource">Downcast&lt;T&gt;</a></li><li><a href="#impl-Downcast-for-UntypedResource">Downcast</a></li><li><a href="#impl-DowncastSync-for-UntypedResource">DowncastSync</a></li><li><a href="#impl-EcsData-for-UntypedResource">EcsData</a></li><li><a href="#impl-Event-for-UntypedResource">Event</a></li><li><a href="#impl-FmtForward-for-UntypedResource">FmtForward</a></li><li><a href="#impl-From%3CT%3E-for-UntypedResource">From&lt;T&gt;</a></li><li><a href="#impl-Instrument-for-UntypedResource">Instrument</a></li><li><a href="#impl-Into%3CU%3E-for-UntypedResource">Into&lt;U&gt;</a></li><li><a href="#impl-Pipe-for-UntypedResource">Pipe</a></li><li><a href="#impl-Pointable-for-UntypedResource">Pointable</a></li><li><a href="#impl-RawFns-for-UntypedResource">RawFns</a></li><li><a href="#impl-Same%3CT%3E-for-UntypedResource">Same&lt;T&gt;</a></li><li><a href="#impl-SupersetOf%3CSS%3E-for-UntypedResource">SupersetOf&lt;SS&gt;</a></li><li><a href="#impl-Tap-for-UntypedResource">Tap</a></li><li><a href="#impl-ToOwned-for-UntypedResource">ToOwned</a></li><li><a href="#impl-TryConv-for-UntypedResource">TryConv</a></li><li><a href="#impl-TryFrom%3CU%3E-for-UntypedResource">TryFrom&lt;U&gt;</a></li><li><a href="#impl-TryInto%3CU%3E-for-UntypedResource">TryInto&lt;U&gt;</a></li><li><a href="#impl-TypeData-for-UntypedResource">TypeData</a></li><li><a href="#impl-Upcast%3CT%3E-for-UntypedResource">Upcast&lt;T&gt;</a></li><li><a href="#impl-VZip%3CV%3E-for-UntypedResource">VZip&lt;V&gt;</a></li><li><a href="#impl-WithSubscriber-for-UntypedResource">WithSubscriber</a></li></ul></section><h2><a href="index.html">In jumpy_core::bevy_prelude::bones</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Struct <a href="../../index.html">jumpy_core</a>::<wbr><a href="../index.html">bevy_prelude</a>::<wbr><a href="index.html">bones</a>::<wbr><a class="struct" href="#">UntypedResource</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><div class="item-decl"><pre class="rust struct"><code>pub struct UntypedResource { /* private fields */ }</code></pre></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>An untyped resource that may be inserted into <a href="struct.UntypedResources.html" title="UntypedResources"><code>UntypedResources</code></a>.</p>
 </div></details><h2 id="implementations" class="small-section-header">Implementations<a href="#implementations" class="anchor">§</a></h2><div id="implementations-list"><details class="rustdoc-toggle implementors-toggle" open><summary><section id="impl-UntypedResource" class="impl has-srclink"><a href="#impl-UntypedResource" class="anchor">§</a><h3 class="code-header">impl <a class="struct" href="struct.UntypedResource.html" title="struct jumpy_core::bevy_prelude::bones::UntypedResource">UntypedResource</a></h3></section></summary><div class="impl-items"><details class="rustdoc-toggle method-toggle" open><summary><section id="method.new_raw" class="method has-srclink"><h4 class="code-header">pub unsafe fn <a href="#method.new_raw" class="fn">new_raw</a>(info: <a class="struct" href="struct.UntypedResourceInfo.html" title="struct jumpy_core::bevy_prelude::bones::UntypedResourceInfo">UntypedResourceInfo</a>) -&gt; <a class="struct" href="struct.UntypedResource.html" title="struct jumpy_core::bevy_prelude::bones::UntypedResource">UntypedResource</a></h4></section></summary><div class="docblock"><p>Create a new <a href="struct.UntypedResource.html" title="UntypedResource"><code>UntypedResource</code></a> from raw <a href="struct.UntypedResourceInfo.html" title="UntypedResourceInfo"><code>UntypedResourceInfo</code></a>.</p>
 <h5 id="safety"><a href="#safety">Safety</a></h5>

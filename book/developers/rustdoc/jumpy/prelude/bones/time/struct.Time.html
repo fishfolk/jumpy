@@ -1,4 +1,88 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A clock that tracks how much it has advanced (and how much real time has elapsed) since its previous update and since its creation."><meta name="keywords" content="rust, rustlang, rust-lang, Time"><title>Time in jumpy::prelude::bones::time - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc struct"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../jumpy/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../jumpy/index.html"><div class="logo-container">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A clock that tracks how much it has advanced (and how much real time has elapsed) since its previous update and since its creation."><meta name="keywords" content="rust, rustlang, rust-lang, Time"><title>Time in jumpy::prelude::bones::time - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function(e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move
+    }
+
+    .code .nodeLabel {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc struct"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../jumpy/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../jumpy/index.html"><div class="logo-container">
                     <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2 class="location"><a href="#">Time</a></h2><div class="sidebar-elems"><section><h3><a href="#fields">Fields</a></h3><ul class="block"><li><a href="#structfield.delta">delta</a></li><li><a href="#structfield.delta_seconds">delta_seconds</a></li><li><a href="#structfield.delta_seconds_f64">delta_seconds_f64</a></li><li><a href="#structfield.elapsed">elapsed</a></li><li><a href="#structfield.elapsed_seconds">elapsed_seconds</a></li><li><a href="#structfield.elapsed_seconds_f64">elapsed_seconds_f64</a></li><li><a href="#structfield.first_update">first_update</a></li><li><a href="#structfield.last_update">last_update</a></li><li><a href="#structfield.paused">paused</a></li><li><a href="#structfield.startup">startup</a></li></ul><h3><a href="#implementations">Methods</a></h3><ul class="block"><li><a href="#method.advance_exact">advance_exact</a></li><li><a href="#method.delta">delta</a></li><li><a href="#method.delta_seconds">delta_seconds</a></li><li><a href="#method.delta_seconds_f64">delta_seconds_f64</a></li><li><a href="#method.elapsed">elapsed</a></li><li><a href="#method.elapsed_seconds">elapsed_seconds</a></li><li><a href="#method.elapsed_seconds_f64">elapsed_seconds_f64</a></li><li><a href="#method.is_paused">is_paused</a></li><li><a href="#method.new">new</a></li><li><a href="#method.pause">pause</a></li><li><a href="#method.unpause">unpause</a></li><li><a href="#method.update">update</a></li><li><a href="#method.update_with_instant">update_with_instant</a></li></ul><h3><a href="#trait-implementations">Trait Implementations</a></h3><ul class="block"><li><a href="#impl-Clone-for-Time">Clone</a></li><li><a href="#impl-Copy-for-Time">Copy</a></li><li><a href="#impl-Debug-for-Time">Debug</a></li><li><a href="#impl-Default-for-Time">Default</a></li><li><a href="#impl-TypeUlid-for-Time">TypeUlid</a></li></ul><h3><a href="#synthetic-implementations">Auto Trait Implementations</a></h3><ul class="block"><li><a href="#impl-RefUnwindSafe-for-Time">RefUnwindSafe</a></li><li><a href="#impl-Send-for-Time">Send</a></li><li><a href="#impl-Sync-for-Time">Sync</a></li><li><a href="#impl-Unpin-for-Time">Unpin</a></li><li><a href="#impl-UnwindSafe-for-Time">UnwindSafe</a></li></ul><h3><a href="#blanket-implementations">Blanket Implementations</a></h3><ul class="block"><li><a href="#impl-Any-for-Time">Any</a></li><li><a href="#impl-AsBindGroupShaderType%3CU%3E-for-Time">AsBindGroupShaderType&lt;U&gt;</a></li><li><a href="#impl-Borrow%3CT%3E-for-Time">Borrow&lt;T&gt;</a></li><li><a href="#impl-BorrowMut%3CT%3E-for-Time">BorrowMut&lt;T&gt;</a></li><li><a href="#impl-Conv-for-Time">Conv</a></li><li><a href="#impl-Downcast%3CT%3E-for-Time">Downcast&lt;T&gt;</a></li><li><a href="#impl-Downcast-for-Time">Downcast</a></li><li><a href="#impl-DowncastSync-for-Time">DowncastSync</a></li><li><a href="#impl-Duplex%3CS%3E-for-Time">Duplex&lt;S&gt;</a></li><li><a href="#impl-EcsData-for-Time">EcsData</a></li><li><a href="#impl-Event-for-Time">Event</a></li><li><a href="#impl-FmtForward-for-Time">FmtForward</a></li><li><a href="#impl-From%3CT%3E-for-Time">From&lt;T&gt;</a></li><li><a href="#impl-FromSample%3CS%3E-for-Time">FromSample&lt;S&gt;</a></li><li><a href="#impl-FromWorld-for-Time">FromWorld</a></li><li><a href="#impl-FromWorld-for-Time-1">FromWorld</a></li><li><a href="#impl-Instrument-for-Time">Instrument</a></li><li><a href="#impl-Into%3CU%3E-for-Time">Into&lt;U&gt;</a></li><li><a href="#impl-IntoSample%3CT%3E-for-Time">IntoSample&lt;T&gt;</a></li><li><a href="#impl-Pipe-for-Time">Pipe</a></li><li><a href="#impl-Pointable-for-Time">Pointable</a></li><li><a href="#impl-RawFns-for-Time">RawFns</a></li><li><a href="#impl-Same%3CT%3E-for-Time">Same&lt;T&gt;</a></li><li><a href="#impl-SerializableAny-for-Time">SerializableAny</a></li><li><a href="#impl-SupersetOf%3CSS%3E-for-Time">SupersetOf&lt;SS&gt;</a></li><li><a href="#impl-Tap-for-Time">Tap</a></li><li><a href="#impl-ToOwned-for-Time">ToOwned</a></li><li><a href="#impl-ToSample%3CU%3E-for-Time">ToSample&lt;U&gt;</a></li><li><a href="#impl-TryConv-for-Time">TryConv</a></li><li><a href="#impl-TryFrom%3CU%3E-for-Time">TryFrom&lt;U&gt;</a></li><li><a href="#impl-TryInto%3CU%3E-for-Time">TryInto&lt;U&gt;</a></li><li><a href="#impl-TypeData-for-Time">TypeData</a></li><li><a href="#impl-TypeUlidDynamic-for-Time">TypeUlidDynamic</a></li><li><a href="#impl-TypedEcsData-for-Time">TypedEcsData</a></li><li><a href="#impl-Upcast%3CT%3E-for-Time">Upcast&lt;T&gt;</a></li><li><a href="#impl-VZip%3CV%3E-for-Time">VZip&lt;V&gt;</a></li><li><a href="#impl-WithSubscriber-for-Time">WithSubscriber</a></li></ul></section><h2><a href="index.html">In jumpy::prelude::bones::time</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Struct <a href="../../../index.html">jumpy</a>::<wbr><a href="../../index.html">prelude</a>::<wbr><a href="../index.html">bones</a>::<wbr><a href="index.html">time</a>::<wbr><a class="struct" href="#">Time</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><div class="item-decl"><pre class="rust struct"><code>pub struct Time {
     startup: <a class="struct" href="https://doc.rust-lang.org/1.67.0/std/time/struct.Instant.html" title="struct std::time::Instant">Instant</a>,
     last_update: <a class="enum" href="https://doc.rust-lang.org/1.67.0/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.67.0/std/time/struct.Instant.html" title="struct std::time::Instant">Instant</a>&gt;,

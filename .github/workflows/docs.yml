@@ -45,7 +45,7 @@ jobs:
 
       - name: 🔨 Build Rustdoc
         run: |
-          cargo doc --workspace --no-deps
+          RUSTDOCFLAGS="--html-in-header docs/rustdoc-mermaid-head.html" cargo doc --workspace --no-deps
           mv target/doc book/src/developers/rustdoc
 
       - name: 🛠 Build MDBook

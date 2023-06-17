@@ -1,0 +1,44 @@
+name: Bug Report
+description: Create a report to help us improve
+title: "New Bug"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Thanks for taking the time to fill out this bug report! Fill out whatever
+        info you have and feel free to leave anything blank if not applicable.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What problem did you encounter.
+      placeholder: A clear and concise description of what the bug is.
+  - type: textarea
+    id: to-reproduce
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should have happened.
+      placeholder: A clear and concise description of what you expected to happen.   
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context or screenshots related to the problem here.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log Messages
+      description: >
+        If applicable, please copy and paste any relevant log output.
+        These will be automatically formatted into a codeblock so no need for backticks.

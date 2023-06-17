@@ -1,0 +1,13 @@
+name: Other
+description: An issue that doesn't fit into any other categories.
+title: "New Issue"
+labels: ["needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for opening an issue!
+  - type: textarea
+    id: description
+    attributes:
+      label: Description

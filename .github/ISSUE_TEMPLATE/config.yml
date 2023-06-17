@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question
+    url: https://github.com/fishfolk/jumpy/discussions
+    about: If you have a question, feel free to open a discussion!
+  - name: Discord Chat
+    url: https://discord.gg/4smxjcheE5
+    about: Chat with us on Discord!
+  - name: Revolt Chat
+    url: https://weird.dev/invite/ZagXxrS4
+    about: Chat with us on our Revolt instance, a self-hosted chat server bridged to our discord server.

@@ -1,0 +1,27 @@
+name: Feature Request
+description: Have something you want to see in the game?
+title: "New Feature"
+labels: ["needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for opening a feature request!
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What feature would you like added?
+      placeholder: |
+        A description of the feature you would like added.
+
+        If this feature is related to a problem, please describe. For example "I'm always frustrated when [...]"
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives & Prior Art
+      description: >
+        Describe alternatives you've considered, and/or any previous related work.
+      placeholder: >
+        Description of possible alternatives to this feature, and/or any previous work
+        that may be related to this feature.

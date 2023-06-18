@@ -522,7 +522,19 @@
 <a href="#426" id="426">426</a>
 <a href="#427" id="427">427</a>
 <a href="#428" id="428">428</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Systems and utilities related to specific platform support or platform abstractions
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Platform abstractions.
+//!
+//! This module contains abstractions over platform-specific details. Currently this is just the
+//! [`Storage`] abstraction, which allows us to persist key-value data in a way that works on both
+//! native platforms and on web.
 
 </span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
@@ -536,7 +548,8 @@
 <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
 </span><span class="kw">use </span>wasm <span class="kw">as </span>backend;
 
-<span class="kw">pub struct </span>JumpyPlatformPlugin;
+<span class="doccomment">/// Platform plugin.
+</span><span class="kw">pub struct </span>JumpyPlatformPlugin;
 
 <span class="kw">impl </span>Plugin <span class="kw">for </span>JumpyPlatformPlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
@@ -595,7 +608,8 @@
     }
 }
 
-<span class="attr">#[derive(thiserror::Error, Debug)]
+<span class="doccomment">/// An error that may occur while accessing [`Storage`].
+</span><span class="attr">#[derive(thiserror::Error, Debug)]
 </span><span class="kw">pub enum </span>StorageError {
     <span class="attr">#[error(<span class="string">&quot;Storage has not been loaded yet&quot;</span>)]
     </span>NotLoaded,
@@ -785,17 +799,18 @@
     }
 }
 
-<span class="kw">enum </span>StorageRequest {
-    Load {
-        result_sender: Sender&lt;StorageData&gt;,
-    },
-    Save {
+<span class="doccomment">/// Message type sent over a channel to the storage task.
+</span><span class="kw">enum </span>StorageRequest {
+    <span class="doccomment">/// Load the storage and send it to the `result_sender`.
+    </span>Load { result_sender: Sender&lt;StorageData&gt; },
+    <span class="doccomment">/// Save the storage and send confirmation to the `result_sender`.
+    </span>Save {
         data: StorageData,
         result_sender: Sender&lt;()&gt;,
     },
 }
 
-<span class="doccomment">/// Native platform support
+<span class="doccomment">/// Native platform support.
 </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 </span><span class="kw">mod </span>native {
     <span class="kw">use </span>std::{
@@ -812,7 +827,8 @@
 
     <span class="kw">use </span><span class="kw">super</span>::StorageRequest;
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>init_storage() -&gt; Sender&lt;StorageRequest&gt; {
+    <span class="doccomment">/// Initialize storage backend.
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>init_storage() -&gt; Sender&lt;StorageRequest&gt; {
         <span class="macro">trace!</span>(<span class="string">&quot;Initialize platform storage backend&quot;</span>);
         <span class="kw">let </span>io_task_pool = IoTaskPool::get();
 

@@ -208,7 +208,16 @@
 <a href="#112" id="112">112</a>
 <a href="#113" id="113">113</a>
 <a href="#114" id="114">114</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::borrow::Borrow;
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Localization utilities &amp; initialization.
+
+</span><span class="kw">use </span>std::borrow::Borrow;
 
 <span class="kw">use </span>bevy::{prelude::<span class="kw-2">*</span>, utils::HashMap};
 <span class="kw">use </span>bevy_fluent::prelude::<span class="kw-2">*</span>;
@@ -216,6 +225,8 @@
 <span class="kw">use </span>fluent_content::{Content, Request};
 
 <span class="doccomment">/// Plugin for initializing and loading the [`Localization`] resource.
+///
+/// [`Localization`]: https://docs.rs/bevy_fluent/latest/bevy_fluent/struct.Localization.html
 </span><span class="kw">pub struct </span>JumpyLocalizationPlugin;
 
 <span class="kw">impl </span>Plugin <span class="kw">for </span>JumpyLocalizationPlugin {
@@ -229,6 +240,8 @@
 }
 
 <span class="doccomment">/// Extension trait to reduce boilerplate when getting values from a [`Localization`].
+///
+/// [`Localization`]: https://docs.rs/bevy_fluent/latest/bevy_fluent/struct.Localization.html
 </span><span class="kw">pub trait </span>LocalizationExt&lt;<span class="lifetime">&#39;a</span>, T: Into&lt;Request&lt;<span class="lifetime">&#39;a</span>, U&gt;&gt;, U: Borrow&lt;FluentArgs&lt;<span class="lifetime">&#39;a</span>&gt;&gt;&gt; {
     <span class="doccomment">/// Request message content and get an empty string if it doesn&#39;t exist.
     </span><span class="kw">fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, request: T) -&gt; String;
@@ -254,8 +267,9 @@
     }
 }
 
-<span class="doccomment">/// Watch for locale [`BundleAsset`] load events and add any new bundles to the [`Localization`]
-/// resource.
+<span class="doccomment">/// Watch for locale load events and add any new bundles to the [`Localization`] resource.
+///
+/// [`Localization`]: https://docs.rs/bevy_fluent/latest/bevy_fluent/struct.Localization.html
 </span><span class="kw">fn </span>load_locales(
     locale: Res&lt;Locale&gt;,
     <span class="kw-2">mut </span>loading_bundles: Local&lt;Vec&lt;Handle&lt;BundleAsset&gt;&gt;&gt;,

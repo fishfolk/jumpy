@@ -440,13 +440,59 @@
 <a href="#344" id="344">344</a>
 <a href="#345" id="345">345</a>
 <a href="#346" id="346">346</a>
-</pre><pre class="rust"><code><span class="kw">use </span>bevy::utils::Instant;
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Session management for matches.
+//!
+//! The [`SessionManager`] is used to create, stop, snapshot, and restore game matches. A session
+//! refers to an in-progress game match.
+//!
+//! Right now there are two kinds of sessions: local sessions and network sessions. These are
+//! implemented by the [`LocalSessionRunner`] and
+//! [`GgrsSessionRunner`][crate::networking::GgrsSessionRunner] types respectively.
+//!
+//! Both of them implmenent [`SessionRunner`] which is a trait used by the [`SessionManager`] to
+//! advance the game simulation properly.
+
+</span><span class="kw">use </span>bevy::utils::Instant;
 <span class="kw">use </span>downcast_rs::{impl_downcast, Downcast};
 <span class="kw">use </span>jumpy_core::input::PlayerControl;
 
 <span class="kw">use crate</span>::{main_menu::MenuPage, prelude::<span class="kw-2">*</span>};
 
-<span class="kw">pub struct </span>JumpySessionPlugin;
+<span class="doccomment">/// Session plugin.
+</span><span class="kw">pub struct </span>JumpySessionPlugin;
 
 <span class="doccomment">/// Stage label for the game session stages
 </span><span class="attr">#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
@@ -506,23 +552,38 @@
     }
 }
 
-<span class="doccomment">/// A resource containing an in-progress game session.
+<span class="doccomment">/// A resource containing the in-progress game session.
 </span><span class="attr">#[derive(Resource, Deref, DerefMut)]
 </span><span class="kw">pub struct </span>Session(<span class="kw">pub </span>Box&lt;<span class="kw">dyn </span>SessionRunner&gt;);
 
-<span class="kw">pub trait </span>SessionRunner: Sync + Send + Downcast {
-    <span class="kw">fn </span>core_session(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>CoreSession;
-    <span class="kw">fn </span>world(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>bones::World {
+<span class="doccomment">/// Trait implemented by types that know how to advance the core game simulation.
+///
+/// Things like fixed frame updates are expected to be handled by the session runner.
+///
+/// The [`GgrsSessionRunner`][crate::networking::GgrsSessionRunner] is an example of how a custom
+/// runner can be used for running a network game.
+</span><span class="kw">pub trait </span>SessionRunner: Sync + Send + Downcast {
+    <span class="doccomment">/// Get mutable access to the [`CoreSession`].
+    </span><span class="kw">fn </span>core_session(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>CoreSession;
+    <span class="doccomment">/// Get mutable access to the [`bones::World`] from in the [`CoreSession`].
+    </span><span class="kw">fn </span>world(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>bones::World {
         <span class="kw-2">&amp;mut </span><span class="self">self</span>.core_session().world
     }
-    <span class="kw">fn </span>restart(<span class="kw-2">&amp;mut </span><span class="self">self</span>);
-    <span class="kw">fn </span>get_player_input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player_idx: usize) -&gt; PlayerControl {
+    <span class="doccomment">/// Restart the session.
+    </span><span class="kw">fn </span>restart(<span class="kw-2">&amp;mut </span><span class="self">self</span>);
+    <span class="doccomment">/// Get the control input for the player with the given `player_idx`.
+    </span><span class="kw">fn </span>get_player_input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player_idx: usize) -&gt; PlayerControl {
         <span class="self">self</span>.core_session()
             .update_input(|inputs| inputs.players[player_idx].control.clone())
     }
-    <span class="kw">fn </span>set_player_input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player_idx: usize, control: PlayerControl);
-    <span class="kw">fn </span>advance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bevy_world: <span class="kw-2">&amp;mut </span>World) -&gt; <span class="prelude-ty">Result</span>&lt;(), SessionError&gt;;
-    <span class="kw">fn </span>run_criteria(<span class="kw-2">&amp;mut </span><span class="self">self</span>, time: <span class="kw-2">&amp;</span>Time) -&gt; ShouldRun;
+    <span class="doccomment">/// Set the player input for the player with the given `player_idx`.
+    </span><span class="kw">fn </span>set_player_input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player_idx: usize, control: PlayerControl);
+    <span class="doccomment">/// Advance the game simmulation.
+    </span><span class="kw">fn </span>advance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bevy_world: <span class="kw-2">&amp;mut </span>World) -&gt; <span class="prelude-ty">Result</span>&lt;(), SessionError&gt;;
+    <span class="doccomment">/// Return whether or not the simulation should run, given the current time.
+    ///
+    /// This is used to created fixed refresh rates.
+    </span><span class="kw">fn </span>run_criteria(<span class="kw-2">&amp;mut </span><span class="self">self</span>, time: <span class="kw-2">&amp;</span>Time) -&gt; ShouldRun;
     <span class="doccomment">/// Returns the player index of the player if we are in a network game.
     ///
     /// In a network game, we currently only allow for one local player, so this allows the session
@@ -538,7 +599,11 @@
     </span>Disconnected,
 }
 
-<span class="kw">pub struct </span>LocalSessionRunner {
+<span class="doccomment">/// Implementation of [`SessionRunner`] for local games.
+///
+/// This is almost as simple as a [`SessionRunner`] can get: it just advances the game simulation at
+/// the fixed [`jumpy_core::FPS`].
+</span><span class="kw">pub struct </span>LocalSessionRunner {
     <span class="kw">pub </span>core: CoreSession,
     <span class="kw">pub </span>accumulator: f64,
     <span class="kw">pub </span>loop_start: <span class="prelude-ty">Option</span>&lt;Instant&gt;,
@@ -640,15 +705,16 @@
         <span class="self">self</span>.menu_camera.for_each_mut(|<span class="kw-2">mut </span>x| x.is_active = <span class="bool-val">false</span>);
     }
 
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    <span class="doccomment">/// Start a network game session.
+    </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
     </span><span class="kw">pub fn </span>start_network(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         core_info: CoreSessionInfo,
-        lan_info: <span class="kw">crate</span>::networking::GgrsSessionRunnerInfo,
+        ggrs_info: <span class="kw">crate</span>::networking::GgrsSessionRunnerInfo,
     ) {
         <span class="kw">let </span>session = Session(Box::new(<span class="kw">crate</span>::networking::GgrsSessionRunner::new(
             CoreSession::new(core_info),
-            lan_info,
+            ggrs_info,
         )));
         <span class="self">self</span>.commands.insert_resource(session);
         <span class="self">self</span>.menu_camera.for_each_mut(|<span class="kw-2">mut </span>x| x.is_active = <span class="bool-val">false</span>);

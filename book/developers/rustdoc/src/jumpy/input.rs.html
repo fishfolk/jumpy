@@ -117,9 +117,27 @@
 <a href="#21" id="21">21</a>
 <a href="#22" id="22">22</a>
 <a href="#23" id="23">23</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Player input types.
+//!
+//! We use the [`leafwing-input-manager`] plugin for collecting user input in Jumpy. This crate
+//! installs the input manager plugin and registers the [`PlayerAction`] type as the collectible
+//! player input.
+//!
+//! [`leafwing-input-manager`]: https://docs.rs/leafwing-input-manager
 
-<span class="kw">pub struct </span>JumpyPlayerInputPlugin;
+</span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+
+<span class="doccomment">/// Input plugin.
+</span><span class="kw">pub struct </span>JumpyPlayerInputPlugin;
 
 <span class="kw">impl </span>Plugin <span class="kw">for </span>JumpyPlayerInputPlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {

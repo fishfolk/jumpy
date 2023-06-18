@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["init_storage",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["init_storage","Initialize storage backend."]]};

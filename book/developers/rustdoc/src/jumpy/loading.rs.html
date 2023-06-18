@@ -509,7 +509,25 @@
 <a href="#413" id="413">413</a>
 <a href="#414" id="414">414</a>
 <a href="#415" id="415">415</a>
-</pre><pre class="rust"><code><span class="kw">use </span>bevy::ecs::system::SystemParam;
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Initial game loading implementation.
+
+</span><span class="kw">use </span>bevy::ecs::system::SystemParam;
 <span class="kw">use </span>bevy_egui::{egui, EguiContexts};
 <span class="kw">use </span>bevy_fluent::Locale;
 <span class="kw">use </span>leafwing_input_manager::{
@@ -524,7 +542,8 @@
     prelude::<span class="kw-2">*</span>,
 };
 
-<span class="kw">pub struct </span>JumpyLoadingPlugin;
+<span class="doccomment">/// Loading plugin.
+</span><span class="kw">pub struct </span>JumpyLoadingPlugin;
 
 <span class="kw">impl </span>Plugin <span class="kw">for </span>JumpyLoadingPlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
@@ -610,10 +629,22 @@
     <span class="bool-val">true
 </span>}
 
-<span class="attr">#[derive(Component)]
+<span class="doccomment">/// Component added to the entities used to collect player input.
+///
+/// The inner [`usize`] is the player index.
+///
+/// The `leafwing-input-manager` tracks input for specific entities, instead of globally collecting
+/// input. This usually makes things easier, but for our usje-case, we need to be able to collect
+/// user input even for players that haven&#39;t, spawned yet.
+///
+/// To facilitate this, for every user we spawn [`jumpy_core::MAX_PLAYERS`] entities with a
+/// [`PlayerInputCollector`] and the `InputManagerBundle` that is needed for
+/// `leafwing-input-manager`.
+</span><span class="attr">#[derive(Component)]
 </span><span class="kw">pub struct </span>PlayerInputCollector(<span class="kw">pub </span>usize);
 
-<span class="kw">fn </span>setup(<span class="kw-2">mut </span>commands: Commands) {
+<span class="doccomment">/// Systemrunonce to spawn the menu input collector.
+</span><span class="kw">fn </span>setup(<span class="kw-2">mut </span>commands: Commands) {
     commands.spawn((
         Name::new(<span class="string">&quot;Menu Input Collector&quot;</span>),
         InputManagerBundle {
@@ -623,7 +654,7 @@
     ));
 }
 
-<span class="doccomment">/// System param used to load and hot reload the game
+<span class="doccomment">/// System param used to load and hot reload the game.
 </span><span class="attr">#[derive(SystemParam)]
 </span><span class="kw">pub struct </span>GameLoader&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
     skip_next_asset_update_event: Local&lt;<span class="lifetime">&#39;s</span>, bool&gt;,
@@ -846,7 +877,8 @@
     </span>}
 }
 
-<span class="kw">fn </span>menu_input_map() -&gt; InputMap&lt;MenuAction&gt; {
+<span class="doccomment">/// Get the input map for the menu controls.
+</span><span class="kw">fn </span>menu_input_map() -&gt; InputMap&lt;MenuAction&gt; {
     InputMap::default()
         .set_gamepad(Gamepad::new(<span class="number">0</span>))
         <span class="comment">// Up
@@ -915,12 +947,12 @@
         .build()
 }
 
-<span class="doccomment">/// System to run the initial game load
+<span class="doccomment">/// System to run the initial game load.
 </span><span class="kw">fn </span>load_game(loader: GameLoader) {
     loader.load(<span class="bool-val">false</span>);
 }
 
-<span class="doccomment">/// System to check for asset changes and hot reload the game
+<span class="doccomment">/// System to check for asset changes and hot reload the game.
 </span><span class="kw">fn </span>hot_reload_game(loader: GameLoader) {
     loader.load(<span class="bool-val">true</span>);
 }

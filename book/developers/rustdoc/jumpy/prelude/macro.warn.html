@@ -59,11 +59,20 @@
     }
 </script>
 <style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
     .mermaid {
         overflow: hidden !important;
         border: 1px solid #BBB;
         border-radius: 1em;
-        cursor: move
+        cursor: move;
+        position: relative;
     }
 
     .dotted rect {
@@ -117,7 +126,7 @@
     ($(<span class="macro-nonterminal">$arg</span>:tt)+) =&gt; { ... };
 }</code></pre></div>
 </div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Constructs an event at the warn level.</p>
-<p>This functions similarly to the <a href="https://docs.rs/tracing/0.1.37/tracing/macro.event.html"><code>event!</code></a> macro. See <a href="https://docs.rs/tracing/0.1.37/tracing/index.html#using-the-macros">the top-level
+<p>This functions similarly to the <a href="../external/bevy/utils/tracing/macro.event.html"><code>event!</code></a> macro. See <a href="../external/bevy/utils/tracing/index.html#using-the-macros">the top-level
 documentation</a> for details on the syntax accepted by
 this macro.</p>
 <h2 id="examples"><a href="#examples">Examples</a></h2>

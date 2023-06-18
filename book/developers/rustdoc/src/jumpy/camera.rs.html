@@ -59,11 +59,20 @@
     }
 </script>
 <style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
     .mermaid {
         overflow: hidden !important;
         border: 1px solid #BBB;
         border-radius: 1em;
-        cursor: move
+        cursor: move;
+        position: relative;
     }
 
     .dotted rect {
@@ -111,18 +120,40 @@
 <a href="#24" id="24">24</a>
 <a href="#25" id="25">25</a>
 <a href="#26" id="26">26</a>
-</pre><pre class="rust"><code><span class="kw">use </span>bevy::render::camera::ScalingMode;
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Utilities for the menu camera.
+//!
+//! The in-game camera is not dealt with here because it will created and managed automatically by
+//! [`bones_bevy_renderer`].
+//!
+//! [`bones_bevy_renderer`]: https://docs.rs/bones_bevy_renderer
+
+</span><span class="kw">use </span>bevy::render::camera::ScalingMode;
 
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
-<span class="attr">#[derive(Reflect, Component, Default)]
+<span class="doccomment">/// Marker component added to the camera that is used to render the main menu.
+</span><span class="attr">#[derive(Reflect, Component, Default)]
 #[reflect(Component, Default)]
 </span><span class="kw">pub struct </span>MenuCamera;
 
-<span class="kw">pub fn </span>spawn_menu_camera(commands: <span class="kw-2">&amp;mut </span>Commands, core: <span class="kw-2">&amp;</span>CoreMeta) -&gt; Entity {
+<span class="doccomment">/// Helper function to spawn the menu camera.
+///
+/// Called in [`loading::GameLoader::load()`].
+</span><span class="kw">pub fn </span>spawn_menu_camera(commands: <span class="kw-2">&amp;mut </span>Commands, core: <span class="kw-2">&amp;</span>CoreMeta) -&gt; Entity {
     commands
         .spawn((
-            Name::new(<span class="string">&quot;Game Camera&quot;</span>),
+            Name::new(<span class="string">&quot;Menu Camera&quot;</span>),
             MenuCamera,
             Camera2dBundle {
                 <span class="comment">// Note: This is different than just omitting this transform field because

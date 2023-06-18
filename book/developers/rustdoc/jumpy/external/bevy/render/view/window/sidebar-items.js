@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["WindowSystem",""]],"fn":[["prepare_windows","Creates and (re)configures window surfaces, and obtains a swapchain texture for rendering."]],"struct":[["ExtractedWindow",""],["ExtractedWindows",""],["NonSendMarker","Token to ensure a system runs on the main thread."],["WindowRenderPlugin",""],["WindowSurfaces",""]]};

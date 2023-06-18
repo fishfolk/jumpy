@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Camera2d",""],["Camera2dBundle",""],["Camera3d","Configuration for the “main 3d render graph”."],["Camera3dBundle",""],["ClearColor","A [`Resource`] that stores the color that is used to clear the screen between frames."]]};

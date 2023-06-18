@@ -59,11 +59,20 @@
     }
 </script>
 <style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
     .mermaid {
         overflow: hidden !important;
         border: 1px solid #BBB;
         border-radius: 1em;
-        cursor: move
+        cursor: move;
+        position: relative;
     }
 
     .dotted rect {
@@ -248,7 +257,53 @@
 <a href="#161" id="161">161</a>
 <a href="#162" id="162">162</a>
 <a href="#163" id="163">163</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Audio &amp; music plugin.
+//!
+//! Audio playback in Jumpy is powered by [`bevy_kira_audio`]. This module sets up the audio plugin,
+//! and installs our [`MusicChannel`] and [`EffectsChannel`] for playing music and sound effects.
+//!
+//! Also in this module is the [`music_system`] which handles playing the right music in different
+//! game states.
+//!
+//! Game sounds are _not_ handled here. Game sounds events are created in
+//! [`jumpy_core`][::jumpy_core] and then processed and sent to the effects channel by the
+//! [`play_sounds()`][crate::session::play_sounds] system.
+//!
+//! [`bevy_kira_audio`]: https://docs.rs/bevy_kira_audio
+
+</span><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use </span>bevy_kira_audio::{
     AudioApp, AudioChannel, AudioControl, AudioInstance, AudioSource, PlaybackState,
@@ -257,7 +312,8 @@
 
 <span class="kw">use crate</span>::{main_menu::MenuPage, metadata::GameMeta, prelude::<span class="kw-2">*</span>};
 
-<span class="kw">pub struct </span>JumpyAudioPlugin;
+<span class="doccomment">/// Audio &amp; Music plugin.
+</span><span class="kw">pub struct </span>JumpyAudioPlugin;
 
 <span class="kw">impl </span>Plugin <span class="kw">for </span>JumpyAudioPlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
@@ -271,26 +327,38 @@
     }
 }
 
-<span class="attr">#[derive(Resource)]
+<span class="doccomment">/// Marker struct for the music audio channel.
+</span><span class="attr">#[derive(Resource)]
 </span><span class="kw">pub struct </span>MusicChannel;
-<span class="attr">#[derive(Resource)]
+
+<span class="doccomment">/// Marker struct for the effects audio channel.
+</span><span class="attr">#[derive(Resource)]
 </span><span class="kw">pub struct </span>EffectsChannel;
 
-<span class="attr">#[derive(Resource, Clone, Debug, Default)]
+<span class="doccomment">/// The music playback state.
+</span><span class="attr">#[derive(Resource, Clone, Debug, Default)]
 </span><span class="kw">pub enum </span>MusicState {
-    <span class="attr">#[default]
+    <span class="doccomment">/// Music is not playing.
+    </span><span class="attr">#[default]
     </span><span class="prelude-val">None</span>,
-    MainMenu(Handle&lt;AudioInstance&gt;),
-    CharacterSelect(Handle&lt;AudioInstance&gt;),
-    Credits(Handle&lt;AudioInstance&gt;),
-    Fight {
-        instance: Handle&lt;AudioInstance&gt;,
-        idx: usize,
+    <span class="doccomment">/// Playing the main menu music.
+    </span>MainMenu(Handle&lt;AudioInstance&gt;),
+    <span class="doccomment">/// Playing the character select music.
+    </span>CharacterSelect(Handle&lt;AudioInstance&gt;),
+    <span class="doccomment">/// Playing the credits music.
+    </span>Credits(Handle&lt;AudioInstance&gt;),
+    <span class="doccomment">/// Playing the fight music.
+    </span>Fight {
+        <span class="doccomment">/// The handle to the audio instance.
+        </span>instance: Handle&lt;AudioInstance&gt;,
+        <span class="doccomment">/// The index of the song in the shuffled playlist.
+        </span>idx: usize,
     },
 }
 
 <span class="kw">impl </span>MusicState {
-    <span class="kw">fn </span>current_instance(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Handle&lt;AudioInstance&gt;&gt; {
+    <span class="doccomment">/// Get the current audio instance, if one is contained.
+    </span><span class="kw">fn </span>current_instance(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Handle&lt;AudioInstance&gt;&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             MusicState::None =&gt; <span class="prelude-val">None</span>,
             MusicState::MainMenu(i) =&gt; <span class="prelude-val">Some</span>(i),
@@ -301,10 +369,14 @@
     }
 }
 
-<span class="attr">#[derive(Resource, Deref, DerefMut, Clone, Debug, Default)]
+<span class="doccomment">/// Bevy resource containing the in-game music playlist shuffled.
+</span><span class="attr">#[derive(Resource, Deref, DerefMut, Clone, Debug, Default)]
 </span><span class="kw">pub struct </span>ShuffledPlaylist(<span class="kw">pub </span>Vec&lt;AssetHandle&lt;AudioSource&gt;&gt;);
 
-<span class="kw">fn </span>setup_audio_defaults(
+<span class="doccomment">/// Sets the default music and effects volume.
+///
+/// TODO: make this configurable in the settings menu.
+</span><span class="kw">fn </span>setup_audio_defaults(
     music: Res&lt;AudioChannel&lt;MusicChannel&gt;&gt;,
     effects: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;,
 ) {
@@ -312,9 +384,10 @@
     effects.set_volume(<span class="number">0.1</span>);
 }
 
-<span class="kw">const </span>MUSIC_FADE_DURATION: Duration = Duration::from_millis(<span class="number">500</span>);
+<span class="doccomment">/// The amount of time to spend fading the music in and out.
+</span><span class="kw">const </span>MUSIC_FADE_DURATION: Duration = Duration::from_millis(<span class="number">500</span>);
 
-<span class="doccomment">/// Plays music according to the game mode.
+<span class="doccomment">/// System that plays music according to the game mode.
 </span><span class="kw">fn </span>music_system(
     game: Res&lt;GameMeta&gt;,
     <span class="kw-2">mut </span>shuffled_fight_music: ResMut&lt;ShuffledPlaylist&gt;,

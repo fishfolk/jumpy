@@ -59,11 +59,20 @@
     }
 </script>
 <style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
     .mermaid {
         overflow: hidden !important;
         border: 1px solid #BBB;
         border-radius: 1em;
-        cursor: move
+        cursor: move;
+        position: relative;
     }
 
     .dotted rect {
@@ -220,14 +229,41 @@
 <a href="#133" id="133">133</a>
 <a href="#134" id="134">134</a>
 <a href="#135" id="135">135</a>
-</pre><pre class="rust"><code><span class="kw">use </span>once_cell::sync::Lazy;
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Jumpy startup configuration parsing.
+//!
+//! The [`EngineConfig`] contains the minimal configuration necessary when starting up the game
+//! initially. This includes the asset dir and the log level.
+//!
+//! [`EngineConfig`] is parsed from commandline arguments or environment variables on native
+//! platforms, and from the query string on web.
 
-<span class="kw">pub const </span>SERVER_MODE_ENV_VAR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;JUMPY_SERVER_MODE&quot;</span>;
-<span class="kw">pub const </span>ASSET_DIR_ENV_VAR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;JUMPY_ASSET_DIR&quot;</span>;
+</span><span class="kw">use </span>once_cell::sync::Lazy;
 
-<span class="kw">const </span>DEFAULT_LOG_LEVEL: <span class="kw-2">&amp;</span>str = <span class="string">&quot;info,wgpu=error,bevy_fluent=warn,symphonia_core=warn,symphonia_format_ogg=warn,symphonia_bundle_mp3=warn&quot;</span>;
+<span class="doccomment">/// The name of the environment variable used to set the asset dir.
+</span><span class="kw">pub const </span>ASSET_DIR_ENV_VAR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;JUMPY_ASSET_DIR&quot;</span>;
 
-<span class="kw">pub static </span>ENGINE_CONFIG: Lazy&lt;EngineConfig&gt; = Lazy::new(|| {
+<span class="doccomment">/// The default log level string.
+</span><span class="kw">const </span>DEFAULT_LOG_LEVEL: <span class="kw-2">&amp;</span>str = <span class="string">&quot;info,wgpu=error,bevy_fluent=warn,symphonia_core=warn,symphonia_format_ogg=warn,symphonia_bundle_mp3=warn&quot;</span>;
+
+<span class="doccomment">/// The loaded engine config is stored in this static.
+///
+/// It is a lazy static, but the first thing that [`main()`][crate::main()] does is load it so it
+/// will be loaded for the duration of the game&#39;s execution.
+</span><span class="kw">pub static </span>ENGINE_CONFIG: Lazy&lt;EngineConfig&gt; = Lazy::new(|| {
     <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
     </span><span class="kw">return </span>&lt;EngineConfig <span class="kw">as </span>clap::Parser&gt;::parse();
 
@@ -235,7 +271,8 @@
     </span><span class="kw">return </span>EngineConfig::from_web_params();
 });
 
-<span class="attr">#[derive(Clone, Debug, clap::Parser)]
+<span class="doccomment">/// Jumpy game startup configuration.
+</span><span class="attr">#[derive(Clone, Debug, clap::Parser)]
 #[command(author, version, about)]
 </span><span class="kw">pub struct </span>EngineConfig {
     <span class="doccomment">/// Hot reload assets

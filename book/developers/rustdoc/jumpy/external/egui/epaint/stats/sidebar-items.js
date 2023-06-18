@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["AllocInfo","Aggregate information about a bunch of allocations."],["PaintStats","Collected allocation statistics for shapes and meshes."]]};

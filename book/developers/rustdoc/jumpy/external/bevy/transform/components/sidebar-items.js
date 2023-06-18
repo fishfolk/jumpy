@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["GlobalTransform","Describe the position of an entity relative to the reference frame."],["Transform","Describe the position of an entity. If the entity has a parent, the position is relative to its parent position."]]};

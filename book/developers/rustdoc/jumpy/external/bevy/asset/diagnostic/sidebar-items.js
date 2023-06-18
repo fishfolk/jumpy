@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["AssetCountDiagnosticsPlugin","Adds an asset count diagnostic to an [`App`] for assets of type `T`."]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["GLOBALS_TYPE_HANDLE",""]],"struct":[["GlobalsBuffer","The buffer containing the [`GlobalsUniform`]"],["GlobalsPlugin",""],["GlobalsUniform","Contains global values useful when writing shaders. Currently only contains values related to time."]]};

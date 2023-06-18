@@ -1,0 +1,191 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="`petgraph` is a graph data structure library."><meta name="keywords" content="rust, rustlang, rust-lang, petgraph"><title>jumpy::external::bevy::utils::petgraph - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../../../crates.js"></script><script defer src="../../../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function (e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move;
+        position: relative;
+    }
+
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
+    .code .nodeLabel {
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../jumpy/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../../jumpy/index.html"><div class="logo-container">
+                    <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2 class="location"><a href="#">Crate petgraph</a></h2><div class="sidebar-elems"><ul class="block"><li class="version">Version 0.7.0</li><li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Crate <a href="../../../../index.html">jumpy</a>::<wbr><a href="../../../index.html">external</a>::<wbr><a href="../../index.html">bevy</a>::<wbr><a href="../index.html">utils</a>::<wbr><a class="mod" href="#">petgraph</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="srclink" href="https://docs.rs/petgraph/0.4/src/petgraph/lib.rs.html#1-306">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p><code>petgraph</code> is a graph data structure library.</p>
+<p>Graphs are collections of nodes, and edges between nodes. <code>petgraph</code>
+provides several <a href="index.html#graph-types">graph types</a> (each differing in the
+tradeoffs taken in their internal representation),
+<a href="./algo/index.html#functions">algorithms</a> on those graphs, and functionality to
+<a href="./dot/struct.Dot.html">output graphs</a> in
+<a href="https://www.graphviz.org/"><code>graphviz</code></a> format. Both nodes and edges
+can have arbitrary associated data, and edges may be either directed or undirected.</p>
+<h2 id="example"><a href="#example">Example</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>petgraph::graph::{NodeIndex, UnGraph};
+<span class="kw">use </span>petgraph::algo::{dijkstra, min_spanning_tree};
+<span class="kw">use </span>petgraph::data::FromElements;
+<span class="kw">use </span>petgraph::dot::{Dot, Config};
+
+<span class="comment">// Create an undirected graph with `i32` nodes and edges with `()` associated data.
+</span><span class="kw">let </span>g = UnGraph::&lt;i32, ()&gt;::from_edges(<span class="kw-2">&amp;</span>[
+    (<span class="number">1</span>, <span class="number">2</span>), (<span class="number">2</span>, <span class="number">3</span>), (<span class="number">3</span>, <span class="number">4</span>),
+    (<span class="number">1</span>, <span class="number">4</span>)]);
+
+<span class="comment">// Find the shortest path from `1` to `4` using `1` as the cost for every edge.
+</span><span class="kw">let </span>node_map = dijkstra(<span class="kw-2">&amp;</span>g, <span class="number">1</span>.into(), <span class="prelude-val">Some</span>(<span class="number">4</span>.into()), |<span class="kw">_</span>| <span class="number">1</span>);
+<span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span><span class="number">1i32</span>, node_map.get(<span class="kw-2">&amp;</span>NodeIndex::new(<span class="number">4</span>)).unwrap());
+
+<span class="comment">// Get the minimum spanning tree of the graph as a new graph, and check that
+// one edge was trimmed.
+</span><span class="kw">let </span>mst = UnGraph::&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;::from_elements(min_spanning_tree(<span class="kw-2">&amp;</span>g));
+<span class="macro">assert_eq!</span>(g.raw_edges().len() - <span class="number">1</span>, mst.raw_edges().len());
+
+<span class="comment">// Output the tree to `graphviz` `DOT` format
+</span><span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, Dot::with_config(<span class="kw-2">&amp;</span>mst, <span class="kw-2">&amp;</span>[Config::EdgeNoLabel]));
+<span class="comment">// graph {
+//     0 [label=&quot;\&quot;0\&quot;&quot;]
+//     1 [label=&quot;\&quot;0\&quot;&quot;]
+//     2 [label=&quot;\&quot;0\&quot;&quot;]
+//     3 [label=&quot;\&quot;0\&quot;&quot;]
+//     1 -- 2
+//     3 -- 4
+//     2 -- 3
+// }</span></code></pre></div>
+<h2 id="graph-types"><a href="#graph-types">Graph types</a></h2>
+<ul>
+<li><a href="./graph/struct.Graph.html"><code>Graph</code></a> -
+An adjacency list graph with arbitrary associated data.</li>
+<li><a href="./stable_graph/struct.StableGraph.html"><code>StableGraph</code></a> -
+Similar to <code>Graph</code>, but it keeps indices stable across removals.</li>
+<li><a href="./graphmap/struct.GraphMap.html"><code>GraphMap</code></a> -
+An adjacency list graph backed by a hash table. The node identifiers are the keys
+into the table.</li>
+<li><a href="./matrix_graph/struct.MatrixGraph.html"><code>MatrixGraph</code></a> -
+An adjacency matrix graph.</li>
+<li><a href="./csr/struct.Csr.html"><code>CSR</code></a> -
+A sparse adjacency matrix graph with arbitrary associated data.</li>
+</ul>
+<h4 id="generic-parameters"><a href="#generic-parameters">Generic parameters</a></h4>
+<p>Each graph type is generic over a handful of parameters. All graphs share 3 common
+parameters, <code>N</code>, <code>E</code>, and <code>Ty</code>. This is a broad overview of what those are. Each
+type’s documentation will have finer detail on these parameters.</p>
+<p><code>N</code> &amp; <code>E</code> are called <em>weights</em> in this implementation, and are associated with
+nodes and edges respectively. They can generally be of arbitrary type, and don’t have to
+be what you might conventionally consider weight-like. For example, using <code>&amp;str</code> for <code>N</code>
+will work. Many algorithms that require costs let you provide a cost function that
+translates your <code>N</code> and <code>E</code> weights into costs appropriate to the algorithm. Some graph
+types and choices do impose bounds on <code>N</code> or <code>E</code>.
+<a href="./algo/fn.min_spanning_tree.html"><code>min_spanning_tree</code></a> for example requires edge weights that
+implement <a href="https://doc.rust-lang.org/stable/core/cmp/trait.PartialOrd.html"><code>PartialOrd</code></a>.
+<a href="./graphmap/struct.GraphMap.html"><code>GraphMap</code></a> requires node weights that can serve as hash
+map keys, since that graph type does not create standalone node indices.</p>
+<p><code>Ty</code> controls whether edges are <a href="./enum.Directed.html"><code>Directed</code></a> or
+<a href="./enum.Undirected.html"><code>Undirected</code></a>.</p>
+<p><code>Ix</code> appears on graph types that use indices. It is exposed so you can control
+the size of node and edge indices, and therefore the memory footprint of your graphs.
+Allowed values are <code>u8</code>, <code>u16</code>, <code>u32</code>, and <code>usize</code>, with <code>u32</code> being the default.</p>
+<h4 id="shorthand-types"><a href="#shorthand-types">Shorthand types</a></h4>
+<p>Each graph type vends a few shorthand type definitions that name some specific
+generic choices. For example, <a href="./graph/type.DiGraph.html"><code>DiGraph&lt;_, _&gt;</code></a> is shorthand
+for <a href="graph/struct.Graph.html"><code>Graph&lt;_, _, Directed&gt;</code></a>.
+<a href="./matrix_graph/type.UnMatrix.html"><code>UnMatrix&lt;_, _&gt;</code></a> is shorthand for
+<a href="./matrix_graph/struct.MatrixGraph.html"><code>MatrixGraph&lt;_, _, Undirected&gt;</code></a>. Each graph type’s
+module documentation lists the available shorthand types.</p>
+<h2 id="crate-features"><a href="#crate-features">Crate features</a></h2>
+<ul>
+<li><strong>serde-1</strong> -
+Defaults off. Enables serialization for <code>Graph, StableGraph, GraphMap</code> using
+<a href="https://crates.io/crates/serde"><code>serde 1.0</code></a>. May require a more recent version
+of Rust than petgraph alone.</li>
+<li><strong>graphmap</strong> -
+Defaults on. Enables <a href="./graphmap/struct.GraphMap.html"><code>GraphMap</code></a>.</li>
+<li><strong>stable_graph</strong> -
+Defaults on. Enables <a href="./stable_graph/struct.StableGraph.html"><code>StableGraph</code></a>.</li>
+<li><strong>matrix_graph</strong> -
+Defaults on. Enables <a href="./matrix_graph/struct.MatrixGraph.html"><code>MatrixGraph</code></a>.</li>
+</ul>
+</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="adj/index.html" title="jumpy::external::bevy::utils::petgraph::adj mod">adj</a></div><div class="item-right docblock-short">Simple adjacency list.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="algo/index.html" title="jumpy::external::bevy::utils::petgraph::algo mod">algo</a></div><div class="item-right docblock-short">Graph algorithms.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="csr/index.html" title="jumpy::external::bevy::utils::petgraph::csr mod">csr</a></div><div class="item-right docblock-short">Compressed Sparse Row (CSR) is a sparse adjacency matrix graph.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="data/index.html" title="jumpy::external::bevy::utils::petgraph::data mod">data</a></div><div class="item-right docblock-short">Graph traits for associated data and graph construction.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="dot/index.html" title="jumpy::external::bevy::utils::petgraph::dot mod">dot</a></div><div class="item-right docblock-short">Simple graphviz dot file format output.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="graph/index.html" title="jumpy::external::bevy::utils::petgraph::graph mod">graph</a></div><div class="item-right docblock-short"><code>Graph&lt;N, E, Ty, Ix&gt;</code> is a graph datastructure using an adjacency list representation.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="graphmap/index.html" title="jumpy::external::bevy::utils::petgraph::graphmap mod">graphmap</a></div><div class="item-right docblock-short"><code>GraphMap&lt;N, E, Ty&gt;</code> is a graph datastructure where node values are mapping
+keys.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="matrix_graph/index.html" title="jumpy::external::bevy::utils::petgraph::matrix_graph mod">matrix_graph</a></div><div class="item-right docblock-short"><code>MatrixGraph&lt;N, E, Ty, NullN, NullE, Ix&gt;</code> is a graph datastructure backed by an adjacency matrix.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="operator/index.html" title="jumpy::external::bevy::utils::petgraph::operator mod">operator</a></div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="prelude/index.html" title="jumpy::external::bevy::utils::petgraph::prelude mod">prelude</a></div><div class="item-right docblock-short">Commonly used items.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="stable_graph/index.html" title="jumpy::external::bevy::utils::petgraph::stable_graph mod">stable_graph</a></div><div class="item-right docblock-short"><code>StableGraph</code> keeps indices stable across removals.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="unionfind/index.html" title="jumpy::external::bevy::utils::petgraph::unionfind mod">unionfind</a></div><div class="item-right docblock-short"><code>UnionFind&lt;K&gt;</code> is a disjoint-set data structure.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="visit/index.html" title="jumpy::external::bevy::utils::petgraph::visit mod">visit</a></div><div class="item-right docblock-short">Graph traits and graph traversals.</div></div></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Graph.html" title="jumpy::external::bevy::utils::petgraph::Graph struct">Graph</a></div><div class="item-right docblock-short"><code>Graph&lt;N, E, Ty, Ix&gt;</code> is a graph datastructure using an adjacency list representation.</div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.Directed.html" title="jumpy::external::bevy::utils::petgraph::Directed enum">Directed</a></div><div class="item-right docblock-short">Marker type for a directed graph.</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.Direction.html" title="jumpy::external::bevy::utils::petgraph::Direction enum">Direction</a></div><div class="item-right docblock-short">Edge direction.</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.EdgeDirection.html" title="jumpy::external::bevy::utils::petgraph::EdgeDirection enum">EdgeDirection</a></div><div class="item-right docblock-short">Edge direction.</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.Undirected.html" title="jumpy::external::bevy::utils::petgraph::Undirected enum">Undirected</a></div><div class="item-right docblock-short">Marker type for an undirected graph.</div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.EdgeType.html" title="jumpy::external::bevy::utils::petgraph::EdgeType trait">EdgeType</a></div><div class="item-right docblock-short">A graph’s edge type determines whether it has directed edges or not.</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.IntoWeightedEdge.html" title="jumpy::external::bevy::utils::petgraph::IntoWeightedEdge trait">IntoWeightedEdge</a></div><div class="item-right docblock-short">Convert an element like <code>(i, j)</code> or <code>(i, j, w)</code> into
+a triple of source, target, edge weight.</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

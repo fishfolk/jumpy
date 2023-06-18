@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["MsaaWritebackBlitPipeline",""],["MsaaWritebackNode",""],["MsaaWritebackPlugin","This enables “msaa writeback” support for the `core_2d` and `core_3d` pipelines, which can be enabled on cameras using [`bevy_render::camera::Camera::msaa_writeback`]. See the docs on that field for more information."]]};

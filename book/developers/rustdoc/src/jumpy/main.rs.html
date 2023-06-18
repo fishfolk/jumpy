@@ -59,11 +59,20 @@
     }
 </script>
 <style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
     .mermaid {
         overflow: hidden !important;
         border: 1px solid #BBB;
         border-radius: 1em;
-        cursor: move
+        cursor: move;
+        position: relative;
     }
 
     .dotted rect {
@@ -213,18 +222,41 @@
 <a href="#126" id="126">126</a>
 <a href="#127" id="127">127</a>
 <a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
 </span><span class="attr">#![cfg_attr(doc, allow(unknown_lints))]
 #![deny(rustdoc::all)]
+#![allow(rustdoc::private_intra_doc_links)]
 #![allow(clippy::type_complexity)]
 #![allow(clippy::forget_non_drop)]
 #![allow(clippy::too_many_arguments)]
 
-#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</span><span class="doccomment">/// Sets the global Rust allocator to MiMalloc instead of the system one.
+///
+/// Doesn&#39;t do anything on WASM builds. ( We may want an alternative allocator for WASM later. )
+</span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 #[global_allocator]
-</span><span class="kw">static </span>GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+</span><span class="kw">static </span>GLOBAL_ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
+<span class="doccomment">/// External crate documentation.
+///
+/// This module only exists during docs builds and serves to make it eaiser to link to relevant
+/// documentation in external crates.
+</span><span class="attr">#[cfg(doc)]
+</span><span class="kw">pub mod </span>external {
+    <span class="attr">#[doc(inline)]
+    </span><span class="kw">pub use </span>bevy;
+    <span class="attr">#[doc(inline)]
+    </span><span class="kw">pub use </span>bevy_egui::egui;
+}
 
 <span class="comment">// This will cause Bevy to be dynamically linked during development,
 // which can greatly reduce re-compile times in some circumstances.
@@ -235,6 +267,7 @@
 
 <span class="kw">pub mod </span>assets;
 <span class="kw">pub mod </span>audio;
+<span class="kw">pub mod </span>bevy_states;
 <span class="kw">pub mod </span>config;
 <span class="kw">pub mod </span>debug;
 <span class="kw">pub mod </span>input;
@@ -250,32 +283,22 @@
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 </span><span class="kw">pub mod </span>networking;
 <span class="kw">pub mod </span>prelude;
-<span class="kw">pub use </span>prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>prelude::<span class="kw-2">*</span>;
 
-<span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
-</span><span class="kw">pub enum </span>EngineState {
-    <span class="attr">#[default]
-    </span>LoadingPlatformStorage,
-    LoadingGameData,
-    MainMenu,
-    InGame,
-}
-
-<span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
-</span><span class="kw">pub enum </span>InGameState {
-    <span class="attr">#[default]
-    </span>Playing,
-    Paused,
-}
-
-<span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
-</span><span class="kw">pub enum </span>GameEditorState {
-    <span class="attr">#[default]
-    </span>Hidden,
-    Visible,
-}
-
-<span class="kw">pub fn </span>main() {
+<span class="doccomment">/// The entrypoint function for the jumpy game.
+///
+/// This function:
+///
+/// - Parses engine config:
+///     - On native: commandline arguments
+///     - On web: query string parameters
+/// - Initializes the Bevy [`App`]
+/// - Initializes settings and resources
+/// - Installs our Bevy plugins
+///     - This includes 3rd party plugins, and our custom bevy plugins
+///     - Nearly all of the game logic resides in these plugins
+/// - Starts the game
+</span><span class="kw">pub fn </span>main() {
     <span class="comment">// Load engine config. This will parse CLI arguments or web query string so we want to do it
     // before we create the app to make sure everything is in order.
     </span><span class="kw">let </span>engine_config = Lazy::force(<span class="kw-2">&amp;</span>config::ENGINE_CONFIG);

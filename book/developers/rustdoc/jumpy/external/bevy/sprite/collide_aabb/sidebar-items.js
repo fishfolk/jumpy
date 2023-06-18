@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Collision",""]],"fn":[["collide","Axis-aligned bounding box collision with “side” detection"]]};

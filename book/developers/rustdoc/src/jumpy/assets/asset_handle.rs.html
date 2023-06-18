@@ -59,11 +59,20 @@
     }
 </script>
 <style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
     .mermaid {
         overflow: hidden !important;
         border: 1px solid #BBB;
         border-radius: 1em;
-        cursor: move
+        cursor: move;
+        position: relative;
     }
 
     .dotted rect {
@@ -215,6 +224,7 @@
 <a href="#128" id="128">128</a>
 <a href="#129" id="129">129</a>
 <a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -226,7 +236,8 @@
 
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
-<span class="doccomment">/// A wrapper around [`Handle&lt;T&gt;`] that also contains the [`AssetPath`] used to load the asset.
+<span class="doccomment">/// A wrapper around [`Handle&lt;T&gt;`] that also contains the
+/// [`AssetPath`][crate::external::bevy::asset::AssetPath] used to load the asset.
 ///
 /// Unlike [`Handle&lt;T&gt;`], this type is serializable and deserializable and can be sent over the
 /// network.

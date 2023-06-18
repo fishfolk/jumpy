@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["hash","Hash the given value with a predictable hasher."],["hash_with","Hash the given value with the given hasher."]],"struct":[["OrderedFloat","Wraps a floating-point value to add total order and hash. Possible types for `T` are `f32` and `f64`."]],"trait":[["FloatOrd","Extension trait to provide `ord()` method."]]};

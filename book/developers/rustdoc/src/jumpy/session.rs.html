@@ -59,11 +59,20 @@
     }
 </script>
 <style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
     .mermaid {
         overflow: hidden !important;
         border: 1px solid #BBB;
         border-radius: 1em;
-        cursor: move
+        cursor: move;
+        position: relative;
     }
 
     .dotted rect {
@@ -754,7 +763,7 @@
 }
 
 <span class="doccomment">/// Play sounds from the game session.
-</span><span class="kw">fn </span>play_sounds(audio: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;, <span class="kw-2">mut </span>session: ResMut&lt;Session&gt;) {
+</span><span class="kw">pub fn </span>play_sounds(audio: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;, <span class="kw-2">mut </span>session: ResMut&lt;Session&gt;) {
     <span class="comment">// Get the sound queue out of the world
     </span><span class="kw">let </span>queue = session
         .world()

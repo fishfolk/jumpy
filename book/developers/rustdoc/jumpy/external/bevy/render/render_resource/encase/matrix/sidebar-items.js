@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":[["impl_matrix","Used to implement `ShaderType` for the given matrix type"]],"trait":[["AsMutMatrixParts","Enables writing to the matrix (via `&mut [[T; R]; C]`)"],["AsRefMatrixParts","Enables reading from the matrix (via `&[[T; R]; C]`)"],["FromMatrixParts","Enables the cration of a matrix (via `[[T; R]; C]`)"],["MatrixScalar",""]]};

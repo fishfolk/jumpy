@@ -1,0 +1,99 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `query` mod in crate `jumpy`."><meta name="keywords" content="rust, rustlang, rust-lang, query"><title>jumpy::external::bevy::ecs::query - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function (e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move;
+        position: relative;
+    }
+
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
+    .code .nodeLabel {
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../jumpy/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../../jumpy/index.html"><div class="logo-container">
+                    <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2 class="location"><a href="#">Module query</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#types">Type Definitions</a></li><li><a href="#derives">Derive Macros</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Module <a href="../../../../index.html">jumpy</a>::<wbr><a href="../../../index.html">external</a>::<wbr><a href="../../index.html">bevy</a>::<wbr><a href="../index.html">ecs</a>::<wbr><a class="mod" href="#">query</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Access.html" title="jumpy::external::bevy::ecs::query::Access struct">Access</a></div><div class="item-right docblock-short">Tracks read and write access to specific elements in a collection.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Added.html" title="jumpy::external::bevy::ecs::query::Added struct">Added</a></div><div class="item-right docblock-short">A filter on a component that only retains results added after the system last ran.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.AnyOf.html" title="jumpy::external::bevy::ecs::query::AnyOf struct">AnyOf</a></div><div class="item-right docblock-short">The <code>AnyOf</code> query parameter fetches entities with any of the component types included in T.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.BatchingStrategy.html" title="jumpy::external::bevy::ecs::query::BatchingStrategy struct">BatchingStrategy</a></div><div class="item-right docblock-short">Dictates how a parallel query chunks up large tables/archetypes
+during iteration.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.ChangeTrackers.html" title="jumpy::external::bevy::ecs::query::ChangeTrackers struct">ChangeTrackers</a><span class="stab deprecated" title="">Deprecated</span></div><div class="item-right docblock-short"><a href="trait.WorldQuery.html" title="WorldQuery"><code>WorldQuery</code></a> that tracks changes and additions for component <code>T</code>.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Changed.html" title="jumpy::external::bevy::ecs::query::Changed struct">Changed</a></div><div class="item-right docblock-short">A filter on a component that only retains results added or mutably dereferenced after the system last ran.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.FilteredAccess.html" title="jumpy::external::bevy::ecs::query::FilteredAccess struct">FilteredAccess</a></div><div class="item-right docblock-short">An <a href="struct.Access.html" title="Access"><code>Access</code></a> that has been filtered to include and exclude certain combinations of elements.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.FilteredAccessSet.html" title="jumpy::external::bevy::ecs::query::FilteredAccessSet struct">FilteredAccessSet</a></div><div class="item-right docblock-short">A collection of <a href="struct.FilteredAccess.html" title="FilteredAccess"><code>FilteredAccess</code></a> instances.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.NopWorldQuery.html" title="jumpy::external::bevy::ecs::query::NopWorldQuery struct">NopWorldQuery</a></div><div class="item-right docblock-short"><a href="trait.WorldQuery.html" title="WorldQuery"><code>WorldQuery</code></a> used to nullify queries by turning <code>Query&lt;Q&gt;</code> into <code>Query&lt;NopWorldQuery&lt;Q&gt;&gt;</code></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Or.html" title="jumpy::external::bevy::ecs::query::Or struct">Or</a></div><div class="item-right docblock-short">A filter that tests if any of the given filters apply.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.QueryCombinationIter.html" title="jumpy::external::bevy::ecs::query::QueryCombinationIter struct">QueryCombinationIter</a></div><div class="item-right docblock-short">An iterator over <code>K</code>-sized combinations of query items without repetition.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.QueryIter.html" title="jumpy::external::bevy::ecs::query::QueryIter struct">QueryIter</a></div><div class="item-right docblock-short">An <a href="https://doc.rust-lang.org/1.67.0/core/iter/traits/iterator/trait.Iterator.html" title="Iterator"><code>Iterator</code></a> over query results of a <a href="../../../../prelude/struct.Query.html"><code>Query</code></a>.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.QueryManyIter.html" title="jumpy::external::bevy::ecs::query::QueryManyIter struct">QueryManyIter</a></div><div class="item-right docblock-short">An <a href="https://doc.rust-lang.org/1.67.0/core/iter/traits/iterator/trait.Iterator.html" title="Iterator"><code>Iterator</code></a> over the query items generated from an iterator of <a href="../../../../prelude/struct.Entity.html" title="Entity"><code>Entity</code></a>s.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.QueryParIter.html" title="jumpy::external::bevy::ecs::query::QueryParIter struct">QueryParIter</a></div><div class="item-right docblock-short">A parallel iterator over query results of a <a href="../../../../prelude/struct.Query.html"><code>Query</code></a>.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.QueryState.html" title="jumpy::external::bevy::ecs::query::QueryState struct">QueryState</a></div><div class="item-right docblock-short">Provides scoped access to a <a href="../../../../prelude/struct.World.html" title="World"><code>World</code></a> state according to a given <a href="trait.WorldQuery.html" title="WorldQuery"><code>WorldQuery</code></a> and query filter.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.With.html" title="jumpy::external::bevy::ecs::query::With struct">With</a></div><div class="item-right docblock-short">Filter that selects entities with a component <code>T</code>.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Without.html" title="jumpy::external::bevy::ecs::query::Without struct">Without</a></div><div class="item-right docblock-short">Filter that selects entities without a component <code>T</code>.</div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.QueryEntityError.html" title="jumpy::external::bevy::ecs::query::QueryEntityError enum">QueryEntityError</a></div><div class="item-right docblock-short">An error that occurs when retrieving a specific <a href="../../../../prelude/struct.Entity.html" title="Entity"><code>Entity</code></a>’s query result.</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.QuerySingleError.html" title="jumpy::external::bevy::ecs::query::QuerySingleError enum">QuerySingleError</a></div><div class="item-right docblock-short">An error that occurs when evaluating a <a href="../../../../prelude/struct.QueryState.html" title="QueryState"><code>QueryState</code></a> as a single expected resulted via
+<a href="../../../../prelude/struct.QueryState.html#method.single" title="QueryState::single"><code>QueryState::single</code></a> or <a href="../../../../prelude/struct.QueryState.html#method.single_mut" title="QueryState::single_mut"><code>QueryState::single_mut</code></a>.</div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.ArchetypeFilter.html" title="jumpy::external::bevy::ecs::query::ArchetypeFilter trait">ArchetypeFilter</a></div><div class="item-right docblock-short">A marker trait to indicate that the filter works at an archetype level.</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.ReadOnlyWorldQuery.html" title="jumpy::external::bevy::ecs::query::ReadOnlyWorldQuery trait">ReadOnlyWorldQuery</a></div><div class="item-right docblock-short">A world query that is read only.</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.WorldQuery.html" title="jumpy::external::bevy::ecs::query::WorldQuery trait">WorldQuery</a></div><div class="item-right docblock-short">Types that can be fetched from a <a href="../../../../prelude/struct.World.html" title="World"><code>World</code></a> using a <a href="../../../../prelude/struct.Query.html"><code>Query</code></a>.</div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.QueryFetch.html" title="jumpy::external::bevy::ecs::query::QueryFetch type">QueryFetch</a></div><div class="item-right docblock-short">The <code>Fetch</code> of a <a href="trait.WorldQuery.html" title="WorldQuery"><code>WorldQuery</code></a>, which is used to store state for each archetype/table.</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.QueryItem.html" title="jumpy::external::bevy::ecs::query::QueryItem type">QueryItem</a></div><div class="item-right docblock-short">The item type returned when a <a href="trait.WorldQuery.html" title="WorldQuery"><code>WorldQuery</code></a> is iterated over</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.ROQueryFetch.html" title="jumpy::external::bevy::ecs::query::ROQueryFetch type">ROQueryFetch</a></div><div class="item-right docblock-short">The read-only <code>Fetch</code> of a <a href="trait.WorldQuery.html" title="WorldQuery"><code>WorldQuery</code></a>, which is used to store state for each archetype/table.</div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.ROQueryItem.html" title="jumpy::external::bevy::ecs::query::ROQueryItem type">ROQueryItem</a></div><div class="item-right docblock-short">The read-only variant of the item type returned when a <a href="trait.WorldQuery.html" title="WorldQuery"><code>WorldQuery</code></a> is iterated over immutably</div></div></div><h2 id="derives" class="small-section-header"><a href="#derives">Derive Macros</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="derive" href="derive.WorldQuery.html" title="jumpy::external::bevy::ecs::query::WorldQuery derive">WorldQuery</a></div><div class="item-right docblock-short">Implement <code>WorldQuery</code> to use a struct as a parameter in a query</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

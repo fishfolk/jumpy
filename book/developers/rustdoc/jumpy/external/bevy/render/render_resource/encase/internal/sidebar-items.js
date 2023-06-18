@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"struct":[["AlignmentValue","Helper type for alignment calculations"],["EnlargeError",""],["ReadContext",""],["Reader",""],["SizeValue","Helper type for size calculations"],["WriteContext",""],["Writer",""]],"trait":[["BufferMut",""],["BufferRef",""],["CreateFrom",""],["ReadFrom",""],["WriteInto",""]],"type":[["Result",""]]};

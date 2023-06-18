@@ -1,0 +1,194 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content=""><meta name="keywords" content="rust, rustlang, rust-lang, bevy"><title>jumpy::external::bevy - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../crates.js"></script><script defer src="../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function (e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move;
+        position: relative;
+    }
+
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
+    .code .nodeLabel {
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../jumpy/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../jumpy/index.html"><div class="logo-container">
+                    <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2 class="location"><a href="#">Crate bevy</a></h2><div class="sidebar-elems"><ul class="block"><li class="version">Version 0.7.0</li><li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Crate <a href="../../index.html">jumpy</a>::<wbr><a href="../index.html">external</a>::<wbr><a class="mod" href="#">bevy</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p><a href="https://bevyengine.org"><img src="https://bevyengine.org/assets/bevy_logo_docs.svg" alt="" /></a></p>
+<p>Bevy is an open-source modular game engine built in Rust, with a focus on developer productivity
+and performance.</p>
+<p>Check out the <a href="https://bevyengine.org">Bevy website</a> for more information, read the
+<a href="https://bevyengine.org/learn/book/introduction">Bevy Book</a> for a step-by-step guide, and <a href="https://bevyengine.org/community/">engage with our
+community</a> if you have any questions or ideas!</p>
+<h3 id="example"><a href="#example">Example</a></h3>
+<p>Here is a simple “Hello World” Bevy app:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bevy::prelude::<span class="kw-2">*</span>;
+
+<span class="kw">fn </span>main() {
+   App::new()
+       .add_system(hello_world_system)
+       .run();
+}
+
+<span class="kw">fn </span>hello_world_system() {
+   <span class="macro">println!</span>(<span class="string">&quot;hello world&quot;</span>);
+}</code></pre></div>
+<p>Don’t let the simplicity of the example above fool you. Bevy is a <a href="https://bevyengine.org">fully featured game engine</a>
+and it gets more powerful every day!</p>
+<h3 id="this-crate"><a href="#this-crate">This Crate</a></h3>
+<p>The <code>bevy</code> crate is just a container crate that makes it easier to consume Bevy subcrates.
+The defaults provide a “full” engine experience, but you can easily enable / disable features
+in your project’s <code>Cargo.toml</code> to meet your specific needs. See Bevy’s <code>Cargo.toml</code> for a full
+list of features available.</p>
+<p>If you prefer, you can also consume the individual bevy crates directly.
+Each module in the root of this crate, except for the prelude, can be found on crates.io
+with <code>bevy_</code> appended to the front, e.g. <code>app</code> -&gt; <a href="https://docs.rs/bevy_app/*/bevy_app/"><code>bevy_app</code></a>.</p>
+<!-- MD041 - This file will be included in docs and should not start with a top header -->
+<!-- markdownlint-disable-file MD041 -->
+<h3 id="cargo-features"><a href="#cargo-features">Cargo Features</a></h3>
+<p>Bevy exposes many features to customise the engine. Enabling them add functionalities but often come at the cost of longer compilation times and extra dependencies.</p>
+<h4 id="default-features"><a href="#default-features">Default Features</a></h4>
+<p>The default feature set enables most of the expected features of a game engine, like rendering in both 2D and 3D, asset loading, audio and UI. To help reduce compilation time, consider disabling default features and enabling only those you need.</p>
+<div><table><thead><tr><th>feature name</th><th>description</th></tr></thead><tbody>
+<tr><td>android_shared_stdcxx</td><td>Enable using a shared stdlib for cxx on Android</td></tr>
+<tr><td>animation</td><td>Enable animation support, and glTF animation loading</td></tr>
+<tr><td>bevy_animation</td><td>Provides animation functionality</td></tr>
+<tr><td>bevy_asset</td><td>Provides asset functionality</td></tr>
+<tr><td>bevy_audio</td><td>Provides audio functionality</td></tr>
+<tr><td>bevy_core_pipeline</td><td>Provides cameras and other basic render pipeline features</td></tr>
+<tr><td>bevy_gilrs</td><td>Adds gamepad support</td></tr>
+<tr><td>bevy_gltf</td><td><a href="https://www.khronos.org/gltf/">glTF</a> support</td></tr>
+<tr><td>bevy_pbr</td><td>Adds PBR rendering</td></tr>
+<tr><td>bevy_render</td><td>Provides rendering functionality</td></tr>
+<tr><td>bevy_scene</td><td>Provides scene functionality</td></tr>
+<tr><td>bevy_sprite</td><td>Provides sprite functionality</td></tr>
+<tr><td>bevy_text</td><td>Provides text functionality</td></tr>
+<tr><td>bevy_ui</td><td>A custom ECS-driven UI framework</td></tr>
+<tr><td>bevy_winit</td><td>winit window and input backend</td></tr>
+<tr><td>filesystem_watcher</td><td>Enable watching file system for asset hot reload</td></tr>
+<tr><td>hdr</td><td>HDR image format support</td></tr>
+<tr><td>ktx2</td><td>KTX2 compressed texture support</td></tr>
+<tr><td>png</td><td>PNG image format support</td></tr>
+<tr><td>tonemapping_luts</td><td>Include tonemapping Look Up Tables KTX2 files</td></tr>
+<tr><td>vorbis</td><td>OGG/VORBIS audio format support</td></tr>
+<tr><td>x11</td><td>X11 display server support</td></tr>
+<tr><td>zstd</td><td>For KTX2 supercompression</td></tr>
+</tbody></table>
+</div><h4 id="optional-features"><a href="#optional-features">Optional Features</a></h4><div><table><thead><tr><th>feature name</th><th>description</th></tr></thead><tbody>
+<tr><td>accesskit_unix</td><td>Enable AccessKit on Unix backends (currently only works with experimental screen readers and forks.)</td></tr>
+<tr><td>basis-universal</td><td>Basis Universal compressed texture support</td></tr>
+<tr><td>bevy_ci_testing</td><td>Enable systems that allow for automated testing on CI</td></tr>
+<tr><td>bevy_dynamic_plugin</td><td>Plugin for dynamic loading (using <a href="https://crates.io/crates/libloading">libloading</a>)</td></tr>
+<tr><td>bmp</td><td>BMP image format support</td></tr>
+<tr><td>dds</td><td>DDS compressed texture support</td></tr>
+<tr><td>debug_asset_server</td><td>Enable the “debug asset server” for hot reloading internal assets</td></tr>
+<tr><td>detailed_trace</td><td>Enable detailed trace event logging. These trace events are expensive even when off, thus they require compile time opt-in</td></tr>
+<tr><td>dynamic_linking</td><td>Force dynamic linking, which improves iterative compile times</td></tr>
+<tr><td>exr</td><td>EXR image format support</td></tr>
+<tr><td>flac</td><td>FLAC audio format support</td></tr>
+<tr><td>jpeg</td><td>JPEG image format support</td></tr>
+<tr><td>minimp3</td><td>MP3 audio format support (through minimp3)</td></tr>
+<tr><td>mp3</td><td>MP3 audio format support</td></tr>
+<tr><td>serialize</td><td>Enable serialization support through serde</td></tr>
+<tr><td>subpixel_glyph_atlas</td><td>Enable rendering of font glyphs using subpixel accuracy</td></tr>
+<tr><td>symphonia-aac</td><td>AAC audio format support (through symphonia)</td></tr>
+<tr><td>symphonia-all</td><td>AAC, FLAC, MP3, MP4, OGG/VORBIS, and WAV audio formats support (through symphonia)</td></tr>
+<tr><td>symphonia-flac</td><td>FLAC audio format support (through symphonia)</td></tr>
+<tr><td>symphonia-isomp4</td><td>MP4 audio format support (through symphonia)</td></tr>
+<tr><td>symphonia-vorbis</td><td>OGG/VORBIS audio format support (through symphonia)</td></tr>
+<tr><td>symphonia-wav</td><td>WAV audio format support (through symphonia)</td></tr>
+<tr><td>tga</td><td>TGA image format support</td></tr>
+<tr><td>trace</td><td>Tracing support</td></tr>
+<tr><td>trace_chrome</td><td>Tracing support, saving a file in Chrome Tracing format</td></tr>
+<tr><td>trace_tracy</td><td>Tracing support, exposing a port for Tracy</td></tr>
+<tr><td>wav</td><td>WAV audio format support</td></tr>
+<tr><td>wayland</td><td>Wayland display server support</td></tr>
+<tr><td>wgpu_trace</td><td>Save a trace of all wgpu calls</td></tr>
+<tr><td>zlib</td><td>For KTX2 supercompression</td></tr>
+</tbody></table>
+</div></div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="a11y/index.html" title="jumpy::external::bevy::a11y mod">a11y</a></div><div class="item-right docblock-short">Integrate with platform accessibility APIs.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="app/index.html" title="jumpy::external::bevy::app mod">app</a></div><div class="item-right docblock-short">Build bevy apps, create plugins, and read events.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="asset/index.html" title="jumpy::external::bevy::asset mod">asset</a></div><div class="item-right docblock-short">Load and store assets and resources for Apps.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="core/index.html" title="jumpy::external::bevy::core mod">core</a></div><div class="item-right docblock-short">Contains core plugins.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="core_pipeline/index.html" title="jumpy::external::bevy::core_pipeline mod">core_pipeline</a></div><div class="item-right docblock-short">Core render pipeline.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="diagnostic/index.html" title="jumpy::external::bevy::diagnostic mod">diagnostic</a></div><div class="item-right docblock-short">Useful diagnostic plugins and types for bevy apps.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="ecs/index.html" title="jumpy::external::bevy::ecs mod">ecs</a></div><div class="item-right docblock-short">Bevy’s entity-component-system.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="gilrs/index.html" title="jumpy::external::bevy::gilrs mod">gilrs</a></div><div class="item-right docblock-short">Bevy interface with <code>GilRs</code> - “Game Input Library for Rust” - to handle gamepad inputs.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="hierarchy/index.html" title="jumpy::external::bevy::hierarchy mod">hierarchy</a></div><div class="item-right docblock-short">Entity hierarchies and property inheritance</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="input/index.html" title="jumpy::external::bevy::input mod">input</a></div><div class="item-right docblock-short">Resources and events for inputs, e.g. mouse/keyboard, touch, gamepads, etc.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="log/index.html" title="jumpy::external::bevy::log mod">log</a></div><div class="item-right docblock-short">Logging capabilities</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="math/index.html" title="jumpy::external::bevy::math mod">math</a></div><div class="item-right docblock-short">Math types (Vec3, Mat4, Quat, etc) and helpers.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="prelude/index.html" title="jumpy::external::bevy::prelude mod">prelude</a></div><div class="item-right docblock-short"><code>use bevy::prelude::*;</code> to import common components, bundles, and plugins.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="ptr/index.html" title="jumpy::external::bevy::ptr mod">ptr</a></div><div class="item-right docblock-short">Utilities for working with untyped pointers in a more safe way.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="reflect/index.html" title="jumpy::external::bevy::reflect mod">reflect</a></div><div class="item-right docblock-short">Type reflection used for dynamically interacting with rust types.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="render/index.html" title="jumpy::external::bevy::render mod">render</a></div><div class="item-right docblock-short">Cameras, meshes, textures, shaders, and pipelines.
+Use <a href="render/renderer/struct.RenderDevice.html#method.features"><code>RenderDevice::features</code></a>,
+<a href="render/renderer/struct.RenderDevice.html#method.limits"><code>RenderDevice::limits</code></a>, and the
+<a href="render/renderer/struct.RenderAdapterInfo.html"><code>RenderAdapterInfo</code></a> resource to
+get runtime information about the actual adapter, backend, features, and limits.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="scene/index.html" title="jumpy::external::bevy::scene mod">scene</a></div><div class="item-right docblock-short">Save/load collections of entities and components to/from file.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="sprite/index.html" title="jumpy::external::bevy::sprite mod">sprite</a></div><div class="item-right docblock-short">Items for sprites, rects, texture atlases, etc.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="tasks/index.html" title="jumpy::external::bevy::tasks mod">tasks</a></div><div class="item-right docblock-short">Pools for async, IO, and compute tasks.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="time/index.html" title="jumpy::external::bevy::time mod">time</a></div><div class="item-right docblock-short">Contains time utilities.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="transform/index.html" title="jumpy::external::bevy::transform mod">transform</a></div><div class="item-right docblock-short">Local and global transforms (e.g. translation, scale, rotation).</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="utils/index.html" title="jumpy::external::bevy::utils mod">utils</a></div><div class="item-right docblock-short">Various miscellaneous utilities for easing development</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="window/index.html" title="jumpy::external::bevy::window mod">window</a></div><div class="item-right docblock-short">Configuration, creation, and management of one or more windows.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="winit/index.html" title="jumpy::external::bevy::winit mod">winit</a></div><div class="item-right docblock-short">Window creation, configuration, and handling</div></div></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.DefaultPlugins.html" title="jumpy::external::bevy::DefaultPlugins struct">DefaultPlugins</a></div><div class="item-right docblock-short">This plugin group will add all the default plugins for a <em>Bevy</em> application:</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.MinimalPlugins.html" title="jumpy::external::bevy::MinimalPlugins struct">MinimalPlugins</a></div><div class="item-right docblock-short">This plugin group will add the minimal plugins for a <em>Bevy</em> application:</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

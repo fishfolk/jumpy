@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Align","left/center/right or top/center/bottom alignment for e.g. anchors and layouts."]],"fn":[["center_size_in_rect","Allocates a rectangle of the specified `size` inside the `frame` rectangle around of its center."]],"struct":[["Align2","Two-dimension alignment, e.g. [`Align2::LEFT_TOP`]."]]};

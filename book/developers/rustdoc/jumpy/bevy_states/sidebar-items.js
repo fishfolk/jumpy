@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["EngineState","Bevy [`States`] related to the top-level state of the game."],["GameEditorState","Bevy [`States`] tracking the editor visibility, relevant only while the [`EngineState::InGame`] state is active."],["InGameState","Bevy [`States`] that are relevant while the [`EngineState::InGame`] state is active."]]};

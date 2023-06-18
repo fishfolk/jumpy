@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["PrepassNode","Render node used by the prepass."]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["SyncUnsafeCell","[`UnsafeCell`], but [`Sync`]."],["UnsafeCell","The core primitive for interior mutability in Rust."]]};

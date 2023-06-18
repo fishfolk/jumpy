@@ -59,11 +59,20 @@
     }
 </script>
 <style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
     .mermaid {
         overflow: hidden !important;
         border: 1px solid #BBB;
         border-radius: 1em;
-        cursor: move
+        cursor: move;
+        position: relative;
     }
 
     .dotted rect {
@@ -98,7 +107,7 @@ sometimes called higher order systems.</p>
 within your system.
 Using <a href="struct.ParamSet.html"><code>ParamSet</code></a> in this case avoids <a href="trait.SystemParam.html" title="SystemParam"><code>SystemParam</code></a> collisions.</p>
 <h2 id="example"><a href="#example">Example</a></h2>
-<p>To create something like <a href="crate::system::PipeSystem"><code>PipeSystem</code></a>, but in entirely safe code.</p>
+<p>To create something like <a href="../external/bevy/ecs/system/type.PipeSystem.html"><code>PipeSystem</code></a>, but in entirely safe code.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::num::ParseIntError;
 

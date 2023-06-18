@@ -1,0 +1,107 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Simple plotting library."><meta name="keywords" content="rust, rustlang, rust-lang, plot"><title>jumpy::external::egui::widgets::plot - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function (e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move;
+        position: relative;
+    }
+
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
+    .code .nodeLabel {
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../jumpy/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../../jumpy/index.html"><div class="logo-container">
+                    <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2 class="location"><a href="#">Module plot</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Module <a href="../../../../index.html">jumpy</a>::<wbr><a href="../../../index.html">external</a>::<wbr><a href="../../index.html">egui</a>::<wbr><a href="../index.html">widgets</a>::<wbr><a class="mod" href="#">plot</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Simple plotting library.</p>
+</div></details><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Arrows.html" title="jumpy::external::egui::widgets::plot::Arrows struct">Arrows</a></div><div class="item-right docblock-short">A set of arrows.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Bar.html" title="jumpy::external::egui::widgets::plot::Bar struct">Bar</a></div><div class="item-right docblock-short">One bar in a <a href="struct.BarChart.html" title="BarChart"><code>BarChart</code></a>. Potentially floating, allowing stacked bar charts.
+Width can be changed to allow variable-width histograms.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.BarChart.html" title="jumpy::external::egui::widgets::plot::BarChart struct">BarChart</a></div><div class="item-right docblock-short">A bar chart.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.BoxElem.html" title="jumpy::external::egui::widgets::plot::BoxElem struct">BoxElem</a></div><div class="item-right docblock-short">A box in a <a href="struct.BoxPlot.html" title="BoxPlot"><code>BoxPlot</code></a> diagram. This is a low level graphical element; it will not compute quartiles and whiskers,
+letting one use their preferred formula. Use <a href="struct.Points.html" title="super::Points"><code>Points</code></a> to draw the outliers.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.BoxPlot.html" title="jumpy::external::egui::widgets::plot::BoxPlot struct">BoxPlot</a></div><div class="item-right docblock-short">A diagram containing a series of <a href="struct.BoxElem.html" title="BoxElem"><code>BoxElem</code></a> elements.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.BoxSpread.html" title="jumpy::external::egui::widgets::plot::BoxSpread struct">BoxSpread</a></div><div class="item-right docblock-short">Contains the values of a single box in a box plot.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.CoordinatesFormatter.html" title="jumpy::external::egui::widgets::plot::CoordinatesFormatter struct">CoordinatesFormatter</a></div><div class="item-right docblock-short">Specifies the coordinates formatting when passed to <a href="struct.Plot.html#method.coordinates_formatter" title="Plot::coordinates_formatter"><code>Plot::coordinates_formatter</code></a>.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.GridInput.html" title="jumpy::external::egui::widgets::plot::GridInput struct">GridInput</a></div><div class="item-right docblock-short">Input for “grid spacer” functions.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.GridMark.html" title="jumpy::external::egui::widgets::plot::GridMark struct">GridMark</a></div><div class="item-right docblock-short">One mark (horizontal or vertical line) in the background grid of a plot.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.HLine.html" title="jumpy::external::egui::widgets::plot::HLine struct">HLine</a></div><div class="item-right docblock-short">A horizontal line in a plot, filling the full width</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Legend.html" title="jumpy::external::egui::widgets::plot::Legend struct">Legend</a></div><div class="item-right docblock-short">The configuration for a plot legend.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Line.html" title="jumpy::external::egui::widgets::plot::Line struct">Line</a></div><div class="item-right docblock-short">A series of values forming a path.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.LinkedAxisGroup.html" title="jumpy::external::egui::widgets::plot::LinkedAxisGroup struct">LinkedAxisGroup</a></div><div class="item-right docblock-short">Defines how multiple plots share the same range for one or both of their axes. Can be added while building
+a plot with <a href="struct.Plot.html#method.link_axis" title="Plot::link_axis"><code>Plot::link_axis</code></a>. Contains an internal state, meaning that this object should be stored by
+the user between frames.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.LinkedCursorsGroup.html" title="jumpy::external::egui::widgets::plot::LinkedCursorsGroup struct">LinkedCursorsGroup</a></div><div class="item-right docblock-short">Defines how multiple plots share the same cursor for one or both of their axes. Can be added while building
+a plot with <a href="struct.Plot.html#method.link_cursor" title="Plot::link_cursor"><code>Plot::link_cursor</code></a>. Contains an internal state, meaning that this object should be stored by
+the user between frames.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Plot.html" title="jumpy::external::egui::widgets::plot::Plot struct">Plot</a></div><div class="item-right docblock-short">A 2D plot, e.g. a graph of a function.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.PlotBounds.html" title="jumpy::external::egui::widgets::plot::PlotBounds struct">PlotBounds</a></div><div class="item-right docblock-short">2D bounding box of f64 precision.
+The range of data values we show.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.PlotImage.html" title="jumpy::external::egui::widgets::plot::PlotImage struct">PlotImage</a></div><div class="item-right docblock-short">An image in the plot.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.PlotPoint.html" title="jumpy::external::egui::widgets::plot::PlotPoint struct">PlotPoint</a></div><div class="item-right docblock-short">A point coordinate in the plot.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.PlotUi.html" title="jumpy::external::egui::widgets::plot::PlotUi struct">PlotUi</a></div><div class="item-right docblock-short">Provides methods to interact with a plot while building it. It is the single argument of the closure
+provided to <a href="struct.Plot.html#method.show" title="Plot::show"><code>Plot::show</code></a>. See <a href="struct.Plot.html" title="Plot"><code>Plot</code></a> for an example of how to use it.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Points.html" title="jumpy::external::egui::widgets::plot::Points struct">Points</a></div><div class="item-right docblock-short">A set of points.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Polygon.html" title="jumpy::external::egui::widgets::plot::Polygon struct">Polygon</a></div><div class="item-right docblock-short">A convex polygon.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Text.html" title="jumpy::external::egui::widgets::plot::Text struct">Text</a></div><div class="item-right docblock-short">Text inside the plot.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.VLine.html" title="jumpy::external::egui::widgets::plot::VLine struct">VLine</a></div><div class="item-right docblock-short">A vertical line in a plot, filling the full width</div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.Corner.html" title="jumpy::external::egui::widgets::plot::Corner enum">Corner</a></div><div class="item-right docblock-short">Where to place the plot legend.</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.LineStyle.html" title="jumpy::external::egui::widgets::plot::LineStyle enum">LineStyle</a></div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.MarkerShape.html" title="jumpy::external::egui::widgets::plot::MarkerShape enum">MarkerShape</a></div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.Orientation.html" title="jumpy::external::egui::widgets::plot::Orientation enum">Orientation</a></div><div class="item-right docblock-short">Determines whether a plot element is vertically or horizontally oriented.</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.PlotPoints.html" title="jumpy::external::egui::widgets::plot::PlotPoints enum">PlotPoints</a></div><div class="item-right docblock-short">Represents many <a href="struct.PlotPoint.html" title="PlotPoint"><code>PlotPoint</code></a>s.</div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.format_number.html" title="jumpy::external::egui::widgets::plot::format_number fn">format_number</a></div><div class="item-right docblock-short">Helper for formatting a number so that we always show at least a few decimals,
+unless it is an integer, in which case we never show any decimals.</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.log_grid_spacer.html" title="jumpy::external::egui::widgets::plot::log_grid_spacer fn">log_grid_spacer</a></div><div class="item-right docblock-short">Recursively splits the grid into <code>base</code> subdivisions (e.g. 100, 10, 1).</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.uniform_grid_spacer.html" title="jumpy::external::egui::widgets::plot::uniform_grid_spacer fn">uniform_grid_spacer</a></div><div class="item-right docblock-short">Splits the grid into uniform-sized spacings (e.g. 100, 25, 1).</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

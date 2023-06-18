@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["best_in_range_f64","Find the “simplest” number in a closed range [min, max], i.e. the one with the fewest decimal digits."]]};

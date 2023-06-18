@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["BLIT_SHADER_HANDLE",""]],"struct":[["BlitPipeline",""],["BlitPipelineKey",""],["BlitPlugin","Adds support for specialized “blit pipelines”, which can be used to write one texture to another."]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["TextureFilter","How the texture texels are filtered."]],"struct":[["TextureManager","Low-level manager for allocating textures."],["TextureMeta","Meta-data about an allocated texture."],["TextureOptions","How the texture texels are filtered."],["TexturesDelta","What has been allocated and freed during the last period."]]};

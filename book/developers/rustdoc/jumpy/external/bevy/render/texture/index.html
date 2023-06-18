@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `texture` mod in crate `jumpy`."><meta name="keywords" content="rust, rustlang, rust-lang, texture"><title>jumpy::external::bevy::render::texture - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function (e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move;
+        position: relative;
+    }
+
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
+    .code .nodeLabel {
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../jumpy/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../../jumpy/index.html"><div class="logo-container">
+                    <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2 class="location"><a href="#">Module texture</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#constants">Constants</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Module <a href="../../../../index.html">jumpy</a>::<wbr><a href="../../../index.html">external</a>::<wbr><a href="../../index.html">bevy</a>::<wbr><a href="../index.html">render</a>::<wbr><a class="mod" href="#">texture</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.CachedTexture.html" title="jumpy::external::bevy::render::texture::CachedTexture struct">CachedTexture</a></div><div class="item-right docblock-short">A cached GPU <a href="../render_resource/struct.Texture.html" title="Texture"><code>Texture</code></a> with corresponding <a href="../render_resource/struct.TextureView.html" title="TextureView"><code>TextureView</code></a>.
+This is useful for textures that are created repeatedly (each frame) in the rendering process
+to reduce the amount of GPU memory allocations.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.CompressedImageFormats.html" title="jumpy::external::bevy::render::texture::CompressedImageFormats struct">CompressedImageFormats</a></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.DefaultImageSampler.html" title="jumpy::external::bevy::render::texture::DefaultImageSampler struct">DefaultImageSampler</a></div><div class="item-right docblock-short">A rendering resource for the default image sampler which is set during renderer
+initialization.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.FallbackImage.html" title="jumpy::external::bevy::render::texture::FallbackImage struct">FallbackImage</a></div><div class="item-right docblock-short">A <a href="../struct.RenderApp.html"><code>RenderApp</code></a> resource that contains the default “fallback image”,
+which can be used in situations where an image was not explicitly defined. The most common
+use case is <a href="../render_resource/trait.AsBindGroup.html" title="AsBindGroup"><code>AsBindGroup</code></a> implementations (such as materials) that support optional textures.
+<a href="struct.FallbackImage.html" title="FallbackImage"><code>FallbackImage</code></a> defaults to a 1x1 fully white texture, making blending colors with it a no-op.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.FallbackImageCubemap.html" title="jumpy::external::bevy::render::texture::FallbackImageCubemap struct">FallbackImageCubemap</a></div><div class="item-right docblock-short">A <a href="../struct.RenderApp.html"><code>RenderApp</code></a> resource that contains a “cubemap fallback image”,
+which can be used in situations where an image was not explicitly defined. The most common
+use case is <a href="../render_resource/trait.AsBindGroup.html" title="AsBindGroup"><code>AsBindGroup</code></a> implementations (such as materials) that support optional textures.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.FallbackImageDepthCache.html" title="jumpy::external::bevy::render::texture::FallbackImageDepthCache struct">FallbackImageDepthCache</a></div><div class="item-right docblock-short">A Cache of fallback depth textures that uses the sample count as a key</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.FallbackImageMsaaCache.html" title="jumpy::external::bevy::render::texture::FallbackImageMsaaCache struct">FallbackImageMsaaCache</a></div><div class="item-right docblock-short">A Cache of fallback textures that uses the sample count as a key</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.FallbackImagesDepth.html" title="jumpy::external::bevy::render::texture::FallbackImagesDepth struct">FallbackImagesDepth</a></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.FallbackImagesMsaa.html" title="jumpy::external::bevy::render::texture::FallbackImagesMsaa struct">FallbackImagesMsaa</a></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.FileTextureError.html" title="jumpy::external::bevy::render::texture::FileTextureError struct">FileTextureError</a></div><div class="item-right docblock-short">An error that occurs when loading a texture from a file.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.GpuImage.html" title="jumpy::external::bevy::render::texture::GpuImage struct">GpuImage</a></div><div class="item-right docblock-short">The GPU-representation of an <a href="../../../../prelude/struct.Image.html" title="Image"><code>Image</code></a>.
+Consists of the <a href="../render_resource/struct.Texture.html" title="Texture"><code>Texture</code></a>, its <a href="../render_resource/struct.TextureView.html" title="TextureView"><code>TextureView</code></a> and the corresponding <a href="../render_resource/struct.Sampler.html" title="Sampler"><code>Sampler</code></a>, and the texture’s size.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Image.html" title="jumpy::external::bevy::render::texture::Image struct">Image</a></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.ImagePlugin.html" title="jumpy::external::bevy::render::texture::ImagePlugin struct">ImagePlugin</a></div><div class="item-right docblock-short">Adds the <a href="../../../../prelude/struct.Image.html" title="Image"><code>Image</code></a> as an asset and makes sure that they are extracted and prepared for the GPU.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.ImageTextureLoader.html" title="jumpy::external::bevy::render::texture::ImageTextureLoader struct">ImageTextureLoader</a></div><div class="item-right docblock-short">Loader for images that can be read by the <code>image</code> crate.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.TextureCache.html" title="jumpy::external::bevy::render::texture::TextureCache struct">TextureCache</a></div><div class="item-right docblock-short">This resource caches textures that are created repeatedly in the rendering process and
+are only required for one frame.</div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.DataFormat.html" title="jumpy::external::bevy::render::texture::DataFormat enum">DataFormat</a></div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.ImageFormat.html" title="jumpy::external::bevy::render::texture::ImageFormat enum">ImageFormat</a></div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.ImageSampler.html" title="jumpy::external::bevy::render::texture::ImageSampler enum">ImageSampler</a></div><div class="item-right docblock-short">Used in <a href="../../../../prelude/struct.Image.html" title="Image"><code>Image</code></a>, this determines what image sampler to use when rendering. The default setting,
+<a href="enum.ImageSampler.html#variant.Default" title="ImageSampler::Default"><code>ImageSampler::Default</code></a>, will read the sampler from the <a href="../../../../prelude/struct.ImagePlugin.html"><code>ImagePlugin</code></a> at setup.
+Setting this to <a href="enum.ImageSampler.html#variant.Descriptor" title="ImageSampler::Descriptor"><code>ImageSampler::Descriptor</code></a> will override the global default descriptor for this <a href="../../../../prelude/struct.Image.html" title="Image"><code>Image</code></a>.</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.ImageType.html" title="jumpy::external::bevy::render::texture::ImageType enum">ImageType</a></div><div class="item-right docblock-short">The type of a raw image buffer.</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.TextureError.html" title="jumpy::external::bevy::render::texture::TextureError enum">TextureError</a></div><div class="item-right docblock-short">An error that occurs when loading a texture</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.TranscodeFormat.html" title="jumpy::external::bevy::render::texture::TranscodeFormat enum">TranscodeFormat</a></div></div></div><h2 id="constants" class="small-section-header"><a href="#constants">Constants</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="constant" href="constant.DEFAULT_IMAGE_HANDLE.html" title="jumpy::external::bevy::render::texture::DEFAULT_IMAGE_HANDLE constant">DEFAULT_IMAGE_HANDLE</a></div></div><div class="item-row"><div class="item-left module-item"><a class="constant" href="constant.SAMPLER_ASSET_INDEX.html" title="jumpy::external::bevy::render::texture::SAMPLER_ASSET_INDEX constant">SAMPLER_ASSET_INDEX</a></div></div><div class="item-row"><div class="item-left module-item"><a class="constant" href="constant.TEXTURE_ASSET_INDEX.html" title="jumpy::external::bevy::render::texture::TEXTURE_ASSET_INDEX constant">TEXTURE_ASSET_INDEX</a></div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.BevyDefault.html" title="jumpy::external::bevy::render::texture::BevyDefault trait">BevyDefault</a></div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.TextureFormatPixelInfo.html" title="jumpy::external::bevy::render::texture::TextureFormatPixelInfo trait">TextureFormatPixelInfo</a></div><div class="item-right docblock-short">Extends the wgpu <a href="../render_resource/enum.TextureFormat.html" title="TextureFormat"><code>TextureFormat</code></a> with information about the pixel.</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.Volume.html" title="jumpy::external::bevy::render::texture::Volume trait">Volume</a></div><div class="item-right docblock-short">Used to calculate the volume of an item.</div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.update_texture_cache_system.html" title="jumpy::external::bevy::render::texture::update_texture_cache_system fn">update_texture_cache_system</a></div><div class="item-right docblock-short">Updates the <a href="struct.TextureCache.html" title="TextureCache"><code>TextureCache</code></a> to only retains recently used textures.</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

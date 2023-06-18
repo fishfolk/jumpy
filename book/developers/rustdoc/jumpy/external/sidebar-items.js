@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["bevy",""],["egui","`egui`:  an easy-to-use GUI in pure Rust!"]]};

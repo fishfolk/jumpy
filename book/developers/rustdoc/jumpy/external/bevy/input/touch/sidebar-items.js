@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["ForceTouch","A force description of a `Touch` input."],["TouchPhase","A phase of a `TouchInput`."]],"fn":[["touch_screen_input_system","Updates the [`Touches`] resource with the latest [`TouchInput`] events."]],"struct":[["Touch","A touch input."],["TouchInput","A touch input event."],["Touches","A collection of [`Touch`]es."]]};

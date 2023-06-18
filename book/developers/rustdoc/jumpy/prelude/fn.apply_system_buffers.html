@@ -59,11 +59,20 @@
     }
 </script>
 <style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
     .mermaid {
         overflow: hidden !important;
         border: 1px solid #BBB;
         border-radius: 1em;
-        cursor: move
+        cursor: move;
+        position: relative;
     }
 
     .dotted rect {
@@ -89,7 +98,7 @@
 on the systems that have run but not applied their buffers.</p>
 <p><strong>Notes</strong></p>
 <ul>
-<li>This function (currently) does nothing if it’s called manually or wrapped inside a <a href="crate::system::PipeSystem"><code>PipeSystem</code></a>.</li>
+<li>This function (currently) does nothing if it’s called manually or wrapped inside a <a href="../external/bevy/ecs/system/type.PipeSystem.html"><code>PipeSystem</code></a>.</li>
 <li>Modifying a <a href="struct.Schedule.html"><code>Schedule</code></a> may change the order buffers are applied.</li>
 </ul>
 </div></details></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

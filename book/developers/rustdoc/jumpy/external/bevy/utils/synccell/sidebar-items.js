@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["SyncCell","See `Exclusive` for stdlib’s upcoming implementation, which should replace this one entirely."]]};

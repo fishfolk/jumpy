@@ -6,7 +6,11 @@ use std::{
 use bevy::utils::Instant;
 use smallvec::SmallVec;
 
-use crate::networking::{NetworkMatchSocket, LAN_MATCHMAKER, NETWORK_ENDPOINT, ONLINE_MATCHMAKER};
+use crate::networking::{
+    lan::{LanMatchmakerRequest, LanMatchmakerResponse, LAN_MATCHMAKER},
+    online::{OnlineMatchmakerRequest, OnlineMatchmakerResponse, ONLINE_MATCHMAKER},
+    NetworkMatchSocket, NETWORK_ENDPOINT,
+};
 
 use super::*;
 
@@ -368,7 +372,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                             {
                                                 *status = Status::Joining;
                                                 LAN_MATCHMAKER.try_send(
-                                                    networking::LanMatchmakerRequest::JoinServer {
+                                                    networking::lan::LanMatchmakerRequest::JoinServer {
                                                         ip: *server
                                                             .service
                                                             .get_addresses()
@@ -409,9 +413,9 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
 
                                 while let Ok(message) = LAN_MATCHMAKER.try_recv() {
                                     match message {
-                                        networking::LanMatchmakerResponse::ServerStarted => (),
-                                        networking::LanMatchmakerResponse::PlayerCount(_) => (),
-                                        networking::LanMatchmakerResponse::GameStarting {
+                                        LanMatchmakerResponse::ServerStarted => (),
+                                        LanMatchmakerResponse::PlayerCount(_) => (),
+                                        LanMatchmakerResponse::GameStarting {
                                             lan_socket,
                                             player_idx,
                                             player_count: _,
@@ -526,7 +530,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                     MDNS.register(service_info.clone())
                                         .expect("Could not register MDNS service.");
                                     LAN_MATCHMAKER
-                                        .try_send(networking::LanMatchmakerRequest::StartServer {
+                                        .try_send(LanMatchmakerRequest::StartServer {
                                             player_count: *player_count,
                                         })
                                         .unwrap();
@@ -536,10 +540,10 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                             } else if *status == Status::Hosting {
                                 while let Ok(response) = LAN_MATCHMAKER.try_recv() {
                                     match response {
-                                        networking::LanMatchmakerResponse::PlayerCount(count) => {
+                                        LanMatchmakerResponse::PlayerCount(count) => {
                                             *joined_players = count;
                                         }
-                                        networking::LanMatchmakerResponse::GameStarting {
+                                        LanMatchmakerResponse::GameStarting {
                                             lan_socket,
                                             player_idx,
                                             player_count: _,
@@ -658,7 +662,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                             {
                                 *status = Status::Searching;
                                 ONLINE_MATCHMAKER
-                                    .try_send(networking::OnlineMatchmakerRequest::SearchForGame {
+                                    .try_send(OnlineMatchmakerRequest::SearchForGame {
                                         addr: matchmaking_server.clone(),
                                         player_count: *player_count,
                                     })
@@ -667,13 +671,13 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                         } else if *status == Status::Searching {
                             while let Ok(message) = ONLINE_MATCHMAKER.try_recv() {
                                 match message {
-                                    networking::OnlineMatchmakerResponse::Searching => {
+                                    OnlineMatchmakerResponse::Searching => {
                                         search_state = SearchState::Searching
                                     }
-                                    networking::OnlineMatchmakerResponse::PlayerCount(count) => {
+                                    OnlineMatchmakerResponse::PlayerCount(count) => {
                                         search_state = SearchState::WaitingForPlayers(count)
                                     }
-                                    networking::OnlineMatchmakerResponse::GameStarting {
+                                    OnlineMatchmakerResponse::GameStarting {
                                         online_socket,
                                         player_idx,
                                         player_count: _,
@@ -699,7 +703,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                 .clicked()
                                 {
                                     ONLINE_MATCHMAKER
-                                        .try_send(networking::OnlineMatchmakerRequest::StopSearch)
+                                        .try_send(OnlineMatchmakerRequest::StopSearch)
                                         .unwrap();
                                     search_state = default();
                                     *status = Status::Idle;
@@ -735,7 +739,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                         match status {
                             Status::Idle => (),
                             Status::Searching => {
-                                if let Err(err) = ONLINE_MATCHMAKER.try_send(networking::OnlineMatchmakerRequest::StopSearch){
+                                if let Err(err) = ONLINE_MATCHMAKER.try_send(OnlineMatchmakerRequest::StopSearch){
                                     error!("Error stopping search: {:?}", err);
                                 }
 
@@ -743,7 +747,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                             }
                             Status::Joining => {
                                 LAN_MATCHMAKER
-                                    .try_send(networking::LanMatchmakerRequest::StopJoin)
+                                    .try_send(LanMatchmakerRequest::StopJoin)
                                     .unwrap();
                                 *status = Status::Idle;
                             }

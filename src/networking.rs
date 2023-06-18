@@ -1,4 +1,4 @@
-// #![doc = include_str!("./networking.md")]
+#![doc = include_str!("./networking.md")]
 
 use ggrs::P2PSession;
 use jumpy_core::input::PlayerControl;
@@ -7,21 +7,15 @@ use rand::Rng;
 use crate::prelude::*;
 
 pub mod certs;
-
+pub mod lan;
+pub mod online;
 pub mod proto;
-use proto::*;
 
-pub use lan::*;
-mod lan;
-
-pub use online::*;
-mod online;
-
-pub struct NetworkingPlugin;
-
-impl Plugin for NetworkingPlugin {
-    fn build(&self, _app: &mut App) {}
-}
+/// The muliplier for the [`jumpy_core::FPS`] that will be used when playing an online match.
+///
+/// Lowering the frame rate a little for online matches reduces bandwidth and may help overall
+/// gameplay. This may not be necessary once we improve network performance.
+pub const NETWORK_FRAME_RATE_FACTOR: f32 = 0.9;
 
 /// The [`ggrs::Config`] implementation used by Jumpy.
 #[derive(Debug)]
@@ -33,7 +27,7 @@ impl ggrs::Config for GgrsConfig {
     type Address = usize;
 }
 
-/// The QUIC network endpoint used for all network communications.
+/// The network endpoint used for all QUIC network communications.
 pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
     // Generate certificate
     let (cert, key) = certs::generate_self_signed_cert().unwrap();
@@ -68,11 +62,15 @@ pub static NETWORK_ENDPOINT: Lazy<quinn::Endpoint> = Lazy::new(|| {
     endpoint
 });
 
-/// Resource containing the network socket while there is a connection to a LAN or online game.
+/// Resource containing the [`NetworkSocket`] implementation while there is a connection to a
+/// network game.
+///
+/// This is inserted into the world after a match has been established by a network matchmaker.
 #[derive(Resource, Deref, DerefMut)]
 pub struct NetworkMatchSocket(pub Box<dyn NetworkSocket>);
 
-/// A boxed [`ggrs::NonBlockingSocket`] implementation.
+/// A type-erased [`ggrs::NonBlockingSocket`][crate::external::ggrs::NonBlockingSocket]
+/// implementation.
 #[derive(Deref, DerefMut)]
 pub struct BoxedNonBlockingSocket(Box<dyn ggrs::NonBlockingSocket<usize> + 'static>);
 
@@ -86,7 +84,10 @@ impl ggrs::NonBlockingSocket<usize> for BoxedNonBlockingSocket {
     }
 }
 
-/// Trait implemented by network match sockets.
+/// Trait that must be implemented by socket connections establish by matchmakers.
+///
+/// The [`NetworkMatchSocket`] resource will contain an instance of this trait and will be used by
+/// the game to send network messages after a match has been established.
 pub trait NetworkSocket: Sync + Send {
     /// Get a GGRS socket from this network socket.
     fn ggrs_socket(&self) -> BoxedNonBlockingSocket;
@@ -105,7 +106,7 @@ pub trait NetworkSocket: Sync + Send {
     fn player_count(&self) -> usize;
 }
 
-/// The target for a reliable network message.
+/// The destination for a reliable network message.
 pub enum SocketTarget {
     /// Send to a specific player.
     Player(usize),
@@ -113,24 +114,36 @@ pub enum SocketTarget {
     All,
 }
 
-/// [`SessionRunner`] implementation that uses [`ggrs`] for network play.
+/// [`SessionRunner`] implementation that uses [`ggrs`][crate::external::ggrs] for network play.
+///
+/// This is where the whole `ggrs` integration is implemented.
 pub struct GgrsSessionRunner {
+    /// The last player input we detected.
     pub last_player_input: PlayerControl,
+    /// The core game session.
     pub core: CoreSession,
+    /// The GGRS peer-to-peer session.
     pub session: P2PSession<GgrsConfig>,
+    /// Array containing a flag indicating, for each player, whether they are a local player.
     pub player_is_local: [bool; MAX_PLAYERS],
+    /// The frame time delta.
     pub delta: f32,
+    /// The frame time accumulator, used to produce a fixed refresh rate.
     pub accumulator: f32,
 }
 
 /// The info required to create a [`GgrsSessionRunner`].
 pub struct GgrsSessionRunnerInfo {
+    /// The GGRS socket implementation to use.
     pub socket: BoxedNonBlockingSocket,
+    /// The list of local players.
     pub player_is_local: [bool; MAX_PLAYERS],
+    /// the player count.
     pub player_count: usize,
 }
 
 impl GgrsSessionRunner {
+    /// Create a new sessino runner.
     pub fn new(mut core: CoreSession, info: GgrsSessionRunnerInfo) -> Self
     where
         Self: Sized,
@@ -164,13 +177,14 @@ impl GgrsSessionRunner {
     }
 }
 
-fn get_dense_input(control: &PlayerControl) -> DensePlayerControl {
-    let mut dense_control = DensePlayerControl::default();
+/// Get a [`proto::DensePlayerControl`] from a normal [`PlayerControl`].
+fn get_dense_input(control: &PlayerControl) -> proto::DensePlayerControl {
+    let mut dense_control = proto::DensePlayerControl::default();
     dense_control.set_jump_pressed(control.jump_just_pressed);
     dense_control.set_grab_pressed(control.grab_pressed);
     dense_control.set_slide_pressed(control.slide_pressed);
     dense_control.set_shoot_pressed(control.shoot_pressed);
-    dense_control.set_move_direction(DenseMoveDirection(control.move_direction));
+    dense_control.set_move_direction(proto::DenseMoveDirection(control.move_direction));
     dense_control
 }
 

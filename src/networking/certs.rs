@@ -1,6 +1,14 @@
+//! QUIC certificate utilities.
+//!
+//!
+
 use std::sync::Arc;
 
-// Implementation of `ServerCertVerifier` that verifies everything as trustworthy.
+/// Implementation of `ServerCertVerifier` that verifies everything as trustworthy.
+///
+/// This allows us to connect to servers without having to worry about domain verification.
+///
+/// TODO: In the future we may want to do domain verification, but allow opting out of it.
 pub struct SkipServerVerification;
 
 impl SkipServerVerification {
@@ -23,6 +31,7 @@ impl rustls::client::ServerCertVerifier for SkipServerVerification {
     }
 }
 
+/// Generates a self-signed cert for use in QUIC connections.
 pub fn generate_self_signed_cert() -> anyhow::Result<(rustls::Certificate, rustls::PrivateKey)> {
     let cert = rcgen::generate_simple_self_signed(vec!["localhost".to_string()])?;
     let key = rustls::PrivateKey(cert.serialize_private_key_der());

@@ -1,6 +1,9 @@
 use async_channel::*;
 
 /// Create a bi-directional channel with a given request and response type.
+///
+/// This reduces the boilerplate required to implement patterns where you need to send data across a
+/// channel, but in both directions.
 pub fn bi_channel<Request, Response>() -> (
     BiChannelClient<Request, Response>,
     BiChannelServer<Request, Response>,
@@ -21,6 +24,8 @@ pub fn bi_channel<Request, Response>() -> (
 }
 
 /// A [`bi_channel`] client.
+///
+/// See [`bi_channel`].
 pub struct BiChannelClient<Request, Response> {
     pub request_sender: Sender<Request>,
     pub response_receiver: Receiver<Response>,
@@ -47,6 +52,8 @@ impl<Req, Res> BiChannelClient<Req, Res> {
 }
 
 /// A [`bi_channel`] server.
+///
+/// See [`bi_channel`].
 pub struct BiChannelServer<Request, Response> {
     pub request_receiver: Receiver<Request>,
     pub response_sender: Sender<Response>,

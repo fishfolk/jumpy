@@ -422,7 +422,21 @@
 <a href="#326" id="326">326</a>
 <a href="#327" id="327">327</a>
 <a href="#328" id="328">328</a>
-</pre><pre class="rust"><code><span class="comment">// #![doc = include_str!(&quot;./networking.md&quot;)]
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+</pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./networking.md&quot;</span>)]
 
 </span><span class="kw">use </span>ggrs::P2PSession;
 <span class="kw">use </span>jumpy_core::input::PlayerControl;
@@ -431,21 +445,15 @@
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub mod </span>certs;
-
+<span class="kw">pub mod </span>lan;
+<span class="kw">pub mod </span>online;
 <span class="kw">pub mod </span>proto;
-<span class="kw">use </span>proto::<span class="kw-2">*</span>;
 
-<span class="kw">pub use </span>lan::<span class="kw-2">*</span>;
-<span class="kw">mod </span>lan;
-
-<span class="kw">pub use </span>online::<span class="kw-2">*</span>;
-<span class="kw">mod </span>online;
-
-<span class="kw">pub struct </span>NetworkingPlugin;
-
-<span class="kw">impl </span>Plugin <span class="kw">for </span>NetworkingPlugin {
-    <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, _app: <span class="kw-2">&amp;mut </span>App) {}
-}
+<span class="doccomment">/// The muliplier for the [`jumpy_core::FPS`] that will be used when playing an online match.
+///
+/// Lowering the frame rate a little for online matches reduces bandwidth and may help overall
+/// gameplay. This may not be necessary once we improve network performance.
+</span><span class="kw">pub const </span>NETWORK_FRAME_RATE_FACTOR: f32 = <span class="number">0.9</span>;
 
 <span class="doccomment">/// The [`ggrs::Config`] implementation used by Jumpy.
 </span><span class="attr">#[derive(Debug)]
@@ -457,7 +465,7 @@
     </span><span class="kw">type </span>Address = usize;
 }
 
-<span class="doccomment">/// The QUIC network endpoint used for all network communications.
+<span class="doccomment">/// The network endpoint used for all QUIC network communications.
 </span><span class="kw">pub static </span>NETWORK_ENDPOINT: Lazy&lt;quinn::Endpoint&gt; = Lazy::new(|| {
     <span class="comment">// Generate certificate
     </span><span class="kw">let </span>(cert, key) = certs::generate_self_signed_cert().unwrap();
@@ -492,11 +500,15 @@
     endpoint
 });
 
-<span class="doccomment">/// Resource containing the network socket while there is a connection to a LAN or online game.
+<span class="doccomment">/// Resource containing the [`NetworkSocket`] implementation while there is a connection to a
+/// network game.
+///
+/// This is inserted into the world after a match has been established by a network matchmaker.
 </span><span class="attr">#[derive(Resource, Deref, DerefMut)]
 </span><span class="kw">pub struct </span>NetworkMatchSocket(<span class="kw">pub </span>Box&lt;<span class="kw">dyn </span>NetworkSocket&gt;);
 
-<span class="doccomment">/// A boxed [`ggrs::NonBlockingSocket`] implementation.
+<span class="doccomment">/// A type-erased [`ggrs::NonBlockingSocket`][crate::external::ggrs::NonBlockingSocket]
+/// implementation.
 </span><span class="attr">#[derive(Deref, DerefMut)]
 </span><span class="kw">pub struct </span>BoxedNonBlockingSocket(Box&lt;<span class="kw">dyn </span>ggrs::NonBlockingSocket&lt;usize&gt; + <span class="lifetime">&#39;static</span>&gt;);
 
@@ -510,7 +522,10 @@
     }
 }
 
-<span class="doccomment">/// Trait implemented by network match sockets.
+<span class="doccomment">/// Trait that must be implemented by socket connections establish by matchmakers.
+///
+/// The [`NetworkMatchSocket`] resource will contain an instance of this trait and will be used by
+/// the game to send network messages after a match has been established.
 </span><span class="kw">pub trait </span>NetworkSocket: Sync + Send {
     <span class="doccomment">/// Get a GGRS socket from this network socket.
     </span><span class="kw">fn </span>ggrs_socket(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BoxedNonBlockingSocket;
@@ -529,7 +544,7 @@
     </span><span class="kw">fn </span>player_count(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize;
 }
 
-<span class="doccomment">/// The target for a reliable network message.
+<span class="doccomment">/// The destination for a reliable network message.
 </span><span class="kw">pub enum </span>SocketTarget {
     <span class="doccomment">/// Send to a specific player.
     </span>Player(usize),
@@ -537,25 +552,37 @@
     </span>All,
 }
 
-<span class="doccomment">/// [`SessionRunner`] implementation that uses [`ggrs`] for network play.
+<span class="doccomment">/// [`SessionRunner`] implementation that uses [`ggrs`][crate::external::ggrs] for network play.
+///
+/// This is where the whole `ggrs` integration is implemented.
 </span><span class="kw">pub struct </span>GgrsSessionRunner {
-    <span class="kw">pub </span>last_player_input: PlayerControl,
-    <span class="kw">pub </span>core: CoreSession,
-    <span class="kw">pub </span>session: P2PSession&lt;GgrsConfig&gt;,
-    <span class="kw">pub </span>player_is_local: [bool; MAX_PLAYERS],
-    <span class="kw">pub </span>delta: f32,
-    <span class="kw">pub </span>accumulator: f32,
+    <span class="doccomment">/// The last player input we detected.
+    </span><span class="kw">pub </span>last_player_input: PlayerControl,
+    <span class="doccomment">/// The core game session.
+    </span><span class="kw">pub </span>core: CoreSession,
+    <span class="doccomment">/// The GGRS peer-to-peer session.
+    </span><span class="kw">pub </span>session: P2PSession&lt;GgrsConfig&gt;,
+    <span class="doccomment">/// Array containing a flag indicating, for each player, whether they are a local player.
+    </span><span class="kw">pub </span>player_is_local: [bool; MAX_PLAYERS],
+    <span class="doccomment">/// The frame time delta.
+    </span><span class="kw">pub </span>delta: f32,
+    <span class="doccomment">/// The frame time accumulator, used to produce a fixed refresh rate.
+    </span><span class="kw">pub </span>accumulator: f32,
 }
 
 <span class="doccomment">/// The info required to create a [`GgrsSessionRunner`].
 </span><span class="kw">pub struct </span>GgrsSessionRunnerInfo {
-    <span class="kw">pub </span>socket: BoxedNonBlockingSocket,
-    <span class="kw">pub </span>player_is_local: [bool; MAX_PLAYERS],
-    <span class="kw">pub </span>player_count: usize,
+    <span class="doccomment">/// The GGRS socket implementation to use.
+    </span><span class="kw">pub </span>socket: BoxedNonBlockingSocket,
+    <span class="doccomment">/// The list of local players.
+    </span><span class="kw">pub </span>player_is_local: [bool; MAX_PLAYERS],
+    <span class="doccomment">/// the player count.
+    </span><span class="kw">pub </span>player_count: usize,
 }
 
 <span class="kw">impl </span>GgrsSessionRunner {
-    <span class="kw">pub fn </span>new(<span class="kw-2">mut </span>core: CoreSession, info: GgrsSessionRunnerInfo) -&gt; <span class="self">Self
+    <span class="doccomment">/// Create a new sessino runner.
+    </span><span class="kw">pub fn </span>new(<span class="kw-2">mut </span>core: CoreSession, info: GgrsSessionRunnerInfo) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span><span class="self">Self</span>: Sized,
     {
@@ -588,13 +615,14 @@
     }
 }
 
-<span class="kw">fn </span>get_dense_input(control: <span class="kw-2">&amp;</span>PlayerControl) -&gt; DensePlayerControl {
-    <span class="kw">let </span><span class="kw-2">mut </span>dense_control = DensePlayerControl::default();
+<span class="doccomment">/// Get a [`proto::DensePlayerControl`] from a normal [`PlayerControl`].
+</span><span class="kw">fn </span>get_dense_input(control: <span class="kw-2">&amp;</span>PlayerControl) -&gt; proto::DensePlayerControl {
+    <span class="kw">let </span><span class="kw-2">mut </span>dense_control = proto::DensePlayerControl::default();
     dense_control.set_jump_pressed(control.jump_just_pressed);
     dense_control.set_grab_pressed(control.grab_pressed);
     dense_control.set_slide_pressed(control.slide_pressed);
     dense_control.set_shoot_pressed(control.shoot_pressed);
-    dense_control.set_move_direction(DenseMoveDirection(control.move_direction));
+    dense_control.set_move_direction(proto::DenseMoveDirection(control.move_direction));
     dense_control
 }
 

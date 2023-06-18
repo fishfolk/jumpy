@@ -1,3 +1,3 @@
 (function() {var implementors = {
-"jumpy":[["impl Config for <a class=\"struct\" href=\"jumpy/networking/struct.GgrsConfig.html\" title=\"struct jumpy::networking::GgrsConfig\">GgrsConfig</a>"]]
+"jumpy":[["impl <a class=\"trait\" href=\"jumpy/external/ggrs/trait.Config.html\" title=\"trait jumpy::external::ggrs::Config\">Config</a> for <a class=\"struct\" href=\"jumpy/networking/struct.GgrsConfig.html\" title=\"struct jumpy::networking::GgrsConfig\">GgrsConfig</a>"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

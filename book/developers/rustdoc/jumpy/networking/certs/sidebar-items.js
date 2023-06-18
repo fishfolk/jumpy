@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["generate_self_signed_cert",""]],"struct":[["SkipServerVerification",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["generate_self_signed_cert","Generates a self-signed cert for use in QUIC connections."]],"struct":[["SkipServerVerification","Implementation of `ServerCertVerifier` that verifies everything as trustworthy."]]};

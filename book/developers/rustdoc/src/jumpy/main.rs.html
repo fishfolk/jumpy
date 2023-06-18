@@ -229,6 +229,7 @@
 <a href="#133" id="133">133</a>
 <a href="#134" id="134">134</a>
 <a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -256,6 +257,10 @@
     </span><span class="kw">pub use </span>bevy;
     <span class="attr">#[doc(inline)]
     </span><span class="kw">pub use </span>bevy_egui::egui;
+    <span class="attr">#[doc(inline)]
+    </span><span class="kw">pub use </span>bones_matchmaker_proto;
+    <span class="attr">#[doc(inline)]
+    </span><span class="kw">pub use </span>ggrs;
 }
 
 <span class="comment">// This will cause Bevy to be dynamically linked during development,
@@ -347,9 +352,6 @@
         .add_plugin(JumpyAssetPlugin)
         .add_plugin(JumpyLocalizationPlugin)
         .add_plugin(JumpyDebugPlugin);
-
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-    </span>app.add_plugin(networking::NetworkingPlugin);
 
     <span class="macro">debug!</span>(<span class="question-mark">?</span>engine_config, <span class="string">&quot;Starting game&quot;</span>);
 

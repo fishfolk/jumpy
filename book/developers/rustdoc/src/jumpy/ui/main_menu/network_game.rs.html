@@ -864,6 +864,10 @@
 <a href="#768" id="768">768</a>
 <a href="#769" id="769">769</a>
 <a href="#770" id="770">770</a>
+<a href="#771" id="771">771</a>
+<a href="#772" id="772">772</a>
+<a href="#773" id="773">773</a>
+<a href="#774" id="774">774</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     net::{IpAddr, Ipv4Addr},
     time::Duration,
@@ -872,7 +876,11 @@
 <span class="kw">use </span>bevy::utils::Instant;
 <span class="kw">use </span>smallvec::SmallVec;
 
-<span class="kw">use </span><span class="kw">crate</span>::networking::{NetworkMatchSocket, LAN_MATCHMAKER, NETWORK_ENDPOINT, ONLINE_MATCHMAKER};
+<span class="kw">use </span><span class="kw">crate</span>::networking::{
+    lan::{LanMatchmakerRequest, LanMatchmakerResponse, LAN_MATCHMAKER},
+    online::{OnlineMatchmakerRequest, OnlineMatchmakerResponse, ONLINE_MATCHMAKER},
+    NetworkMatchSocket, NETWORK_ENDPOINT,
+};
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
@@ -1234,7 +1242,7 @@
                                             {
                                                 <span class="kw-2">*</span>status = Status::Joining;
                                                 LAN_MATCHMAKER.try_send(
-                                                    networking::LanMatchmakerRequest::JoinServer {
+                                                    networking::lan::LanMatchmakerRequest::JoinServer {
                                                         ip: <span class="kw-2">*</span>server
                                                             .service
                                                             .get_addresses()
@@ -1275,9 +1283,9 @@
 
                                 <span class="kw">while let </span><span class="prelude-val">Ok</span>(message) = LAN_MATCHMAKER.try_recv() {
                                     <span class="kw">match </span>message {
-                                        networking::LanMatchmakerResponse::ServerStarted =&gt; (),
-                                        networking::LanMatchmakerResponse::PlayerCount(<span class="kw">_</span>) =&gt; (),
-                                        networking::LanMatchmakerResponse::GameStarting {
+                                        LanMatchmakerResponse::ServerStarted =&gt; (),
+                                        LanMatchmakerResponse::PlayerCount(<span class="kw">_</span>) =&gt; (),
+                                        LanMatchmakerResponse::GameStarting {
                                             lan_socket,
                                             player_idx,
                                             player_count: <span class="kw">_</span>,
@@ -1392,7 +1400,7 @@
                                     MDNS.register(service_info.clone())
                                         .expect(<span class="string">&quot;Could not register MDNS service.&quot;</span>);
                                     LAN_MATCHMAKER
-                                        .try_send(networking::LanMatchmakerRequest::StartServer {
+                                        .try_send(LanMatchmakerRequest::StartServer {
                                             player_count: <span class="kw-2">*</span>player_count,
                                         })
                                         .unwrap();
@@ -1402,10 +1410,10 @@
                             </span>} <span class="kw">else if </span><span class="kw-2">*</span>status == Status::Hosting {
                                 <span class="kw">while let </span><span class="prelude-val">Ok</span>(response) = LAN_MATCHMAKER.try_recv() {
                                     <span class="kw">match </span>response {
-                                        networking::LanMatchmakerResponse::PlayerCount(count) =&gt; {
+                                        LanMatchmakerResponse::PlayerCount(count) =&gt; {
                                             <span class="kw-2">*</span>joined_players = count;
                                         }
-                                        networking::LanMatchmakerResponse::GameStarting {
+                                        LanMatchmakerResponse::GameStarting {
                                             lan_socket,
                                             player_idx,
                                             player_count: <span class="kw">_</span>,
@@ -1524,7 +1532,7 @@
                             {
                                 <span class="kw-2">*</span>status = Status::Searching;
                                 ONLINE_MATCHMAKER
-                                    .try_send(networking::OnlineMatchmakerRequest::SearchForGame {
+                                    .try_send(OnlineMatchmakerRequest::SearchForGame {
                                         addr: matchmaking_server.clone(),
                                         player_count: <span class="kw-2">*</span>player_count,
                                     })
@@ -1533,13 +1541,13 @@
                         } <span class="kw">else if </span><span class="kw-2">*</span>status == Status::Searching {
                             <span class="kw">while let </span><span class="prelude-val">Ok</span>(message) = ONLINE_MATCHMAKER.try_recv() {
                                 <span class="kw">match </span>message {
-                                    networking::OnlineMatchmakerResponse::Searching =&gt; {
+                                    OnlineMatchmakerResponse::Searching =&gt; {
                                         search_state = SearchState::Searching
                                     }
-                                    networking::OnlineMatchmakerResponse::PlayerCount(count) =&gt; {
+                                    OnlineMatchmakerResponse::PlayerCount(count) =&gt; {
                                         search_state = SearchState::WaitingForPlayers(count)
                                     }
-                                    networking::OnlineMatchmakerResponse::GameStarting {
+                                    OnlineMatchmakerResponse::GameStarting {
                                         online_socket,
                                         player_idx,
                                         player_count: <span class="kw">_</span>,
@@ -1565,7 +1573,7 @@
                                 .clicked()
                                 {
                                     ONLINE_MATCHMAKER
-                                        .try_send(networking::OnlineMatchmakerRequest::StopSearch)
+                                        .try_send(OnlineMatchmakerRequest::StopSearch)
                                         .unwrap();
                                     search_state = default();
                                     <span class="kw-2">*</span>status = Status::Idle;
@@ -1601,7 +1609,7 @@
                         <span class="kw">match </span>status {
                             Status::Idle =&gt; (),
                             Status::Searching =&gt; {
-                                <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = ONLINE_MATCHMAKER.try_send(networking::OnlineMatchmakerRequest::StopSearch){
+                                <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = ONLINE_MATCHMAKER.try_send(OnlineMatchmakerRequest::StopSearch){
                                     <span class="macro">error!</span>(<span class="string">&quot;Error stopping search: {:?}&quot;</span>, err);
                                 }
 
@@ -1609,7 +1617,7 @@
                             }
                             Status::Joining =&gt; {
                                 LAN_MATCHMAKER
-                                    .try_send(networking::LanMatchmakerRequest::StopJoin)
+                                    .try_send(LanMatchmakerRequest::StopJoin)
                                     .unwrap();
                                 <span class="kw-2">*</span>status = Status::Idle;
                             }

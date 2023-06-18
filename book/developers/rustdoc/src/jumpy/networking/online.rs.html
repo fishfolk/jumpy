@@ -447,7 +447,11 @@
 <a href="#351" id="351">351</a>
 <a href="#352" id="352">352</a>
 <a href="#353" id="353">353</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::net::{SocketAddr, ToSocketAddrs};
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+</pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./online.md&quot;</span>)]
+
+</span><span class="kw">use </span>std::net::{SocketAddr, ToSocketAddrs};
 
 <span class="kw">use </span>bevy::tasks::IoTaskPool;
 <span class="kw">use </span>bones_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};

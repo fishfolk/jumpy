@@ -124,9 +124,26 @@
 <a href="#28" id="28">28</a>
 <a href="#29" id="29">29</a>
 <a href="#30" id="30">30</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::sync::Arc;
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+</pre><pre class="rust"><code><span class="doccomment">//! QUIC certificate utilities.
+//!
+//!
 
-<span class="comment">// Implementation of `ServerCertVerifier` that verifies everything as trustworthy.
+</span><span class="kw">use </span>std::sync::Arc;
+
+<span class="doccomment">/// Implementation of `ServerCertVerifier` that verifies everything as trustworthy.
+///
+/// This allows us to connect to servers without having to worry about domain verification.
+///
+/// TODO: In the future we may want to do domain verification, but allow opting out of it.
 </span><span class="kw">pub struct </span>SkipServerVerification;
 
 <span class="kw">impl </span>SkipServerVerification {
@@ -149,7 +166,8 @@
     }
 }
 
-<span class="kw">pub fn </span>generate_self_signed_cert() -&gt; anyhow::Result&lt;(rustls::Certificate, rustls::PrivateKey)&gt; {
+<span class="doccomment">/// Generates a self-signed cert for use in QUIC connections.
+</span><span class="kw">pub fn </span>generate_self_signed_cert() -&gt; anyhow::Result&lt;(rustls::Certificate, rustls::PrivateKey)&gt; {
     <span class="kw">let </span>cert = rcgen::generate_simple_self_signed(<span class="macro">vec!</span>[<span class="string">&quot;localhost&quot;</span>.to_string()])<span class="question-mark">?</span>;
     <span class="kw">let </span>key = rustls::PrivateKey(cert.serialize_private_key_der());
     <span class="prelude-val">Ok</span>((rustls::Certificate(cert.serialize_der()<span class="question-mark">?</span>), key))

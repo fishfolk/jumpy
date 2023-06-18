@@ -266,7 +266,7 @@ fn collect_local_input(
     }
 
     for (player_idx, action_state) in &player_input_collectors {
-        if network_player_idx.is_some() && player_idx.0 != 0 {
+        if player_idx.0 != 0 {
             continue;
         }
 

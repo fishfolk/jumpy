@@ -9,7 +9,8 @@ use normalize_path::NormalizePath;
 
 use crate::prelude::*;
 
-/// A wrapper around [`Handle<T>`] that also contains the [`AssetPath`] used to load the asset.
+/// A wrapper around [`Handle<T>`] that also contains the
+/// [`AssetPath`][crate::external::bevy::asset::AssetPath] used to load the asset.
 ///
 /// Unlike [`Handle<T>`], this type is serializable and deserializable and can be sent over the
 /// network.

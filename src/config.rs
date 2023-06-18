@@ -1,10 +1,23 @@
+//! Jumpy startup configuration parsing.
+//!
+//! The [`EngineConfig`] contains the minimal configuration necessary when starting up the game
+//! initially. This includes the asset dir and the log level.
+//!
+//! [`EngineConfig`] is parsed from commandline arguments or environment variables on native
+//! platforms, and from the query string on web.
+
 use once_cell::sync::Lazy;
 
-pub const SERVER_MODE_ENV_VAR: &str = "JUMPY_SERVER_MODE";
+/// The name of the environment variable used to set the asset dir.
 pub const ASSET_DIR_ENV_VAR: &str = "JUMPY_ASSET_DIR";
 
+/// The default log level string.
 const DEFAULT_LOG_LEVEL: &str = "info,wgpu=error,bevy_fluent=warn,symphonia_core=warn,symphonia_format_ogg=warn,symphonia_bundle_mp3=warn";
 
+/// The loaded engine config is stored in this static.
+///
+/// It is a lazy static, but the first thing that [`main()`][crate::main()] does is load it so it
+/// will be loaded for the duration of the game's execution.
 pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
     #[cfg(not(target_arch = "wasm32"))]
     return <EngineConfig as clap::Parser>::parse();
@@ -13,6 +26,7 @@ pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
     return EngineConfig::from_web_params();
 });
 
+/// Jumpy game startup configuration.
 #[derive(Clone, Debug, clap::Parser)]
 #[command(author, version, about)]
 pub struct EngineConfig {

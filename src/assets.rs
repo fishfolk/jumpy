@@ -1,3 +1,5 @@
+//! Custom asset loaders and handle types.
+
 use bevy::{
     asset::{AssetLoader, LoadedAsset},
     reflect::TypeUuid,
@@ -7,9 +9,11 @@ use bones_bevy_asset::BonesBevyAssetAppExt;
 
 use crate::{metadata::GameMeta, prelude::*};
 
+#[doc(hidden)]
 mod asset_handle;
 pub use asset_handle::AssetHandle;
 
+/// Asset plugin.
 pub struct JumpyAssetPlugin;
 
 impl Plugin for JumpyAssetPlugin {
@@ -20,10 +24,12 @@ impl Plugin for JumpyAssetPlugin {
     }
 }
 
+/// Asset type containing [`egui::FontData`][crate::external::egui::FontData].
 #[derive(Debug, Clone, TypeUuid)]
 #[uuid = "421c9e38-89be-43ff-a293-6fea65abf946"]
 pub struct EguiFont(pub egui::FontData);
 
+/// Bevy asset loader for [`EguiFont`] assets.
 pub struct EguiFontLoader;
 
 impl AssetLoader for EguiFontLoader {

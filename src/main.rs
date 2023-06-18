@@ -3,13 +3,29 @@
 // This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
 #![cfg_attr(doc, allow(unknown_lints))]
 #![deny(rustdoc::all)]
+#![allow(rustdoc::private_intra_doc_links)]
 #![allow(clippy::type_complexity)]
 #![allow(clippy::forget_non_drop)]
 #![allow(clippy::too_many_arguments)]
 
+/// Sets the global Rust allocator to MiMalloc instead of the system one.
+///
+/// Doesn't do anything on WASM builds. ( We may want an alternative allocator for WASM later. )
 #[cfg(not(target_arch = "wasm32"))]
 #[global_allocator]
-static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+static GLOBAL_ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
+/// External crate documentation.
+///
+/// This module only exists during docs builds and serves to make it eaiser to link to relevant
+/// documentation in external crates.
+#[cfg(doc)]
+pub mod external {
+    #[doc(inline)]
+    pub use bevy;
+    #[doc(inline)]
+    pub use bevy_egui::egui;
+}
 
 // This will cause Bevy to be dynamically linked during development,
 // which can greatly reduce re-compile times in some circumstances.
@@ -20,6 +36,7 @@ use bevy_dylib;
 
 pub mod assets;
 pub mod audio;
+pub mod bevy_states;
 pub mod config;
 pub mod debug;
 pub mod input;
@@ -35,31 +52,21 @@ pub mod camera;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod networking;
 pub mod prelude;
-pub use prelude::*;
+use prelude::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
-pub enum EngineState {
-    #[default]
-    LoadingPlatformStorage,
-    LoadingGameData,
-    MainMenu,
-    InGame,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
-pub enum InGameState {
-    #[default]
-    Playing,
-    Paused,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, States, Default)]
-pub enum GameEditorState {
-    #[default]
-    Hidden,
-    Visible,
-}
-
+/// The entrypoint function for the jumpy game.
+///
+/// This function:
+///
+/// - Parses engine config:
+///     - On native: commandline arguments
+///     - On web: query string parameters
+/// - Initializes the Bevy [`App`]
+/// - Initializes settings and resources
+/// - Installs our Bevy plugins
+///     - This includes 3rd party plugins, and our custom bevy plugins
+///     - Nearly all of the game logic resides in these plugins
+/// - Starts the game
 pub fn main() {
     // Load engine config. This will parse CLI arguments or web query string so we want to do it
     // before we create the app to make sure everything is in order.

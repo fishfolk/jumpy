@@ -1,3 +1,17 @@
+//! Audio & music plugin.
+//!
+//! Audio playback in Jumpy is powered by [`bevy_kira_audio`]. This module sets up the audio plugin,
+//! and installs our [`MusicChannel`] and [`EffectsChannel`] for playing music and sound effects.
+//!
+//! Also in this module is the [`music_system`] which handles playing the right music in different
+//! game states.
+//!
+//! Game sounds are _not_ handled here. Game sounds events are created in
+//! [`jumpy_core`][::jumpy_core] and then processed and sent to the effects channel by the
+//! [`play_sounds()`][crate::session::play_sounds] system.
+//!
+//! [`bevy_kira_audio`]: https://docs.rs/bevy_kira_audio
+
 use std::time::Duration;
 
 use bevy_kira_audio::{
@@ -7,6 +21,7 @@ use rand::{seq::SliceRandom, thread_rng};
 
 use crate::{main_menu::MenuPage, metadata::GameMeta, prelude::*};
 
+/// Audio & Music plugin.
 pub struct JumpyAudioPlugin;
 
 impl Plugin for JumpyAudioPlugin {
@@ -21,25 +36,37 @@ impl Plugin for JumpyAudioPlugin {
     }
 }
 
+/// Marker struct for the music audio channel.
 #[derive(Resource)]
 pub struct MusicChannel;
+
+/// Marker struct for the effects audio channel.
 #[derive(Resource)]
 pub struct EffectsChannel;
 
+/// The music playback state.
 #[derive(Resource, Clone, Debug, Default)]
 pub enum MusicState {
+    /// Music is not playing.
     #[default]
     None,
+    /// Playing the main menu music.
     MainMenu(Handle<AudioInstance>),
+    /// Playing the character select music.
     CharacterSelect(Handle<AudioInstance>),
+    /// Playing the credits music.
     Credits(Handle<AudioInstance>),
+    /// Playing the fight music.
     Fight {
+        /// The handle to the audio instance.
         instance: Handle<AudioInstance>,
+        /// The index of the song in the shuffled playlist.
         idx: usize,
     },
 }
 
 impl MusicState {
+    /// Get the current audio instance, if one is contained.
     fn current_instance(&self) -> Option<&Handle<AudioInstance>> {
         match self {
             MusicState::None => None,
@@ -51,9 +78,13 @@ impl MusicState {
     }
 }
 
+/// Bevy resource containing the in-game music playlist shuffled.
 #[derive(Resource, Deref, DerefMut, Clone, Debug, Default)]
 pub struct ShuffledPlaylist(pub Vec<AssetHandle<AudioSource>>);
 
+/// Sets the default music and effects volume.
+///
+/// TODO: make this configurable in the settings menu.
 fn setup_audio_defaults(
     music: Res<AudioChannel<MusicChannel>>,
     effects: Res<AudioChannel<EffectsChannel>>,
@@ -62,9 +93,10 @@ fn setup_audio_defaults(
     effects.set_volume(0.1);
 }
 
+/// The amount of time to spend fading the music in and out.
 const MUSIC_FADE_DURATION: Duration = Duration::from_millis(500);
 
-/// Plays music according to the game mode.
+/// System that plays music according to the game mode.
 fn music_system(
     game: Res<GameMeta>,
     mut shuffled_fight_music: ResMut<ShuffledPlaylist>,

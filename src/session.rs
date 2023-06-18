@@ -321,7 +321,7 @@ fn update_game(world: &mut World) {
 }
 
 /// Play sounds from the game session.
-fn play_sounds(audio: Res<AudioChannel<EffectsChannel>>, mut session: ResMut<Session>) {
+pub fn play_sounds(audio: Res<AudioChannel<EffectsChannel>>, mut session: ResMut<Session>) {
     // Get the sound queue out of the world
     let queue = session
         .world()

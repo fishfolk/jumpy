@@ -12,16 +12,23 @@ Jumpy is still under heavy development and the docs as well as the code will be 
 incomplete. If you want to help out, feel free to fill in some missing docs or clarify something we
 didn't explain very well. We're glad to answer any questions you might have along the way!
 
-#### Organization
+### Organization
 
-Each of the modules in the list below contains it's own docs, which should explain details of what
-is contained in that model and how it works. Some of these may be simple, and others, such as the
+The [`main()`] function is the first function called in the game. It creates the Bevy [`App`], installs our plugins, and starts the game.
+
+All of the game logic is wrapped up in Bevy plugins. There is very often a plugin for each of the
+top-level modules. The names of our custom plugins are prefixed with `Jumpy` so that they can be
+easily recognized from 3rd party plugins that we also install. For example, we have the
+[`JumpyUiPlugin`] and the [`JumpySessionPlugin`] which reside in the [`ui`] and [`session`] modules
+respectively.
+
+Each of the modules contains it's own docs. Some of these may be simple, and others, such as the
 [`networking`] module have guide-level explanations on that facet of the game.
 
 Feel free to explore whatever seems interesting to you, and please [open an issue][gh_issue] if you
 feel like something is missing, or would like further guidance on a particular topic!
 
-##### Diagrams
+#### Diagrams
 
 Throughout the docs there are diagrams to explain certain topics. These may contain clickable links, highlighted in blue, that will bring you to the relevant module or struct. We also use a convention to indicate what kind of code object it links to, based on the shape of the box.
 
@@ -41,7 +48,7 @@ You can pan the diagram by clicking and dragging or zoom by holding `ctrl` and s
 
 There are a few major crates that are used in Jumpy:
 
-- [Jumpy Core][jumpy_core] - Core Gameplay Logic
+- [Jumpy Core][::jumpy_core] - Core Gameplay Logic
 - [Bones](https://fishfolk.org/development/bones/introduction/) - Core Entity Component System & Rendering Components
 - [Bevy](https://bevyengine.org) - Rendering, Asset Loading, and User Input
 

@@ -1,3 +1,5 @@
+#![doc = include_str!("./online.md")]
+
 use std::net::{SocketAddr, ToSocketAddrs};
 
 use bevy::tasks::IoTaskPool;

@@ -25,6 +25,10 @@ pub mod external {
     pub use bevy;
     #[doc(inline)]
     pub use bevy_egui::egui;
+    #[doc(inline)]
+    pub use bones_matchmaker_proto;
+    #[doc(inline)]
+    pub use ggrs;
 }
 
 // This will cause Bevy to be dynamically linked during development,
@@ -116,9 +120,6 @@ pub fn main() {
         .add_plugin(JumpyAssetPlugin)
         .add_plugin(JumpyLocalizationPlugin)
         .add_plugin(JumpyDebugPlugin);
-
-    #[cfg(not(target_arch = "wasm32"))]
-    app.add_plugin(networking::NetworkingPlugin);
 
     debug!(?engine_config, "Starting game");
 

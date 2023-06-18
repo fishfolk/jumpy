@@ -1,4 +1,8 @@
-//! Systems and utilities related to specific platform support or platform abstractions
+//! Platform abstractions.
+//!
+//! This module contains abstractions over platform-specific details. Currently this is just the
+//! [`Storage`] abstraction, which allows us to persist key-value data in a way that works on both
+//! native platforms and on web.
 
 use crate::prelude::*;
 
@@ -12,6 +16,7 @@ use native as backend;
 #[cfg(target_arch = "wasm32")]
 use wasm as backend;
 
+/// Platform plugin.
 pub struct JumpyPlatformPlugin;
 
 impl Plugin for JumpyPlatformPlugin {
@@ -71,6 +76,7 @@ impl FromWorld for Storage {
     }
 }
 
+/// An error that may occur while accessing [`Storage`].
 #[derive(thiserror::Error, Debug)]
 pub enum StorageError {
     #[error("Storage has not been loaded yet")]
@@ -261,17 +267,18 @@ impl SaveTask {
     }
 }
 
+/// Message type sent over a channel to the storage task.
 enum StorageRequest {
-    Load {
-        result_sender: Sender<StorageData>,
-    },
+    /// Load the storage and send it to the `result_sender`.
+    Load { result_sender: Sender<StorageData> },
+    /// Save the storage and send confirmation to the `result_sender`.
     Save {
         data: StorageData,
         result_sender: Sender<()>,
     },
 }
 
-/// Native platform support
+/// Native platform support.
 #[cfg(not(target_arch = "wasm32"))]
 mod native {
     use std::{
@@ -288,6 +295,7 @@ mod native {
 
     use super::StorageRequest;
 
+    /// Initialize storage backend.
     pub(super) fn init_storage() -> Sender<StorageRequest> {
         trace!("Initialize platform storage backend");
         let io_task_pool = IoTaskPool::get();

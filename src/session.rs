@@ -1,9 +1,22 @@
+//! Session management for matches.
+//!
+//! The [`SessionManager`] is used to create, stop, snapshot, and restore game matches. A session
+//! refers to an in-progress game match.
+//!
+//! Right now there are two kinds of sessions: local sessions and network sessions. These are
+//! implemented by the [`LocalSessionRunner`] and
+//! [`GgrsSessionRunner`][crate::networking::GgrsSessionRunner] types respectively.
+//!
+//! Both of them implmenent [`SessionRunner`] which is a trait used by the [`SessionManager`] to
+//! advance the game simulation properly.
+
 use bevy::utils::Instant;
 use downcast_rs::{impl_downcast, Downcast};
 use jumpy_core::input::PlayerControl;
 
 use crate::{main_menu::MenuPage, prelude::*};
 
+/// Session plugin.
 pub struct JumpySessionPlugin;
 
 /// Stage label for the game session stages
@@ -64,22 +77,37 @@ impl Plugin for JumpySessionPlugin {
     }
 }
 
-/// A resource containing an in-progress game session.
+/// A resource containing the in-progress game session.
 #[derive(Resource, Deref, DerefMut)]
 pub struct Session(pub Box<dyn SessionRunner>);
 
+/// Trait implemented by types that know how to advance the core game simulation.
+///
+/// Things like fixed frame updates are expected to be handled by the session runner.
+///
+/// The [`GgrsSessionRunner`][crate::networking::GgrsSessionRunner] is an example of how a custom
+/// runner can be used for running a network game.
 pub trait SessionRunner: Sync + Send + Downcast {
+    /// Get mutable access to the [`CoreSession`].
     fn core_session(&mut self) -> &mut CoreSession;
+    /// Get mutable access to the [`bones::World`] from in the [`CoreSession`].
     fn world(&mut self) -> &mut bones::World {
         &mut self.core_session().world
     }
+    /// Restart the session.
     fn restart(&mut self);
+    /// Get the control input for the player with the given `player_idx`.
     fn get_player_input(&mut self, player_idx: usize) -> PlayerControl {
         self.core_session()
             .update_input(|inputs| inputs.players[player_idx].control.clone())
     }
+    /// Set the player input for the player with the given `player_idx`.
     fn set_player_input(&mut self, player_idx: usize, control: PlayerControl);
+    /// Advance the game simmulation.
     fn advance(&mut self, bevy_world: &mut World) -> Result<(), SessionError>;
+    /// Return whether or not the simulation should run, given the current time.
+    ///
+    /// This is used to created fixed refresh rates.
     fn run_criteria(&mut self, time: &Time) -> ShouldRun;
     /// Returns the player index of the player if we are in a network game.
     ///
@@ -96,6 +124,10 @@ pub enum SessionError {
     Disconnected,
 }
 
+/// Implementation of [`SessionRunner`] for local games.
+///
+/// This is almost as simple as a [`SessionRunner`] can get: it just advances the game simulation at
+/// the fixed [`jumpy_core::FPS`].
 pub struct LocalSessionRunner {
     pub core: CoreSession,
     pub accumulator: f64,
@@ -198,15 +230,16 @@ impl<'w, 's> SessionManager<'w, 's> {
         self.menu_camera.for_each_mut(|mut x| x.is_active = false);
     }
 
+    /// Start a network game session.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn start_network(
         &mut self,
         core_info: CoreSessionInfo,
-        lan_info: crate::networking::GgrsSessionRunnerInfo,
+        ggrs_info: crate::networking::GgrsSessionRunnerInfo,
     ) {
         let session = Session(Box::new(crate::networking::GgrsSessionRunner::new(
             CoreSession::new(core_info),
-            lan_info,
+            ggrs_info,
         )));
         self.commands.insert_resource(session);
         self.menu_camera.for_each_mut(|mut x| x.is_active = false);

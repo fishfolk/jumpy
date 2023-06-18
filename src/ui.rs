@@ -1,3 +1,5 @@
+//! User interface.
+
 use bevy::{
     ecs::system::SystemState,
     window::{PrimaryWindow, WindowMode},

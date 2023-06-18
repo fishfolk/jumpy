@@ -1,5 +1,14 @@
+//! Player input types.
+//!
+//! We use the [`leafwing-input-manager`] plugin for collecting user input in Jumpy. This crate
+//! installs the input manager plugin and registers the [`PlayerAction`] type as the collectible
+//! player input.
+//!
+//! [`leafwing-input-manager`]: https://docs.rs/leafwing-input-manager
+
 use crate::prelude::*;
 
+/// Input plugin.
 pub struct JumpyPlayerInputPlugin;
 
 impl Plugin for JumpyPlayerInputPlugin {

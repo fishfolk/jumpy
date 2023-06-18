@@ -1,3 +1,5 @@
+//! Internal prelude used to easily import common types.
+
 pub use crate::{
     assets::*, audio::*, bevy_states::*, camera::*, config::*, debug::*, input::*, loading::*,
     localization::*, metadata::*, platform::*, session::*, ui::*, utils::*, *,

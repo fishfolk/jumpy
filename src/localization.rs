@@ -1,3 +1,5 @@
+//! Localization utilities & initialization.
+
 use std::borrow::Borrow;
 
 use bevy::{prelude::*, utils::HashMap};
@@ -6,6 +8,8 @@ use fluent::FluentArgs;
 use fluent_content::{Content, Request};
 
 /// Plugin for initializing and loading the [`Localization`] resource.
+///
+/// [`Localization`]: https://docs.rs/bevy_fluent/latest/bevy_fluent/struct.Localization.html
 pub struct JumpyLocalizationPlugin;
 
 impl Plugin for JumpyLocalizationPlugin {
@@ -19,6 +23,8 @@ impl Plugin for JumpyLocalizationPlugin {
 }
 
 /// Extension trait to reduce boilerplate when getting values from a [`Localization`].
+///
+/// [`Localization`]: https://docs.rs/bevy_fluent/latest/bevy_fluent/struct.Localization.html
 pub trait LocalizationExt<'a, T: Into<Request<'a, U>>, U: Borrow<FluentArgs<'a>>> {
     /// Request message content and get an empty string if it doesn't exist.
     fn get(&self, request: T) -> String;
@@ -44,8 +50,9 @@ where
     }
 }
 
-/// Watch for locale [`BundleAsset`] load events and add any new bundles to the [`Localization`]
-/// resource.
+/// Watch for locale load events and add any new bundles to the [`Localization`] resource.
+///
+/// [`Localization`]: https://docs.rs/bevy_fluent/latest/bevy_fluent/struct.Localization.html
 fn load_locales(
     locale: Res<Locale>,
     mut loading_bundles: Local<Vec<Handle<BundleAsset>>>,

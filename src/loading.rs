@@ -1,3 +1,5 @@
+//! Initial game loading implementation.
+
 use bevy::ecs::system::SystemParam;
 use bevy_egui::{egui, EguiContexts};
 use bevy_fluent::Locale;
@@ -13,6 +15,7 @@ use crate::{
     prelude::*,
 };
 
+/// Loading plugin.
 pub struct JumpyLoadingPlugin;
 
 impl Plugin for JumpyLoadingPlugin {
@@ -99,9 +102,21 @@ fn core_assets_loaded(
     true
 }
 
+/// Component added to the entities used to collect player input.
+///
+/// The inner [`usize`] is the player index.
+///
+/// The `leafwing-input-manager` tracks input for specific entities, instead of globally collecting
+/// input. This usually makes things easier, but for our usje-case, we need to be able to collect
+/// user input even for players that haven't, spawned yet.
+///
+/// To facilitate this, for every user we spawn [`jumpy_core::MAX_PLAYERS`] entities with a
+/// [`PlayerInputCollector`] and the `InputManagerBundle` that is needed for
+/// `leafwing-input-manager`.
 #[derive(Component)]
 pub struct PlayerInputCollector(pub usize);
 
+/// Systemrunonce to spawn the menu input collector.
 fn setup(mut commands: Commands) {
     commands.spawn((
         Name::new("Menu Input Collector"),
@@ -112,7 +127,7 @@ fn setup(mut commands: Commands) {
     ));
 }
 
-/// System param used to load and hot reload the game
+/// System param used to load and hot reload the game.
 #[derive(SystemParam)]
 pub struct GameLoader<'w, 's> {
     skip_next_asset_update_event: Local<'s, bool>,
@@ -335,6 +350,7 @@ impl<'w, 's> GameLoader<'w, 's> {
     }
 }
 
+/// Get the input map for the menu controls.
 fn menu_input_map() -> InputMap<MenuAction> {
     InputMap::default()
         .set_gamepad(Gamepad::new(0))
@@ -404,12 +420,12 @@ fn menu_input_map() -> InputMap<MenuAction> {
         .build()
 }
 
-/// System to run the initial game load
+/// System to run the initial game load.
 fn load_game(loader: GameLoader) {
     loader.load(false);
 }
 
-/// System to check for asset changes and hot reload the game
+/// System to check for asset changes and hot reload the game.
 fn hot_reload_game(loader: GameLoader) {
     loader.load(true);
 }

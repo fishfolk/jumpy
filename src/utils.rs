@@ -1,3 +1,5 @@
+//! Miscellaneous utilities.
+
 use async_channel::*;
 
 /// Create a bi-directional channel with a given request and response type.

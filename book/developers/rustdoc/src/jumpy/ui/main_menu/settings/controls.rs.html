@@ -511,6 +511,10 @@
 <a href="#415" id="415">415</a>
 <a href="#416" id="416">416</a>
 <a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::input::gamepad::{GamepadAxisChangedEvent, GamepadEvent};
 <span class="kw">use </span>egui_extras::Column;
 
@@ -625,14 +629,18 @@
     </span><span class="kw">let </span><span class="kw-2">mut </span>input_buttons = Vec::new();
 
     <span class="comment">// Create input table
-    </span>egui_extras::TableBuilder::new(ui)
+    </span><span class="kw">let </span>width = ui.available_width();
+    <span class="kw">let </span>label_size = label_font.size * <span class="number">7.0</span>;
+    <span class="kw">let </span>remaining_width = width - label_size;
+    <span class="kw">let </span>cell_width = remaining_width / <span class="number">3.0</span>;
+    egui_extras::TableBuilder::new(ui)
         .cell_layout(egui::Layout::centered_and_justified(
             egui::Direction::LeftToRight,
         ))
-        .column(Column::exact(label_font.size * <span class="number">7.0</span>))
-        .column(Column::remainder())
-        .column(Column::remainder())
-        .column(Column::remainder())
+        .column(Column::exact(label_size))
+        .column(Column::exact(cell_width))
+        .column(Column::exact(cell_width))
+        .column(Column::exact(cell_width))
         .header(bigger_font.size * <span class="number">1.5</span>, |<span class="kw-2">mut </span>row| {
             row.col(|ui| {
                 ui.themed_label(bigger_font, <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;action&quot;</span>));

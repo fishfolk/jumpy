@@ -1,10 +1,13 @@
-//! Universal bullet implementation.
+//! Generic bullet implementation.
+//!
+//! These components are used for things like the musket and sniper rifle bullets.
 
 use crate::{
     physics::collisions::{Actor, Collider, TileCollisionKind},
     prelude::*,
 };
 
+/// Install this module.
 pub fn install(session: &mut CoreSession) {
     session
         .stages
@@ -12,10 +15,13 @@ pub fn install(session: &mut CoreSession) {
         .add_system_to_stage(CoreStage::PostUpdate, update);
 }
 
+/// Bullet component.
 #[derive(Clone, Debug, TypeUlid, Copy)]
 #[ulid = "01GQX3KM2A4WPV2NKJNG85TJ3P"]
 pub struct Bullet {
+    /// The direction that the bullet is moving on the X axis.
     pub direction: f32,
+    /// The player entity that shot the bullet.
     pub owner: Entity,
 }
 
@@ -24,6 +30,7 @@ pub struct Bullet {
 #[ulid = "01GR1WH27X84VX22G0JY9J71PC"]
 pub struct BulletHandle(pub Handle<BulletMeta>);
 
+/// Hydrate bullets.
 fn hydrate(
     entities: Res<Entities>,
     mut actors: CompMut<Actor>,
@@ -73,6 +80,7 @@ fn hydrate(
     }
 }
 
+/// Update bullets.
 fn update(
     entities: Res<Entities>,
     mut commands: Commands,

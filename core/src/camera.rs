@@ -2,6 +2,7 @@
 
 use crate::prelude::*;
 
+/// Install this module.
 pub fn install(session: &mut CoreSession) {
     session
         .stages
@@ -11,22 +12,35 @@ pub fn install(session: &mut CoreSession) {
         .add_system_to_stage(CoreStage::Last, camera_parallax);
 }
 
+/// A sprite that is spawned as a part of the parallax background.
 #[derive(Clone, TypeUlid)]
 #[ulid = "01GPP1V3PCENFWC8H6H705ST80"]
 pub struct ParallaxBackgroundSprite {
+    /// The sprite with `idx` of `0` will be centered, with indexes increasing and decreasing
+    /// representing repeated tiles to the right and left respectively.
     pub idx: i32,
+    /// Information about the parallax layer it is a part of.
     pub meta: ParallaxLayerMeta,
 }
 
+/// The state of the camera.
 #[derive(Clone, Debug, TypeUlid, Default)]
 #[ulid = "01GPV6M1KY0GBRQVJ3WG5CSBBS"]
 pub struct CameraState {
+    /// A rectangle around the player that is larger than the player, and will always move to
+    /// contain the player. The camra will seek to contain this rectangle, instead of the player
+    /// itself.
+    ///
+    /// The advantage of this processing method is that the larger rect doesn't move as much as the
+    /// player, because, for instance, while jumping up and down in place, the player will still be
+    /// inside of their camera rect, so the camera will not move around annoyingly.
     pub player_camera_rects: [Rect; MAX_PLAYERS],
     /// Disables the default camera controller. Useful, for example, when taking over the camera
     /// from the editor.
     pub disable_controller: bool,
 }
 
+/// Implemenets the camera controller.
 fn camera_controller(
     game_meta: Res<CoreMetaArc>,
     entities: Res<Entities>,
@@ -151,6 +165,7 @@ fn camera_controller(
     *camera_pos -= dist.extend(0.0);
 }
 
+/// Implements the background layer parallax.
 fn camera_parallax(
     entities: Res<Entities>,
     mut transforms: CompMut<Transform>,

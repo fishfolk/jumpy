@@ -2,6 +2,7 @@
 #[macro_export]
 macro_rules! impl_system_param {
     (
+        $( #[$m:meta] )*
         pub struct $t:ident<'a> {
             $(
                 $( #[$attrs:meta] )*
@@ -10,6 +11,7 @@ macro_rules! impl_system_param {
             $(,)?
         }
     ) => {
+        $( #[$m] )*
         pub struct $t<'a> {
             $(
                 $( #[$attrs] )*

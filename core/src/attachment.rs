@@ -1,5 +1,10 @@
 //! Utilities for attaching entities to other entities.
-
+//!
+//! There are two kinds of attachments: [`Attachment`] and [`PlayerBodyAttachment`].
+//!
+//! [`Attachment`] just makes one entity follow another, with some special handling for sprites, and
+//! the [`PlayerBodyAttachment`] specifically matches the player's body movement animation to make
+//! sure that, for example, a held item will bob up and down with the player.
 use crate::prelude::*;
 
 pub fn install(session: &mut CoreSession) {
@@ -131,10 +136,14 @@ pub struct PlayerBodyAttachment {
     pub sync_color: bool,
 }
 
+/// This is used by the [`update_player_body_attachments`] system internally.
+///
+/// It keeps track whether or not an entity had a [`PlayerBodyAttachment`] on the last frame.
 #[derive(Clone, Copy, TypeUlid)]
 #[ulid = "01GQQWDPHAJKNM686ZY425V4XF"]
-pub struct HadPlayerBodyAttachmentMarker;
+struct HadPlayerBodyAttachmentMarker;
 
+/// System that updates entities with the [`PlayerBodyAttachment`] component.
 fn update_player_body_attachments(
     entities: Res<Entities>,
     mut attachments: CompMut<Attachment>,
@@ -173,6 +182,8 @@ fn update_player_body_attachments(
     }
 }
 
+/// System that cleans up old [`Attachment`] and [`HadPlayerBodyAttachmentMarker`] components from
+/// an entity when the [`PlayerBodyAttachment`] is removed.
 fn remove_player_body_attachments(
     entities: Res<Entities>,
     player_body_attachments: Comp<PlayerBodyAttachment>,

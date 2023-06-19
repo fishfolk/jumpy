@@ -456,6 +456,7 @@ fn player_ai_system(
 fn hydrate_players(
     mut commands: Commands,
     mut entities: ResMut<Entities>,
+    game_meta: Res<CoreMetaArc>,
     player_inputs: Res<PlayerInputs>,
     player_indexes: Comp<PlayerIdx>,
     player_assets: BevyAssets<PlayerMeta>,
@@ -469,6 +470,8 @@ fn hydrate_players(
     mut transforms: CompMut<Transform>,
     mut emote_states: CompMut<EmoteState>,
     mut ai_players: CompMut<AiPlayer>,
+    mut invincibles: CompMut<Invincibility>,
+    mut element_kill_callbacks: CompMut<ElementKillCallback>,
 ) {
     let mut not_hydrated_bitset = player_states.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -499,6 +502,14 @@ fn hydrate_players(
         emote_states.insert(player_entity, default());
         animation_bank_sprites.insert(player_entity, animation_bank_sprite);
         inventories.insert(player_entity, default());
+        invincibles.insert(
+            player_entity,
+            Invincibility::new(game_meta.config.respawn_invincibility_time),
+        );
+        element_kill_callbacks.insert(
+            player_entity,
+            ElementKillCallback::new(player_kill_callback(player_entity)),
+        );
 
         atlas_sprites.insert(
             player_entity,
@@ -667,6 +678,27 @@ fn hydrate_players(
             );
         }
     }
+}
+
+fn player_kill_callback(player_entity: Entity) -> System {
+    (move |mut entities: ResMut<Entities>,
+           attachments: Comp<Attachment>,
+           player_layers: Comp<PlayerLayers>| {
+        entities
+            .iter_with(&attachments)
+            .filter(|(_, attachment)| attachment.entity == player_entity)
+            .map(|(entity, _)| entity)
+            .collect::<Vec<_>>()
+            .iter()
+            .for_each(|entity| {
+                entities.kill(*entity);
+            });
+        let layers = player_layers.get(player_entity).unwrap();
+        entities.kill(layers.fin_ent);
+        entities.kill(layers.face_ent);
+        entities.kill(player_entity);
+    })
+    .system()
 }
 
 /// System that makes sure the swords held by AI are despawned when they are killed.

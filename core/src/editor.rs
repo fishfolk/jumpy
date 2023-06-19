@@ -7,6 +7,7 @@ use crate::map_constructor::shiftnanigans::ShiftnanigansMapConstructor;
 use crate::map_constructor::MapConstructor;
 use crate::{map::z_depth_for_map_layer, prelude::*};
 
+/// Install this module.
 pub fn install(session: &mut CoreSession) {
     session
         .stages
@@ -14,6 +15,14 @@ pub fn install(session: &mut CoreSession) {
 }
 
 impl_system_param! {
+    /// A system parameter for editing the map.
+    ///
+    /// [`MapManager`] provides an interface for editing the map contents easily while the match is
+    /// running. This can be used both for manual map editing, and by algorithms for generating or
+    /// randomizing maps.
+    ///
+    /// Map generators implement the [`MapConstructor`][crate::map_constructor::MapConstructor]
+    /// trait, which is given a [`MapManager`] to make its changes with.
     pub struct MapManager<'a> {
         commands: Commands<'a>,
         entities: ResMut<'a, Entities>,
@@ -31,6 +40,7 @@ impl_system_param! {
 }
 
 impl<'a> MapManager<'a> {
+    /// Create a new map element at the given location on the given layer.
     pub fn create_element(
         &mut self,
         element_meta_handle: &Handle<ElementMeta>,
@@ -53,6 +63,7 @@ impl<'a> MapManager<'a> {
             },
         );
     }
+    /// Create a new layer with the given name.
     pub fn create_layer(&mut self, name: String) {
         let entity = self.entities.create();
         let layer_index = self.spawned_map_meta.layer_names.len();
@@ -83,6 +94,7 @@ impl<'a> MapManager<'a> {
             Transform::from_translation(Vec3::new(0.0, 0.0, z_depth_for_map_layer(layer_index))),
         );
     }
+    /// Delete the layer with the given index.
     pub fn delete_layer(&mut self, layer_index: usize) {
         let layer_count = self.spawned_map_meta.layer_names.len();
         let layers_to_decrement = layer_count - layer_index;
@@ -117,6 +129,7 @@ impl<'a> MapManager<'a> {
             self.entities.kill(ent);
         });
     }
+    /// Rename the layer with the given index.
     pub fn rename_layer(&mut self, layer_index: usize, name: &str) {
         self.spawned_map_meta.layer_names = self
             .spawned_map_meta
@@ -128,11 +141,13 @@ impl<'a> MapManager<'a> {
             .map(|(i, n)| if i == layer_index { name.to_owned() } else { n })
             .collect();
     }
+    /// Move an element to a new position on the map.
     pub fn move_element(&mut self, entity: Entity, position: &Vec2) {
         let transform = self.transforms.get_mut(entity).unwrap();
         transform.translation.x = position.x;
         transform.translation.y = position.y;
     }
+    /// Delete an element off of the map.
     pub fn delete_element(&mut self, entity: Entity) {
         if let Some(element_kill_callback) = self.element_kill_callbacks.get(entity) {
             let system = element_kill_callback.system.clone();
@@ -150,6 +165,7 @@ impl<'a> MapManager<'a> {
             self.entities.kill(entity);
         }
     }
+    /// Set the tilemap for the given layer.
     pub fn set_layer_tilemap(&mut self, layer_index: usize, tilemap: &Option<Handle<Atlas>>) {
         if let Some((_, (tile_layer, _))) = self
             .entities
@@ -163,6 +179,7 @@ impl<'a> MapManager<'a> {
             }
         };
     }
+    /// Set the tile index of a tile on the given layer.
     pub fn set_tile(
         &mut self,
         layer_index: usize,
@@ -218,6 +235,7 @@ impl<'a> MapManager<'a> {
                 });
         };
     }
+    /// Swap the position of two layers.
     pub fn swap_layer(&mut self, layer_index: usize, is_downward: bool) {
         let origin_layer_index = layer_index;
         let other_layer_index = if is_downward {
@@ -242,15 +260,19 @@ impl<'a> MapManager<'a> {
             }
         }
     }
+    /// Rename the map.
     pub fn rename_map(&mut self, name: String) {
         self.spawned_map_meta.name = name.into();
     }
+    /// Get the size of the map.
     pub fn get_size(&self) -> UVec2 {
         self.spawned_map_meta.grid_size
     }
+    /// The the number of layers.
     pub fn get_layers_total(&self) -> usize {
         self.spawned_map_meta.layer_names.len()
     }
+    /// Clear all the tiles on the map.
     pub fn clear_tiles(&mut self) {
         let empty_tile: Option<usize> = Option::None;
         for y in 0..self.spawned_map_meta.grid_size.y {
@@ -267,6 +289,7 @@ impl<'a> MapManager<'a> {
             }
         }
     }
+    /// Clear all of the elements on the map.
     pub fn clear_elements(&mut self) {
         let mut to_kill: Vec<Entity> = Vec::new();
         self.entities
@@ -281,6 +304,7 @@ impl<'a> MapManager<'a> {
     }
 }
 
+/// Handles user input comming from the editor and makes the required changes to the map.
 fn handle_editor_input(player_inputs: Res<PlayerInputs>, mut map_manager: MapManager) {
     for player in &player_inputs.players {
         if let Some(editor_input) = &player.editor_input {

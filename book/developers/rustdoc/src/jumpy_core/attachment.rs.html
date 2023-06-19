@@ -283,8 +283,24 @@
 <a href="#187" id="187">187</a>
 <a href="#188" id="188">188</a>
 <a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Utilities for attaching entities to other entities.
-
+//!
+//! There are two kinds of attachments: [`Attachment`] and [`PlayerBodyAttachment`].
+//!
+//! [`Attachment`] just makes one entity follow another, with some special handling for sprites, and
+//! the [`PlayerBodyAttachment`] specifically matches the player&#39;s body movement animation to make
+//! sure that, for example, a held item will bob up and down with the player.
 </span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
@@ -416,11 +432,15 @@
     </span><span class="kw">pub </span>sync_color: bool,
 }
 
-<span class="attr">#[derive(Clone, Copy, TypeUlid)]
+<span class="doccomment">/// This is used by the [`update_player_body_attachments`] system internally.
+///
+/// It keeps track whether or not an entity had a [`PlayerBodyAttachment`] on the last frame.
+</span><span class="attr">#[derive(Clone, Copy, TypeUlid)]
 #[ulid = <span class="string">&quot;01GQQWDPHAJKNM686ZY425V4XF&quot;</span>]
-</span><span class="kw">pub struct </span>HadPlayerBodyAttachmentMarker;
+</span><span class="kw">struct </span>HadPlayerBodyAttachmentMarker;
 
-<span class="kw">fn </span>update_player_body_attachments(
+<span class="doccomment">/// System that updates entities with the [`PlayerBodyAttachment`] component.
+</span><span class="kw">fn </span>update_player_body_attachments(
     entities: Res&lt;Entities&gt;,
     <span class="kw-2">mut </span>attachments: CompMut&lt;Attachment&gt;,
     <span class="kw-2">mut </span>player_body_attachment_markers: CompMut&lt;HadPlayerBodyAttachmentMarker&gt;,
@@ -458,7 +478,9 @@
     }
 }
 
-<span class="kw">fn </span>remove_player_body_attachments(
+<span class="doccomment">/// System that cleans up old [`Attachment`] and [`HadPlayerBodyAttachmentMarker`] components from
+/// an entity when the [`PlayerBodyAttachment`] is removed.
+</span><span class="kw">fn </span>remove_player_body_attachments(
     entities: Res&lt;Entities&gt;,
     player_body_attachments: Comp&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>had_player_body_attachment_markers: CompMut&lt;HadPlayerBodyAttachmentMarker&gt;,

@@ -160,10 +160,13 @@
 <a href="#64" id="64">64</a>
 <a href="#65" id="65">65</a>
 <a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
 </pre><pre class="rust"><code><span class="doccomment">/// Macro to &quot;derive&quot; ( not really a derive macro ) SystemParam for a struct.
 </span><span class="attr">#[macro_export]
 </span><span class="macro">macro_rules! </span>impl_system_param {
     (
+        $( <span class="attr">#[<span class="macro-nonterminal">$m</span>:meta] </span>)*
         <span class="kw">pub struct </span><span class="macro-nonterminal">$t</span>:ident&lt;<span class="lifetime">&#39;a</span>&gt; {
             $(
                 $( <span class="attr">#[<span class="macro-nonterminal">$attrs</span>:meta] </span>)*
@@ -172,6 +175,7 @@
             $(,)<span class="question-mark">?
         </span>}
     ) =&gt; {
+        $( <span class="attr">#[<span class="macro-nonterminal">$m</span>] </span>)*
         <span class="kw">pub struct </span><span class="macro-nonterminal">$t</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
             $(
                 $( <span class="attr">#[<span class="macro-nonterminal">$attrs</span>] </span>)*

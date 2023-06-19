@@ -310,12 +310,19 @@
 <a href="#214" id="214">214</a>
 <a href="#215" id="215">215</a>
 <a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Debug rendering for collision boxes, etc.
 
 </span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>rapier2d::prelude <span class="kw">as </span>rapier;
 
-<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
+<span class="doccomment">/// Install this module.
+</span><span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::Last, debug_render_colliders)
@@ -343,7 +350,9 @@
     debug_pipeline: rapier::DebugRenderPipeline,
 }
 
-<span class="kw">struct </span>RapierDebugBackend&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="doccomment">/// An implementation of the rapier `DebugRenderingBackend` that we use to create bones `Path2d`
+/// entities with.
+</span><span class="kw">struct </span>RapierDebugBackend&lt;<span class="lifetime">&#39;a</span>&gt; {
     points: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Vec&lt;Vec2&gt;,
     line_breaks: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Vec&lt;usize&gt;,
 }
@@ -401,7 +410,8 @@
     }
 }
 
-<span class="kw">fn </span>debug_render_colliders(
+<span class="doccomment">/// Renders debug lines for rapier colliders.
+</span><span class="kw">fn </span>debug_render_colliders(
     settings: Res&lt;DebugSettings&gt;,
     <span class="kw-2">mut </span>collision_world: CollisionWorld,
     transforms: Comp&lt;Transform&gt;,
@@ -442,7 +452,8 @@
     }
 }
 
-<span class="kw">fn </span>debug_render_damage_regions(
+<span class="doccomment">/// Renders debug lines for damage regions.
+</span><span class="kw">fn </span>debug_render_damage_regions(
     settings: Res&lt;DebugSettings&gt;,
     entities: Res&lt;Entities&gt;,
     regions: Comp&lt;DamageRegion&gt;,
@@ -484,7 +495,8 @@
     }
 }
 
-<span class="kw">fn </span>debug_render_emote_regions(
+<span class="doccomment">/// Renders debug lines for emote regions.
+</span><span class="kw">fn </span>debug_render_emote_regions(
     settings: Res&lt;DebugSettings&gt;,
     entities: Res&lt;Entities&gt;,
     regions: Comp&lt;EmoteRegion&gt;,

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["MapManager",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["install","Install this module."]],"struct":[["MapManager","A system parameter for editing the map."]]};

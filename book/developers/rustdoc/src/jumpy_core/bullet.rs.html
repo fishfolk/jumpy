@@ -276,25 +276,39 @@
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
 <a href="#182" id="182">182</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Universal bullet implementation.
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Generic bullet implementation.
+//!
+//! These components are used for things like the musket and sniper rifle bullets.
 
 </span><span class="kw">use crate</span>::{
     physics::collisions::{Actor, Collider, TileCollisionKind},
     prelude::<span class="kw-2">*</span>,
 };
 
-<span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
+<span class="doccomment">/// Install this module.
+</span><span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
         .add_system_to_stage(CoreStage::PostUpdate, update);
 }
 
-<span class="attr">#[derive(Clone, Debug, TypeUlid, Copy)]
+<span class="doccomment">/// Bullet component.
+</span><span class="attr">#[derive(Clone, Debug, TypeUlid, Copy)]
 #[ulid = <span class="string">&quot;01GQX3KM2A4WPV2NKJNG85TJ3P&quot;</span>]
 </span><span class="kw">pub struct </span>Bullet {
-    <span class="kw">pub </span>direction: f32,
-    <span class="kw">pub </span>owner: Entity,
+    <span class="doccomment">/// The direction that the bullet is moving on the X axis.
+    </span><span class="kw">pub </span>direction: f32,
+    <span class="doccomment">/// The player entity that shot the bullet.
+    </span><span class="kw">pub </span>owner: Entity,
 }
 
 <span class="doccomment">/// Component containing the bullet&#39;s metadata handle.
@@ -302,7 +316,8 @@
 #[ulid = <span class="string">&quot;01GR1WH27X84VX22G0JY9J71PC&quot;</span>]
 </span><span class="kw">pub struct </span>BulletHandle(<span class="kw">pub </span>Handle&lt;BulletMeta&gt;);
 
-<span class="kw">fn </span>hydrate(
+<span class="doccomment">/// Hydrate bullets.
+</span><span class="kw">fn </span>hydrate(
     entities: Res&lt;Entities&gt;,
     <span class="kw-2">mut </span>actors: CompMut&lt;Actor&gt;,
     <span class="kw-2">mut </span>colliders: CompMut&lt;Collider&gt;,
@@ -351,7 +366,8 @@
     }
 }
 
-<span class="kw">fn </span>update(
+<span class="doccomment">/// Update bullets.
+</span><span class="kw">fn </span>update(
     entities: Res&lt;Entities&gt;,
     <span class="kw-2">mut </span>commands: Commands,
     bullet_handles: Comp&lt;BulletHandle&gt;,

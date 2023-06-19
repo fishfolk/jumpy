@@ -476,7 +476,12 @@
 <a href="#380" id="380">380</a>
 <a href="#381" id="381">381</a>
 <a href="#382" id="382">382</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::{cell::RefCell, rc::Rc};
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Map randomizer using [Shiftnanigans](https://github.com/AustinHellerRepo/Shiftnanigans).
+
+</span><span class="kw">use </span>std::{cell::RefCell, rc::Rc};
 
 <span class="kw">use </span><span class="kw">super</span>::MapConstructor;
 <span class="kw">use crate</span>::{
@@ -489,7 +494,8 @@
 <span class="kw">use </span>glam::{UVec2, Vec2};
 <span class="kw">use </span>shiftnanigans::pixel_board::{pixel_board_randomizer::PixelBoardRandomizer, Pixel, PixelBoard};
 
-<span class="kw">pub struct </span>ShiftnanigansMapConstructor {
+<span class="doccomment">/// Map randomizer using [Shiftnanigans](https://github.com/AustinHellerRepo/Shiftnanigans).
+</span><span class="kw">pub struct </span>ShiftnanigansMapConstructor {
     pixel_board_randomizer: PixelBoardRandomizer&lt;PixelType&gt;,
     compressed_top_height: usize,
     compressed_left_width: usize,

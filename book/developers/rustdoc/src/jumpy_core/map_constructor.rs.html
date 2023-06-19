@@ -106,6 +106,8 @@
 <a href="#10" id="10">10</a>
 <a href="#11" id="11">11</a>
 <a href="#12" id="12">12</a>
+<a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Map constructor implementations.
 //!
 //! Map constructors are algorithms that can be used to create or edit game maps, usually through
@@ -115,8 +117,10 @@
 
 <span class="kw">pub mod </span>shiftnanigans;
 
-<span class="kw">pub trait </span>MapConstructor {
-    <span class="kw">fn </span>construct_map(<span class="kw-2">&amp;</span><span class="self">self</span>, map_manager: <span class="kw-2">&amp;mut </span>MapManager);
+<span class="doccomment">/// Trait implemented by map constructors.
+</span><span class="kw">pub trait </span>MapConstructor {
+    <span class="doccomment">/// Take the map manager and use it to either modify or construct a new map.
+    </span><span class="kw">fn </span>construct_map(<span class="kw-2">&amp;</span><span class="self">self</span>, map_manager: <span class="kw-2">&amp;mut </span>MapManager);
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="jumpy_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

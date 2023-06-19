@@ -67,5 +67,6 @@ map_elements:
   - /elements/item/musket/musket.element.yaml
   - /elements/item/stomp_boots/stomp_boots.element.yaml
   - /elements/item/sword/sword.element.yaml
+  - /elements/item/sniper_rifle/sniper_rifle.element.yaml
 
 experimental_maps: []

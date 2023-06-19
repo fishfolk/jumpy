@@ -55,9 +55,30 @@ derive `Serialize` and `Deserialize`.
 
 See the [`metadata`] module for more details.
 
+#### Entity Hydration
+
+Throughout [`jumpy_core`][crate] you'll see `hydrate` functions. The goal of these functions is to
+take "stub entities" that have only some of the components that they need, and then "hydrate" them
+by adding all of the remaining components that they need to work properly.
+
+For example, the [`player_spawner`][crate::elements::player_spawner] spawns players by creating an
+entity with only a [`PlayerIdx`][crate::player::PlayerIdx] and
+[`Transform`][crate::prelude::Transform] component. This creates a "player stub" that is missing all
+kinds of important components such as the sprite, collisions, etc.
+
+Later the [`hydrate_players()`][crate::player] system will run, find all of the player stubs, and
+lookup from the [`PlayerIdx`][crate::player::PlayerIdx] what sprites need to be added, etc. before
+adding all the required components to the entity.
+
+This practice of hydrating entity stubs makes it much simpler to spawn different kinds of entities
+throughout the codebase, without needing to duplicate the much more complicated logic of adding all
+of that entities required components.
+
 ## 🚧 Work-in-Progress Bones Asset Handling Abstraction
 
-`bones_lib` is designed to be independent of Bevy, such that you could possibly make a renderer for any `bones_lib` core in any game engine you wanted, not just Bevy. This means that, ideally, `jumpy_core` would have no dependency on `bevy`, but right now that is not completely true.
+`bones_lib` is designed to be independent of Bevy, such that you could possibly make a renderer for
+any `bones_lib` core in any game engine you wanted, not just Bevy. This means that, ideally,
+`jumpy_core` would have no dependency on `bevy`, but right now that is not completely true.
 
 `bones_lib` is still working out how to implement it's own asset abstraction, and until it gets
 fully figured out, we do have a dependency on Bevy through the

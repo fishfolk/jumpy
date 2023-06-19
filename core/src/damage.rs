@@ -1,7 +1,10 @@
 //! Damage / kill regions.
+//!
+//! Any player that intersects a damage region will be killed.
 
 use crate::prelude::*;
 
+/// Install this module.
 pub fn install(session: &mut CoreSession) {
     session
         .stages

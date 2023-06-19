@@ -1,3 +1,5 @@
+//! Map randomizer using [Shiftnanigans](https://github.com/AustinHellerRepo/Shiftnanigans).
+
 use std::{cell::RefCell, rc::Rc};
 
 use super::MapConstructor;
@@ -11,6 +13,7 @@ use bones_lib::prelude::Handle;
 use glam::{UVec2, Vec2};
 use shiftnanigans::pixel_board::{pixel_board_randomizer::PixelBoardRandomizer, Pixel, PixelBoard};
 
+/// Map randomizer using [Shiftnanigans](https://github.com/AustinHellerRepo/Shiftnanigans).
 pub struct ShiftnanigansMapConstructor {
     pixel_board_randomizer: PixelBoardRandomizer<PixelType>,
     compressed_top_height: usize,

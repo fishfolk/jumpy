@@ -3,6 +3,7 @@
 use crate::prelude::*;
 use rapier2d::prelude as rapier;
 
+/// Install this module.
 pub fn install(session: &mut CoreSession) {
     session
         .stages
@@ -31,6 +32,8 @@ pub struct RapierDebugContext {
     debug_pipeline: rapier::DebugRenderPipeline,
 }
 
+/// An implementation of the rapier `DebugRenderingBackend` that we use to create bones `Path2d`
+/// entities with.
 struct RapierDebugBackend<'a> {
     points: &'a mut Vec<Vec2>,
     line_breaks: &'a mut Vec<usize>,
@@ -89,6 +92,7 @@ impl FromWorld for RapierDebugContext {
     }
 }
 
+/// Renders debug lines for rapier colliders.
 fn debug_render_colliders(
     settings: Res<DebugSettings>,
     mut collision_world: CollisionWorld,
@@ -130,6 +134,7 @@ fn debug_render_colliders(
     }
 }
 
+/// Renders debug lines for damage regions.
 fn debug_render_damage_regions(
     settings: Res<DebugSettings>,
     entities: Res<Entities>,
@@ -172,6 +177,7 @@ fn debug_render_damage_regions(
     }
 }
 
+/// Renders debug lines for emote regions.
 fn debug_render_emote_regions(
     settings: Res<DebugSettings>,
     entities: Res<Entities>,

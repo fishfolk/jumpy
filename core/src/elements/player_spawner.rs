@@ -45,16 +45,13 @@ fn hydrate(
 }
 
 fn update(
-    game_meta: Res<CoreMetaArc>,
     mut entities: ResMut<Entities>,
     mut current_spawner: ResMut<CurrentSpawner>,
     player_spawners: Comp<PlayerSpawner>,
     mut player_indexes: CompMut<PlayerIdx>,
     mut transforms: CompMut<Transform>,
     player_inputs: Res<PlayerInputs>,
-    mut invincibles: CompMut<Invincibility>,
     mut spawner_manager: SpawnerManager,
-    mut element_kill_callbacks: CompMut<ElementKillCallback>,
 ) {
     let alive_players = entities
         .iter_with(&player_indexes)
@@ -84,15 +81,6 @@ fn update(
             let player_ent = entities.create();
             player_indexes.insert(player_ent, PlayerIdx(i));
             transforms.insert(player_ent, Transform::from_translation(spawn_point));
-            invincibles.insert(
-                player_ent,
-                Invincibility::new(game_meta.config.respawn_invincibility_time),
-            );
-
-            element_kill_callbacks.insert(
-                player_ent,
-                ElementKillCallback::new(player_kill_callback(player_ent)),
-            );
 
             spawner_manager.insert_spawned_entity_into_grouped_spawner(
                 player_ent,
@@ -101,25 +89,4 @@ fn update(
             );
         }
     }
-}
-
-fn player_kill_callback(player_entity: Entity) -> System {
-    (move |mut entities: ResMut<Entities>,
-           attachments: Comp<Attachment>,
-           player_layers: Comp<PlayerLayers>| {
-        entities
-            .iter_with(&attachments)
-            .filter(|(_, attachment)| attachment.entity == player_entity)
-            .map(|(entity, _)| entity)
-            .collect::<Vec<_>>()
-            .iter()
-            .for_each(|entity| {
-                entities.kill(*entity);
-            });
-        let layers = player_layers.get(player_entity).unwrap();
-        entities.kill(layers.fin_ent);
-        entities.kill(layers.face_ent);
-        entities.kill(player_entity);
-    })
-    .system()
 }

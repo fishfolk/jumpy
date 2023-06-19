@@ -112,14 +112,18 @@ pub fn controls_settings_ui(
     let mut input_buttons = Vec::new();
 
     // Create input table
+    let width = ui.available_width();
+    let label_size = label_font.size * 7.0;
+    let remaining_width = width - label_size;
+    let cell_width = remaining_width / 3.0;
     egui_extras::TableBuilder::new(ui)
         .cell_layout(egui::Layout::centered_and_justified(
             egui::Direction::LeftToRight,
         ))
-        .column(Column::exact(label_font.size * 7.0))
-        .column(Column::remainder())
-        .column(Column::remainder())
-        .column(Column::remainder())
+        .column(Column::exact(label_size))
+        .column(Column::exact(cell_width))
+        .column(Column::exact(cell_width))
+        .column(Column::exact(cell_width))
         .header(bigger_font.size * 1.5, |mut row| {
             row.col(|ui| {
                 ui.themed_label(bigger_font, &params.localization.get("action"));

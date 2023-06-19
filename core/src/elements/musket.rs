@@ -122,6 +122,8 @@ fn update(
     mut items_used: CompMut<ItemUsed>,
     items_dropped: CompMut<ItemDropped>,
     time: Res<Time>,
+
+    mut bodies: CompMut<KinematicBody>,
 ) {
     for (entity, (musket, element_handle)) in entities.iter_with((&mut muskets, &element_handles)) {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -140,6 +142,7 @@ fn update(
             empty_shoot_sound,
             shoot_sound_volume,
             empty_shoot_sound_volume,
+            kickback,
             ..
         } = &element_meta.builtin else {
             unreachable!();
@@ -173,6 +176,10 @@ fn update(
 
                 let player_sprite = sprites.get_mut(player).unwrap();
                 let player_flip_x = player_sprite.flip_x;
+                let player_body = bodies.get_mut(player).unwrap();
+
+                //Set kickback
+                player_body.velocity.x = if player_flip_x { 1.0 } else { -1.0 } * kickback;
 
                 let mut shoot_animation_transform = *transforms.get(entity).unwrap();
                 shoot_animation_transform.translation.z += 1.0;

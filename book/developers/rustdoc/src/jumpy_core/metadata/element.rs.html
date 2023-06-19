@@ -406,6 +406,7 @@
 <a href="#310" id="310">310</a>
 <a href="#311" id="311">311</a>
 <a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -694,6 +695,7 @@
         <span class="attr">#[serde(with = <span class="string">&quot;humantime_serde&quot;</span>)]
         </span>cooldown: Duration,
         bullet_meta: Handle&lt;BulletMeta&gt;,
+        kickback: f32,
 
         shoot_fps: f32,
         shoot_lifetime: f32,

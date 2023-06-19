@@ -286,6 +286,7 @@ pub enum BuiltinElementKind {
         #[serde(with = "humantime_serde")]
         cooldown: Duration,
         bullet_meta: Handle<BulletMeta>,
+        kickback: f32,
 
         shoot_fps: f32,
         shoot_lifetime: f32,

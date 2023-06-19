@@ -23,3 +23,4 @@ builtin: !Musket
   angular_velocity: 0.1
   throw_velocity: 6
   grab_offset: [23, 0]
+  kickback: 0

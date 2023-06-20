@@ -1,5 +1,5 @@
 use super::*;
-use serde::{ser::SerializeStruct, Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct ColorMeta(pub Color);
@@ -21,13 +21,15 @@ impl Serialize for ColorMeta {
         S: serde::Serializer,
     {
         let [r, g, b, a] = self.0.as_rgba_f32();
+        let [r, g, b, a] = [
+            (r * 255.0) as u8,
+            (g * 255.0) as u8,
+            (b * 255.0) as u8,
+            (a * 255.0) as u8,
+        ];
+        let hex = format!("#{r:X}{g:X}{b:X}{a:X}");
 
-        let mut color = serializer.serialize_struct("Color", 4)?;
-        color.serialize_field("r", &r)?;
-        color.serialize_field("g", &g)?;
-        color.serialize_field("b", &b)?;
-        color.serialize_field("a", &a)?;
-        color.end()
+        serializer.serialize_str(&hex)
     }
 }
 

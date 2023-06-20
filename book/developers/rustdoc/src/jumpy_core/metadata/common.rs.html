@@ -149,8 +149,10 @@
 <a href="#53" id="53">53</a>
 <a href="#54" id="54">54</a>
 <a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
-<span class="kw">use </span>serde::{ser::SerializeStruct, Deserialize, Deserializer};
+<span class="kw">use </span>serde::{Deserialize, Deserializer};
 
 <span class="attr">#[derive(Clone, Copy, Debug, Default)]
 </span><span class="kw">pub struct </span>ColorMeta(<span class="kw">pub </span>Color);
@@ -172,13 +174,15 @@
         </span>S: serde::Serializer,
     {
         <span class="kw">let </span>[r, g, b, a] = <span class="self">self</span>.<span class="number">0</span>.as_rgba_f32();
+        <span class="kw">let </span>[r, g, b, a] = [
+            (r * <span class="number">255.0</span>) <span class="kw">as </span>u8,
+            (g * <span class="number">255.0</span>) <span class="kw">as </span>u8,
+            (b * <span class="number">255.0</span>) <span class="kw">as </span>u8,
+            (a * <span class="number">255.0</span>) <span class="kw">as </span>u8,
+        ];
+        <span class="kw">let </span>hex = <span class="macro">format!</span>(<span class="string">&quot;#{r:X}{g:X}{b:X}{a:X}&quot;</span>);
 
-        <span class="kw">let </span><span class="kw-2">mut </span>color = serializer.serialize_struct(<span class="string">&quot;Color&quot;</span>, <span class="number">4</span>)<span class="question-mark">?</span>;
-        color.serialize_field(<span class="string">&quot;r&quot;</span>, <span class="kw-2">&amp;</span>r)<span class="question-mark">?</span>;
-        color.serialize_field(<span class="string">&quot;g&quot;</span>, <span class="kw-2">&amp;</span>g)<span class="question-mark">?</span>;
-        color.serialize_field(<span class="string">&quot;b&quot;</span>, <span class="kw-2">&amp;</span>b)<span class="question-mark">?</span>;
-        color.serialize_field(<span class="string">&quot;a&quot;</span>, <span class="kw-2">&amp;</span>a)<span class="question-mark">?</span>;
-        color.end()
+        serializer.serialize_str(<span class="kw-2">&amp;</span>hex)
     }
 }
 

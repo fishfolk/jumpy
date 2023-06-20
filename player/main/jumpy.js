@@ -1820,12 +1820,8 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_setheight_6d295d03e1783969 = function(arg0, arg1) {
         getObject(arg0).height = arg1 >>> 0;
     };
-    imports.wbg.__wbindgen_closure_wrapper11620 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper11621 = function(arg0, arg1, arg2) {
         const ret = makeMutClosure(arg0, arg1, 1619, __wbg_adapter_34);
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbindgen_closure_wrapper23580 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 1619, __wbg_adapter_37);
         return addHeapObject(ret);
     };
     imports.wbg.__wbindgen_closure_wrapper23581 = function(arg0, arg1, arg2) {
@@ -1844,7 +1840,7 @@ function __wbg_get_imports() {
         const ret = makeMutClosure(arg0, arg1, 1619, __wbg_adapter_37);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper23586 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper23585 = function(arg0, arg1, arg2) {
         const ret = makeMutClosure(arg0, arg1, 1619, __wbg_adapter_37);
         return addHeapObject(ret);
     };
@@ -1856,11 +1852,15 @@ function __wbg_get_imports() {
         const ret = makeMutClosure(arg0, arg1, 1619, __wbg_adapter_37);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper23624 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper23589 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 1619, __wbg_adapter_37);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_closure_wrapper23625 = function(arg0, arg1, arg2) {
         const ret = makeMutClosure(arg0, arg1, 1619, __wbg_adapter_34);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper23795 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper23796 = function(arg0, arg1, arg2) {
         const ret = makeMutClosure(arg0, arg1, 1619, __wbg_adapter_37);
         return addHeapObject(ret);
     };

@@ -25,6 +25,10 @@ players:
   - /player/skins/sharky/sharky.player.yaml
   - /player/skins/orcy/orcy.player.yaml
 
+player_hats:
+  - /player/hats/pirate.hat.yaml
+  - /player/hats/straw.hat.yaml
+
 stable_maps:
   - /map/levels/level_1.map.yaml
   - /map/levels/level_2.map.yaml

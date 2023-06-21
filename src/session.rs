@@ -12,7 +12,7 @@
 
 use bevy::utils::Instant;
 use downcast_rs::{impl_downcast, Downcast};
-use jumpy_core::input::PlayerControl;
+use jumpy_core::input::{PlayerControl, PlayerInputs};
 
 use crate::{main_menu::MenuPage, prelude::*};
 
@@ -299,7 +299,13 @@ fn collect_local_input(
     }
 
     for (player_idx, action_state) in &player_input_collectors {
-        if player_idx.0 != 0 {
+        let is_ai = {
+            let world = &session.core_session().world;
+            let inputs = world.resource::<PlayerInputs>();
+            let inputs = inputs.borrow();
+            inputs.players[player_idx.0].is_ai
+        };
+        if (player_idx.0 != 0 && network_player_idx.is_some()) || is_ai {
             continue;
         }
 

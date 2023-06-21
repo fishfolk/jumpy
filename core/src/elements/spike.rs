@@ -25,7 +25,6 @@ fn hydrate(
     not_hydrated_bitset.bit_not();
     not_hydrated_bitset.bit_and(element_handles.bitset());
 
-    let mut new_spikes = Vec::new();
     for entity in entities.iter_with_bitset(&not_hydrated_bitset) {
         let element_handle = element_handles.get(entity).unwrap();
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -41,7 +40,6 @@ fn hydrate(
             ..
         } = &element_meta.builtin
         {
-            new_spikes.push(entity);
             hydrated.insert(entity, MapElementHydrated);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
             animated_sprites.insert(

@@ -125,15 +125,30 @@ pub fn update_attachments(
 #[derive(Clone, TypeUlid)]
 #[ulid = "01GQQSZS823YZS2RBAPFNBKB8B"]
 pub struct PlayerBodyAttachment {
-    /// The player to attach to
+    /// The player to attach to.
     pub player: Entity,
     /// The offset relative to the center of the player's sprite.
     pub offset: Vec3,
+    /// Whether the attachment should be to the head instead of the body ( i.e. like a hat ).
+    pub head: bool,
     /// Whether or not to automatically play the same animation bank animation as the sprite that it
     /// is attached to.
     pub sync_animation: bool,
     /// Whether or not to automatically sync the color of the attached entity with the player's
     pub sync_color: bool,
+}
+
+impl PlayerBodyAttachment {
+    /// Create a new body attachment to the given player.
+    pub fn new(player: Entity) -> Self {
+        Self {
+            player,
+            offset: Vec3::ZERO,
+            head: false,
+            sync_animation: true,
+            sync_color: true,
+        }
+    }
 }
 
 /// This is used by the [`update_player_body_attachments`] system internally.
@@ -166,8 +181,13 @@ fn update_player_body_attachments(
         let current_frame = player_sprite.index;
         let current_anim = animation_banks.get(player_ent).unwrap().current;
 
-        let current_body_offset =
-            meta.layers.body.animations.body_offsets[&current_anim][current_frame];
+        let current_body_offset = meta.layers.body.animations.offsets[&current_anim][current_frame]
+            .body
+            + if body_attachment.head {
+                meta.layers.body.animations.offsets[&current_anim][current_frame].head
+            } else {
+                Vec2::ZERO
+            };
 
         player_body_attachment_markers.insert(ent, HadPlayerBodyAttachmentMarker);
         attachments.insert(

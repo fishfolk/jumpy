@@ -140,7 +140,8 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                             let slot = &params.player_select_state.slots[i];
                                             if slot.active {
                                                 player_info[i] = Some(GameSessionPlayerInfo {
-                                                    handle: slot.selected_player.clone(),
+                                                    player: slot.selected_player.clone(),
+                                                    hat: slot.selected_hat.clone(),
                                                     is_ai: slot.is_ai,
                                                 });
                                             }
@@ -227,7 +228,8 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                                 let slot = &params.player_select_state.slots[i];
                                                 if slot.active {
                                                     player_info[i] = Some(GameSessionPlayerInfo {
-                                                        handle: slot.selected_player.clone(),
+                                                        player: slot.selected_player.clone(),
+                                                        hat: slot.selected_hat.clone(),
                                                         is_ai: slot.is_ai,
                                                     });
                                                 }
@@ -281,7 +283,8 @@ fn handle_match_setup_messages(params: &mut MapSelectMenu) {
                             let slot = &params.player_select_state.slots[i];
                             if slot.active {
                                 player_info[i] = Some(GameSessionPlayerInfo {
-                                    handle: slot.selected_player.clone(),
+                                    player: slot.selected_player.clone(),
+                                    hat: slot.selected_hat.clone(),
                                     is_ai: slot.is_ai,
                                 });
                             }

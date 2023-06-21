@@ -11,7 +11,6 @@ use leafwing_input_manager::{
 
 use crate::{
     editor::{MapTilesetEguiTextureinfo, MapTilesetEguiTextures},
-    main_menu::player_select::PlayerAtlasEguiTextures,
     prelude::*,
 };
 
@@ -127,6 +126,12 @@ fn setup(mut commands: Commands) {
     ));
 }
 
+/// Resource containing mappings of asset paths to their egui textures.
+///
+/// This is populated during the game load.
+#[derive(Resource)]
+pub struct AtlasEguiTextures(pub HashMap<bones::AssetPath, egui::TextureId>);
+
 /// System param used to load and hot reload the game.
 #[derive(SystemParam)]
 pub struct GameLoader<'w, 's> {
@@ -139,6 +144,7 @@ pub struct GameLoader<'w, 's> {
     // active_scripts: ResMut<'w, ActiveScripts>,
     storage: ResMut<'w, Storage>,
     player_assets: ResMut<'w, Assets<PlayerMeta>>,
+    hat_assets: ResMut<'w, Assets<HatMeta>>,
     texture_atlas_assets: Res<'w, Assets<TextureAtlas>>,
     egui_ctx: EguiContexts<'w, 's>,
 }
@@ -295,7 +301,19 @@ impl<'w, 's> GameLoader<'w, 's> {
                 player_atlas_egui_textures.insert(path, egui_texture);
             }
         }
-        commands.insert_resource(PlayerAtlasEguiTextures(player_atlas_egui_textures));
+        // Load player hat atlase egui handles
+        for hat_handle in &core.player_hats {
+            let hat_meta = self.hat_assets.get(&hat_handle.get_bevy_handle()).unwrap();
+            let path = hat_meta.atlas.path.clone();
+            let texture_atlas = self
+                .texture_atlas_assets
+                .get(&hat_meta.atlas.get_bevy_handle_untyped().typed())
+                .unwrap();
+            let egui_texture = egui_ctx.add_image(texture_atlas.texture.clone_weak());
+
+            player_atlas_egui_textures.insert(path, egui_texture);
+        }
+        commands.insert_resource(AtlasEguiTextures(player_atlas_egui_textures));
 
         // load map tileset egui handles
         let mut map_tileset_egui_textures = HashMap::default();

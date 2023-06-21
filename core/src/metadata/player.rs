@@ -33,8 +33,14 @@ pub struct PlayerBodyLayerMeta {
 
 #[derive(Clone, Debug, Default)]
 pub struct BodyAnimationsMeta {
-    pub body_offsets: Arc<std::collections::HashMap<Key, Vec<Vec2>>>,
+    pub offsets: Arc<std::collections::HashMap<Key, Vec<Offsets>>>,
     pub frames: Arc<std::collections::HashMap<Key, AnimatedSprite>>,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Offsets {
+    pub body: Vec2,
+    pub head: Vec2,
 }
 
 #[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
@@ -118,15 +124,28 @@ fn deserialize_body_animations<'de, D: Deserializer<'de>>(
         pub idx: usize,
         #[serde(default)]
         pub offset: Vec2,
+        #[serde(default)]
+        pub head_offset: Vec2,
     }
 
     let body_sprite_anmations =
         <std::collections::HashMap<Key, AnimatedBodySprite>>::deserialize(deserializer)?;
 
-    let body_offsets = Arc::new(
+    let offsets = Arc::new(
         body_sprite_anmations
             .iter()
-            .map(|(k, v)| (*k, v.frames.iter().map(|x| x.offset).collect::<Vec<_>>()))
+            .map(|(k, v)| {
+                (
+                    *k,
+                    v.frames
+                        .iter()
+                        .map(|x| Offsets {
+                            body: x.offset,
+                            head: x.head_offset,
+                        })
+                        .collect::<Vec<_>>(),
+                )
+            })
             .collect(),
     );
     let frames = Arc::new(
@@ -147,8 +166,17 @@ fn deserialize_body_animations<'de, D: Deserializer<'de>>(
             .collect(),
     );
 
-    Ok(BodyAnimationsMeta {
-        body_offsets,
-        frames,
-    })
+    Ok(BodyAnimationsMeta { offsets, frames })
+}
+
+/// Metadata for a player hat.
+#[derive(BonesBevyAsset, Clone, Debug, Default, Deserialize, TypeUlid)]
+#[serde(deny_unknown_fields)]
+#[asset_id = "hat"]
+#[ulid = "01H3D0EKZAV13T8QXW6SY6S1PP"]
+pub struct HatMeta {
+    pub name: String,
+    pub atlas: Handle<Atlas>,
+    pub offset: Vec2,
+    pub body_size: Vec2,
 }

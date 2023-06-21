@@ -76,7 +76,9 @@ pub struct CoreSessionInfo {
 #[derive(Debug, Clone)]
 pub struct GameSessionPlayerInfo {
     /// The asset handle for the player skin.
-    pub handle: Handle<PlayerMeta>,
+    pub player: Handle<PlayerMeta>,
+    /// The hat the player selected, if any.
+    pub hat: Option<Handle<HatMeta>>,
     /// Whether or not the player is an AI player.
     pub is_ai: bool,
 }
@@ -116,7 +118,8 @@ impl CoreSession {
         for i in 0..MAX_PLAYERS {
             if let Some(info) = info.player_info[i].take() {
                 player_inputs.players[i].active = true;
-                player_inputs.players[i].selected_player = info.handle;
+                player_inputs.players[i].selected_player = info.player;
+                player_inputs.players[i].selected_hat = info.hat;
                 player_inputs.players[i].is_ai = info.is_ai;
             }
         }

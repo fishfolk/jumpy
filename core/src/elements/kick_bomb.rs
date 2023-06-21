@@ -227,6 +227,7 @@ fn update_lit_kick_bombs(
                     player,
                     sync_color: false,
                     sync_animation: false,
+                    head: false,
                     offset: grab_offset.extend(1.0),
                 },
             );

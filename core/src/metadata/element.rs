@@ -310,4 +310,11 @@ pub enum BuiltinElementKind {
         player_slide: f32,
         body_friction: f32,
     },
+    Spike {
+        atlas: Handle<Atlas>,
+        body_size: Vec2,
+        start_frame: usize,
+        end_frame: usize,
+        fps: f32,
+    },
 }

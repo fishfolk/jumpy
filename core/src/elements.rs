@@ -23,6 +23,7 @@ pub mod player_spawner;
 pub mod slippery;
 pub mod slippery_seaweed;
 pub mod snail;
+pub mod spike;
 pub mod sproinger;
 pub mod stomp_boots;
 pub mod sword;
@@ -247,6 +248,7 @@ pub fn install(session: &mut CoreSession) {
     crate_item::install(session);
     slippery_seaweed::install(session);
     slippery::install(session);
+    spike::install(session);
 }
 
 fn handle_out_of_bounds_items(

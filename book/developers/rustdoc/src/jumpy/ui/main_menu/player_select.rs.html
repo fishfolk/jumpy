@@ -843,6 +843,53 @@
 <a href="#747" id="747">747</a>
 <a href="#748" id="748">748</a>
 <a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a>
+<a href="#753" id="753">753</a>
+<a href="#754" id="754">754</a>
+<a href="#755" id="755">755</a>
+<a href="#756" id="756">756</a>
+<a href="#757" id="757">757</a>
+<a href="#758" id="758">758</a>
+<a href="#759" id="759">759</a>
+<a href="#760" id="760">760</a>
+<a href="#761" id="761">761</a>
+<a href="#762" id="762">762</a>
+<a href="#763" id="763">763</a>
+<a href="#764" id="764">764</a>
+<a href="#765" id="765">765</a>
+<a href="#766" id="766">766</a>
+<a href="#767" id="767">767</a>
+<a href="#768" id="768">768</a>
+<a href="#769" id="769">769</a>
+<a href="#770" id="770">770</a>
+<a href="#771" id="771">771</a>
+<a href="#772" id="772">772</a>
+<a href="#773" id="773">773</a>
+<a href="#774" id="774">774</a>
+<a href="#775" id="775">775</a>
+<a href="#776" id="776">776</a>
+<a href="#777" id="777">777</a>
+<a href="#778" id="778">778</a>
+<a href="#779" id="779">779</a>
+<a href="#780" id="780">780</a>
+<a href="#781" id="781">781</a>
+<a href="#782" id="782">782</a>
+<a href="#783" id="783">783</a>
+<a href="#784" id="784">784</a>
+<a href="#785" id="785">785</a>
+<a href="#786" id="786">786</a>
+<a href="#787" id="787">787</a>
+<a href="#788" id="788">788</a>
+<a href="#789" id="789">789</a>
+<a href="#790" id="790">790</a>
+<a href="#791" id="791">791</a>
+<a href="#792" id="792">792</a>
+<a href="#793" id="793">793</a>
+<a href="#794" id="794">794</a>
+<a href="#795" id="795">795</a>
+<a href="#796" id="796">796</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::loading::PlayerInputCollector;
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 </span><span class="kw">use </span><span class="kw">crate</span>::networking::{NetworkMatchSocket, SocketTarget};
@@ -865,6 +912,7 @@
     <span class="kw">pub </span>active: bool,
     <span class="kw">pub </span>confirmed: bool,
     <span class="kw">pub </span>selected_player: bones::Handle&lt;PlayerMeta&gt;,
+    <span class="kw">pub </span>selected_hat: <span class="prelude-ty">Option</span>&lt;bones::Handle&lt;HatMeta&gt;&gt;,
     <span class="kw">pub </span>is_ai: bool,
 }
 
@@ -872,6 +920,7 @@
 </span><span class="attr">#[derive(Serialize, Deserialize)]
 </span><span class="kw">pub enum </span>PlayerSelectMessage {
     SelectPlayer(bones::Handle&lt;PlayerMeta&gt;),
+    SelectHat(<span class="prelude-ty">Option</span>&lt;bones::Handle&lt;HatMeta&gt;&gt;),
     ConfirmSelection(bool),
 }
 
@@ -1045,10 +1094,13 @@
             <span class="kw">match </span>postcard::from_bytes::&lt;PlayerSelectMessage&gt;(<span class="kw-2">&amp;</span>data) {
                 <span class="prelude-val">Ok</span>(message) =&gt; <span class="kw">match </span>message {
                     PlayerSelectMessage::SelectPlayer(player_handle) =&gt; {
-                        params.player_select_state.slots[player].selected_player = player_handle
+                        params.player_select_state.slots[player].selected_player = player_handle;
                     }
                     PlayerSelectMessage::ConfirmSelection(confirmed) =&gt; {
                         params.player_select_state.slots[player].confirmed = confirmed;
+                    }
+                    PlayerSelectMessage::SelectHat(hat) =&gt; {
+                        params.player_select_state.slots[player].selected_hat = hat;
                     }
                 },
                 <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(<span class="string">&quot;Ignoring network message that was not understood: {e}&quot;</span>),
@@ -1118,9 +1170,10 @@
     core: Res&lt;<span class="lifetime">&#39;w</span>, CoreMetaArc&gt;,
     localization: Res&lt;<span class="lifetime">&#39;w</span>, Localization&gt;,
     player_meta_assets: Res&lt;<span class="lifetime">&#39;w</span>, Assets&lt;PlayerMeta&gt;&gt;,
+    hat_assets: Res&lt;<span class="lifetime">&#39;w</span>, Assets&lt;HatMeta&gt;&gt;,
     player_select_state: ResMut&lt;<span class="lifetime">&#39;w</span>, PlayerSelectState&gt;,
     atlas_meta_assets: Res&lt;<span class="lifetime">&#39;w</span>, Assets&lt;TextureAtlas&gt;&gt;,
-    player_atlas_egui_textures: Res&lt;<span class="lifetime">&#39;w</span>, PlayerAtlasEguiTextures&gt;,
+    player_atlas_egui_textures: Res&lt;<span class="lifetime">&#39;w</span>, AtlasEguiTextures&gt;,
     players: Query&lt;
         <span class="lifetime">&#39;w</span>,
         <span class="lifetime">&#39;s</span>,
@@ -1205,6 +1258,7 @@
         }
 
         <span class="kw">let </span>player_handle = <span class="kw-2">&amp;mut </span>slot.selected_player;
+        <span class="kw">let </span>player_hat = <span class="kw-2">&amp;mut </span>slot.selected_hat;
 
         <span class="comment">// If the handle is empty
         </span><span class="kw">if </span>player_handle.path == default() {
@@ -1250,49 +1304,91 @@
                         .unwrap(),
                 );
             }
-        } <span class="kw">else if </span>player_actions.just_pressed(PlayerAction::Move) &amp;&amp; !slot.confirmed {
+        } <span class="kw">else if </span>player_actions.just_pressed(PlayerAction::Move) {
             <span class="kw">let </span>direction = player_actions
                 .clamped_axis_pair(PlayerAction::Move)
                 .unwrap();
 
-            <span class="kw">let </span>current_player_handle_idx = params
-                .core
-                .players
-                .iter()
-                .enumerate()
-                .find(|(<span class="kw">_</span>, handle)| handle.path == player_handle.path)
-                .map(|(i, <span class="kw">_</span>)| i)
-                .unwrap_or(<span class="number">0</span>);
+            <span class="comment">// Select a hat if the player has been confirmed
+            </span><span class="kw">if </span>slot.confirmed {
+                <span class="kw">let </span>current_hat_handle_idx = player_hat.as_ref().map(|player_hat| {
+                    params
+                        .core
+                        .player_hats
+                        .iter()
+                        .enumerate()
+                        .find(|(<span class="kw">_</span>, handle)| handle.path == player_hat.path)
+                        .map(|(i, <span class="kw">_</span>)| i)
+                        .unwrap_or(<span class="number">0</span>)
+                });
 
-            <span class="kw">if </span>direction.x() &gt; <span class="number">0.0 </span>{
-                <span class="kw-2">*</span>player_handle = params
+                <span class="kw">let </span>next_idx = <span class="kw">if </span>direction.x() &gt; <span class="number">0.0 </span>{
+                    current_hat_handle_idx
+                        .map(|x| {
+                            <span class="kw">if </span>x &lt; params.core.player_hats.len() - <span class="number">1 </span>{
+                                <span class="prelude-val">Some</span>(x + <span class="number">1</span>)
+                            } <span class="kw">else </span>{
+                                <span class="prelude-val">None
+                            </span>}
+                        })
+                        .unwrap_or(<span class="prelude-val">Some</span>(<span class="number">0</span>))
+                } <span class="kw">else </span>{
+                    current_hat_handle_idx
+                        .map(|x| <span class="kw">if </span>x == <span class="number">0 </span>{ <span class="prelude-val">None </span>} <span class="kw">else </span>{ <span class="prelude-val">Some</span>(x - <span class="number">1</span>) })
+                        .unwrap_or(<span class="prelude-val">Some</span>(params.core.player_hats.len() - <span class="number">1</span>))
+                };
+                <span class="kw-2">*</span>player_hat = next_idx.map(|idx| params.core.player_hats.get(idx).unwrap().clone());
+
+                <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+                    socket.send_reliable(
+                        SocketTarget::All,
+                        <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::SelectHat(player_hat.clone()))
+                            .unwrap(),
+                    );
+                }
+
+            <span class="comment">// Adjust the player if the player has not be confirmed
+            </span>} <span class="kw">else </span>{
+                <span class="kw">let </span>current_player_handle_idx = params
                     .core
                     .players
-                    .get(current_player_handle_idx + <span class="number">1</span>)
-                    .cloned()
-                    .unwrap_or_else(|| params.core.players[<span class="number">0</span>].clone());
-            } <span class="kw">else if </span>direction.x() &lt;= <span class="number">0.0 </span>{
-                <span class="kw">if </span>current_player_handle_idx &gt; <span class="number">0 </span>{
+                    .iter()
+                    .enumerate()
+                    .find(|(<span class="kw">_</span>, handle)| handle.path == player_handle.path)
+                    .map(|(i, <span class="kw">_</span>)| i)
+                    .unwrap_or(<span class="number">0</span>);
+
+                <span class="kw">if </span>direction.x() &gt; <span class="number">0.0 </span>{
                     <span class="kw-2">*</span>player_handle = params
                         .core
                         .players
-                        .get(current_player_handle_idx - <span class="number">1</span>)
+                        .get(current_player_handle_idx + <span class="number">1</span>)
                         .cloned()
-                        .unwrap();
-                } <span class="kw">else </span>{
-                    <span class="kw-2">*</span>player_handle = params.core.players.iter().last().unwrap().clone();
+                        .unwrap_or_else(|| params.core.players[<span class="number">0</span>].clone());
+                } <span class="kw">else if </span>direction.x() &lt;= <span class="number">0.0 </span>{
+                    <span class="kw">if </span>current_player_handle_idx &gt; <span class="number">0 </span>{
+                        <span class="kw-2">*</span>player_handle = params
+                            .core
+                            .players
+                            .get(current_player_handle_idx - <span class="number">1</span>)
+                            .cloned()
+                            .unwrap();
+                    } <span class="kw">else </span>{
+                        <span class="kw-2">*</span>player_handle = params.core.players.iter().last().unwrap().clone();
+                    }
                 }
-            }
 
-            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
-                socket.send_reliable(
-                    SocketTarget::All,
-                    <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::SelectPlayer(
-                        player_handle.clone(),
-                    ))
-                    .unwrap(),
-                );
+                <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = <span class="kw-2">&amp;</span>params.network_socket {
+                    socket.send_reliable(
+                        SocketTarget::All,
+                        <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::SelectPlayer(
+                            player_handle.clone(),
+                        ))
+                        .unwrap(),
+                    );
+                }
             }
         }
 
@@ -1303,6 +1399,7 @@
                 ui.set_height(ui.available_height());
 
                 <span class="kw">let </span>normal_font = <span class="kw-2">&amp;</span>params.game.ui_theme.font_styles.normal;
+                <span class="kw">let </span>smaller_font = <span class="kw-2">&amp;</span>params.game.ui_theme.font_styles.smaller;
                 <span class="kw">let </span>heading_font = <span class="kw-2">&amp;</span>params.game.ui_theme.font_styles.heading;
 
                 <span class="comment">// Marker for current player in online matches
@@ -1323,9 +1420,13 @@
 
                 <span class="kw">if </span>slot.active {
                     ui.vertical_centered(|ui| {
-                        <span class="kw">let </span><span class="prelude-val">Some</span>(player_meta) = params
+                        <span class="kw">let </span>player_meta = params
                             .player_meta_assets
-                            .get(<span class="kw-2">&amp;</span>player_handle.get_bevy_handle()) <span class="kw">else </span>{ <span class="kw">return</span>; };
+                            .get(<span class="kw-2">&amp;</span>player_handle.get_bevy_handle())
+                            .unwrap();
+                        <span class="kw">let </span>hat_meta = player_hat.as_ref().map(|handle| {
+                            params.hat_assets.get(<span class="kw-2">&amp;</span>handle.get_bevy_handle()).unwrap()
+                        });
 
                         ui.themed_label(normal_font, <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;pick-a-fish&quot;</span>));
 
@@ -1399,10 +1500,20 @@
                                     <span class="kw-2">&amp;</span>name_with_arrows
                                 },
                             );
+                            <span class="kw">let </span>hat_label = <span class="kw">if let </span><span class="prelude-val">Some</span>(hat_meta) = hat_meta {
+                                <span class="macro">format!</span>(<span class="string">&quot;&lt; {} &gt;&quot;</span>, hat_meta.name)
+                            } <span class="kw">else </span>{
+                                <span class="macro">format!</span>(<span class="string">&quot;&lt; {} &gt;&quot;</span>, params.localization.get(<span class="string">&quot;no-hat&quot;</span>))
+                            };
+                            ui.themed_label(
+                                smaller_font,
+                                <span class="kw">if </span>slot.confirmed { <span class="kw-2">&amp;</span>hat_label } <span class="kw">else </span>{ <span class="string">&quot;&quot; </span>},
+                            );
 
                             player_image(
                                 ui,
                                 player_meta,
+                                hat_meta,
                                 <span class="kw-2">&amp;</span>params.atlas_meta_assets,
                                 <span class="kw-2">&amp;</span>params.player_atlas_egui_textures,
                             );
@@ -1444,14 +1555,12 @@
     }
 }
 
-<span class="attr">#[derive(Resource)]
-</span><span class="kw">pub struct </span>PlayerAtlasEguiTextures(<span class="kw">pub </span>HashMap&lt;bones::AssetPath, egui::TextureId&gt;);
-
 <span class="kw">fn </span>player_image(
     ui: <span class="kw-2">&amp;mut </span>egui::Ui,
     player_meta: <span class="kw-2">&amp;</span>PlayerMeta,
+    hat_meta: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>HatMeta&gt;,
     atlas_assets: <span class="kw-2">&amp;</span>Assets&lt;TextureAtlas&gt;,
-    egui_textures: <span class="kw-2">&amp;</span>PlayerAtlasEguiTextures,
+    egui_textures: <span class="kw-2">&amp;</span>AtlasEguiTextures,
 ) {
     <span class="kw">let </span>time = ui.ctx().input(|i| i.time <span class="kw">as </span>f32);
     <span class="kw">let </span>width = ui.available_width();
@@ -1481,7 +1590,7 @@
         <span class="kw">let </span>frame_in_sheet_idx = anim_clip.frames[frame_in_clip_idx];
         <span class="kw">let </span>sprite_rect = <span class="kw-2">&amp;</span>atlas.textures[frame_in_sheet_idx];
         body_offset =
-            player_meta.layers.body.animations.body_offsets[<span class="kw-2">&amp;</span><span class="macro">key!</span>(<span class="string">&quot;idle&quot;</span>)][frame_in_clip_idx];
+            player_meta.layers.body.animations.offsets[<span class="kw-2">&amp;</span><span class="macro">key!</span>(<span class="string">&quot;idle&quot;</span>)][frame_in_clip_idx].body;
 
         <span class="kw">let </span>sprite_aspect = sprite_rect.height() / sprite_rect.width();
         <span class="kw">let </span>height = sprite_aspect * width;
@@ -1508,19 +1617,14 @@
         body_scale = width / sprite_rect.size().x;
     }
 
-    <span class="comment">// Render the fin animation
-    </span>{
-        <span class="kw">let </span>atlas_handle = <span class="kw-2">&amp;</span>player_meta.layers.fin.atlas;
+    <span class="comment">// Render the fin &amp; face animation
+    </span><span class="kw">for </span>layer <span class="kw">in </span>[<span class="kw-2">&amp;</span>player_meta.layers.fin, <span class="kw-2">&amp;</span>player_meta.layers.face] {
+        <span class="kw">let </span>atlas_handle = <span class="kw-2">&amp;</span>layer.atlas;
         <span class="kw">let </span>atlas = atlas_assets
             .get(<span class="kw-2">&amp;</span>atlas_handle.get_bevy_handle_untyped().typed())
             .unwrap();
         <span class="kw">let </span>atlas_path = <span class="kw-2">&amp;</span>atlas_handle.path;
-        <span class="kw">let </span>anim_clip = player_meta
-            .layers
-            .fin
-            .animations
-            .get(<span class="kw-2">&amp;</span><span class="macro">key!</span>(<span class="string">&quot;idle&quot;</span>))
-            .unwrap();
+        <span class="kw">let </span>anim_clip = layer.animations.get(<span class="kw-2">&amp;</span><span class="macro">key!</span>(<span class="string">&quot;idle&quot;</span>)).unwrap();
         <span class="kw">let </span>fps = anim_clip.fps;
         <span class="kw">let </span>frame_in_time_idx = (time * fps).round() <span class="kw">as </span>usize;
         <span class="kw">let </span>frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
@@ -1540,7 +1644,7 @@
         };
 
         <span class="kw">let </span>sprite_size = sprite_rect.size() * body_scale;
-        <span class="kw">let </span>offset = (player_meta.layers.fin.offset + body_offset) * body_scale;
+        <span class="kw">let </span>offset = (layer.offset + body_offset) * body_scale;
         <span class="kw">let </span>rect = egui::Rect::from_center_size(
             body_rect.center() + egui::vec2(offset.x, -offset.y + y_offset),
             egui::vec2(sprite_size.x, sprite_size.y),
@@ -1550,24 +1654,14 @@
         ui.painter().add(mesh);
     }
 
-    <span class="comment">// Render face animation
-    </span>{
-        <span class="kw">let </span>atlas_handle = <span class="kw-2">&amp;</span>player_meta.layers.face.atlas;
+    <span class="comment">// Render the player hat
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(hat_meta) = hat_meta {
+        <span class="kw">let </span>atlas_handle = <span class="kw-2">&amp;</span>hat_meta.atlas;
         <span class="kw">let </span>atlas = atlas_assets
             .get(<span class="kw-2">&amp;</span>atlas_handle.get_bevy_handle_untyped().typed())
             .unwrap();
         <span class="kw">let </span>atlas_path = <span class="kw-2">&amp;</span>atlas_handle.path;
-        <span class="kw">let </span>anim_clip = player_meta
-            .layers
-            .face
-            .animations
-            .get(<span class="kw-2">&amp;</span><span class="macro">key!</span>(<span class="string">&quot;idle&quot;</span>))
-            .unwrap();
-        <span class="kw">let </span>fps = anim_clip.fps;
-        <span class="kw">let </span>frame_in_time_idx = (time * fps).round() <span class="kw">as </span>usize;
-        <span class="kw">let </span>frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
-        <span class="kw">let </span>frame_in_sheet_idx = anim_clip.frames[frame_in_clip_idx];
-        <span class="kw">let </span>sprite_rect = <span class="kw-2">&amp;</span>atlas.textures[frame_in_sheet_idx];
+        <span class="kw">let </span>sprite_rect = <span class="kw-2">&amp;</span>atlas.textures[<span class="number">0</span>];
 
         <span class="kw">let </span>uv_min = sprite_rect.min / atlas.size;
         <span class="kw">let </span>uv_max = sprite_rect.max / atlas.size;
@@ -1582,7 +1676,7 @@
         };
 
         <span class="kw">let </span>sprite_size = sprite_rect.size() * body_scale;
-        <span class="kw">let </span>offset = (player_meta.layers.face.offset + body_offset) * body_scale;
+        <span class="kw">let </span>offset = (hat_meta.offset + body_offset) * body_scale;
         <span class="kw">let </span>rect = egui::Rect::from_center_size(
             body_rect.center() + egui::vec2(offset.x, -offset.y + y_offset),
             egui::vec2(sprite_size.x, sprite_size.y),

@@ -381,11 +381,21 @@
 <a href="#285" id="285">285</a>
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Common item code.
 //!
 //! An item is anything in the game that can be picked up by the player.
 
-</span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::prelude::{player_spawner::PlayerSpawner, <span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     session
@@ -518,6 +528,7 @@
                     player,
                     sync_animation,
                     sync_color: <span class="bool-val">false</span>,
+                    head: <span class="bool-val">false</span>,
                     offset: grab_offset.extend(PlayerLayers::FIN_Z_OFFSET / <span class="number">2.0</span>),
                 },
             );
@@ -627,6 +638,7 @@
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     item_spawners: Comp&lt;DehydrateOutOfBounds&gt;,
     map_layers: Comp&lt;SpawnedMapLayerMeta&gt;,
+    player_spawnwers: Comp&lt;PlayerSpawner&gt;,
     <span class="kw-2">mut </span>commands: Commands,
 ) {
     <span class="kw">for </span>(entity, (_items, item_throw, body, transform)) <span class="kw">in
@@ -655,9 +667,17 @@
                     .control,
             );
 
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(item_spawner) = item_spawners.get(entity) {
+            <span class="comment">// Use the item&#39;s spawner depth as the drop depth
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item_spawner) = item_spawners.get(entity) {
                 <span class="kw">let </span>map_layer = map_layers.get(item_spawner.<span class="number">0</span>).unwrap();
                 transform.translation.z = z_depth_for_map_layer(map_layer.layer_idx);
+            } <span class="kw">else </span>{
+                <span class="comment">// Grab a random player spawner and use that for the z depth
+                </span><span class="kw">let </span>(<span class="kw">_</span>, (<span class="kw">_</span>, layer)) = entities
+                    .iter_with((<span class="kw-2">&amp;</span>player_spawnwers, <span class="kw-2">&amp;</span>map_layers))
+                    .next()
+                    .unwrap();
+                transform.translation.z = z_depth_for_map_layer(layer.layer_idx);
             }
 
             body.velocity = throw_velocity * horizontal_flip_factor;

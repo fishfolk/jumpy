@@ -407,6 +407,9 @@
 <a href="#311" id="311">311</a>
 <a href="#312" id="312">312</a>
 <a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{editor::UserMapStorage, ui::pause_menu::PauseMenuPage};
 
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
@@ -549,7 +552,8 @@
                                             <span class="kw">let </span>slot = <span class="kw-2">&amp;</span>params.player_select_state.slots[i];
                                             <span class="kw">if </span>slot.active {
                                                 player_info[i] = <span class="prelude-val">Some</span>(GameSessionPlayerInfo {
-                                                    handle: slot.selected_player.clone(),
+                                                    player: slot.selected_player.clone(),
+                                                    hat: slot.selected_hat.clone(),
                                                     is_ai: slot.is_ai,
                                                 });
                                             }
@@ -636,7 +640,8 @@
                                                 <span class="kw">let </span>slot = <span class="kw-2">&amp;</span>params.player_select_state.slots[i];
                                                 <span class="kw">if </span>slot.active {
                                                     player_info[i] = <span class="prelude-val">Some</span>(GameSessionPlayerInfo {
-                                                        handle: slot.selected_player.clone(),
+                                                        player: slot.selected_player.clone(),
+                                                        hat: slot.selected_hat.clone(),
                                                         is_ai: slot.is_ai,
                                                     });
                                                 }
@@ -690,7 +695,8 @@
                             <span class="kw">let </span>slot = <span class="kw-2">&amp;</span>params.player_select_state.slots[i];
                             <span class="kw">if </span>slot.active {
                                 player_info[i] = <span class="prelude-val">Some</span>(GameSessionPlayerInfo {
-                                    handle: slot.selected_player.clone(),
+                                    player: slot.selected_player.clone(),
+                                    hat: slot.selected_hat.clone(),
                                     is_ai: slot.is_ai,
                                 });
                             }

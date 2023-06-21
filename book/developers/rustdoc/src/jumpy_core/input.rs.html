@@ -271,8 +271,8 @@
 </span><span class="kw">pub struct </span>PlayerInput {
     <span class="doccomment">/// The player is currently &quot;connected&quot; and actively providing input.
     </span><span class="kw">pub </span>active: bool,
-    <span class="doccomment">/// This may be a null handle if a player hasn&#39;t been selected yet
-    </span><span class="kw">pub </span>selected_player: Handle&lt;PlayerMeta&gt;,
+    <span class="kw">pub </span>selected_player: Handle&lt;PlayerMeta&gt;,
+    <span class="kw">pub </span>selected_hat: <span class="prelude-ty">Option</span>&lt;Handle&lt;HatMeta&gt;&gt;,
     <span class="doccomment">/// The player control input
     </span><span class="kw">pub </span>control: PlayerControl,
     <span class="doccomment">/// The player control input from the last fixed update

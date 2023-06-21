@@ -248,6 +248,34 @@
 <a href="#152" id="152">152</a>
 <a href="#153" id="153">153</a>
 <a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(BonesBevyAsset, Clone, Debug, Default, Deserialize, TypeUlid)]
@@ -283,8 +311,14 @@
 
 <span class="attr">#[derive(Clone, Debug, Default)]
 </span><span class="kw">pub struct </span>BodyAnimationsMeta {
-    <span class="kw">pub </span>body_offsets: Arc&lt;std::collections::HashMap&lt;Key, Vec&lt;Vec2&gt;&gt;&gt;,
+    <span class="kw">pub </span>offsets: Arc&lt;std::collections::HashMap&lt;Key, Vec&lt;Offsets&gt;&gt;&gt;,
     <span class="kw">pub </span>frames: Arc&lt;std::collections::HashMap&lt;Key, AnimatedSprite&gt;&gt;,
+}
+
+<span class="attr">#[derive(Clone, Debug, Default)]
+</span><span class="kw">pub struct </span>Offsets {
+    <span class="kw">pub </span>body: Vec2,
+    <span class="kw">pub </span>head: Vec2,
 }
 
 <span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
@@ -368,15 +402,28 @@
         <span class="kw">pub </span>idx: usize,
         <span class="attr">#[serde(default)]
         </span><span class="kw">pub </span>offset: Vec2,
+        <span class="attr">#[serde(default)]
+        </span><span class="kw">pub </span>head_offset: Vec2,
     }
 
     <span class="kw">let </span>body_sprite_anmations =
         &lt;std::collections::HashMap&lt;Key, AnimatedBodySprite&gt;&gt;::deserialize(deserializer)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>body_offsets = Arc::new(
+    <span class="kw">let </span>offsets = Arc::new(
         body_sprite_anmations
             .iter()
-            .map(|(k, v)| (<span class="kw-2">*</span>k, v.frames.iter().map(|x| x.offset).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()))
+            .map(|(k, v)| {
+                (
+                    <span class="kw-2">*</span>k,
+                    v.frames
+                        .iter()
+                        .map(|x| Offsets {
+                            body: x.offset,
+                            head: x.head_offset,
+                        })
+                        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+                )
+            })
             .collect(),
     );
     <span class="kw">let </span>frames = Arc::new(
@@ -397,10 +444,19 @@
             .collect(),
     );
 
-    <span class="prelude-val">Ok</span>(BodyAnimationsMeta {
-        body_offsets,
-        frames,
-    })
+    <span class="prelude-val">Ok</span>(BodyAnimationsMeta { offsets, frames })
+}
+
+<span class="doccomment">/// Metadata for a player hat.
+</span><span class="attr">#[derive(BonesBevyAsset, Clone, Debug, Default, Deserialize, TypeUlid)]
+#[serde(deny_unknown_fields)]
+#[asset_id = <span class="string">&quot;hat&quot;</span>]
+#[ulid = <span class="string">&quot;01H3D0EKZAV13T8QXW6SY6S1PP&quot;</span>]
+</span><span class="kw">pub struct </span>HatMeta {
+    <span class="kw">pub </span>name: String,
+    <span class="kw">pub </span>atlas: Handle&lt;Atlas&gt;,
+    <span class="kw">pub </span>offset: Vec2,
+    <span class="kw">pub </span>body_size: Vec2,
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

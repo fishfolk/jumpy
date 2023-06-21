@@ -152,6 +152,16 @@
 <a href="#56" id="56">56</a>
 <a href="#57" id="57">57</a>
 <a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub const </span>ID: Key = <span class="macro">key!</span>(<span class="string">&quot;core::dead&quot;</span>);
@@ -178,6 +188,9 @@
     killed_players: Comp&lt;PlayerKilled&gt;,
     sprites: Comp&lt;AtlasSprite&gt;,
     transform: Comp&lt;Transform&gt;,
+    player_layers: Comp&lt;PlayerLayers&gt;,
+    <span class="kw-2">mut </span>player_body_attachments: CompMut&lt;PlayerBodyAttachment&gt;,
+    <span class="kw-2">mut </span>kinematic_bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>animations: CompMut&lt;AnimationBankSprite&gt;,
 ) {
     <span class="kw">for </span>(player_ent, (state, animation, killed_player)) <span class="kw">in
@@ -191,6 +204,13 @@
             <span class="kw">let </span>sprite = sprites.get(player_ent).unwrap();
             <span class="kw">let </span>player_on_right = !sprite.flip_x;
             <span class="kw">let </span>transform = transform.get(player_ent).unwrap();
+            <span class="kw">let </span>layers = player_layers.get(player_ent).unwrap();
+
+            <span class="comment">// Knock the player&#39;s hat off if they had one.
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(hat_ent) = layers.hat_ent {
+                player_body_attachments.remove(hat_ent);
+                kinematic_bodies.get_mut(hat_ent).unwrap().is_deactivated = <span class="bool-val">false</span>;
+            }
 
             animation.current = <span class="kw">match </span>killed_player.hit_from {
                 <span class="prelude-val">Some</span>(hit_from)

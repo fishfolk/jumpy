@@ -195,6 +195,8 @@
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Core game metadata
 
 </span><span class="kw">use </span>serde::Deserializer;
@@ -228,7 +230,8 @@
             .add_bones_asset::&lt;PlayerMeta&gt;()
             .add_bones_asset::&lt;MapMeta&gt;()
             .add_bones_asset::&lt;ElementMeta&gt;()
-            .add_bones_asset::&lt;BulletMeta&gt;();
+            .add_bones_asset::&lt;BulletMeta&gt;()
+            .add_bones_asset::&lt;HatMeta&gt;();
     }
 }
 
@@ -242,6 +245,7 @@
     <span class="kw">pub </span>config: CoreConfigMeta,
     <span class="kw">pub </span>map_tilesets: Vec&lt;Handle&lt;Atlas&gt;&gt;,
     <span class="kw">pub </span>players: Vec&lt;Handle&lt;PlayerMeta&gt;&gt;,
+    <span class="kw">pub </span>player_hats: Vec&lt;Handle&lt;HatMeta&gt;&gt;,
     <span class="kw">pub </span>stable_maps: Vec&lt;Handle&lt;MapMeta&gt;&gt;,
     <span class="kw">pub </span>map_elements: Vec&lt;Handle&lt;ElementMeta&gt;&gt;,
     <span class="kw">pub </span>experimental_maps: Vec&lt;Handle&lt;MapMeta&gt;&gt;,

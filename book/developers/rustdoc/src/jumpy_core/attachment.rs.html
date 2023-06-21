@@ -294,6 +294,26 @@
 <a href="#198" id="198">198</a>
 <a href="#199" id="199">199</a>
 <a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Utilities for attaching entities to other entities.
 //!
 //! There are two kinds of attachments: [`Attachment`] and [`PlayerBodyAttachment`].
@@ -421,15 +441,30 @@
 </span><span class="attr">#[derive(Clone, TypeUlid)]
 #[ulid = <span class="string">&quot;01GQQSZS823YZS2RBAPFNBKB8B&quot;</span>]
 </span><span class="kw">pub struct </span>PlayerBodyAttachment {
-    <span class="doccomment">/// The player to attach to
+    <span class="doccomment">/// The player to attach to.
     </span><span class="kw">pub </span>player: Entity,
     <span class="doccomment">/// The offset relative to the center of the player&#39;s sprite.
     </span><span class="kw">pub </span>offset: Vec3,
+    <span class="doccomment">/// Whether the attachment should be to the head instead of the body ( i.e. like a hat ).
+    </span><span class="kw">pub </span>head: bool,
     <span class="doccomment">/// Whether or not to automatically play the same animation bank animation as the sprite that it
     /// is attached to.
     </span><span class="kw">pub </span>sync_animation: bool,
     <span class="doccomment">/// Whether or not to automatically sync the color of the attached entity with the player&#39;s
     </span><span class="kw">pub </span>sync_color: bool,
+}
+
+<span class="kw">impl </span>PlayerBodyAttachment {
+    <span class="doccomment">/// Create a new body attachment to the given player.
+    </span><span class="kw">pub fn </span>new(player: Entity) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            player,
+            offset: Vec3::ZERO,
+            head: <span class="bool-val">false</span>,
+            sync_animation: <span class="bool-val">true</span>,
+            sync_color: <span class="bool-val">true</span>,
+        }
+    }
 }
 
 <span class="doccomment">/// This is used by the [`update_player_body_attachments`] system internally.
@@ -462,8 +497,13 @@
         <span class="kw">let </span>current_frame = player_sprite.index;
         <span class="kw">let </span>current_anim = animation_banks.get(player_ent).unwrap().current;
 
-        <span class="kw">let </span>current_body_offset =
-            meta.layers.body.animations.body_offsets[<span class="kw-2">&amp;</span>current_anim][current_frame];
+        <span class="kw">let </span>current_body_offset = meta.layers.body.animations.offsets[<span class="kw-2">&amp;</span>current_anim][current_frame]
+            .body
+            + <span class="kw">if </span>body_attachment.head {
+                meta.layers.body.animations.offsets[<span class="kw-2">&amp;</span>current_anim][current_frame].head
+            } <span class="kw">else </span>{
+                Vec2::ZERO
+            };
 
         player_body_attachment_markers.insert(ent, HadPlayerBodyAttachmentMarker);
         attachments.insert(

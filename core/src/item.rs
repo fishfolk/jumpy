@@ -2,7 +2,7 @@
 //!
 //! An item is anything in the game that can be picked up by the player.
 
-use crate::prelude::*;
+use crate::prelude::{player_spawner::PlayerSpawner, *};
 
 pub fn install(session: &mut CoreSession) {
     session
@@ -135,6 +135,7 @@ pub fn grab_items(
                     player,
                     sync_animation,
                     sync_color: false,
+                    head: false,
                     offset: grab_offset.extend(PlayerLayers::FIN_Z_OFFSET / 2.0),
                 },
             );
@@ -244,6 +245,7 @@ pub fn throw_dropped_items(
     mut transforms: CompMut<Transform>,
     item_spawners: Comp<DehydrateOutOfBounds>,
     map_layers: Comp<SpawnedMapLayerMeta>,
+    player_spawnwers: Comp<PlayerSpawner>,
     mut commands: Commands,
 ) {
     for (entity, (_items, item_throw, body, transform)) in
@@ -272,9 +274,17 @@ pub fn throw_dropped_items(
                     .control,
             );
 
+            // Use the item's spawner depth as the drop depth
             if let Some(item_spawner) = item_spawners.get(entity) {
                 let map_layer = map_layers.get(item_spawner.0).unwrap();
                 transform.translation.z = z_depth_for_map_layer(map_layer.layer_idx);
+            } else {
+                // Grab a random player spawner and use that for the z depth
+                let (_, (_, layer)) = entities
+                    .iter_with((&player_spawnwers, &map_layers))
+                    .next()
+                    .unwrap();
+                transform.translation.z = z_depth_for_map_layer(layer.layer_idx);
             }
 
             body.velocity = throw_velocity * horizontal_flip_factor;

@@ -20,6 +20,7 @@ pub struct PlayerSlot {
     pub active: bool,
     pub confirmed: bool,
     pub selected_player: bones::Handle<PlayerMeta>,
+    pub selected_hat: Option<bones::Handle<HatMeta>>,
     pub is_ai: bool,
 }
 
@@ -27,6 +28,7 @@ pub struct PlayerSlot {
 #[derive(Serialize, Deserialize)]
 pub enum PlayerSelectMessage {
     SelectPlayer(bones::Handle<PlayerMeta>),
+    SelectHat(Option<bones::Handle<HatMeta>>),
     ConfirmSelection(bool),
 }
 
@@ -200,10 +202,13 @@ fn handle_match_setup_messages(params: &mut PlayerSelectMenu) {
             match postcard::from_bytes::<PlayerSelectMessage>(&data) {
                 Ok(message) => match message {
                     PlayerSelectMessage::SelectPlayer(player_handle) => {
-                        params.player_select_state.slots[player].selected_player = player_handle
+                        params.player_select_state.slots[player].selected_player = player_handle;
                     }
                     PlayerSelectMessage::ConfirmSelection(confirmed) => {
                         params.player_select_state.slots[player].confirmed = confirmed;
+                    }
+                    PlayerSelectMessage::SelectHat(hat) => {
+                        params.player_select_state.slots[player].selected_hat = hat;
                     }
                 },
                 Err(e) => warn!("Ignoring network message that was not understood: {e}"),
@@ -273,9 +278,10 @@ struct PlayerSelectPanel<'w, 's> {
     core: Res<'w, CoreMetaArc>,
     localization: Res<'w, Localization>,
     player_meta_assets: Res<'w, Assets<PlayerMeta>>,
+    hat_assets: Res<'w, Assets<HatMeta>>,
     player_select_state: ResMut<'w, PlayerSelectState>,
     atlas_meta_assets: Res<'w, Assets<TextureAtlas>>,
-    player_atlas_egui_textures: Res<'w, PlayerAtlasEguiTextures>,
+    player_atlas_egui_textures: Res<'w, AtlasEguiTextures>,
     players: Query<
         'w,
         's,
@@ -360,6 +366,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
         }
 
         let player_handle = &mut slot.selected_player;
+        let player_hat = &mut slot.selected_hat;
 
         // If the handle is empty
         if player_handle.path == default() {
@@ -405,49 +412,91 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                         .unwrap(),
                 );
             }
-        } else if player_actions.just_pressed(PlayerAction::Move) && !slot.confirmed {
+        } else if player_actions.just_pressed(PlayerAction::Move) {
             let direction = player_actions
                 .clamped_axis_pair(PlayerAction::Move)
                 .unwrap();
 
-            let current_player_handle_idx = params
-                .core
-                .players
-                .iter()
-                .enumerate()
-                .find(|(_, handle)| handle.path == player_handle.path)
-                .map(|(i, _)| i)
-                .unwrap_or(0);
+            // Select a hat if the player has been confirmed
+            if slot.confirmed {
+                let current_hat_handle_idx = player_hat.as_ref().map(|player_hat| {
+                    params
+                        .core
+                        .player_hats
+                        .iter()
+                        .enumerate()
+                        .find(|(_, handle)| handle.path == player_hat.path)
+                        .map(|(i, _)| i)
+                        .unwrap_or(0)
+                });
 
-            if direction.x() > 0.0 {
-                *player_handle = params
+                let next_idx = if direction.x() > 0.0 {
+                    current_hat_handle_idx
+                        .map(|x| {
+                            if x < params.core.player_hats.len() - 1 {
+                                Some(x + 1)
+                            } else {
+                                None
+                            }
+                        })
+                        .unwrap_or(Some(0))
+                } else {
+                    current_hat_handle_idx
+                        .map(|x| if x == 0 { None } else { Some(x - 1) })
+                        .unwrap_or(Some(params.core.player_hats.len() - 1))
+                };
+                *player_hat = next_idx.map(|idx| params.core.player_hats.get(idx).unwrap().clone());
+
+                #[cfg(not(target_arch = "wasm32"))]
+                if let Some(socket) = &params.network_socket {
+                    socket.send_reliable(
+                        SocketTarget::All,
+                        &postcard::to_allocvec(&PlayerSelectMessage::SelectHat(player_hat.clone()))
+                            .unwrap(),
+                    );
+                }
+
+            // Adjust the player if the player has not be confirmed
+            } else {
+                let current_player_handle_idx = params
                     .core
                     .players
-                    .get(current_player_handle_idx + 1)
-                    .cloned()
-                    .unwrap_or_else(|| params.core.players[0].clone());
-            } else if direction.x() <= 0.0 {
-                if current_player_handle_idx > 0 {
+                    .iter()
+                    .enumerate()
+                    .find(|(_, handle)| handle.path == player_handle.path)
+                    .map(|(i, _)| i)
+                    .unwrap_or(0);
+
+                if direction.x() > 0.0 {
                     *player_handle = params
                         .core
                         .players
-                        .get(current_player_handle_idx - 1)
+                        .get(current_player_handle_idx + 1)
                         .cloned()
-                        .unwrap();
-                } else {
-                    *player_handle = params.core.players.iter().last().unwrap().clone();
+                        .unwrap_or_else(|| params.core.players[0].clone());
+                } else if direction.x() <= 0.0 {
+                    if current_player_handle_idx > 0 {
+                        *player_handle = params
+                            .core
+                            .players
+                            .get(current_player_handle_idx - 1)
+                            .cloned()
+                            .unwrap();
+                    } else {
+                        *player_handle = params.core.players.iter().last().unwrap().clone();
+                    }
                 }
-            }
 
-            #[cfg(not(target_arch = "wasm32"))]
-            if let Some(socket) = &params.network_socket {
-                socket.send_reliable(
-                    SocketTarget::All,
-                    &postcard::to_allocvec(&PlayerSelectMessage::SelectPlayer(
-                        player_handle.clone(),
-                    ))
-                    .unwrap(),
-                );
+                #[cfg(not(target_arch = "wasm32"))]
+                if let Some(socket) = &params.network_socket {
+                    socket.send_reliable(
+                        SocketTarget::All,
+                        &postcard::to_allocvec(&PlayerSelectMessage::SelectPlayer(
+                            player_handle.clone(),
+                        ))
+                        .unwrap(),
+                    );
+                }
             }
         }
 
@@ -458,6 +507,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                 ui.set_height(ui.available_height());
 
                 let normal_font = &params.game.ui_theme.font_styles.normal;
+                let smaller_font = &params.game.ui_theme.font_styles.smaller;
                 let heading_font = &params.game.ui_theme.font_styles.heading;
 
                 // Marker for current player in online matches
@@ -478,9 +528,13 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
 
                 if slot.active {
                     ui.vertical_centered(|ui| {
-                        let Some(player_meta) = params
+                        let player_meta = params
                             .player_meta_assets
-                            .get(&player_handle.get_bevy_handle()) else { return; };
+                            .get(&player_handle.get_bevy_handle())
+                            .unwrap();
+                        let hat_meta = player_hat.as_ref().map(|handle| {
+                            params.hat_assets.get(&handle.get_bevy_handle()).unwrap()
+                        });
 
                         ui.themed_label(normal_font, &params.localization.get("pick-a-fish"));
 
@@ -554,10 +608,20 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                                     &name_with_arrows
                                 },
                             );
+                            let hat_label = if let Some(hat_meta) = hat_meta {
+                                format!("< {} >", hat_meta.name)
+                            } else {
+                                format!("< {} >", params.localization.get("no-hat"))
+                            };
+                            ui.themed_label(
+                                smaller_font,
+                                if slot.confirmed { &hat_label } else { "" },
+                            );
 
                             player_image(
                                 ui,
                                 player_meta,
+                                hat_meta,
                                 &params.atlas_meta_assets,
                                 &params.player_atlas_egui_textures,
                             );
@@ -599,14 +663,12 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
     }
 }
 
-#[derive(Resource)]
-pub struct PlayerAtlasEguiTextures(pub HashMap<bones::AssetPath, egui::TextureId>);
-
 fn player_image(
     ui: &mut egui::Ui,
     player_meta: &PlayerMeta,
+    hat_meta: Option<&HatMeta>,
     atlas_assets: &Assets<TextureAtlas>,
-    egui_textures: &PlayerAtlasEguiTextures,
+    egui_textures: &AtlasEguiTextures,
 ) {
     let time = ui.ctx().input(|i| i.time as f32);
     let width = ui.available_width();
@@ -636,7 +698,7 @@ fn player_image(
         let frame_in_sheet_idx = anim_clip.frames[frame_in_clip_idx];
         let sprite_rect = &atlas.textures[frame_in_sheet_idx];
         body_offset =
-            player_meta.layers.body.animations.body_offsets[&key!("idle")][frame_in_clip_idx];
+            player_meta.layers.body.animations.offsets[&key!("idle")][frame_in_clip_idx].body;
 
         let sprite_aspect = sprite_rect.height() / sprite_rect.width();
         let height = sprite_aspect * width;
@@ -663,19 +725,14 @@ fn player_image(
         body_scale = width / sprite_rect.size().x;
     }
 
-    // Render the fin animation
-    {
-        let atlas_handle = &player_meta.layers.fin.atlas;
+    // Render the fin & face animation
+    for layer in [&player_meta.layers.fin, &player_meta.layers.face] {
+        let atlas_handle = &layer.atlas;
         let atlas = atlas_assets
             .get(&atlas_handle.get_bevy_handle_untyped().typed())
             .unwrap();
         let atlas_path = &atlas_handle.path;
-        let anim_clip = player_meta
-            .layers
-            .fin
-            .animations
-            .get(&key!("idle"))
-            .unwrap();
+        let anim_clip = layer.animations.get(&key!("idle")).unwrap();
         let fps = anim_clip.fps;
         let frame_in_time_idx = (time * fps).round() as usize;
         let frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
@@ -695,7 +752,7 @@ fn player_image(
         };
 
         let sprite_size = sprite_rect.size() * body_scale;
-        let offset = (player_meta.layers.fin.offset + body_offset) * body_scale;
+        let offset = (layer.offset + body_offset) * body_scale;
         let rect = egui::Rect::from_center_size(
             body_rect.center() + egui::vec2(offset.x, -offset.y + y_offset),
             egui::vec2(sprite_size.x, sprite_size.y),
@@ -705,24 +762,14 @@ fn player_image(
         ui.painter().add(mesh);
     }
 
-    // Render face animation
-    {
-        let atlas_handle = &player_meta.layers.face.atlas;
+    // Render the player hat
+    if let Some(hat_meta) = hat_meta {
+        let atlas_handle = &hat_meta.atlas;
         let atlas = atlas_assets
             .get(&atlas_handle.get_bevy_handle_untyped().typed())
             .unwrap();
         let atlas_path = &atlas_handle.path;
-        let anim_clip = player_meta
-            .layers
-            .face
-            .animations
-            .get(&key!("idle"))
-            .unwrap();
-        let fps = anim_clip.fps;
-        let frame_in_time_idx = (time * fps).round() as usize;
-        let frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
-        let frame_in_sheet_idx = anim_clip.frames[frame_in_clip_idx];
-        let sprite_rect = &atlas.textures[frame_in_sheet_idx];
+        let sprite_rect = &atlas.textures[0];
 
         let uv_min = sprite_rect.min / atlas.size;
         let uv_max = sprite_rect.max / atlas.size;
@@ -737,7 +784,7 @@ fn player_image(
         };
 
         let sprite_size = sprite_rect.size() * body_scale;
-        let offset = (player_meta.layers.face.offset + body_offset) * body_scale;
+        let offset = (hat_meta.offset + body_offset) * body_scale;
         let rect = egui::Rect::from_center_size(
             body_rect.center() + egui::vec2(offset.x, -offset.y + y_offset),
             egui::vec2(sprite_size.x, sprite_size.y),

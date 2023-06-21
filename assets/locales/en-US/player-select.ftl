@@ -1,5 +1,6 @@
 keyboard = Keyboard
 you-marker = < You >
+no-hat = No Hat
 pick-a-fish = Pick a Fish
 
 player-select-ready = Ready!

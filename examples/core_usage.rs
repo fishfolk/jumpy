@@ -102,11 +102,13 @@ fn load(
             .clone(),
         player_info: [
             Some(GameSessionPlayerInfo {
-                handle: meta.players[0].clone(),
+                player: meta.players[0].clone(),
+                hat: Some(meta.player_hats[0].clone()),
                 is_ai: false,
             }),
             Some(GameSessionPlayerInfo {
-                handle: meta.players[0].clone(),
+                player: meta.players[0].clone(),
+                hat: Some(meta.player_hats[1].clone()),
                 is_ai: true,
             }),
             None,

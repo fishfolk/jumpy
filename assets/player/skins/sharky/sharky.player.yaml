@@ -98,6 +98,7 @@ layers:
         frames:
           - idx: 58
             offset: [1, -8]
+            head_offset: [9, -17]
         repeat: false
       death_spine:
         frames:

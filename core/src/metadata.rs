@@ -31,7 +31,8 @@ impl ::bevy::prelude::Plugin for JumpyCoreAssetsPlugin {
             .add_bones_asset::<PlayerMeta>()
             .add_bones_asset::<MapMeta>()
             .add_bones_asset::<ElementMeta>()
-            .add_bones_asset::<BulletMeta>();
+            .add_bones_asset::<BulletMeta>()
+            .add_bones_asset::<HatMeta>();
     }
 }
 
@@ -45,6 +46,7 @@ pub struct CoreMeta {
     pub config: CoreConfigMeta,
     pub map_tilesets: Vec<Handle<Atlas>>,
     pub players: Vec<Handle<PlayerMeta>>,
+    pub player_hats: Vec<Handle<HatMeta>>,
     pub stable_maps: Vec<Handle<MapMeta>>,
     pub map_elements: Vec<Handle<ElementMeta>>,
     pub experimental_maps: Vec<Handle<MapMeta>>,

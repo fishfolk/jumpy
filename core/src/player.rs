@@ -31,6 +31,7 @@ pub fn install(session: &mut CoreSession) {
         .add_system_to_stage(CoreStage::First, player_ai_system)
         .add_system_to_stage(CoreStage::PostUpdate, play_itemless_fin_animations)
         .add_system_to_stage(CoreStage::PostUpdate, player_facial_animations)
+        .add_system_to_stage(CoreStage::PostUpdate, equip_hats)
         .add_system_to_stage(CoreStage::Last, delete_dead_ai_swords)
         .add_system_to_stage(CoreStage::Last, update_player_layers);
 }
@@ -49,11 +50,13 @@ pub struct PlayerLayers {
     pub fin_offset: Vec2,
     pub face_ent: Entity,
     pub face_anim: Key,
+    pub hat_ent: Option<Entity>,
 }
 
 impl PlayerLayers {
     pub const FIN_Z_OFFSET: f32 = 0.5;
     pub const FACE_Z_OFFSET: f32 = 0.01;
+    pub const HAT_Z_OFFSET: f32 = 0.02;
 }
 
 /// A component representing the current emote state of a player.
@@ -453,6 +456,24 @@ fn player_ai_system(
     }
 }
 
+/// Resource that tracks which players have already been spawned before.
+///
+/// This lets us handle re-spawns differently, like not spawning you with a hat on a re-spawn.
+///
+/// TODO: This is probably temporary and will be removed when we have the proper tournament flow
+/// down.
+#[derive(Debug, Clone, TypeUlid, Default)]
+#[ulid = "01H3F91HNY3X2QXCGKGZDTXVAM"]
+struct PlayersHaveSpawned {
+    /// For each player, whether they have spawned before.
+    pub players: [bool; MAX_PLAYERS],
+}
+
+/// Marker component for a player hat.
+#[derive(Debug, Clone, TypeUlid)]
+#[ulid = "01H3FDDXMSMVV8VMX1HRRFMXH0"]
+struct Hat(Handle<HatMeta>);
+
 fn hydrate_players(
     mut commands: Commands,
     mut entities: ResMut<Entities>,
@@ -460,6 +481,7 @@ fn hydrate_players(
     player_inputs: Res<PlayerInputs>,
     player_indexes: Comp<PlayerIdx>,
     player_assets: BevyAssets<PlayerMeta>,
+    hat_assets: BevyAssets<HatMeta>,
     mut player_states: CompMut<PlayerState>,
     mut inventories: CompMut<Inventory>,
     mut animation_bank_sprites: CompMut<AnimationBankSprite>,
@@ -472,20 +494,30 @@ fn hydrate_players(
     mut ai_players: CompMut<AiPlayer>,
     mut invincibles: CompMut<Invincibility>,
     mut element_kill_callbacks: CompMut<ElementKillCallback>,
+    mut players_have_spawned: ResMut<PlayersHaveSpawned>,
+    mut item_grabs: CompMut<ItemGrab>,
+    mut item_throws: CompMut<ItemThrow>,
+    mut items: CompMut<Item>,
+    mut hats: CompMut<Hat>,
 ) {
     let mut not_hydrated_bitset = player_states.bitset().clone();
     not_hydrated_bitset.bit_not();
     not_hydrated_bitset.bit_and(player_indexes.bitset());
 
     // Create entities that we will use for the extra player layers
-    let mut new_entities = (0..(not_hydrated_bitset.bit_count() * 2))
+    let entity_count = not_hydrated_bitset.bit_count() * 3;
+    let mut new_entities = (0..entity_count)
         .map(|_| entities.create())
         .collect::<Vec<_>>()
         .into_iter();
+    // If a player doesn't have a hat we'll kill the entity we allocated for it.
+    let mut to_kill = Vec::with_capacity(entity_count / 3);
 
     for player_entity in entities.iter_with_bitset(&not_hydrated_bitset) {
         let player_idx = player_indexes.get(player_entity).unwrap();
+        let player_has_spawned = &mut players_have_spawned.players[player_idx.0];
         let player_handle = &player_inputs.players[player_idx.0].selected_player;
+        let player_hat = &player_inputs.players[player_idx.0].selected_hat;
         let is_ai = player_inputs.players[player_idx.0].is_ai;
 
         let Some(meta) = player_assets.get(&player_handle.get_bevy_handle()) else {
@@ -534,16 +566,6 @@ fn hydrate_players(
         // Spawn the player's fin and face
         let fin_entity = new_entities.next().unwrap();
         let face_entity = new_entities.next().unwrap();
-        player_layers.insert(
-            player_entity,
-            PlayerLayers {
-                fin_anim: key!("idle"),
-                fin_ent: fin_entity,
-                fin_offset: Vec2::ZERO,
-                face_anim: key!("idle"),
-                face_ent: face_entity,
-            },
-        );
 
         // Fin
         transforms.insert(fin_entity, default());
@@ -567,6 +589,7 @@ fn hydrate_players(
             PlayerBodyAttachment {
                 sync_color: true,
                 sync_animation: false,
+                head: false,
                 player: player_entity,
                 offset: meta.layers.fin.offset.extend(PlayerLayers::FIN_Z_OFFSET),
             },
@@ -592,12 +615,81 @@ fn hydrate_players(
         player_body_attachments.insert(
             face_entity,
             PlayerBodyAttachment {
+                player: player_entity,
                 sync_color: true,
                 sync_animation: false,
-                player: player_entity,
+                head: true,
                 offset: meta.layers.face.offset.extend(PlayerLayers::FACE_Z_OFFSET),
             },
         );
+
+        // Hat
+        let hat_ent = new_entities.next().unwrap();
+        let hat_ent = if !*player_has_spawned {
+            if let Some(hat_handle) = player_hat {
+                let hat_meta = hat_assets.get(&hat_handle.get_bevy_handle()).unwrap();
+                let atlas = hat_meta.atlas.clone();
+                let offset = hat_meta.offset.extend(PlayerLayers::HAT_Z_OFFSET);
+                hats.insert(hat_ent, Hat(hat_handle.clone()));
+                transforms.insert(hat_ent, default());
+                atlas_sprites.insert(hat_ent, AtlasSprite { atlas, ..default() });
+                player_body_attachments.insert(
+                    hat_ent,
+                    PlayerBodyAttachment {
+                        player: player_entity,
+                        offset,
+                        head: true,
+                        sync_animation: false,
+                        sync_color: true,
+                    },
+                );
+                kinematic_bodies.insert(
+                    hat_ent,
+                    KinematicBody {
+                        shape: ColliderShape::Rectangle {
+                            size: hat_meta.body_size,
+                        },
+                        has_mass: true,
+                        has_friction: true,
+                        gravity: meta.gravity,
+                        is_deactivated: true,
+                        ..default()
+                    },
+                );
+                items.insert(hat_ent, Item);
+                item_grabs.insert(
+                    hat_ent,
+                    ItemGrab {
+                        fin_anim: key!("grab_2"),
+                        grab_offset: Vec2::ZERO,
+                        sync_animation: false,
+                    },
+                );
+                item_throws.insert(hat_ent, ItemThrow::strength(7.0));
+                Some(hat_ent)
+            } else {
+                to_kill.push(hat_ent);
+                None
+            }
+        } else {
+            to_kill.push(hat_ent);
+            None
+        };
+
+        // Insert player layers component
+        player_layers.insert(
+            player_entity,
+            PlayerLayers {
+                fin_anim: key!("idle"),
+                fin_ent: fin_entity,
+                fin_offset: Vec2::ZERO,
+                face_anim: key!("idle"),
+                face_ent: face_entity,
+                hat_ent,
+            },
+        );
+
+        *player_has_spawned = true;
 
         // Handle AI players
         if is_ai {
@@ -670,6 +762,7 @@ fn hydrate_players(
                                 sync_color: false,
                                 sync_animation: false,
                                 player: player_entity,
+                                head: false,
                                 offset: grab_offset.extend(1.0),
                             },
                         );
@@ -677,6 +770,10 @@ fn hydrate_players(
                 },
             );
         }
+    }
+
+    for entity in to_kill {
+        entities.kill(entity);
     }
 }
 
@@ -831,5 +928,45 @@ fn update_player_layers(
 
         let fin_bank = animation_bank_sprites.get_mut(layers.fin_ent).unwrap();
         fin_bank.current = layers.fin_anim;
+    }
+}
+
+/// Equip player hats that have been picked up and used.
+fn equip_hats(
+    entities: Res<Entities>,
+    mut items_used: CompMut<ItemUsed>,
+    mut kinematic_bodies: CompMut<KinematicBody>,
+    mut player_body_attachments: CompMut<PlayerBodyAttachment>,
+    hats: Comp<Hat>,
+    hat_assets: BevyAssets<HatMeta>,
+    player_inventories: PlayerInventories,
+    mut player_layers: CompMut<PlayerLayers>,
+    mut inventories: CompMut<Inventory>,
+) {
+    for (hat_ent, hat) in entities.iter_with(&hats) {
+        // If the hat is being held
+        if let Some(inventory) = player_inventories
+            .iter()
+            .find_map(|x| x.filter(|x| x.inventory == hat_ent))
+        {
+            if items_used.contains(hat_ent) {
+                items_used.remove(hat_ent).unwrap();
+                inventories.get_mut(inventory.player).unwrap().0 = None;
+
+                let hat_meta = hat_assets.get(&hat.0.get_bevy_handle()).unwrap();
+                kinematic_bodies.get_mut(hat_ent).unwrap().is_deactivated = true;
+                player_body_attachments.insert(
+                    hat_ent,
+                    PlayerBodyAttachment {
+                        player: inventory.player,
+                        offset: hat_meta.offset.extend(PlayerLayers::HAT_Z_OFFSET),
+                        head: true,
+                        sync_animation: false,
+                        sync_color: true,
+                    },
+                );
+                player_layers.get_mut(inventory.player).unwrap().hat_ent = Some(hat_ent);
+            }
+        }
     }
 }

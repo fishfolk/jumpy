@@ -473,6 +473,12 @@
 <a href="#377" id="377">377</a>
 <a href="#378" id="378">378</a>
 <a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Session management for matches.
 //!
 //! The [`SessionManager`] is used to create, stop, snapshot, and restore game matches. A session
@@ -487,7 +493,7 @@
 
 </span><span class="kw">use </span>bevy::utils::Instant;
 <span class="kw">use </span>downcast_rs::{impl_downcast, Downcast};
-<span class="kw">use </span>jumpy_core::input::PlayerControl;
+<span class="kw">use </span>jumpy_core::input::{PlayerControl, PlayerInputs};
 
 <span class="kw">use crate</span>::{main_menu::MenuPage, prelude::<span class="kw-2">*</span>};
 
@@ -774,7 +780,13 @@
     }
 
     <span class="kw">for </span>(player_idx, action_state) <span class="kw">in </span><span class="kw-2">&amp;</span>player_input_collectors {
-        <span class="kw">if </span>player_idx.<span class="number">0 </span>!= <span class="number">0 </span>{
+        <span class="kw">let </span>is_ai = {
+            <span class="kw">let </span>world = <span class="kw-2">&amp;</span>session.core_session().world;
+            <span class="kw">let </span>inputs = world.resource::&lt;PlayerInputs&gt;();
+            <span class="kw">let </span>inputs = inputs.borrow();
+            inputs.players[player_idx.<span class="number">0</span>].is_ai
+        };
+        <span class="kw">if </span>(player_idx.<span class="number">0 </span>!= <span class="number">0 </span>&amp;&amp; network_player_idx.is_some()) || is_ai {
             <span class="kw">continue</span>;
         }
 

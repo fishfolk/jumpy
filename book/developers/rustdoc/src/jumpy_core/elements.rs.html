@@ -362,6 +362,8 @@
 <a href="#266" id="266">266</a>
 <a href="#267" id="267">267</a>
 <a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Map element implementations.
 //!
 //! A map element is anything that can be placed on the map in the editor.
@@ -387,6 +389,7 @@
 <span class="kw">pub mod </span>slippery;
 <span class="kw">pub mod </span>slippery_seaweed;
 <span class="kw">pub mod </span>snail;
+<span class="kw">pub mod </span>spike;
 <span class="kw">pub mod </span>sproinger;
 <span class="kw">pub mod </span>stomp_boots;
 <span class="kw">pub mod </span>sword;
@@ -611,6 +614,7 @@
     crate_item::install(session);
     slippery_seaweed::install(session);
     slippery::install(session);
+    spike::install(session);
 }
 
 <span class="kw">fn </span>handle_out_of_bounds_items(

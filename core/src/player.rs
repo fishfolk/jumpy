@@ -73,9 +73,13 @@ enum EmoteState {
 /// A component representing a region in which a player should emote in some way.
 ///
 /// For example, a lit grenade could have a
-#[derive(Clone, TypeUlid)]
+#[derive(Debug, Clone, TypeUlid)]
 #[ulid = "01GR2QVYXRX5V689C4EMBDS3AQ"]
 pub struct EmoteRegion {
+    /// The entity that owns this emote region.
+    pub owner: Option<Entity>,
+    /// A buffer to prevent the player from spamming emotes.
+    pub buffer: Option<Timer>,
     /// Whether or not the player must be looking at the center of the region to emote.
     pub direction_sensitive: bool,
     /// The size of the emote region
@@ -90,16 +94,30 @@ pub struct EmoteRegion {
 impl Default for EmoteRegion {
     fn default() -> Self {
         Self {
-            direction_sensitive: true,
-            size: Vec2::ZERO,
-            emote: default(),
+            owner: None,
             active: true,
+            buffer: None,
+            emote: default(),
+            size: Vec2::ZERO,
+            direction_sensitive: true,
+        }
+    }
+}
+
+impl EmoteRegion {
+    pub fn basic(emote: Emote, size: Vec2, sensitive: bool) -> Self {
+        Self {
+            emote,
+            size,
+            active: true,
+            direction_sensitive: sensitive,
+            ..default()
         }
     }
 }
 
 /// A kind of emote the player can make.
-#[derive(Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum Emote {
     /// The player is alarmed!! Like a lit grenade was just thrown at them.
     #[default]
@@ -234,7 +252,7 @@ impl PlayerCommand {
             // If the player has an item
             if let Some(item) = inventories.get(player).and_then(|x| x.0) {
                 // Use it
-                items_used.insert(item, ItemUsed);
+                items_used.insert(item, ItemUsed { owner: player });
             }
         })
         .system()
@@ -836,14 +854,15 @@ fn play_itemless_fin_animations(
 }
 
 fn player_facial_animations(
+    time: Res<Time>,
     entities: Res<Entities>,
     mut player_layers: CompMut<PlayerLayers>,
-    emote_regions: Comp<EmoteRegion>,
+    mut emote_regions: CompMut<EmoteRegion>,
     transforms: Comp<Transform>,
     atlas_sprites: Comp<AtlasSprite>,
     mut emote_states: CompMut<EmoteState>,
     players_killed: Comp<PlayerKilled>,
-    animation_bank_sprites: Comp<AnimationBankSprite>,
+    animation_bank_sprites: CompMut<AnimationBankSprite>,
 ) {
     for (player_ent, (player_layer, atlas_sprite, animation_bank, emote_state)) in entities
         .iter_with((
@@ -862,14 +881,28 @@ fn player_facial_animations(
         let player_pos = transforms.get(player_ent).unwrap().translation.truncate();
 
         let mut triggered_emote = None;
-        for (_, (emote_region, transform)) in entities.iter_with((&emote_regions, &transforms)) {
+        for (_, (emote_region, transform)) in entities.iter_with((&mut emote_regions, &transforms))
+        {
             if !emote_region.active {
                 continue;
             }
-            let emote_pos = transform.translation.truncate();
 
+            // If a buffer exists, tick it.
+            if let Some(buffer) = emote_region.buffer.as_mut() {
+                buffer.tick(time.delta());
+
+                // If the buffer is not finished, and the player is the owner, skip this emote.
+                if let Some(owner) = emote_region.owner.as_ref() {
+                    if *owner == player_ent && !(buffer.finished()) {
+                        continue;
+                    }
+                }
+            }
+
+            let emote_pos = transform.translation.truncate();
             let direction = if atlas_sprite.flip_x { -1.0f32 } else { 1.0 };
             let is_facing_region = direction.signum() != (player_pos.x - emote_pos.x).signum();
+
             if !emote_region.direction_sensitive || is_facing_region {
                 let emote_rect = Rect::new(
                     emote_pos.x,

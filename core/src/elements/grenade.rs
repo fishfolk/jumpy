@@ -17,6 +17,8 @@ pub struct IdleGrenade;
 #[derive(Clone, TypeUlid, Debug)]
 #[ulid = "01GPY9N9CBR6EFJX0RS2H2K58J"]
 pub struct LitGrenade {
+    /// The owner of the grenade.
+    pub owner: Entity,
     /// The amount of time left until the grenade explodes.
     pub fuse_time: Timer,
 }
@@ -108,14 +110,14 @@ fn hydrate(
 }
 
 fn update_idle_grenades(
+    mut commands: Commands,
     entities: Res<Entities>,
+    items_used: Comp<ItemUsed>,
     element_handles: Comp<ElementHandle>,
     element_assets: BevyAssets<ElementMeta>,
     mut audio_events: ResMut<AudioEvents>,
     mut idle_grenades: CompMut<IdleGrenade>,
     mut animated_sprites: CompMut<AnimatedSprite>,
-    mut items_used: CompMut<ItemUsed>,
-    mut commands: Commands,
 ) {
     for (entity, (_grenade, element_handle)) in
         entities.iter_with((&mut idle_grenades, &element_handles))
@@ -135,24 +137,33 @@ fn update_idle_grenades(
         let fuse_time = *fuse_time;
 
         if items_used.get(entity).is_some() {
-            audio_events.play(fuse_sound.clone(), *fuse_sound_volume);
-            items_used.remove(entity);
+            // Animate Grenade
             let animated_sprite = animated_sprites.get_mut(entity).unwrap();
             animated_sprite.frames = Arc::from([3, 4, 5]);
             animated_sprite.repeat = true;
             animated_sprite.fps = 8.0;
+
+            // Play that hissss sound
+            audio_events.play(fuse_sound.clone(), *fuse_sound_volume);
+
             commands.add(
-                move |mut idle: CompMut<IdleGrenade>, mut lit: CompMut<LitGrenade>| {
+                move |mut lit: CompMut<LitGrenade>,
+                      mut idle: CompMut<IdleGrenade>,
+                      mut items_used: CompMut<ItemUsed>| {
                     idle.remove(entity);
+
                     lit.insert(
                         entity,
                         LitGrenade {
+                            owner: items_used.get(entity).unwrap().owner,
                             fuse_time: Timer::new(
                                 Duration::from_secs_f32(fuse_time),
                                 TimerMode::Once,
                             ),
                         },
                     );
+
+                    items_used.remove(entity);
                 },
             );
         }
@@ -160,20 +171,20 @@ fn update_idle_grenades(
 }
 
 fn update_lit_grenades(
+    time: Res<Time>,
+    mut commands: Commands,
     entities: Res<Entities>,
-    element_handles: Comp<ElementHandle>,
-    element_assets: BevyAssets<ElementMeta>,
     transforms: CompMut<Transform>,
+    element_handles: Comp<ElementHandle>,
+    spawners: Comp<DehydrateOutOfBounds>,
     mut audio_events: ResMut<AudioEvents>,
-    mut trauma_events: ResMut<CameraTraumaEvents>,
     mut lit_grenades: CompMut<LitGrenade>,
-    mut hydrated: CompMut<MapElementHydrated>,
+    player_inventories: PlayerInventories,
+    element_assets: BevyAssets<ElementMeta>,
     mut emote_regions: CompMut<EmoteRegion>,
     mut player_layers: CompMut<PlayerLayers>,
-    player_inventories: PlayerInventories,
-    mut commands: Commands,
-    spawners: Comp<DehydrateOutOfBounds>,
-    time: Res<Time>,
+    mut hydrated: CompMut<MapElementHydrated>,
+    mut trauma_events: ResMut<CameraTraumaEvents>,
 ) {
     for (entity, (grenade, element_handle, spawner)) in
         entities.iter_with((&mut lit_grenades, &element_handles, &spawners))
@@ -203,10 +214,12 @@ fn update_lit_grenades(
             emote_regions.insert(
                 entity,
                 EmoteRegion {
+                    active: true,
+                    emote: Emote::Alarm,
+                    owner: Some(grenade.owner),
                     direction_sensitive: true,
                     size: *damage_region_size * 2.0,
-                    emote: Emote::Alarm,
-                    active: true,
+                    buffer: Some(Timer::new(Duration::from_millis(400), TimerMode::Once)),
                 },
             );
         }

@@ -38,7 +38,7 @@
 - Srayan Jana [@ValorZard](https://github.com/ValorZard) - Dev Advocacy
 - Alve Larsson [@AlveLarsson](https://github.com/AlveLarsson) - Website
 - William Batista [@billyb2](https://github.com/billyb2) - Gameplay Code
-- Jacob LeCoq [@lecoqjacob](https://github.com/lecoqjacob) - Gameplay Code
+- Yendor [@Yendor](https://github.com/lecoqjacob) - Gameplay Code
 - [@tekhnaeraav](https://github.com/tekhnaeraav) - Gameplay Code
 - RuppFv [@DRuppFv](https://github.com/DRuppFv) - Gameplay Code
 - Axel Viala [@darnuria](https://github.com/darnuria) - Gameplay Code

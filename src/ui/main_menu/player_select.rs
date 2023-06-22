@@ -109,9 +109,10 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                 let mut params: PlayerSelectMenu = state.get_mut(world);
 
                 let normal_button_style = &params.game.ui_theme.button_styles.normal;
+                let is_active = params.player_select_state.slots[0].active;
+                let is_confirmed = params.player_select_state.slots[0].confirmed;
 
                 ui.add_space(normal_button_style.font.size * 2.0);
-
                 ui.horizontal(|ui| {
                     // Calculate button size and spacing
                     let width = ui.available_width();
@@ -130,18 +131,23 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                     .show(ui)
                     .focus_by_default(ui);
 
-                    // Go to menu when back button is clicked
                     if back_button.clicked()
-                        || (params.menu_input.single().just_pressed(MenuAction::Back)
-                            && !params.player_select_state.slots[0].active)
-                        || params.keyboard_input.just_pressed(KeyCode::Escape)
+                        || params.menu_input.single().just_pressed(MenuAction::Back)
                     {
-                        *params.menu_page = MenuPage::Home;
-                        #[cfg(not(target_arch = "wasm32"))]
-                        if let Some(socket) = params.network_socket {
-                            socket.close();
+                        if is_confirmed {
+                            params.player_select_state.slots[0].confirmed = false;
+                        } else if is_active {
+                            params.player_select_state.slots[0].active = false;
+                        } else {
+                            *params.menu_page = MenuPage::Home;
+
+                            #[cfg(not(target_arch = "wasm32"))]
+                            if let Some(socket) = params.network_socket {
+                                socket.close();
+                            }
+
+                            ui.ctx().clear_focus();
                         }
-                        ui.ctx().clear_focus();
                     }
 
                     ui.add_space(button_spacing);

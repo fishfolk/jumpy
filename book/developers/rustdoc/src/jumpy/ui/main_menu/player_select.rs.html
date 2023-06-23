@@ -890,6 +890,12 @@
 <a href="#794" id="794">794</a>
 <a href="#795" id="795">795</a>
 <a href="#796" id="796">796</a>
+<a href="#797" id="797">797</a>
+<a href="#798" id="798">798</a>
+<a href="#799" id="799">799</a>
+<a href="#800" id="800">800</a>
+<a href="#801" id="801">801</a>
+<a href="#802" id="802">802</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::loading::PlayerInputCollector;
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 </span><span class="kw">use </span><span class="kw">crate</span>::networking::{NetworkMatchSocket, SocketTarget};
@@ -1001,9 +1007,10 @@
                 <span class="kw">let </span><span class="kw-2">mut </span>params: PlayerSelectMenu = state.get_mut(world);
 
                 <span class="kw">let </span>normal_button_style = <span class="kw-2">&amp;</span>params.game.ui_theme.button_styles.normal;
+                <span class="kw">let </span>is_active = params.player_select_state.slots[<span class="number">0</span>].active;
+                <span class="kw">let </span>is_confirmed = params.player_select_state.slots[<span class="number">0</span>].confirmed;
 
                 ui.add_space(normal_button_style.font.size * <span class="number">2.0</span>);
-
                 ui.horizontal(|ui| {
                     <span class="comment">// Calculate button size and spacing
                     </span><span class="kw">let </span>width = ui.available_width();
@@ -1022,18 +1029,23 @@
                     .show(ui)
                     .focus_by_default(ui);
 
-                    <span class="comment">// Go to menu when back button is clicked
-                    </span><span class="kw">if </span>back_button.clicked()
-                        || (params.menu_input.single().just_pressed(MenuAction::Back)
-                            &amp;&amp; !params.player_select_state.slots[<span class="number">0</span>].active)
-                        || params.keyboard_input.just_pressed(KeyCode::Escape)
+                    <span class="kw">if </span>back_button.clicked()
+                        || params.menu_input.single().just_pressed(MenuAction::Back)
                     {
-                        <span class="kw-2">*</span>params.menu_page = MenuPage::Home;
-                        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-                        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = params.network_socket {
-                            socket.close();
+                        <span class="kw">if </span>is_confirmed {
+                            params.player_select_state.slots[<span class="number">0</span>].confirmed = <span class="bool-val">false</span>;
+                        } <span class="kw">else if </span>is_active {
+                            params.player_select_state.slots[<span class="number">0</span>].active = <span class="bool-val">false</span>;
+                        } <span class="kw">else </span>{
+                            <span class="kw-2">*</span>params.menu_page = MenuPage::Home;
+
+                            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = params.network_socket {
+                                socket.close();
+                            }
+
+                            ui.ctx().clear_focus();
                         }
-                        ui.ctx().clear_focus();
                     }
 
                     ui.add_space(button_spacing);

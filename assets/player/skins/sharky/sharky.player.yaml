@@ -236,9 +236,6 @@ layers:
       emote_alarm:
         fps: *fps
         frames:
-          - 0
-          - 0
-          - 0
           - 7
           - 6
           - 7

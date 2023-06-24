@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::{damage::DamageRegion, prelude::*};
 
 pub fn install(session: &mut CoreSession) {
@@ -141,15 +143,28 @@ fn update(
             commands.add(
                 move |mut entities: ResMut<Entities>,
                       mut transforms: CompMut<Transform>,
+                      mut emote_regions: CompMut<EmoteRegion>,
                       mut damage_regions: CompMut<DamageRegion>,
                       mut damage_region_owners: CompMut<DamageRegionOwner>,
                       mut lifetimes: CompMut<Lifetime>| {
                     let entity = entities.create();
 
-                    transforms.insert(entity, Transform::from_translation(pos));
-                    damage_regions.insert(entity, DamageRegion { size });
-                    damage_region_owners.insert(entity, DamageRegionOwner(owner));
+                    emote_regions.insert(
+                        entity,
+                        EmoteRegion {
+                            active: true,
+                            size: size * 3.5,
+                            owner: Some(owner),
+                            emote: Emote::Alarm,
+                            direction_sensitive: true,
+                            buffer: Some(Timer::new(Duration::from_millis(200), TimerMode::Once)),
+                        },
+                    );
+
                     lifetimes.insert(entity, Lifetime::new(2.0 / 60.0));
+                    damage_regions.insert(entity, DamageRegion { size });
+                    transforms.insert(entity, Transform::from_translation(pos));
+                    damage_region_owners.insert(entity, DamageRegionOwner(owner));
                 },
             );
         };

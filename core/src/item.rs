@@ -89,7 +89,10 @@ pub struct ItemGrabbed {
 /// Marker component added to items when they are used.
 #[derive(Clone, Copy, TypeUlid)]
 #[ulid = "01GP4DJ84TFB8Z7H9VY7Y0R47H"]
-pub struct ItemUsed;
+pub struct ItemUsed {
+    /// The player that used the item
+    pub owner: Entity,
+}
 
 /// Component defining the grab settings when an item is grabbed.
 ///

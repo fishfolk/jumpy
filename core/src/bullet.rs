@@ -93,6 +93,7 @@ fn update(
     mut bullets: CompMut<Bullet>,
     mut audio_events: ResMut<AudioEvents>,
     invincibles: CompMut<Invincibility>,
+    mut emote_regions: CompMut<EmoteRegion>,
 ) {
     for (entity, (bullet, bullet_handle)) in entities.iter_with((&mut bullets, &bullet_handles)) {
         let Some(bullet_meta) = bullet_assets.get(&bullet_handle.get_bevy_handle()) else {
@@ -115,6 +116,10 @@ fn update(
         let position = {
             let position = transforms.get_mut(entity).unwrap();
             position.translation += bullet.direction * velocity.extend(0.0);
+
+            let emote_size = Vec2::new(*body_diameter * 6.0, *body_diameter * 3.5);
+            emote_regions.insert(entity, EmoteRegion::basic(Emote::Alarm, emote_size, true));
+
             *position
         };
 

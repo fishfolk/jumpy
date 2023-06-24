@@ -11,24 +11,217 @@
 //!
 //! Communication happens directly between LAN peers over the QUIC protocol.
 
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use std::{
+    net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4},
+    time::Duration,
+};
 
-use bevy::tasks::IoTaskPool;
+use bevy::{tasks::IoTaskPool, utils::Instant};
 use bytes::Bytes;
 use futures_lite::{future, FutureExt};
+use mdns_sd::{ServiceDaemon, ServiceEvent, ServiceInfo};
+use smallvec::SmallVec;
 
 use super::*;
+
+pub struct ServerInfo {
+    pub service: ServiceInfo,
+    /// The ping in milliseconds
+    pub ping: Option<u16>,
+}
 
 /// Channel used to do matchmaking over LAN.
 ///
 /// Spawns a task to handle the actual matchmaking.
-pub static LAN_MATCHMAKER: Lazy<LanMatchmaker> = Lazy::new(|| {
+static LAN_MATCHMAKER: Lazy<LanMatchmaker> = Lazy::new(|| {
     let (client, server) = bi_channel();
 
     IoTaskPool::get().spawn(lan_matchmaker(server)).detach();
 
     LanMatchmaker(client)
 });
+
+static MDNS: Lazy<ServiceDaemon> =
+    Lazy::new(|| ServiceDaemon::new().expect("Couldn't start MDNS service discovery thread."));
+
+const MDNS_SERVICE_TYPE: &str = "_jumpy._udp.local.";
+
+#[derive(DerefMut, Deref)]
+struct Pinger(BiChannelClient<PingerRequest, PingerResponse>);
+
+type PingerRequest = SmallVec<[Ipv4Addr; 10]>;
+type PingerResponse = SmallVec<[(Ipv4Addr, Option<u16>); 10]>;
+
+static PINGER: Lazy<Pinger> = Lazy::new(|| {
+    let (client, server) = bi_channel();
+
+    std::thread::spawn(move || pinger(server));
+
+    Pinger(client)
+});
+
+/// Host a server.
+pub fn start_server(service_info: ServiceInfo, player_count: usize) {
+    MDNS.register(service_info)
+        .expect("Could not register MDNS service.");
+    LAN_MATCHMAKER
+        .try_send(LanMatchmakerRequest::StartServer { player_count })
+        .unwrap();
+}
+
+/// Stop hosting a server.
+pub fn stop_server(service_info: &ServiceInfo) {
+    loop {
+        match MDNS.unregister(service_info.get_fullname()) {
+            Ok(_) => break,
+            Err(mdns_sd::Error::Again) => (),
+            Err(e) => {
+                panic!("Error unregistering MDNS service: {e}")
+            }
+        }
+    }
+}
+
+/// Wait for players to join a hosted server.
+pub fn wait_players(joined_players: &mut usize, service_info: &ServiceInfo) -> Option<LanSocket> {
+    while let Ok(response) = LAN_MATCHMAKER.try_recv() {
+        match response {
+            LanMatchmakerResponse::ServerStarted => {}
+            LanMatchmakerResponse::PlayerCount(count) => {
+                *joined_players = count;
+            }
+            LanMatchmakerResponse::GameStarting {
+                lan_socket,
+                player_idx,
+                player_count: _,
+            } => {
+                info!(?player_idx, "Starting network game");
+                loop {
+                    match MDNS.unregister(service_info.get_fullname()) {
+                        Ok(_) => break,
+                        Err(mdns_sd::Error::Again) => (),
+                        Err(e) => panic!("Error unregistering MDNS service: {e}"),
+                    }
+                }
+                return Some(lan_socket);
+            }
+        }
+    }
+    None
+}
+
+/// Join a server hosted by someone else.
+pub fn join_server(server: &ServerInfo) {
+    LAN_MATCHMAKER
+        .try_send(networking::lan::LanMatchmakerRequest::JoinServer {
+            ip: *server.service.get_addresses().iter().next().unwrap(),
+            port: server.service.get_port(),
+        })
+        .unwrap();
+}
+
+/// Leave a joined server.
+pub fn leave_server() {
+    LAN_MATCHMAKER
+        .try_send(LanMatchmakerRequest::StopJoin)
+        .unwrap();
+}
+
+/// Wait for a joined game to start.
+pub fn wait_game_start() -> Option<LanSocket> {
+    while let Ok(message) = LAN_MATCHMAKER.try_recv() {
+        match message {
+            LanMatchmakerResponse::ServerStarted | LanMatchmakerResponse::PlayerCount(_) => {}
+            LanMatchmakerResponse::GameStarting {
+                lan_socket,
+                player_idx,
+                player_count: _,
+            } => {
+                info!(?player_idx, "Starting network game");
+                return Some(lan_socket);
+            }
+        }
+    }
+    None
+}
+
+/// Update server pings and turn on service discovery.
+pub fn prepare_to_join(
+    servers: &mut Vec<ServerInfo>,
+    service_discovery_recv: &mut Option<mdns_sd::Receiver<ServiceEvent>>,
+    ping_update_timer: &Timer,
+) {
+    // Update server pings
+    if ping_update_timer.finished() {
+        PINGER
+            .try_send(
+                servers
+                    .iter()
+                    .map(|x| *x.service.get_addresses().iter().next().unwrap())
+                    .collect(),
+            )
+            .ok();
+    }
+    if let Ok(pings) = PINGER.try_recv() {
+        for (server, ping) in pings {
+            for info in servers.iter_mut() {
+                if info.service.get_addresses().contains(&server) {
+                    info.ping = ping;
+                }
+            }
+        }
+    }
+
+    let events = service_discovery_recv.get_or_insert_with(|| {
+        MDNS.browse(MDNS_SERVICE_TYPE)
+            .expect("Couldn't start service discovery")
+    });
+
+    while let Ok(event) = events.try_recv() {
+        match event {
+            mdns_sd::ServiceEvent::ServiceResolved(info) => servers.push(lan::ServerInfo {
+                service: info,
+                ping: None,
+            }),
+            mdns_sd::ServiceEvent::ServiceRemoved(_, full_name) => {
+                servers.retain(|server| server.service.get_fullname() != full_name);
+            }
+            _ => (),
+        }
+    }
+}
+
+/// Get the current host info or create a new one. When there's an existing
+/// service but its `service_name` is different, the service is recreated and
+/// only then the returned `bool` is `true`.
+pub fn prepare_to_host<'a>(
+    host_info: &'a mut Option<ServiceInfo>,
+    service_name: &str,
+) -> (bool, &'a mut ServiceInfo) {
+    let create_service_info = || {
+        let port = NETWORK_ENDPOINT.local_addr().unwrap().port();
+        mdns_sd::ServiceInfo::new(
+            MDNS_SERVICE_TYPE,
+            service_name,
+            service_name,
+            "",
+            port,
+            None,
+        )
+        .unwrap()
+        .enable_addr_auto()
+    };
+
+    let service_info = host_info.get_or_insert_with(create_service_info);
+
+    let mut is_recreated = false;
+    if service_info.get_hostname() != service_name {
+        stop_server(service_info);
+        is_recreated = true;
+        *service_info = create_service_info();
+    }
+    (is_recreated, service_info)
+}
 
 /// Implementation of the lan matchmaker task.
 ///
@@ -272,6 +465,7 @@ async fn lan_matchmaker(
 pub struct LanMatchmaker(BiChannelClient<LanMatchmakerRequest, LanMatchmakerResponse>);
 
 /// A request that may be sent to the [`LAN_MATCHMAKER`].
+#[derive(Debug)]
 pub enum LanMatchmakerRequest {
     StartServer { player_count: usize },
     JoinServer { ip: Ipv4Addr, port: u16 },
@@ -506,5 +700,32 @@ impl NetworkSocket for LanSocket {
 
     fn player_is_local(&self) -> [bool; MAX_PLAYERS] {
         std::array::from_fn(|i| self.connections[i].is_none() && i < self.player_count)
+    }
+}
+
+fn pinger(server: BiChannelServer<PingerRequest, PingerResponse>) {
+    while let Ok(servers) = server.recv_blocking() {
+        let mut pings = SmallVec::new();
+        for server in servers {
+            let start = Instant::now();
+            let ping_result = ping_rs::send_ping(
+                &IpAddr::V4(server),
+                Duration::from_secs(2),
+                &[1, 2, 3, 4],
+                None,
+            );
+
+            let ping = if let Err(e) = ping_result {
+                warn!("Error pinging {server}: {e:?}");
+                None
+            } else {
+                Some((Instant::now() - start).as_millis() as u16)
+            };
+
+            pings.push((server, ping));
+        }
+        if server.send_blocking(pings).is_err() {
+            break;
+        }
     }
 }

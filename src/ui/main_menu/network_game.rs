@@ -1,62 +1,12 @@
-use std::{
-    net::{IpAddr, Ipv4Addr},
-    time::Duration,
-};
-
-use bevy::utils::Instant;
-use smallvec::SmallVec;
+use std::time::Duration;
 
 use crate::networking::{
-    lan::{LanMatchmakerRequest, LanMatchmakerResponse, LAN_MATCHMAKER},
+    lan,
     online::{OnlineMatchmakerRequest, OnlineMatchmakerResponse, ONLINE_MATCHMAKER},
-    NetworkMatchSocket, NETWORK_ENDPOINT,
+    NetworkMatchSocket,
 };
 
 use super::*;
-
-const MDNS_SERVICE_TYPE: &str = "_jumpy._udp.local.";
-
-static MDNS: Lazy<mdns_sd::ServiceDaemon> = Lazy::new(|| {
-    mdns_sd::ServiceDaemon::new().expect("Couldn't start MDNS service discovery thread.")
-});
-
-#[derive(DerefMut, Deref)]
-pub struct Pinger(
-    BiChannelClient<SmallVec<[Ipv4Addr; 10]>, SmallVec<[(Ipv4Addr, Option<u16>); 10]>>,
-);
-
-static PINGER: Lazy<Pinger> = Lazy::new(|| {
-    let (client, server) = bi_channel();
-
-    std::thread::spawn(move || {
-        while let Ok(servers) = server.recv_blocking() {
-            let mut pings = SmallVec::new();
-            for server in servers {
-                let start = Instant::now();
-                let ping_result = ping_rs::send_ping(
-                    &IpAddr::V4(server),
-                    Duration::from_secs(2),
-                    &[1, 2, 3, 4],
-                    None,
-                );
-
-                let ping = if let Err(e) = ping_result {
-                    warn!("Error pinging {server}: {e:?}");
-                    None
-                } else {
-                    Some((Instant::now() - start).as_millis() as u16)
-                };
-
-                pings.push((server, ping));
-            }
-            if server.send_blocking(pings).is_err() {
-                break;
-            }
-        }
-    });
-
-    Pinger(client)
-});
 
 #[derive(SystemParam)]
 pub struct MatchmakingMenu<'w, 's> {
@@ -76,7 +26,7 @@ pub struct State {
     service_info: Option<mdns_sd::ServiceInfo>,
     status: Status,
     joined_players: usize,
-    lan_servers: Vec<ServerInfo>,
+    lan_servers: Vec<lan::ServerInfo>,
     ping_update_timer: Timer,
 }
 
@@ -101,12 +51,6 @@ impl Default for State {
             ping_update_timer: Timer::new(Duration::from_secs(1), TimerMode::Repeating),
         }
     }
-}
-
-pub struct ServerInfo {
-    pub service: mdns_sd::ServiceInfo,
-    /// The ping in milliseconds
-    pub ping: Option<u16>,
 }
 
 #[derive(Clone)]
@@ -298,59 +242,10 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                         LanMode::Join => {
                             // Stop any running server
                             if let Some(service_info) = host_info.take() {
-                                loop {
-                                    match MDNS.unregister(service_info.get_fullname()) {
-                                        Ok(_) => break,
-                                        Err(mdns_sd::Error::Again) => (),
-                                        Err(e) => panic!("Error unregistering MDNS service: {e}"),
-                                    }
-                                }
+                                lan::stop_server(&service_info);
                                 *status = Status::Idle;
                             }
-
-                            // Update server pings
-                            if ping_update_timer.finished() {
-                                PINGER
-                                    .try_send(
-                                        lan_servers
-                                            .iter()
-                                            .map(|x| {
-                                                *x.service.get_addresses().iter().next().unwrap()
-                                            })
-                                            .collect(),
-                                    )
-                                    .ok();
-                            }
-                            if let Ok(pings) = PINGER.try_recv() {
-                                for (server, ping) in pings {
-                                    for info in lan_servers.iter_mut() {
-                                        if info.service.get_addresses().contains(&server) {
-                                            info.ping = ping;
-                                        }
-                                    }
-                                }
-                            }
-
-                            let events = lan_service_discovery_recv.get_or_insert_with(|| {
-                                MDNS.browse(MDNS_SERVICE_TYPE)
-                                    .expect("Couldn't start service discovery")
-                            });
-
-                            while let Ok(event) = events.try_recv() {
-                                match event {
-                                    mdns_sd::ServiceEvent::ServiceResolved(info) => lan_servers
-                                        .push(ServerInfo {
-                                            service: info,
-                                            ping: None,
-                                        }),
-                                    mdns_sd::ServiceEvent::ServiceRemoved(_, full_name) => {
-                                        lan_servers.retain(|server| {
-                                            server.service.get_fullname() != full_name
-                                        });
-                                    }
-                                    _ => (),
-                                }
-                            }
+                            lan::prepare_to_join(lan_servers, lan_service_discovery_recv, ping_update_timer);
 
                             if *status != Status::Joining {
                                 ui.themed_label(
@@ -370,18 +265,8 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                             .show(ui)
                                             .clicked()
                                             {
+                                                lan::join_server(server);
                                                 *status = Status::Joining;
-                                                LAN_MATCHMAKER.try_send(
-                                                    networking::lan::LanMatchmakerRequest::JoinServer {
-                                                        ip: *server
-                                                            .service
-                                                            .get_addresses()
-                                                            .iter()
-                                                            .next()
-                                                            .unwrap(),
-                                                        port: server.service.get_port(),
-                                                    },
-                                                ).unwrap();
                                             }
 
                                             let label_text = egui::RichText::new(format!(
@@ -411,24 +296,13 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                     &params.localization.get("joining"),
                                 );
 
-                                while let Ok(message) = LAN_MATCHMAKER.try_recv() {
-                                    match message {
-                                        LanMatchmakerResponse::ServerStarted => (),
-                                        LanMatchmakerResponse::PlayerCount(_) => (),
-                                        LanMatchmakerResponse::GameStarting {
-                                            lan_socket,
-                                            player_idx,
-                                            player_count: _,
-                                        } => {
-                                            info!(?player_idx, "Starting network game");
-                                            params.commands.insert_resource(NetworkMatchSocket(
-                                                Box::new(lan_socket),
-                                            ));
+                                if let Some(lan_socket) = lan::wait_game_start() {
+                                    params.commands.insert_resource(NetworkMatchSocket(
+                                        Box::new(lan_socket),
+                                    ));
 
-                                            *status = default();
-                                            *params.menu_page = MenuPage::PlayerSelect;
-                                        }
-                                    }
+                                    *status = default();
+                                    *params.menu_page = MenuPage::PlayerSelect;
                                 }
                             }
 
@@ -488,32 +362,9 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                 });
                             });
 
-                            let create_service_info = || {
-                                let port = NETWORK_ENDPOINT.local_addr().unwrap().port();
-                                mdns_sd::ServiceInfo::new(
-                                    MDNS_SERVICE_TYPE,
-                                    service_name,
-                                    service_name,
-                                    "",
-                                    port,
-                                    None,
-                                )
-                                .unwrap()
-                                .enable_addr_auto()
-                            };
-
-                            let service_info = host_info.get_or_insert_with(create_service_info);
-
-                            if service_info.get_hostname() != service_name {
-                                loop {
-                                    match MDNS.unregister(service_info.get_fullname()) {
-                                        Ok(_) => break,
-                                        Err(mdns_sd::Error::Again) => (),
-                                        Err(e) => panic!("Error unregistering MDNS service: {e}"),
-                                    }
-                                }
+                            let (is_recreated, service_info) = lan::prepare_to_host(host_info, service_name);
+                            if is_recreated {
                                 *status = Status::Idle;
-                                *service_info = create_service_info();
                             }
 
                             ui.add_space(params.game.ui_theme.font_styles.normal.size);
@@ -527,46 +378,18 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                 .clicked()
                                 {
                                     *status = Status::Hosting;
-                                    MDNS.register(service_info.clone())
-                                        .expect("Could not register MDNS service.");
-                                    LAN_MATCHMAKER
-                                        .try_send(LanMatchmakerRequest::StartServer {
-                                            player_count: *player_count,
-                                        })
-                                        .unwrap();
+                                    lan::start_server(service_info.clone(), *player_count);
                                 }
 
                             // If we are hosting a match currently
                             } else if *status == Status::Hosting {
-                                while let Ok(response) = LAN_MATCHMAKER.try_recv() {
-                                    match response {
-                                        LanMatchmakerResponse::PlayerCount(count) => {
-                                            *joined_players = count;
-                                        }
-                                        LanMatchmakerResponse::GameStarting {
-                                            lan_socket,
-                                            player_idx,
-                                            player_count: _,
-                                        } => {
-                                            info!(?player_idx, "Starting network game");
-                                            params.commands.insert_resource(NetworkMatchSocket(
-                                                Box::new(lan_socket),
-                                            ));
+                                if let Some(lan_socket) = lan::wait_players(joined_players, service_info) {
+                                    params.commands.insert_resource(NetworkMatchSocket(
+                                        Box::new(lan_socket),
+                                    ));
 
-                                            *status = default();
-                                            *params.menu_page = MenuPage::PlayerSelect;
-                                            loop {
-                                                match MDNS.unregister(service_info.get_fullname()) {
-                                                    Ok(_) => break,
-                                                    Err(mdns_sd::Error::Again) => (),
-                                                    Err(e) => panic!(
-                                                        "Error unregistering MDNS service: {e}"
-                                                    ),
-                                                }
-                                            }
-                                        }
-                                        _ => (),
-                                    }
+                                    *status = default();
+                                    *params.menu_page = MenuPage::PlayerSelect;
                                 }
 
                                 ui.horizontal(|ui| {
@@ -577,15 +400,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                     .show(ui)
                                     .clicked()
                                     {
-                                        loop {
-                                            match MDNS.unregister(service_info.get_fullname()) {
-                                                Ok(_) => break,
-                                                Err(mdns_sd::Error::Again) => (),
-                                                Err(e) => {
-                                                    panic!("Error unregistering MDNS service: {e}")
-                                                }
-                                            }
-                                        }
+                                        lan::stop_server(service_info);
                                         *status = Status::Idle;
                                     }
 
@@ -746,22 +561,12 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                 *status = Status::Idle;
                             }
                             Status::Joining => {
-                                LAN_MATCHMAKER
-                                    .try_send(LanMatchmakerRequest::StopJoin)
-                                    .unwrap();
+                                lan::leave_server();
                                 *status = Status::Idle;
                             }
                             Status::Hosting => {
                                 if let Some(service_info) = host_info.take() {
-                                    loop {
-                                        match MDNS.unregister(service_info.get_fullname()) {
-                                            Ok(_) => break,
-                                            Err(mdns_sd::Error::Again) => (),
-                                            Err(e) => {
-                                                panic!("Error unregistering MDNS service: {e}")
-                                            }
-                                        }
-                                    }
+                                    lan::stop_server(&service_info);
                                 }
                                 *status = Status::Idle;
                             }

@@ -47,7 +47,10 @@ static MDNS: Lazy<ServiceDaemon> =
 const MDNS_SERVICE_TYPE: &str = "_jumpy._udp.local.";
 
 #[derive(DerefMut, Deref)]
-struct Pinger(BiChannelClient<SmallVec<[Ipv4Addr; 10]>, SmallVec<[(Ipv4Addr, Option<u16>); 10]>>);
+struct Pinger(BiChannelClient<PingerRequest, PingerResponse>);
+
+type PingerRequest = SmallVec<[Ipv4Addr; 10]>;
+type PingerResponse = SmallVec<[(Ipv4Addr, Option<u16>); 10]>;
 
 static PINGER: Lazy<Pinger> = Lazy::new(|| {
     let (client, server) = bi_channel();
@@ -700,9 +703,7 @@ impl NetworkSocket for LanSocket {
     }
 }
 
-fn pinger(
-    server: BiChannelServer<SmallVec<[Ipv4Addr; 10]>, SmallVec<[(Ipv4Addr, Option<u16>); 10]>>,
-) {
+fn pinger(server: BiChannelServer<PingerRequest, PingerResponse>) {
     while let Ok(servers) = server.recv_blocking() {
         let mut pings = SmallVec::new();
         for server in servers {

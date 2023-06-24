@@ -389,6 +389,19 @@
 <a href="#293" id="293">293</a>
 <a href="#294" id="294">294</a>
 <a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>std::time::Duration;
 
@@ -408,6 +421,8 @@
 </span><span class="attr">#[derive(Clone, TypeUlid, Debug)]
 #[ulid = <span class="string">&quot;01GPY9N9CBR6EFJX0RS2H2K58J&quot;</span>]
 </span><span class="kw">pub struct </span>LitGrenade {
+    <span class="doccomment">/// The owner of the grenade.
+    </span><span class="kw">pub </span>owner: Entity,
     <span class="doccomment">/// The amount of time left until the grenade explodes.
     </span><span class="kw">pub </span>fuse_time: Timer,
 }
@@ -499,14 +514,14 @@
 }
 
 <span class="kw">fn </span>update_idle_grenades(
+    <span class="kw-2">mut </span>commands: Commands,
     entities: Res&lt;Entities&gt;,
+    items_used: Comp&lt;ItemUsed&gt;,
     element_handles: Comp&lt;ElementHandle&gt;,
     element_assets: BevyAssets&lt;ElementMeta&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
     <span class="kw-2">mut </span>idle_grenades: CompMut&lt;IdleGrenade&gt;,
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
-    <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
-    <span class="kw-2">mut </span>commands: Commands,
 ) {
     <span class="kw">for </span>(entity, (_grenade, element_handle)) <span class="kw">in
         </span>entities.iter_with((<span class="kw-2">&amp;mut </span>idle_grenades, <span class="kw-2">&amp;</span>element_handles))
@@ -526,24 +541,33 @@
         <span class="kw">let </span>fuse_time = <span class="kw-2">*</span>fuse_time;
 
         <span class="kw">if </span>items_used.get(entity).is_some() {
-            audio_events.play(fuse_sound.clone(), <span class="kw-2">*</span>fuse_sound_volume);
-            items_used.remove(entity);
-            <span class="kw">let </span>animated_sprite = animated_sprites.get_mut(entity).unwrap();
+            <span class="comment">// Animate Grenade
+            </span><span class="kw">let </span>animated_sprite = animated_sprites.get_mut(entity).unwrap();
             animated_sprite.frames = Arc::from([<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]);
             animated_sprite.repeat = <span class="bool-val">true</span>;
             animated_sprite.fps = <span class="number">8.0</span>;
+
+            <span class="comment">// Play that hissss sound
+            </span>audio_events.play(fuse_sound.clone(), <span class="kw-2">*</span>fuse_sound_volume);
+
             commands.add(
-                <span class="kw">move </span>|<span class="kw-2">mut </span>idle: CompMut&lt;IdleGrenade&gt;, <span class="kw-2">mut </span>lit: CompMut&lt;LitGrenade&gt;| {
+                <span class="kw">move </span>|<span class="kw-2">mut </span>lit: CompMut&lt;LitGrenade&gt;,
+                      <span class="kw-2">mut </span>idle: CompMut&lt;IdleGrenade&gt;,
+                      <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;| {
                     idle.remove(entity);
+
                     lit.insert(
                         entity,
                         LitGrenade {
+                            owner: items_used.get(entity).unwrap().owner,
                             fuse_time: Timer::new(
                                 Duration::from_secs_f32(fuse_time),
                                 TimerMode::Once,
                             ),
                         },
                     );
+
+                    items_used.remove(entity);
                 },
             );
         }
@@ -551,20 +575,20 @@
 }
 
 <span class="kw">fn </span>update_lit_grenades(
+    time: Res&lt;Time&gt;,
+    <span class="kw-2">mut </span>commands: Commands,
     entities: Res&lt;Entities&gt;,
-    element_handles: Comp&lt;ElementHandle&gt;,
-    element_assets: BevyAssets&lt;ElementMeta&gt;,
     transforms: CompMut&lt;Transform&gt;,
+    element_handles: Comp&lt;ElementHandle&gt;,
+    spawners: Comp&lt;DehydrateOutOfBounds&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
-    <span class="kw-2">mut </span>trauma_events: ResMut&lt;CameraTraumaEvents&gt;,
     <span class="kw-2">mut </span>lit_grenades: CompMut&lt;LitGrenade&gt;,
-    <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
+    player_inventories: PlayerInventories,
+    element_assets: BevyAssets&lt;ElementMeta&gt;,
     <span class="kw-2">mut </span>emote_regions: CompMut&lt;EmoteRegion&gt;,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
-    player_inventories: PlayerInventories,
-    <span class="kw-2">mut </span>commands: Commands,
-    spawners: Comp&lt;DehydrateOutOfBounds&gt;,
-    time: Res&lt;Time&gt;,
+    <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
+    <span class="kw-2">mut </span>trauma_events: ResMut&lt;CameraTraumaEvents&gt;,
 ) {
     <span class="kw">for </span>(entity, (grenade, element_handle, spawner)) <span class="kw">in
         </span>entities.iter_with((<span class="kw-2">&amp;mut </span>lit_grenades, <span class="kw-2">&amp;</span>element_handles, <span class="kw-2">&amp;</span>spawners))
@@ -594,10 +618,12 @@
             emote_regions.insert(
                 entity,
                 EmoteRegion {
+                    active: <span class="bool-val">true</span>,
+                    emote: Emote::Alarm,
+                    owner: <span class="prelude-val">Some</span>(grenade.owner),
                     direction_sensitive: <span class="bool-val">true</span>,
                     size: <span class="kw-2">*</span>damage_region_size * <span class="number">2.0</span>,
-                    emote: Emote::Alarm,
-                    active: <span class="bool-val">true</span>,
+                    buffer: <span class="prelude-val">Some</span>(Timer::new(Duration::from_millis(<span class="number">400</span>), TimerMode::Once)),
                 },
             );
         }

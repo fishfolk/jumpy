@@ -1066,6 +1066,39 @@
 <a href="#970" id="970">970</a>
 <a href="#971" id="971">971</a>
 <a href="#972" id="972">972</a>
+<a href="#973" id="973">973</a>
+<a href="#974" id="974">974</a>
+<a href="#975" id="975">975</a>
+<a href="#976" id="976">976</a>
+<a href="#977" id="977">977</a>
+<a href="#978" id="978">978</a>
+<a href="#979" id="979">979</a>
+<a href="#980" id="980">980</a>
+<a href="#981" id="981">981</a>
+<a href="#982" id="982">982</a>
+<a href="#983" id="983">983</a>
+<a href="#984" id="984">984</a>
+<a href="#985" id="985">985</a>
+<a href="#986" id="986">986</a>
+<a href="#987" id="987">987</a>
+<a href="#988" id="988">988</a>
+<a href="#989" id="989">989</a>
+<a href="#990" id="990">990</a>
+<a href="#991" id="991">991</a>
+<a href="#992" id="992">992</a>
+<a href="#993" id="993">993</a>
+<a href="#994" id="994">994</a>
+<a href="#995" id="995">995</a>
+<a href="#996" id="996">996</a>
+<a href="#997" id="997">997</a>
+<a href="#998" id="998">998</a>
+<a href="#999" id="999">999</a>
+<a href="#1000" id="1000">1000</a>
+<a href="#1001" id="1001">1001</a>
+<a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
+<a href="#1005" id="1005">1005</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Player controller, states, and animation implementation.
 
 </span><span class="kw">use </span>std::collections::VecDeque;
@@ -1141,9 +1174,13 @@
 <span class="doccomment">/// A component representing a region in which a player should emote in some way.
 ///
 /// For example, a lit grenade could have a
-</span><span class="attr">#[derive(Clone, TypeUlid)]
+</span><span class="attr">#[derive(Debug, Clone, TypeUlid)]
 #[ulid = <span class="string">&quot;01GR2QVYXRX5V689C4EMBDS3AQ&quot;</span>]
 </span><span class="kw">pub struct </span>EmoteRegion {
+    <span class="doccomment">/// The entity that owns this emote region.
+    </span><span class="kw">pub </span>owner: <span class="prelude-ty">Option</span>&lt;Entity&gt;,
+    <span class="doccomment">/// A buffer to prevent the player from spamming emotes.
+    </span><span class="kw">pub </span>buffer: <span class="prelude-ty">Option</span>&lt;Timer&gt;,
     <span class="doccomment">/// Whether or not the player must be looking at the center of the region to emote.
     </span><span class="kw">pub </span>direction_sensitive: bool,
     <span class="doccomment">/// The size of the emote region
@@ -1158,16 +1195,30 @@
 <span class="kw">impl </span>Default <span class="kw">for </span>EmoteRegion {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            direction_sensitive: <span class="bool-val">true</span>,
-            size: Vec2::ZERO,
-            emote: default(),
+            owner: <span class="prelude-val">None</span>,
             active: <span class="bool-val">true</span>,
+            buffer: <span class="prelude-val">None</span>,
+            emote: default(),
+            size: Vec2::ZERO,
+            direction_sensitive: <span class="bool-val">true</span>,
+        }
+    }
+}
+
+<span class="kw">impl </span>EmoteRegion {
+    <span class="kw">pub fn </span>basic(emote: Emote, size: Vec2, sensitive: bool) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            emote,
+            size,
+            active: <span class="bool-val">true</span>,
+            direction_sensitive: sensitive,
+            ..default()
         }
     }
 }
 
 <span class="doccomment">/// A kind of emote the player can make.
-</span><span class="attr">#[derive(Clone, Copy, Default, PartialEq, Eq)]
+</span><span class="attr">#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Emote {
     <span class="doccomment">/// The player is alarmed!! Like a lit grenade was just thrown at them.
     </span><span class="attr">#[default]
@@ -1302,7 +1353,7 @@
             <span class="comment">// If the player has an item
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = inventories.get(player).and_then(|x| x.<span class="number">0</span>) {
                 <span class="comment">// Use it
-                </span>items_used.insert(item, ItemUsed);
+                </span>items_used.insert(item, ItemUsed { owner: player });
             }
         })
         .system()
@@ -1904,14 +1955,15 @@
 }
 
 <span class="kw">fn </span>player_facial_animations(
+    time: Res&lt;Time&gt;,
     entities: Res&lt;Entities&gt;,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
-    emote_regions: Comp&lt;EmoteRegion&gt;,
+    <span class="kw-2">mut </span>emote_regions: CompMut&lt;EmoteRegion&gt;,
     transforms: Comp&lt;Transform&gt;,
     atlas_sprites: Comp&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>emote_states: CompMut&lt;EmoteState&gt;,
     players_killed: Comp&lt;PlayerKilled&gt;,
-    animation_bank_sprites: Comp&lt;AnimationBankSprite&gt;,
+    animation_bank_sprites: CompMut&lt;AnimationBankSprite&gt;,
 ) {
     <span class="kw">for </span>(player_ent, (player_layer, atlas_sprite, animation_bank, emote_state)) <span class="kw">in </span>entities
         .iter_with((
@@ -1930,14 +1982,28 @@
         <span class="kw">let </span>player_pos = transforms.get(player_ent).unwrap().translation.truncate();
 
         <span class="kw">let </span><span class="kw-2">mut </span>triggered_emote = <span class="prelude-val">None</span>;
-        <span class="kw">for </span>(<span class="kw">_</span>, (emote_region, transform)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;</span>emote_regions, <span class="kw-2">&amp;</span>transforms)) {
+        <span class="kw">for </span>(<span class="kw">_</span>, (emote_region, transform)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>emote_regions, <span class="kw-2">&amp;</span>transforms))
+        {
             <span class="kw">if </span>!emote_region.active {
                 <span class="kw">continue</span>;
             }
-            <span class="kw">let </span>emote_pos = transform.translation.truncate();
 
+            <span class="comment">// If a buffer exists, tick it.
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(buffer) = emote_region.buffer.as_mut() {
+                buffer.tick(time.delta());
+
+                <span class="comment">// If the buffer is not finished, and the player is the owner, skip this emote.
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(owner) = emote_region.owner.as_ref() {
+                    <span class="kw">if </span><span class="kw-2">*</span>owner == player_ent &amp;&amp; !(buffer.finished()) {
+                        <span class="kw">continue</span>;
+                    }
+                }
+            }
+
+            <span class="kw">let </span>emote_pos = transform.translation.truncate();
             <span class="kw">let </span>direction = <span class="kw">if </span>atlas_sprite.flip_x { -<span class="number">1.0f32 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
             <span class="kw">let </span>is_facing_region = direction.signum() != (player_pos.x - emote_pos.x).signum();
+
             <span class="kw">if </span>!emote_region.direction_sensitive || is_facing_region {
                 <span class="kw">let </span>emote_rect = Rect::new(
                     emote_pos.x,

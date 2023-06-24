@@ -397,7 +397,24 @@
 <a href="#301" id="301">301</a>
 <a href="#302" id="302">302</a>
 <a href="#303" id="303">303</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{damage::DamageRegion, prelude::<span class="kw-2">*</span>};
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+</pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
+
+<span class="kw">use crate</span>::{damage::DamageRegion, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>CoreSession) {
     session
@@ -540,15 +557,28 @@
             commands.add(
                 <span class="kw">move </span>|<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
                       <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
+                      <span class="kw-2">mut </span>emote_regions: CompMut&lt;EmoteRegion&gt;,
                       <span class="kw-2">mut </span>damage_regions: CompMut&lt;DamageRegion&gt;,
                       <span class="kw-2">mut </span>damage_region_owners: CompMut&lt;DamageRegionOwner&gt;,
                       <span class="kw-2">mut </span>lifetimes: CompMut&lt;Lifetime&gt;| {
                     <span class="kw">let </span>entity = entities.create();
 
-                    transforms.insert(entity, Transform::from_translation(pos));
-                    damage_regions.insert(entity, DamageRegion { size });
-                    damage_region_owners.insert(entity, DamageRegionOwner(owner));
+                    emote_regions.insert(
+                        entity,
+                        EmoteRegion {
+                            active: <span class="bool-val">true</span>,
+                            size: size * <span class="number">3.5</span>,
+                            owner: <span class="prelude-val">Some</span>(owner),
+                            emote: Emote::Alarm,
+                            direction_sensitive: <span class="bool-val">true</span>,
+                            buffer: <span class="prelude-val">Some</span>(Timer::new(Duration::from_millis(<span class="number">200</span>), TimerMode::Once)),
+                        },
+                    );
+
                     lifetimes.insert(entity, Lifetime::new(<span class="number">2.0 </span>/ <span class="number">60.0</span>));
+                    damage_regions.insert(entity, DamageRegion { size });
+                    transforms.insert(entity, Transform::from_translation(pos));
+                    damage_region_owners.insert(entity, DamageRegionOwner(owner));
                 },
             );
         };

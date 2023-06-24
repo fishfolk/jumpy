@@ -284,6 +284,11 @@
 <a href="#188" id="188">188</a>
 <a href="#189" id="189">189</a>
 <a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Generic bullet implementation.
 //!
 //! These components are used for things like the musket and sniper rifle bullets.
@@ -379,6 +384,7 @@
     <span class="kw-2">mut </span>bullets: CompMut&lt;Bullet&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
     invincibles: CompMut&lt;Invincibility&gt;,
+    <span class="kw-2">mut </span>emote_regions: CompMut&lt;EmoteRegion&gt;,
 ) {
     <span class="kw">for </span>(entity, (bullet, bullet_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>bullets, <span class="kw-2">&amp;</span>bullet_handles)) {
         <span class="kw">let </span><span class="prelude-val">Some</span>(bullet_meta) = bullet_assets.get(<span class="kw-2">&amp;</span>bullet_handle.get_bevy_handle()) <span class="kw">else </span>{
@@ -401,6 +407,10 @@
         </span><span class="kw">let </span>position = {
             <span class="kw">let </span>position = transforms.get_mut(entity).unwrap();
             position.translation += bullet.direction * velocity.extend(<span class="number">0.0</span>);
+
+            <span class="kw">let </span>emote_size = Vec2::new(<span class="kw-2">*</span>body_diameter * <span class="number">6.0</span>, <span class="kw-2">*</span>body_diameter * <span class="number">3.5</span>);
+            emote_regions.insert(entity, EmoteRegion::basic(Emote::Alarm, emote_size, <span class="bool-val">true</span>));
+
             <span class="kw-2">*</span>position
         };
 

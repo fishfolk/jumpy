@@ -391,6 +391,9 @@
 <a href="#295" id="295">295</a>
 <a href="#296" id="296">296</a>
 <a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Common item code.
 //!
 //! An item is anything in the game that can be picked up by the player.
@@ -482,7 +485,10 @@
 <span class="doccomment">/// Marker component added to items when they are used.
 </span><span class="attr">#[derive(Clone, Copy, TypeUlid)]
 #[ulid = <span class="string">&quot;01GP4DJ84TFB8Z7H9VY7Y0R47H&quot;</span>]
-</span><span class="kw">pub struct </span>ItemUsed;
+</span><span class="kw">pub struct </span>ItemUsed {
+    <span class="doccomment">/// The player that used the item
+    </span><span class="kw">pub </span>owner: Entity,
+}
 
 <span class="doccomment">/// Component defining the grab settings when an item is grabbed.
 ///

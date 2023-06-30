@@ -124,7 +124,7 @@ layers:
         repeat: false
   fin:
     atlas: ./pescy-fin.atlas.yaml
-    offset: [-11, 3]
+    offset: [-14, 3]
     animations:
       idle:
         fps: *fps

@@ -30,7 +30,6 @@ bevy_fluent         = "0.6"
 bevy_framepace      = "0.12"
 bevy_kira_audio     = { version = "0.15", features = ["ogg"], default-features = false }
 bevy_tweening       = { version = "0.7", default-features = false }
-bevy_utils          = "0.10"
 
 async-timer            = { version = "0.7", optional = true }
 bytemuck               = "1.12"

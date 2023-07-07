@@ -2855,7 +2855,6 @@ dependencies = [
  "bevy_framepace",
  "bevy_kira_audio",
  "bevy_tweening",
- "bevy_utils",
  "bitfield",
  "bones_bevy_asset",
  "bones_bevy_renderer",

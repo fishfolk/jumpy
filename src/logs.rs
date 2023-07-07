@@ -8,13 +8,13 @@
 pub mod prelude {
     //! The Bevy Log Prelude.
     #[doc(hidden)]
-    pub use bevy_utils::tracing::{
+    pub use bevy::utils::tracing::{
         debug, debug_span, error, error_span, info, info_span, trace, trace_span, warn, warn_span,
     };
 }
 
 use bevy::prelude::{App, Plugin};
-pub use bevy_utils::tracing::{
+pub use bevy::utils::tracing::{
     debug, debug_span, error, error_span, info, info_span, trace, trace_span, warn, warn_span,
     Level,
 };
@@ -174,7 +174,7 @@ impl Plugin for JumpyLogPlugin {
 
         let logger_already_set = LogTracer::init().is_err();
         let subscriber_already_set =
-            bevy_utils::tracing::subscriber::set_global_default(finished_subscriber).is_err();
+            bevy::utils::tracing::subscriber::set_global_default(finished_subscriber).is_err();
 
         match (logger_already_set, subscriber_already_set) {
 			(true, true) => warn!(

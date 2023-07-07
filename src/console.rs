@@ -24,7 +24,7 @@ impl Default for ConsoleLogChannel {
     }
 }
 
-/// [`ConsoleLogBuffer`] static for sending and receiving console log messages.
+/// [`ConsoleLogChannel`] static for sending and receiving console log messages.
 pub static CONSOLE_LOG_CHANNEL: Lazy<ConsoleLogChannel> = Lazy::new(default);
 /// Static buffer pool for log messages to avoid re-allocating every time we send a message over the
 /// channel.

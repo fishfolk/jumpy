@@ -94,36 +94,40 @@ fn debug_tools_window(
         .id(egui::Id::new("debug_tools"))
         .open(&mut visible)
         .show(egui_ctxs.ctx_mut(), |ui| {
+            ui.heading("Render");
+
             // Show collision shapes
             ui.checkbox(
                 &mut core_debug_settings.show_kinematic_colliders,
-                format!("{} ( F10 )", localization.get("show-kinematic-colliders")),
+                format!("{} ( F10 )", localization.get("kinematic-colliders")),
             );
             ui.checkbox(
                 &mut core_debug_settings.show_damage_regions,
-                format!("{} ( F10 )", localization.get("show-damage-regions")),
+                format!("{} ( F10 )", localization.get("damage-regions")),
             );
             ui.checkbox(
                 &mut core_debug_settings.show_pathfinding_lines,
-                localization.get("show-pathfinding-lines"),
+                localization.get("pathfinding-lines"),
             );
+
+            ui.heading("Windows");
 
             // Show world inspector
             ui.checkbox(
                 &mut show_inspector.0,
-                format!("{} ( F9 )", localization.get("show-world-inspector")),
+                format!("{} ( F9 )", localization.get("world-inspector")),
             );
 
             // Show frame time diagnostics
             ui.checkbox(
                 &mut show_debug_windows.frame_time_diagnostics,
-                format!("{} ( F8 )", localization.get("show-frame-time-diagnostics")),
+                format!("{} ( F8 )", localization.get("frame-time-diagnostics")),
             );
 
             // Show profiler
             ui.checkbox(
-                &mut show_debug_windows.frame_time_diagnostics,
-                format!("{} ( F7 )", localization.get("show-profiler")),
+                &mut show_debug_windows.profiler,
+                format!("{} ( F7 )", localization.get("profiler")),
             );
 
             // Snapshot/Restore buttons
@@ -245,7 +249,7 @@ fn profiler_window(
     localization: Res<Localization>,
     mut egui_ctx: EguiContexts,
 ) {
-    puffin::set_scopes_on(show.profiler);
+    puffin::set_scopes_on(true);
     if show.profiler {
         egui::Window::new(&localization.get("profiler"))
             .id(egui::Id::new("profiler"))

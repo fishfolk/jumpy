@@ -1,8 +1,8 @@
 //! Internal prelude used to easily import common types.
 
 pub use crate::{
-    assets::*, audio::*, bevy_states::*, camera::*, config::*, debug::*, input::*, loading::*,
-    localization::*, metadata::*, platform::*, session::*, ui::*, utils::*, *,
+    assets::*, audio::*, bevy_states::*, camera::*, config::*, console::*, debug::*, input::*,
+    loading::*, localization::*, logs::*, metadata::*, platform::*, session::*, ui::*, utils::*, *,
 };
 pub use anyhow::Context;
 pub use jumpy_core::bevy_prelude::*;

@@ -42,7 +42,6 @@ use crate::prelude::{ConsoleBufferResource, ConsoleLogBuffer, ConsoleLogBufferWr
 ///             filter: "wgpu=error,bevy_render=info,bevy_ecs=trace".to_string(),
 ///         })
 ///         .run();
-/// }
 /// ```
 ///
 /// Log level can also be changed using the `RUST_LOG` environment variable.

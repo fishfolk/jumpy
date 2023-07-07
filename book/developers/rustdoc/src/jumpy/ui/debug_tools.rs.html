@@ -351,6 +351,10 @@
 <a href="#255" id="255">255</a>
 <a href="#256" id="256">256</a>
 <a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::{
     diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::<span class="kw-2">*</span>,
@@ -447,36 +451,40 @@
         </span>.id(egui::Id::new(<span class="string">&quot;debug_tools&quot;</span>))
         .open(<span class="kw-2">&amp;mut </span>visible)
         .show(egui_ctxs.ctx_mut(), |ui| {
+            ui.heading(<span class="string">&quot;Render&quot;</span>);
+
             <span class="comment">// Show collision shapes
             </span>ui.checkbox(
                 <span class="kw-2">&amp;mut </span>core_debug_settings.show_kinematic_colliders,
-                <span class="macro">format!</span>(<span class="string">&quot;{} ( F10 )&quot;</span>, localization.get(<span class="string">&quot;show-kinematic-colliders&quot;</span>)),
+                <span class="macro">format!</span>(<span class="string">&quot;{} ( F10 )&quot;</span>, localization.get(<span class="string">&quot;kinematic-colliders&quot;</span>)),
             );
             ui.checkbox(
                 <span class="kw-2">&amp;mut </span>core_debug_settings.show_damage_regions,
-                <span class="macro">format!</span>(<span class="string">&quot;{} ( F10 )&quot;</span>, localization.get(<span class="string">&quot;show-damage-regions&quot;</span>)),
+                <span class="macro">format!</span>(<span class="string">&quot;{} ( F10 )&quot;</span>, localization.get(<span class="string">&quot;damage-regions&quot;</span>)),
             );
             ui.checkbox(
                 <span class="kw-2">&amp;mut </span>core_debug_settings.show_pathfinding_lines,
-                localization.get(<span class="string">&quot;show-pathfinding-lines&quot;</span>),
+                localization.get(<span class="string">&quot;pathfinding-lines&quot;</span>),
             );
+
+            ui.heading(<span class="string">&quot;Windows&quot;</span>);
 
             <span class="comment">// Show world inspector
             </span>ui.checkbox(
                 <span class="kw-2">&amp;mut </span>show_inspector.<span class="number">0</span>,
-                <span class="macro">format!</span>(<span class="string">&quot;{} ( F9 )&quot;</span>, localization.get(<span class="string">&quot;show-world-inspector&quot;</span>)),
+                <span class="macro">format!</span>(<span class="string">&quot;{} ( F9 )&quot;</span>, localization.get(<span class="string">&quot;world-inspector&quot;</span>)),
             );
 
             <span class="comment">// Show frame time diagnostics
             </span>ui.checkbox(
                 <span class="kw-2">&amp;mut </span>show_debug_windows.frame_time_diagnostics,
-                <span class="macro">format!</span>(<span class="string">&quot;{} ( F8 )&quot;</span>, localization.get(<span class="string">&quot;show-frame-time-diagnostics&quot;</span>)),
+                <span class="macro">format!</span>(<span class="string">&quot;{} ( F8 )&quot;</span>, localization.get(<span class="string">&quot;frame-time-diagnostics&quot;</span>)),
             );
 
             <span class="comment">// Show profiler
             </span>ui.checkbox(
-                <span class="kw-2">&amp;mut </span>show_debug_windows.frame_time_diagnostics,
-                <span class="macro">format!</span>(<span class="string">&quot;{} ( F7 )&quot;</span>, localization.get(<span class="string">&quot;show-profiler&quot;</span>)),
+                <span class="kw-2">&amp;mut </span>show_debug_windows.profiler,
+                <span class="macro">format!</span>(<span class="string">&quot;{} ( F7 )&quot;</span>, localization.get(<span class="string">&quot;profiler&quot;</span>)),
             );
 
             <span class="comment">// Snapshot/Restore buttons
@@ -598,7 +606,7 @@
     localization: Res&lt;Localization&gt;,
     <span class="kw-2">mut </span>egui_ctx: EguiContexts,
 ) {
-    puffin::set_scopes_on(show.profiler);
+    puffin::set_scopes_on(<span class="bool-val">true</span>);
     <span class="kw">if </span>show.profiler {
         egui::Window::new(<span class="kw-2">&amp;</span>localization.get(<span class="string">&quot;profiler&quot;</span>))
             .id(egui::Id::new(<span class="string">&quot;profiler&quot;</span>))

@@ -1,110 +1,63 @@
-use std::{
-    io,
-    sync::{Arc, Mutex},
-};
+use std::io;
 
+use async_channel::{Receiver, Sender};
+use bevy::prelude::default;
 #[allow(unused_imports)]
 use bevy::prelude::{App, EventWriter, IntoSystemConfig, Plugin, Res, Resource};
-use tracing_subscriber::fmt::MakeWriter;
+use byte_pool::BytePool;
+use once_cell::sync::Lazy;
 
 #[cfg(not(target_arch = "wasm32"))]
 use bevy_console::{ConsolePlugin, ConsoleSet, PrintConsoleLine};
 
-/// A shared buffer for exposing logs to bevy systems,
-/// primarily used to display logs in in-game console.
-#[derive(Clone)]
-pub struct ConsoleLogBuffer(pub Arc<Mutex<Vec<u8>>>);
-
-impl Default for ConsoleLogBuffer {
+/// Sender and receiver for console log messages.
+///
+/// Messages should be allocated out of the [`CONSOLE_LOG_BUFFER].
+pub struct ConsoleLogChannel {
+    pub receiver: Receiver<byte_pool::Block<'static>>,
+    pub sender: Sender<byte_pool::Block<'static>>,
+}
+impl Default for ConsoleLogChannel {
     fn default() -> Self {
-        Self(Arc::new(Mutex::new(vec![])))
+        let (sender, receiver) = async_channel::unbounded();
+        Self { sender, receiver }
     }
 }
+
+/// [`ConsoleLogBuffer`] static for sending and receiving console log messages.
+pub static CONSOLE_LOG_CHANNEL: Lazy<ConsoleLogChannel> = Lazy::new(default);
+/// Static buffer pool for log messages to avoid re-allocating every time we send a message over the
+/// channel.
+pub static CONSOLE_LOG_BUFFER: Lazy<BytePool> = Lazy::new(default);
 
 /// Used by `tracing_subscriber::fmt::Layer` to write to `SharedLogBuffer`.
-#[derive(Clone)]
-pub struct ConsoleLogBufferWriter(ConsoleLogBuffer);
-
-impl ConsoleLogBufferWriter {
-    pub fn new(buffer: ConsoleLogBuffer) -> Self {
-        Self(buffer)
-    }
-}
-
-impl<'a> MakeWriter<'a> for ConsoleLogBufferWriter {
-    type Writer = Self;
-
-    fn make_writer(&'a self) -> Self::Writer {
-        // Unfortunately this is invoked on each write in tracing_subscriber::fmt::Layer,
-        // we clone our shared buffer (cloning an Arc internally). ideally we would
-        // return Writer with direct reference to buffer internal to Arc, however a
-        // self-referential struct is difficult in Rust.
-        //
-        // TODO: Explore storing ref to internal buffer alongside Arc,
-        // and return ref here to avoid cost of cloning Arc on each write.
-        self.clone()
-    }
-}
+#[derive(Default)]
+pub struct ConsoleLogBufferWriter;
 
 impl std::io::Write for ConsoleLogBufferWriter {
     fn write(&mut self, val: &[u8]) -> io::Result<usize> {
-        let mut buffer_write = self.0 .0.lock().unwrap();
-        let bytes = val.len();
-        buffer_write.extend_from_slice(val);
-        Ok(bytes)
+        let mut buf = CONSOLE_LOG_BUFFER.alloc(val.len());
+        buf.copy_from_slice(val);
+        CONSOLE_LOG_CHANNEL.sender.try_send(buf).unwrap();
+        Ok(val.len())
     }
 
+    // Not needed
     fn flush(&mut self) -> io::Result<()> {
-        // Not needed
         Ok(())
-    }
-}
-
-/// Resource exposing shared byte buffer to `print_console_log` system.
-/// Internal buffer is writen to by tracing in `JumpyLogPlugin`.
-///
-/// (It may be written to by other systems for injecting console messages as well,
-///  though really tracing should be used unless there is a good console specific reason)
-#[derive(Resource, Clone)]
-pub struct ConsoleBufferResource(ConsoleLogBuffer);
-
-impl ConsoleBufferResource {
-    pub fn new(buffer: ConsoleLogBuffer) -> Self {
-        Self(buffer)
     }
 }
 
 /// System consuming messages from shared buffer and sending to console.
 #[cfg(not(target_arch = "wasm32"))]
-fn print_console_logs(
-    buffer: Res<ConsoleBufferResource>,
-    mut writer: EventWriter<PrintConsoleLine>,
-) {
-    let console_line;
+fn print_console_logs(mut writer: EventWriter<PrintConsoleLine>) {
+    while let Ok(message) = CONSOLE_LOG_CHANNEL.receiver.try_recv() {
+        let console_line = String::from_utf8(message.to_vec()).unwrap();
 
-    // WARNING: Do not put any tracing in this block, it will deadlock.
-    // (The tracing writer will attempt to acquire this Mutex and block)
-    {
-        // Acquire lock, convert message to string and clear buffer
-        let mut buffer_write = buffer.0 .0.lock().unwrap();
-        if buffer_write.is_empty() {
-            return;
-        }
-
-        // TODO: Consider changing to a double buffer or something.
-        // This would only block writes from tracing for duration of buffer swap.
-        // Current impl is naive and blocks tracing longer which could impact
-        // perf on main thread.
-
-        console_line = std::str::from_utf8(buffer_write.as_slice())
-            .unwrap()
-            .to_string();
-        buffer_write.clear();
+        writer.send(PrintConsoleLine {
+            line: console_line.into(),
+        });
     }
-
-    writer.send(PrintConsoleLine {
-        line: console_line.into(),
-    });
 }
 
 /// Plugin enabling a development console, activated by default with the 'grave' key: `

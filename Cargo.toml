@@ -58,6 +58,7 @@ tracing                = { version = "0.1", features = ["release_max_level_debug
 tracing-log            = "0.1"
 tracing-subscriber     = "0.3"
 unic-langid            = "0.9"
+byte-pool              = "0.2.4"
 
 [dependencies.turborand]
 features = ["atomic"]

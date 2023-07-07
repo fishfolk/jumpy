@@ -25,7 +25,7 @@ use tracing_log::LogTracer;
 use tracing_subscriber::{prelude::*, registry::Registry, EnvFilter};
 
 #[cfg(not(target_arch = "wasm32"))]
-use crate::prelude::{ConsoleBufferResource, ConsoleLogBuffer, ConsoleLogBufferWriter};
+use crate::prelude::ConsoleLogBufferWriter;
 
 /// This is largely duplicate of `bevy::LogPlugin` with minor additions. Some functionality
 /// normally behind bevy_log feature flags is not yet implemented.
@@ -138,16 +138,10 @@ impl Plugin for JumpyLogPlugin {
             //         meta.fields().field("tracy.frame_mark").is_none()
             //     }));
 
-            // Enable resource for console system
-            let shared_buffer = ConsoleLogBuffer::default();
-            let console_buffer_resource = ConsoleBufferResource::new(shared_buffer.clone());
-            app.insert_resource(console_buffer_resource);
-
             // Layer to write logs for access in in-game console
-            let console_writer = ConsoleLogBufferWriter::new(shared_buffer);
             let console_layer = tracing_subscriber::fmt::Layer::default()
                 .with_ansi(false) // console does not support this
-                .with_writer(console_writer);
+                .with_writer(ConsoleLogBufferWriter::default);
 
             let subscriber = subscriber.with(fmt_layer).with(console_layer);
 

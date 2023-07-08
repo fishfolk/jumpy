@@ -17,7 +17,7 @@ indexmap        = "1.9"
 nalgebra        = { version = "0.32", features = ["convert-glam023"] }
 ordered-float   = "3.4"
 petgraph        = { version = "0.6", features = ["graphmap"], default-features = false }
-puffin          = "0.16"
+puffin          = { version = "0.15", features = ["web"] }
 rapier2d        = { version = "0.17", features = ["enhanced-determinism", "debug-render"] }
 serde           = { version = "1.0", features = ["derive"] }
 tracing         = "0.1"

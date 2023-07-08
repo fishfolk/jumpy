@@ -42,10 +42,12 @@ pub mod assets;
 pub mod audio;
 pub mod bevy_states;
 pub mod config;
+pub mod console;
 pub mod debug;
 pub mod input;
 pub mod loading;
 pub mod localization;
+pub mod logs;
 pub mod metadata;
 pub mod platform;
 pub mod session;
@@ -86,6 +88,13 @@ pub fn main() {
         .add_state::<InGameState>()
         .add_state::<GameEditorState>()
         // Install plugins
+        //
+        // Log plugin is added first to ensure console_error_panic_hook is set early on,
+        // otherwise in wasm an exception may occur without being logged to browser console.
+        .add_plugin(JumpyLogPlugin {
+            filter: engine_config.log_level.clone(),
+            ..default()
+        })
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -97,17 +106,15 @@ pub fn main() {
                     ..default()
                 })
                 .set(ImagePlugin::default_nearest())
-                .set(bevy::log::LogPlugin {
-                    filter: engine_config.log_level.clone(),
-                    ..default()
-                })
                 .set(bevy::asset::AssetPlugin {
                     watch_for_changes: engine_config.hot_reload,
                     asset_folder: engine_config
                         .asset_dir
                         .clone()
                         .unwrap_or_else(|| "assets".into()),
-                }),
+                })
+                // We are using JumpyLogPlugin, disabled to avoid conflicts in global logging/tracing.
+                .disable::<bevy::log::LogPlugin>(),
         )
         .add_plugin(bevy_tweening::TweeningPlugin)
         .add_plugin(bevy_framepace::FramepacePlugin)
@@ -119,7 +126,8 @@ pub fn main() {
         .add_plugin(JumpyLoadingPlugin)
         .add_plugin(JumpyAssetPlugin)
         .add_plugin(JumpyLocalizationPlugin)
-        .add_plugin(JumpyDebugPlugin);
+        .add_plugin(JumpyDebugPlugin)
+        .add_plugin(JumpyConsolePlugin);
 
     debug!(?engine_config, "Starting game");
 

@@ -262,11 +262,10 @@ fn handle_match_setup_messages(params: &mut MapSelectMenu) {
         let datas: Vec<(usize, Vec<u8>)> = socket.recv_reliable();
 
         for (player, data) in datas {
-            assert_eq!(player, 0, "Only player 0 may select the map.");
-
             match postcard::from_bytes::<MapSelectMessage>(&data) {
                 Ok(message) => match message {
                     MapSelectMessage::SelectMap(map_handle) => {
+                        assert_eq!(player, 0, "Only player 0 may select the map.");
                         info!("Other player selected map, starting game");
                         *params.pause_page = PauseMenuPage::Default;
                         *params.menu_page = MenuPage::Home;
@@ -309,7 +308,12 @@ fn handle_match_setup_messages(params: &mut MapSelectMenu) {
                             .insert_resource(NextState(Some(InGameState::Playing)));
                     }
                 },
-                Err(e) => warn!("Ignoring network message that was not understood: {e}"),
+                Err(e) => {
+                    // TODO: The second player in an online match is having this triggered by
+                    // picking up a `ConfirmSelection` message, that might have been sent to
+                    // _itself_.
+                    warn!("Ignoring network message that was not understood: {e}");
+                }
             }
         }
     }

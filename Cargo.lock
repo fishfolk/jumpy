@@ -4018,6 +4018,7 @@ dependencies = [
  "bincode",
  "byteorder",
  "instant",
+ "js-sys",
  "once_cell",
  "parking_lot 0.12.1",
  "ruzstd",

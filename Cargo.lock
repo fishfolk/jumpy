@@ -2894,7 +2894,7 @@ dependencies = [
  "peg",
  "ping-rs",
  "postcard",
- "puffin 0.15.0",
+ "puffin",
  "puffin_egui",
  "quinn",
  "quinn_runtime_bevy",
@@ -2928,7 +2928,7 @@ dependencies = [
  "nalgebra",
  "ordered-float",
  "petgraph",
- "puffin 0.16.0",
+ "puffin",
  "rapier2d",
  "serde",
  "shiftnanigans",
@@ -4027,19 +4027,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "puffin"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76425abd4e1a0ad4bd6995dd974b52f414fca9974171df8e3708b3e660d05a21"
-dependencies = [
- "anyhow",
- "byteorder",
- "cfg-if",
- "instant",
- "once_cell",
-]
-
-[[package]]
 name = "puffin_egui"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4050,7 +4037,7 @@ dependencies = [
  "instant",
  "natord",
  "once_cell",
- "puffin 0.15.0",
+ "puffin",
  "time",
  "vec1",
 ]

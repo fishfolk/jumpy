@@ -13,6 +13,22 @@ pub mod prelude {
     };
 }
 
+#[cfg(target_arch = "wasm32")]
+/// Gets time and formats for use in fmt::Layer on wasm32 target,
+#[derive(Default)]
+pub struct WebFormatTime;
+
+#[cfg(target_arch = "wasm32")]
+impl fmt::time::FormatTime for WebFormatTime {
+    fn format_time(&self, w: &mut fmt::format::Writer<'_>) -> std::fmt::Result {
+        let date = js_sys::Date::new_0();
+        let date_time = chrono::DateTime::<chrono::Utc>::from(date);
+        // Format similarly to tracing_subscriber::SystemTime
+        let date_str = date_time.format("%0Y-%0m-%0dT%0H:%0M:%0S%.3fZ");
+        write!(w, "{date_str}")
+    }
+}
+
 use bevy::prelude::{App, Plugin};
 pub use bevy::utils::tracing::{
     debug, debug_span, error, error_span, info, info_span, trace, trace_span, warn, warn_span,
@@ -22,9 +38,13 @@ pub use bevy::utils::tracing::{
 use tracing_log::LogTracer;
 // #[cfg(feature = "tracing-chrome")]
 // use tracing_subscriber::fmt::{format::DefaultFields, FormattedFields};
-use tracing_subscriber::{prelude::*, registry::Registry, EnvFilter};
+use tracing_subscriber::{
+    fmt::{self},
+    prelude::*,
+    registry::Registry,
+    EnvFilter,
+};
 
-#[cfg(not(target_arch = "wasm32"))]
 use crate::prelude::ConsoleLogBufferWriter;
 
 /// This is largely duplicate of `bevy::LogPlugin` with minor additions. Some functionality
@@ -95,6 +115,11 @@ impl Plugin for JumpyLogPlugin {
 
         let subscriber = Registry::default().with(filter_layer);
 
+        // Layer to write logs for access in in-game console
+        let console_layer = fmt::Layer::default()
+            .with_ansi(false) // console does not support this
+            .with_writer(ConsoleLogBufferWriter::default);
+
         // #[cfg(feature = "trace")]
         // let subscriber = subscriber.with(tracing_error::ErrorLayer::default());
 
@@ -128,7 +153,7 @@ impl Plugin for JumpyLogPlugin {
             // #[cfg(feature = "tracing-tracy")]
             // let tracy_layer = tracing_tracy::TracyLayer::new();
 
-            let fmt_layer = tracing_subscriber::fmt::Layer::default().with_writer(std::io::stderr);
+            let fmt_layer = fmt::Layer::default().with_writer(std::io::stderr);
 
             // bevy_render::renderer logs a `tracy.frame_mark` event every frame
             // at Level::INFO. Formatted logs should omit it.
@@ -137,11 +162,6 @@ impl Plugin for JumpyLogPlugin {
             //     fmt_layer.with_filter(tracing_subscriber::filter::FilterFn::new(|meta| {
             //         meta.fields().field("tracy.frame_mark").is_none()
             //     }));
-
-            // Layer to write logs for access in in-game console
-            let console_layer = tracing_subscriber::fmt::Layer::default()
-                .with_ansi(false) // console does not support this
-                .with_writer(ConsoleLogBufferWriter::default);
 
             let subscriber = subscriber.with(fmt_layer).with(console_layer);
 
@@ -156,9 +176,11 @@ impl Plugin for JumpyLogPlugin {
         #[cfg(target_arch = "wasm32")]
         {
             console_error_panic_hook::set_once();
-            finished_subscriber = subscriber.with(tracing_wasm::WASMLayer::new(
-                tracing_wasm::WASMLayerConfig::default(),
-            ));
+            finished_subscriber = subscriber
+                .with(tracing_wasm::WASMLayer::new(
+                    tracing_wasm::WASMLayerConfig::default(),
+                ))
+                .with(console_layer.with_timer(WebFormatTime::default()));
         }
 
         // #[cfg(target_os = "android")]

@@ -7,7 +7,6 @@ use bevy::prelude::{App, EventWriter, IntoSystemConfig, Plugin, Res, Resource};
 use byte_pool::BytePool;
 use once_cell::sync::Lazy;
 
-#[cfg(not(target_arch = "wasm32"))]
 use bevy_console::{ConsolePlugin, ConsoleSet, PrintConsoleLine};
 
 /// Sender and receiver for console log messages.
@@ -49,7 +48,6 @@ impl std::io::Write for ConsoleLogBufferWriter {
 }
 
 /// System consuming messages from shared buffer and sending to console.
-#[cfg(not(target_arch = "wasm32"))]
 fn print_console_logs(mut writer: EventWriter<PrintConsoleLine>) {
     while let Ok(message) = CONSOLE_LOG_CHANNEL.receiver.try_recv() {
         let console_line = String::from_utf8(message.to_vec()).unwrap();
@@ -65,9 +63,7 @@ fn print_console_logs(mut writer: EventWriter<PrintConsoleLine>) {
 pub struct JumpyConsolePlugin;
 
 impl Plugin for JumpyConsolePlugin {
-    #[allow(unused_variables)]
     fn build(&self, app: &mut App) {
-        #[cfg(not(target_arch = "wasm32"))]
         app.add_plugin(ConsolePlugin)
             // This resource may optionally be added by User to register commands or change settings.
             //

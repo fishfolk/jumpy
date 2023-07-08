@@ -410,6 +410,10 @@
 <a href="#314" id="314">314</a>
 <a href="#315" id="315">315</a>
 <a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{editor::UserMapStorage, ui::pause_menu::PauseMenuPage};
 
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
@@ -674,11 +678,10 @@
         <span class="kw">let </span>datas: Vec&lt;(usize, Vec&lt;u8&gt;)&gt; = socket.recv_reliable();
 
         <span class="kw">for </span>(player, data) <span class="kw">in </span>datas {
-            <span class="macro">assert_eq!</span>(player, <span class="number">0</span>, <span class="string">&quot;Only player 0 may select the map.&quot;</span>);
-
             <span class="kw">match </span>postcard::from_bytes::&lt;MapSelectMessage&gt;(<span class="kw-2">&amp;</span>data) {
                 <span class="prelude-val">Ok</span>(message) =&gt; <span class="kw">match </span>message {
                     MapSelectMessage::SelectMap(map_handle) =&gt; {
+                        <span class="macro">assert_eq!</span>(player, <span class="number">0</span>, <span class="string">&quot;Only player 0 may select the map.&quot;</span>);
                         <span class="macro">info!</span>(<span class="string">&quot;Other player selected map, starting game&quot;</span>);
                         <span class="kw-2">*</span>params.pause_page = PauseMenuPage::Default;
                         <span class="kw-2">*</span>params.menu_page = MenuPage::Home;
@@ -721,7 +724,12 @@
                             .insert_resource(NextState(<span class="prelude-val">Some</span>(InGameState::Playing)));
                     }
                 },
-                <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(<span class="string">&quot;Ignoring network message that was not understood: {e}&quot;</span>),
+                <span class="prelude-val">Err</span>(e) =&gt; {
+                    <span class="comment">// TODO: The second player in an online match is having this triggered by
+                    // picking up a `ConfirmSelection` message, that might have been sent to
+                    // _itself_.
+                    </span><span class="macro">warn!</span>(<span class="string">&quot;Ignoring network message that was not understood: {e}&quot;</span>);
+                }
             }
         }
     }

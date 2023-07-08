@@ -236,7 +236,7 @@ which can be used to easily wrap synchonous code in a span.</p>
 <p>The <a href="macro.span.html"><code>span!</code></a> and <a href="macro.event.html"><code>event!</code></a> macros as well as the <code>#[instrument]</code> attribute
 use fairly similar syntax, with some exceptions.</p>
 <h4 id="configuring-attributes"><a href="#configuring-attributes">Configuring Attributes</a></h4>
-<p>Both macros require a <a href="struct.Level.html" title="Level"><code>Level</code></a> specifying the verbosity of the span or
+<p>Both macros require a <a href="../../../../logs/struct.Level.html" title="Level"><code>Level</code></a> specifying the verbosity of the span or
 event. Optionally, the <a href="struct.Metadata.html#method.target">target</a> and <a href="span/struct.Attributes.html#method.parent">parent span</a> may be overridden. If the
 target and parent span are not overridden, they will default to the
 module path where the macro was invoked and the current span (as determined
@@ -364,7 +364,7 @@ provided set of format arguments.</p>
 <h4 id="shorthand-macros"><a href="#shorthand-macros">Shorthand Macros</a></h4>
 <p><code>tracing</code> also offers a number of macros with preset verbosity levels.
 The <a href="../../../../prelude/macro.trace.html"><code>trace!</code></a>, <a href="../../../../prelude/macro.debug.html"><code>debug!</code></a>, <a href="../../../../prelude/macro.info.html"><code>info!</code></a>, <a href="../../../../prelude/macro.warn.html"><code>warn!</code></a>, and <a href="../../../../prelude/macro.error.html"><code>error!</code></a> behave
-similarly to the <a href="macro.event.html"><code>event!</code></a> macro, but with the <a href="struct.Level.html" title="Level"><code>Level</code></a> argument already
+similarly to the <a href="macro.event.html"><code>event!</code></a> macro, but with the <a href="../../../../logs/struct.Level.html" title="Level"><code>Level</code></a> argument already
 specified, while the corresponding <a href="../../../../prelude/macro.trace_span.html"><code>trace_span!</code></a>, <a href="../../../../prelude/macro.debug_span.html"><code>debug_span!</code></a>,
 <a href="../../../../prelude/macro.info_span.html"><code>info_span!</code></a>, <a href="../../../../prelude/macro.warn_span.html"><code>warn_span!</code></a>, and <a href="../../../../prelude/macro.error_span.html"><code>error_span!</code></a> macros are the same,
 but for the <a href="macro.span.html"><code>span!</code></a> macro.</p>

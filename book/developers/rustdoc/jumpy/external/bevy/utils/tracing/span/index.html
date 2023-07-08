@@ -106,7 +106,7 @@ to other spans.</li>
 <li>The span’s <a href="#span-relationships">parent</a> in the trace tree.</li>
 <li><a href="../struct.Metadata.html">Metadata</a> that describes static characteristics of all spans
 originating from that callsite, such as its name, source code location,
-<a href="../struct.Level.html">verbosity level</a>, and the names of its fields.</li>
+<a href="../../../../../logs/struct.Level.html">verbosity level</a>, and the names of its fields.</li>
 </ul>
 <h2 id="creating-spans"><a href="#creating-spans">Creating Spans</a></h2>
 <p>Spans are created using the <a href="../macro.span.html"><code>span!</code></a> macro. This macro is invoked with the
@@ -114,7 +114,7 @@ following arguments, in order:</p>
 <ul>
 <li>The <a href="../struct.Metadata.html#method.target"><code>target</code></a> and/or <a href="#span-relationships"><code>parent</code></a> attributes, if the user wishes to
 override their default values.</li>
-<li>The span’s <a href="../struct.Level.html">verbosity level</a></li>
+<li>The span’s <a href="../../../../../logs/struct.Level.html">verbosity level</a></li>
 <li>A string literal providing the span’s name.</li>
 <li>Finally, between zero and 32 arbitrary key/value fields.</li>
 </ul>

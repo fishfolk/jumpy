@@ -230,6 +230,14 @@
 <a href="#134" id="134">134</a>
 <a href="#135" id="135">135</a>
 <a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -274,10 +282,12 @@
 <span class="kw">pub mod </span>audio;
 <span class="kw">pub mod </span>bevy_states;
 <span class="kw">pub mod </span>config;
+<span class="kw">pub mod </span>console;
 <span class="kw">pub mod </span>debug;
 <span class="kw">pub mod </span>input;
 <span class="kw">pub mod </span>loading;
 <span class="kw">pub mod </span>localization;
+<span class="kw">pub mod </span>logs;
 <span class="kw">pub mod </span>metadata;
 <span class="kw">pub mod </span>platform;
 <span class="kw">pub mod </span>session;
@@ -318,7 +328,14 @@
         .add_state::&lt;InGameState&gt;()
         .add_state::&lt;GameEditorState&gt;()
         <span class="comment">// Install plugins
-        </span>.add_plugins(
+        //
+        // Log plugin is added first to ensure console_error_panic_hook is set early on,
+        // otherwise in wasm an exception may occur without being logged to browser console.
+        </span>.add_plugin(JumpyLogPlugin {
+            filter: engine_config.log_level.clone(),
+            ..default()
+        })
+        .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: <span class="prelude-val">Some</span>(Window {
@@ -329,17 +346,15 @@
                     ..default()
                 })
                 .set(ImagePlugin::default_nearest())
-                .set(bevy::log::LogPlugin {
-                    filter: engine_config.log_level.clone(),
-                    ..default()
-                })
                 .set(bevy::asset::AssetPlugin {
                     watch_for_changes: engine_config.hot_reload,
                     asset_folder: engine_config
                         .asset_dir
                         .clone()
                         .unwrap_or_else(|| <span class="string">&quot;assets&quot;</span>.into()),
-                }),
+                })
+                <span class="comment">// We are using JumpyLogPlugin, disabled to avoid conflicts in global logging/tracing.
+                </span>.disable::&lt;bevy::log::LogPlugin&gt;(),
         )
         .add_plugin(bevy_tweening::TweeningPlugin)
         .add_plugin(bevy_framepace::FramepacePlugin)
@@ -351,7 +366,8 @@
         .add_plugin(JumpyLoadingPlugin)
         .add_plugin(JumpyAssetPlugin)
         .add_plugin(JumpyLocalizationPlugin)
-        .add_plugin(JumpyDebugPlugin);
+        .add_plugin(JumpyDebugPlugin)
+        .add_plugin(JumpyConsolePlugin);
 
     <span class="macro">debug!</span>(<span class="question-mark">?</span>engine_config, <span class="string">&quot;Starting game&quot;</span>);
 

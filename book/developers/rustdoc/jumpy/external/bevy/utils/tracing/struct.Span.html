@@ -375,12 +375,12 @@ std::thread::spawn(<span class="kw">move </span>|| {
 
     <span class="comment">// ...
 </span>});</code></pre></div>
-<p>If the current <a href="trait.Subscriber.html"><code>Subscriber</code></a> enables the <a href="struct.Level.html#associatedconstant.DEBUG"><code>DEBUG</code></a> level, then both
+<p>If the current <a href="trait.Subscriber.html"><code>Subscriber</code></a> enables the <a href="../../../../logs/struct.Level.html#associatedconstant.DEBUG"><code>DEBUG</code></a> level, then both
 the “parent” and “child” spans will be enabled. Thus, when the “spawaned
 a thread!” event occurs, it will be inside of the “child” span. Because
 “parent” is the parent of “child”, the event will <em>also</em> be inside of
 “parent”.</p>
-<p>However, if the <a href="trait.Subscriber.html"><code>Subscriber</code></a> only enables the <a href="struct.Level.html#associatedconstant.INFO"><code>INFO</code></a> level, the “child”
+<p>However, if the <a href="trait.Subscriber.html"><code>Subscriber</code></a> only enables the <a href="../../../../logs/struct.Level.html#associatedconstant.INFO"><code>INFO</code></a> level, the “child”
 span will be disabled. When the thread is spawned, the
 <code>child_span.entered()</code> call will do nothing, since “child” is not
 enabled. In this case, the “spawned a thread!” event occurs outside of

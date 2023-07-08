@@ -333,10 +333,10 @@ when the registry is invalidated.</p>
 <p>If a subscriber returns <code>Interest::never</code> for a particular callsite, it
 <em>may</em> still see spans and events originating from that callsite, if
 another subscriber expressed interest in it.</p>
-</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.max_level_hint" class="method has-srclink"><h4 class="code-header">fn <a href="#method.max_level_hint" class="fn">max_level_hint</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.67.0/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="metadata/struct.LevelFilter.html" title="struct jumpy::external::bevy::utils::tracing::metadata::LevelFilter">LevelFilter</a>&gt;</h4></section></summary><div class="docblock"><p>Returns the highest <a href="struct.Level.html">verbosity level</a> that this <code>Subscriber</code> will
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.max_level_hint" class="method has-srclink"><h4 class="code-header">fn <a href="#method.max_level_hint" class="fn">max_level_hint</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.67.0/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="metadata/struct.LevelFilter.html" title="struct jumpy::external::bevy::utils::tracing::metadata::LevelFilter">LevelFilter</a>&gt;</h4></section></summary><div class="docblock"><p>Returns the highest <a href="../../../../logs/struct.Level.html">verbosity level</a> that this <code>Subscriber</code> will
 enable, or <code>None</code>, if the subscriber does not implement level-based
 filtering or chooses not to implement this method.</p>
-<p>If this method returns a <a href="struct.Level.html"><code>Level</code></a>, it will be used as a hint to
+<p>If this method returns a <a href="../../../../logs/struct.Level.html"><code>Level</code></a>, it will be used as a hint to
 determine the most verbose level that will be enabled. This will allow
 spans and events which are more verbose than that level to be skipped
 more efficiently. Subscribers which perform filtering are strongly

@@ -38,14 +38,12 @@ pub use bevy::utils::tracing::{
 use tracing_log::LogTracer;
 // #[cfg(feature = "tracing-chrome")]
 // use tracing_subscriber::fmt::{format::DefaultFields, FormattedFields};
-use tracing_subscriber::{
-    fmt::{self},
-    prelude::*,
-    registry::Registry,
-    EnvFilter,
-};
+use tracing_subscriber::{fmt, prelude::*, registry::Registry, EnvFilter};
 
 use crate::prelude::ConsoleLogBufferWriter;
+
+#[cfg(feature = "profiling-full")]
+use crate::puffin_tracing::{self, PuffinScopeFormatter};
 
 /// This is largely duplicate of `bevy::LogPlugin` with minor additions. Some functionality
 /// normally behind bevy_log feature flags is not yet implemented.
@@ -163,12 +161,20 @@ impl Plugin for JumpyLogPlugin {
             //         meta.fields().field("tracy.frame_mark").is_none()
             //     }));
 
+            #[cfg(feature = "profiling-full")]
+            // The puffin layer captures tracing spans and creates puffin scopes
+            let puffin_layer =
+                puffin_tracing::PuffinLayer::new().with_formatter(PuffinScopeFormatter::default());
+
             let subscriber = subscriber.with(fmt_layer).with(console_layer);
 
             // #[cfg(feature = "tracing-chrome")]
             // let subscriber = subscriber.with(chrome_layer);
             // #[cfg(feature = "tracing-tracy")]
             // let subscriber = subscriber.with(tracy_layer);
+
+            #[cfg(feature = "profiling-full")]
+            let subscriber = subscriber.with(puffin_layer);
 
             finished_subscriber = subscriber;
         }

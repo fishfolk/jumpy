@@ -104,7 +104,7 @@
 </div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.register" class="method has-srclink"><h4 class="code-header">pub fn <a href="#method.register" class="fn">register</a>(&amp;'static self) -&gt; <a class="struct" href="../subscriber/struct.Interest.html" title="struct jumpy::external::bevy::utils::tracing::subscriber::Interest">Interest</a></h4></section></summary><div class="docblock"><p>Registers this callsite with the global callsite registry.</p>
 <p>If the callsite is already registered, this does nothing. When using
 <a href="struct.DefaultCallsite.html" title="DefaultCallsite"><code>DefaultCallsite</code></a>, this method should be preferred over
-[<code>tracing_core::callsite::register</code>], as it ensures that the callsite is
+<a href="fn.register.html" title="tracing_core::callsite::register"><code>tracing_core::callsite::register</code></a>, as it ensures that the callsite is
 only registered a single time.</p>
 <p>Other callsite implementations will generally ensure that
 callsites are not re-registered through another mechanism.</p>

@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jumpy":[["impl&lt;'a&gt; MakeVisitor&lt;Writer&lt;'a&gt;&gt; for <a class=\"struct\" href=\"jumpy/puffin_tracing/struct.PuffinScopeFormatter.html\" title=\"struct jumpy::puffin_tracing::PuffinScopeFormatter\">PuffinScopeFormatter</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["PUFFIN_SPAN_STACK",""]],"struct":[["PuffinLayer","A tracing layer that collects data for puffin."],["PuffinScopeFormatter","Format puffin scope such that field ‘name’ is displayed as its value instead of field debug formatting (like name=“{value}”)"],["PuffinScopeVisitor","Visitor implementing formatting for [`PuffinScopeFormatter`]"]]};

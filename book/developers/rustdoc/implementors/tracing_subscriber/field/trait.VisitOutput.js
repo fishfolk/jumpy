@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jumpy":[["impl&lt;'a&gt; VisitOutput&lt;<a class=\"enum\" href=\"https://doc.rust-lang.org/1.67.0/core/result/enum.Result.html\" title=\"enum core::result::Result\">Result</a>&lt;<a class=\"primitive\" href=\"https://doc.rust-lang.org/1.67.0/std/primitive.unit.html\">()</a>, <a class=\"struct\" href=\"https://doc.rust-lang.org/1.67.0/core/fmt/struct.Error.html\" title=\"struct core::fmt::Error\">Error</a>&gt;&gt; for <a class=\"struct\" href=\"jumpy/puffin_tracing/struct.PuffinScopeVisitor.html\" title=\"struct jumpy::puffin_tracing::PuffinScopeVisitor\">PuffinScopeVisitor</a>&lt;'a&gt;"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

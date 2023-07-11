@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jumpy":[["impl&lt;S, F&gt; Layer&lt;S&gt; for <a class=\"struct\" href=\"jumpy/puffin_tracing/struct.PuffinLayer.html\" title=\"struct jumpy::puffin_tracing::PuffinLayer\">PuffinLayer</a>&lt;F&gt;<span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;S: <a class=\"trait\" href=\"jumpy/external/bevy/utils/tracing/trait.Subscriber.html\" title=\"trait jumpy::external::bevy::utils::tracing::Subscriber\">Subscriber</a> + for&lt;'a&gt; LookupSpan&lt;'a&gt;,<br>&nbsp;&nbsp;&nbsp;&nbsp;F: for&lt;'writer&gt; FormatFields&lt;'writer&gt; + 'static,</span>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -14,8 +14,8 @@ members = [".", "core"]
 default = []
 # Enable to simulate horrible network latency/slowness
 debug-network-slowdown = ["async-timer", "turborand"]
-# Enable bevy tracing scopes in profiling
-profiling-full= ["bevy/trace"]
+# Enable bevy tracing scopes in profiling and tracy profiler support.
+profiling-full= ["bevy/trace", "dep:tracing-tracy"]
 
 [dependencies]
 bones_bevy_asset    = "0.2"
@@ -72,6 +72,12 @@ version  = "0.10"
 default-features = false
 features         = ["x11", "png", "filesystem_watcher", "bevy_gilrs"]
 version          = "0.10"
+
+[dependencies.tracing-tracy]
+version = "0.10.0"
+default-features = false
+features = ["enable", "system-tracing", "context-switch-tracing", "code-transfer"]
+optional = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.83"

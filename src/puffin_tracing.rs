@@ -4,92 +4,14 @@ use puffin::ThreadProfiler;
 use std::{cell::RefCell, collections::VecDeque};
 use tracing_core::{
     span::{Attributes, Id, Record},
-    Field, Subscriber,
+    Subscriber,
 };
 use tracing_subscriber::{
-    field::MakeVisitor,
-    fmt::{
-        format::{DefaultFields, Writer},
-        FormatFields, FormattedFields,
-    },
+    fmt::{format::DefaultFields, FormatFields, FormattedFields},
     layer::Context,
     registry::LookupSpan,
     Layer,
 };
-
-/// Format puffin scope such that field 'name' is displayed as
-/// its value instead of field debug formatting (like name="{value}")
-#[derive(Default, Debug)]
-pub struct PuffinScopeFormatter;
-
-/// Visitor implementing formatting for [`PuffinScopeFormatter`]
-pub struct PuffinScopeVisitor<'a> {
-    writer: Writer<'a>,
-    is_empty: bool,
-    result: Result<(), std::fmt::Error>,
-}
-
-impl<'a> PuffinScopeVisitor<'a> {
-    pub fn new(writer: Writer<'a>, is_empty: bool) -> Self {
-        Self {
-            writer,
-            is_empty,
-            result: Ok(()),
-        }
-    }
-
-    fn maybe_pad(&mut self) {
-        if self.is_empty {
-            self.is_empty = false;
-        } else {
-            self.result = write!(self.writer, " ");
-        }
-    }
-}
-
-impl<'a> tracing_subscriber::field::Visit for PuffinScopeVisitor<'a> {
-    fn record_str(&mut self, field: &Field, value: &str) {
-        if self.result.is_err() {
-            return;
-        }
-
-        if field.name() == "name" {
-            self.record_debug(field, &format_args!("{value}"))
-        } else {
-            // If fields other than 'name' included in span, debug print.
-            self.record_debug(field, &value)
-        }
-    }
-
-    fn record_debug(&mut self, _field: &Field, value: &dyn std::fmt::Debug) {
-        if self.result.is_err() {
-            return;
-        }
-        self.maybe_pad();
-        self.result = write!(self.writer, "{value:?}");
-    }
-}
-
-impl<'a> tracing_subscriber::field::VisitOutput<std::fmt::Result> for PuffinScopeVisitor<'a> {
-    fn finish(self) -> std::fmt::Result {
-        self.result
-    }
-}
-
-impl<'a> tracing_subscriber::field::VisitFmt for PuffinScopeVisitor<'a> {
-    fn writer(&mut self) -> &mut dyn std::fmt::Write {
-        &mut self.writer
-    }
-}
-
-impl<'a> MakeVisitor<Writer<'a>> for PuffinScopeFormatter {
-    type Visitor = PuffinScopeVisitor<'a>;
-
-    #[inline]
-    fn make_visitor(&self, target: Writer<'a>) -> Self::Visitor {
-        PuffinScopeVisitor::new(target, true)
-    }
-}
 
 thread_local! {
     static PUFFIN_SPAN_STACK: RefCell<VecDeque<(Id, usize)>> =

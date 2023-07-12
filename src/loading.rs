@@ -46,6 +46,7 @@ fn core_assets_loaded(
     core_assets: Res<Assets<CoreMeta>>,
     player_assets: Res<Assets<PlayerMeta>>,
     atlas_assets: Res<Assets<TextureAtlas>>,
+    hat_assets: Res<Assets<HatMeta>>,
 ) -> bool {
     // The game asset
     let Some(game) = game_assets.get(&game_handle) else {
@@ -92,6 +93,16 @@ fn core_assets_loaded(
     for tileset_handle in &core.map_tilesets {
         if atlas_assets
             .get(&tileset_handle.get_bevy_handle_untyped().typed())
+            .is_none()
+        {
+            return false;
+        }
+    }
+
+    // Hats
+    for hats_handle in &core.player_hats {
+        if hat_assets
+            .get(&hats_handle.get_bevy_handle_untyped().typed())
             .is_none()
         {
             return false;

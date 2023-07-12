@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["mark_new_frame","Notify profilers we are at frame boundary"]],"struct":[["ProfilingScopeFormatter","Format scope such that field ‘name’ is displayed as its value instead of field debug formatting (like name=“{value}”)"],["ProfilingScopeVisitor","Visitor implementing formatting for [`ProfilingScopeFormatter`]"]]};

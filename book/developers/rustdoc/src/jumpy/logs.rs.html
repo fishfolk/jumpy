@@ -304,6 +304,7 @@
 <a href="#208" id="208">208</a>
 <a href="#209" id="209">209</a>
 <a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
 </pre><pre class="rust"><code><span class="doccomment">//! The logging implementation is duplicated from Bevy - `bevy::LogPlugin` does not support registering
 //! external tracing Layers, this implementation adds an extra layer for sending tracing to the in
 //! game console. If this feature is added in the future, we should switch back to Bevy&#39;s LogPlugin.
@@ -349,7 +350,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::prelude::ConsoleLogBufferWriter;
 
 <span class="attr">#[cfg(feature = <span class="string">&quot;profiling-full&quot;</span>)]
-</span><span class="kw">use </span><span class="kw">crate</span>::puffin_tracing::{<span class="self">self</span>, PuffinScopeFormatter};
+</span><span class="kw">use crate</span>::{profiling::ProfilingScopeFormatter, puffin_tracing};
 
 <span class="doccomment">/// This is largely duplicate of `bevy::LogPlugin` with minor additions. Some functionality
 /// normally behind bevy_log feature flags is not yet implemented.
@@ -454,33 +455,34 @@
             //     chrome_layer
             // };
 
-            // #[cfg(feature = &quot;tracing-tracy&quot;)]
-            // let tracy_layer = tracing_tracy::TracyLayer::new();
-
             </span><span class="kw">let </span>fmt_layer = fmt::Layer::default().with_writer(std::io::stderr);
 
-            <span class="comment">// bevy_render::renderer logs a `tracy.frame_mark` event every frame
-            // at Level::INFO. Formatted logs should omit it.
-            // #[cfg(feature = &quot;tracing-tracy&quot;)]
-            // let fmt_layer =
-            //     fmt_layer.with_filter(tracing_subscriber::filter::FilterFn::new(|meta| {
-            //         meta.fields().field(&quot;tracy.frame_mark&quot;).is_none()
-            //     }));
+            <span class="attr">#[cfg(feature = <span class="string">&quot;profiling-full&quot;</span>)]
+            </span><span class="kw">let </span>(fmt_layer, tracy_layer, puffin_layer) = {
+                <span class="comment">// bevy_render::renderer logs a `tracy.frame_mark` event every frame
+                // at Level::INFO. Formatted logs should omit it
+                </span><span class="kw">let </span>fmt_layer =
+                    fmt_layer.with_filter(tracing_subscriber::filter::FilterFn::new(|meta| {
+                        meta.fields().field(<span class="string">&quot;tracy.frame_mark&quot;</span>).is_none()
+                    }));
 
-            </span><span class="attr">#[cfg(feature = <span class="string">&quot;profiling-full&quot;</span>)]
-            </span><span class="comment">// The puffin layer captures tracing spans and creates puffin scopes
-            </span><span class="kw">let </span>puffin_layer =
-                puffin_tracing::PuffinLayer::new().with_formatter(PuffinScopeFormatter::default());
+                <span class="comment">// Capture tracing spans and send to tracy.
+                </span><span class="kw">let </span>tracy_layer = tracing_tracy::TracyLayer::new()
+                    .with_formatter(ProfilingScopeFormatter::default());
+
+                <span class="comment">// The puffin layer captures tracing spans and creates puffin scopes
+                </span><span class="kw">let </span>puffin_layer = puffin_tracing::PuffinLayer::new()
+                    .with_formatter(ProfilingScopeFormatter::default());
+                (fmt_layer, tracy_layer, puffin_layer)
+            };
 
             <span class="kw">let </span>subscriber = subscriber.with(fmt_layer).with(console_layer);
 
             <span class="comment">// #[cfg(feature = &quot;tracing-chrome&quot;)]
             // let subscriber = subscriber.with(chrome_layer);
-            // #[cfg(feature = &quot;tracing-tracy&quot;)]
-            // let subscriber = subscriber.with(tracy_layer);
 
             </span><span class="attr">#[cfg(feature = <span class="string">&quot;profiling-full&quot;</span>)]
-            </span><span class="kw">let </span>subscriber = subscriber.with(puffin_layer);
+            </span><span class="kw">let </span>subscriber = subscriber.with(puffin_layer).with(tracy_layer);
 
             finished_subscriber = subscriber;
         }

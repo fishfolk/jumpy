@@ -147,6 +147,11 @@
 <a href="#51" id="51">51</a>
 <a href="#52" id="52">52</a>
 <a href="#53" id="53">53</a>
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Debugging tools.
 //!
 //! Sets up the Bevy world inspector, and the puffin profiler.
@@ -169,7 +174,12 @@
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
         app.init_resource::&lt;WorldInspectorEnabled&gt;()
             .add_system(world_inspector)
-            .add_system((|| puffin::GlobalProfiler::lock().new_frame()).in_base_set(CoreSet::Last));
+            .add_system(
+                (|| {
+                    profiling::mark_new_frame();
+                })
+                .in_base_set(CoreSet::Last),
+            );
 
         <span class="kw">let </span>type_registry = app.world.resource::&lt;bevy::app::AppTypeRegistry&gt;();
         <span class="kw">let </span><span class="kw-2">mut </span>type_registry = type_registry.write();

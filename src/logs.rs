@@ -43,7 +43,7 @@ use tracing_subscriber::{fmt, prelude::*, registry::Registry, EnvFilter};
 use crate::prelude::ConsoleLogBufferWriter;
 
 #[cfg(feature = "profiling-full")]
-use crate::puffin_tracing::{self, PuffinScopeFormatter};
+use crate::{profiling::ProfilingScopeFormatter, puffin_tracing};
 
 /// This is largely duplicate of `bevy::LogPlugin` with minor additions. Some functionality
 /// normally behind bevy_log feature flags is not yet implemented.
@@ -148,33 +148,34 @@ impl Plugin for JumpyLogPlugin {
             //     chrome_layer
             // };
 
-            // #[cfg(feature = "tracing-tracy")]
-            // let tracy_layer = tracing_tracy::TracyLayer::new();
-
             let fmt_layer = fmt::Layer::default().with_writer(std::io::stderr);
 
-            // bevy_render::renderer logs a `tracy.frame_mark` event every frame
-            // at Level::INFO. Formatted logs should omit it.
-            // #[cfg(feature = "tracing-tracy")]
-            // let fmt_layer =
-            //     fmt_layer.with_filter(tracing_subscriber::filter::FilterFn::new(|meta| {
-            //         meta.fields().field("tracy.frame_mark").is_none()
-            //     }));
-
             #[cfg(feature = "profiling-full")]
-            // The puffin layer captures tracing spans and creates puffin scopes
-            let puffin_layer =
-                puffin_tracing::PuffinLayer::new().with_formatter(PuffinScopeFormatter::default());
+            let (fmt_layer, tracy_layer, puffin_layer) = {
+                // bevy_render::renderer logs a `tracy.frame_mark` event every frame
+                // at Level::INFO. Formatted logs should omit it
+                let fmt_layer =
+                    fmt_layer.with_filter(tracing_subscriber::filter::FilterFn::new(|meta| {
+                        meta.fields().field("tracy.frame_mark").is_none()
+                    }));
+
+                // Capture tracing spans and send to tracy.
+                let tracy_layer = tracing_tracy::TracyLayer::new()
+                    .with_formatter(ProfilingScopeFormatter::default());
+
+                // The puffin layer captures tracing spans and creates puffin scopes
+                let puffin_layer = puffin_tracing::PuffinLayer::new()
+                    .with_formatter(ProfilingScopeFormatter::default());
+                (fmt_layer, tracy_layer, puffin_layer)
+            };
 
             let subscriber = subscriber.with(fmt_layer).with(console_layer);
 
             // #[cfg(feature = "tracing-chrome")]
             // let subscriber = subscriber.with(chrome_layer);
-            // #[cfg(feature = "tracing-tracy")]
-            // let subscriber = subscriber.with(tracy_layer);
 
             #[cfg(feature = "profiling-full")]
-            let subscriber = subscriber.with(puffin_layer);
+            let subscriber = subscriber.with(puffin_layer).with(tracy_layer);
 
             finished_subscriber = subscriber;
         }

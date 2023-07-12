@@ -50,6 +50,7 @@ pub mod localization;
 pub mod logs;
 pub mod metadata;
 pub mod platform;
+pub mod profiling;
 pub mod puffin_tracing;
 pub mod session;
 pub mod ui;

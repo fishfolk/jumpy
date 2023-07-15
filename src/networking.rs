@@ -4,9 +4,13 @@ use ggrs::P2PSession;
 use jumpy_core::input::PlayerControl;
 use rand::Rng;
 
-use crate::prelude::*;
+use crate::{
+    networking::debug::{NetworkDebugMessage, NETWORK_DEBUG_CHANNEL},
+    prelude::*,
+};
 
 pub mod certs;
+pub mod debug;
 pub mod lan;
 pub mod online;
 pub mod proto;
@@ -216,6 +220,9 @@ impl crate::session::SessionRunner for GgrsSessionRunner {
         self.accumulator += delta;
 
         let mut skip_frames = 0;
+
+        // Current frame before we start network update loop
+        let current_frame_original = self.session.current_frame();
         for event in self.session.events() {
             match event {
                 ggrs::GGRSEvent::Synchronizing { addr, total, count } => {
@@ -237,7 +244,14 @@ impl crate::session::SessionRunner for GgrsSessionRunner {
                     info!(
                         "Skipping {skip_count} frames to give network players a chance to catch up"
                     );
-                    skip_frames = skip_count
+                    skip_frames = skip_count;
+                    NETWORK_DEBUG_CHANNEL
+                        .sender
+                        .try_send(NetworkDebugMessage::SkipFrame {
+                            frame: current_frame_original,
+                            count: skip_count,
+                        })
+                        .unwrap();
                 }
                 ggrs::GGRSEvent::DesyncDetected {
                     frame,
@@ -256,6 +270,16 @@ impl crate::session::SessionRunner for GgrsSessionRunner {
                 .unwrap();
             if self.accumulator >= STEP {
                 self.accumulator -= STEP;
+
+                let current_frame = self.session.current_frame();
+                let confirmed_frame = self.session.confirmed_frame();
+                NETWORK_DEBUG_CHANNEL
+                    .sender
+                    .try_send(NetworkDebugMessage::FrameUpdate {
+                        current: current_frame,
+                        last_confirmed: confirmed_frame,
+                    })
+                    .unwrap();
 
                 if skip_frames > 0 {
                     skip_frames = skip_frames.saturating_sub(1);
@@ -316,7 +340,13 @@ impl crate::session::SessionRunner for GgrsSessionRunner {
                             debug!("Waiting for network clients to sync")
                         }
                         ggrs::GGRSError::PredictionThreshold => {
-                            warn!("Freezing game while waiting for network to catch-up.")
+                            warn!("Freezing game while waiting for network to catch-up.");
+                            NETWORK_DEBUG_CHANNEL
+                                .sender
+                                .try_send(NetworkDebugMessage::FrameFroze {
+                                    frame: self.session.current_frame(),
+                                })
+                                .unwrap();
                         }
                         e => error!("Network protocol error: {e}"),
                     },

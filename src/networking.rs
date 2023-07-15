@@ -17,6 +17,10 @@ pub mod proto;
 /// gameplay. This may not be necessary once we improve network performance.
 pub const NETWORK_FRAME_RATE_FACTOR: f32 = 0.9;
 
+/// Number of frames client may predict beyond confirmed frame before freezing and waiting
+/// for inputs from other players.
+pub const NETWORK_MAX_PREDICTION_WINDOW: usize = 8;
+
 /// The [`ggrs::Config`] implementation used by Jumpy.
 #[derive(Debug)]
 pub struct GgrsConfig;
@@ -151,7 +155,7 @@ impl GgrsSessionRunner {
         core.time_step = 1.0 / (jumpy_core::FPS * NETWORK_FRAME_RATE_FACTOR);
         let mut builder = ggrs::SessionBuilder::new()
             .with_num_players(info.player_count)
-            .with_max_prediction_window(8)
+            .with_max_prediction_window(NETWORK_MAX_PREDICTION_WINDOW)
             .with_input_delay(1)
             .with_fps((jumpy_core::FPS * NETWORK_FRAME_RATE_FACTOR) as usize)
             .unwrap();

@@ -29,7 +29,7 @@ pub enum NetworkDebugMessage {
     FrameFroze { frame: i32 },
 }
 
-/// Sender and receiver for NetworkDiagnsoticMessage for network diagnostics debug tool.
+/// Sender and receiver for [`NetworkDebugMessage`] for network diagnostics debug tool.
 pub struct NetworkDebugChannel {
     pub receiver: Receiver<NetworkDebugMessage>,
     pub sender: Sender<NetworkDebugMessage>,

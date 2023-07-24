@@ -436,15 +436,53 @@
 <a href="#340" id="340">340</a>
 <a href="#341" id="341">341</a>
 <a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./networking.md&quot;</span>)]
 
 </span><span class="kw">use </span>ggrs::P2PSession;
 <span class="kw">use </span>jumpy_core::input::PlayerControl;
 <span class="kw">use </span>rand::Rng;
 
-<span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<span class="kw">use crate</span>::{
+    networking::debug::{NetworkDebugMessage, NETWORK_DEBUG_CHANNEL},
+    prelude::<span class="kw-2">*</span>,
+};
 
 <span class="kw">pub mod </span>certs;
+<span class="kw">pub mod </span>debug;
 <span class="kw">pub mod </span>lan;
 <span class="kw">pub mod </span>online;
 <span class="kw">pub mod </span>proto;
@@ -454,6 +492,10 @@
 /// Lowering the frame rate a little for online matches reduces bandwidth and may help overall
 /// gameplay. This may not be necessary once we improve network performance.
 </span><span class="kw">pub const </span>NETWORK_FRAME_RATE_FACTOR: f32 = <span class="number">0.9</span>;
+
+<span class="doccomment">/// Number of frames client may predict beyond confirmed frame before freezing and waiting
+/// for inputs from other players.
+</span><span class="kw">pub const </span>NETWORK_MAX_PREDICTION_WINDOW: usize = <span class="number">8</span>;
 
 <span class="doccomment">/// The [`ggrs::Config`] implementation used by Jumpy.
 </span><span class="attr">#[derive(Debug)]
@@ -589,7 +631,7 @@
         core.time_step = <span class="number">1.0 </span>/ (jumpy_core::FPS * NETWORK_FRAME_RATE_FACTOR);
         <span class="kw">let </span><span class="kw-2">mut </span>builder = ggrs::SessionBuilder::new()
             .with_num_players(info.player_count)
-            .with_max_prediction_window(<span class="number">8</span>)
+            .with_max_prediction_window(NETWORK_MAX_PREDICTION_WINDOW)
             .with_input_delay(<span class="number">1</span>)
             .with_fps((jumpy_core::FPS * NETWORK_FRAME_RATE_FACTOR) <span class="kw">as </span>usize)
             .unwrap();
@@ -650,6 +692,9 @@
         <span class="self">self</span>.accumulator += delta;
 
         <span class="kw">let </span><span class="kw-2">mut </span>skip_frames = <span class="number">0</span>;
+
+        <span class="comment">// Current frame before we start network update loop
+        </span><span class="kw">let </span>current_frame_original = <span class="self">self</span>.session.current_frame();
         <span class="kw">for </span>event <span class="kw">in </span><span class="self">self</span>.session.events() {
             <span class="kw">match </span>event {
                 ggrs::GGRSEvent::Synchronizing { addr, total, count } =&gt; {
@@ -671,7 +716,14 @@
                     <span class="macro">info!</span>(
                         <span class="string">&quot;Skipping {skip_count} frames to give network players a chance to catch up&quot;
                     </span>);
-                    skip_frames = skip_count
+                    skip_frames = skip_count;
+                    NETWORK_DEBUG_CHANNEL
+                        .sender
+                        .try_send(NetworkDebugMessage::SkipFrame {
+                            frame: current_frame_original,
+                            count: skip_count,
+                        })
+                        .unwrap();
                 }
                 ggrs::GGRSEvent::DesyncDetected {
                     frame,
@@ -690,6 +742,16 @@
                 .unwrap();
             <span class="kw">if </span><span class="self">self</span>.accumulator &gt;= STEP {
                 <span class="self">self</span>.accumulator -= STEP;
+
+                <span class="kw">let </span>current_frame = <span class="self">self</span>.session.current_frame();
+                <span class="kw">let </span>confirmed_frame = <span class="self">self</span>.session.confirmed_frame();
+                NETWORK_DEBUG_CHANNEL
+                    .sender
+                    .try_send(NetworkDebugMessage::FrameUpdate {
+                        current: current_frame,
+                        last_confirmed: confirmed_frame,
+                    })
+                    .unwrap();
 
                 <span class="kw">if </span>skip_frames &gt; <span class="number">0 </span>{
                     skip_frames = skip_frames.saturating_sub(<span class="number">1</span>);
@@ -750,7 +812,13 @@
                             <span class="macro">debug!</span>(<span class="string">&quot;Waiting for network clients to sync&quot;</span>)
                         }
                         ggrs::GGRSError::PredictionThreshold =&gt; {
-                            <span class="macro">warn!</span>(<span class="string">&quot;Freezing game while waiting for network to catch-up.&quot;</span>)
+                            <span class="macro">warn!</span>(<span class="string">&quot;Freezing game while waiting for network to catch-up.&quot;</span>);
+                            NETWORK_DEBUG_CHANNEL
+                                .sender
+                                .try_send(NetworkDebugMessage::FrameFroze {
+                                    frame: <span class="self">self</span>.session.current_frame(),
+                                })
+                                .unwrap();
                         }
                         e =&gt; <span class="macro">error!</span>(<span class="string">&quot;Network protocol error: {e}&quot;</span>),
                     },

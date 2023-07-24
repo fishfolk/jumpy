@@ -2,10 +2,13 @@ use bevy::{
     diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_egui::*;
+use bevy_egui::{egui::Checkbox, *};
 use bevy_fluent::Localization;
 
 use crate::prelude::*;
+
+#[cfg(not(target_arch = "wasm32"))]
+use crate::networking::debug::{network_debug_window, NetworkDebug};
 
 pub struct DebugToolsPlugin;
 
@@ -20,6 +23,14 @@ impl Plugin for DebugToolsPlugin {
             .add_system(debug_tools_window)
             .add_system(frame_diagnostic_window)
             .add_system(profiler_window);
+
+        #[cfg(not(target_arch = "wasm32"))]
+        app.init_resource::<NetworkDebug>().add_system(
+            network_debug_window
+                .in_base_set(CoreSet::Last)
+                .run_if(in_state(EngineState::InGame))
+                .run_if(in_state(InGameState::Playing)),
+        );
     }
 }
 
@@ -37,9 +48,10 @@ fn sync_core_debug_settings(session: Option<ResMut<Session>>, settings: Res<Core
 }
 
 #[derive(Resource, Default)]
-struct ShowDebugWindows {
+pub struct ShowDebugWindows {
     pub frame_time_diagnostics: bool,
     pub profiler: bool,
+    pub network_debug: bool,
 }
 
 /// Resource containing the bones snapshot.
@@ -81,6 +93,10 @@ fn debug_tools_window(
 
     if input.just_pressed(KeyCode::F7) {
         show_debug_windows.profiler = !show_debug_windows.profiler;
+    }
+
+    if input.just_pressed(KeyCode::F6) {
+        show_debug_windows.network_debug = !show_debug_windows.network_debug;
     }
 
     // // Shortcut to toggle network visualizers
@@ -130,6 +146,17 @@ fn debug_tools_window(
                 format!("{} ( F7 )", localization.get("profiler")),
             );
 
+            let networking_enabled = cfg!(not(target_arch = "wasm32"));
+            // Show network diagnostics
+            ui.add_enabled(
+                networking_enabled,
+                Checkbox::new(
+                    &mut show_debug_windows.network_debug,
+                    format!("{} ( F6 )", localization.get("network-diagnostics")),
+                ),
+            )
+            .on_disabled_hover_text(localization.get("networking-disabled-message"));
+
             // Snapshot/Restore buttons
             ui.add_space(2.0);
             ui.heading(localization.get("snapshot"));
@@ -156,12 +183,6 @@ fn debug_tools_window(
                     });
                 });
             });
-
-            // Show network visualizer
-            // ui.checkbox(
-            //     &mut show_network_visualizer,
-            //     format!("{} ( F7 )", localization.get("show-network-visualizer")),
-            // );
         });
 }
 

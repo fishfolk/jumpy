@@ -135,13 +135,10 @@ fn update_kinematic_bodies(
 ) {
     puffin::profile_function!();
 
-    // TODO: By default we assume a frame rate of of crate::FPS ( 60 frames-per-second ), but we may
-    // actually run at a different rate during, for example, network games. This gets the ratio
-    // between the default frame rate and the actual frame rate and is used to adjust velocities.
-    // This is a temporary fix. In the future, we should adjust all velocities to be in terms of
-    // pixels-per-second, instead of pixels-per-1/60 of a second like they are today. This temporary
-    // fix allows us to avoid chainging the velocities throughout the game for now.
-    let time_factor = time.delta().as_secs_f32() / (1.0 / crate::FPS);
+    // This value was previously using dt / (1 / crate::FPS), this was changed
+    // to no longer have FPS impact velocity, the dt * 60 is a holdover to avoid having
+    // to update all velocities.
+    let time_factor = time.delta().as_secs_f32() * 60.0;
 
     collision_world.update(&transforms);
     for (entity, body) in entities.iter_with(&mut bodies) {

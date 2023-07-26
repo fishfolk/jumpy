@@ -365,6 +365,20 @@
 <a href="#269" id="269">269</a>
 <a href="#270" id="270">270</a>
 <a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
 </pre><pre class="rust"><code><span class="kw">use </span>async_channel::{Receiver, Sender};
 <span class="kw">use </span>bevy::prelude::{Res, ResMut, Resource};
 <span class="kw">use </span>bevy_egui::{
@@ -375,6 +389,7 @@
     EguiContexts,
 };
 <span class="kw">use </span>bevy_fluent::Localization;
+<span class="kw">use </span>ggrs::{NetworkStats, PlayerHandle};
 <span class="kw">use </span>once_cell::sync::Lazy;
 
 <span class="kw">use </span><span class="kw">crate</span>::prelude::{debug_tools::ShowDebugWindows, LocalizationExt};
@@ -394,6 +409,10 @@
     <span class="doccomment">/// Update that network update loop starting at this frame froze waiting
     /// for inputs from other clients after reaching max prediction window.
     </span>FrameFroze { frame: i32 },
+    <span class="doccomment">/// Network stats per remote player
+    </span>NetworkStats {
+        network_stats: Vec&lt;(PlayerHandle, NetworkStats)&gt;,
+    },
 }
 
 <span class="doccomment">/// Sender and receiver for [`NetworkDebugMessage`] for network diagnostics debug tool.
@@ -447,6 +466,9 @@
 
     <span class="doccomment">/// Is network debug tool paused.
     </span><span class="kw">pub </span>paused: bool,
+
+    <span class="doccomment">/// Network stats per connection to remote player
+    </span><span class="kw">pub </span>network_stats: Vec&lt;(PlayerHandle, NetworkStats)&gt;,
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>NetworkDebug {
@@ -459,6 +481,7 @@
             frame_buffer: <span class="macro">vec!</span>[],
             frame_buffer_display_size: <span class="number">64</span>,
             paused: <span class="bool-val">false</span>,
+            network_stats: <span class="macro">vec!</span>[],
         }
     }
 }
@@ -492,7 +515,7 @@
 </span><span class="kw">pub static </span>NETWORK_DEBUG_CHANNEL: Lazy&lt;NetworkDebugChannel&gt; =
     Lazy::new(NetworkDebugChannel::default);
 
-<span class="doccomment">/// System displaying network diagnostics window
+<span class="doccomment">/// System displaying network debug window
 </span><span class="kw">pub fn </span>network_debug_window(
     <span class="kw-2">mut </span>show: ResMut&lt;ShowDebugWindows&gt;,
     localization: Res&lt;Localization&gt;,
@@ -519,6 +542,9 @@
                 NetworkDebugMessage::FrameFroze { frame } =&gt; {
                     diagnostics.set_frozen(frame);
                 }
+                NetworkDebugMessage::NetworkStats { network_stats } =&gt; {
+                    diagnostics.network_stats = network_stats;
+                }
             }
         }
 
@@ -538,12 +564,6 @@
                         <span class="string">&quot;{label}: {confirmed_frame}&quot;</span>,
                         label = localization.get(<span class="string">&quot;confirmed-frame&quot;</span>),
                         confirmed_frame = diagnostics.confirmed_frame
-                    ));
-
-                    <span class="kw">let </span>delta = diagnostics.current_frame - diagnostics.confirmed_frame;
-                    ui.monospace(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                        <span class="string">&quot;{label}: {delta}&quot;</span>,
-                        label = localization.get(<span class="string">&quot;delta&quot;</span>),
                     ));
 
                     <span class="kw">if </span>diagnostics.last_frame_with_skips != -<span class="number">1 </span>{
@@ -603,6 +623,7 @@
                                 <span class="macro">format!</span>(<span class="string">&quot;{frame_localized}: {frame_floor}&quot;</span>)
                             }
                         })
+                        .height(<span class="number">128.0</span>)
                         .show(ui, |plot_ui| {
                             plot_ui.bar_chart(
                                 BarChart::new(
@@ -631,7 +652,14 @@
                                     )
                                 })),
                             );
-                        })
+                        });
+
+                    <span class="kw">for </span>(player_handle, stats) <span class="kw">in </span>diagnostics.network_stats.iter() {
+                        <span class="kw">let </span>label = <span class="macro">format!</span>(<span class="string">&quot;{} {}&quot;</span>, localization.get(<span class="string">&quot;player&quot;</span>), player_handle);
+                        ui.collapsing(label, |ui| {
+                            ui.monospace(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{stats:?}&quot;</span>));
+                        });
+                    }
                 });
         }
     }

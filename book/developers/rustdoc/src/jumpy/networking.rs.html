@@ -470,9 +470,23 @@
 <a href="#374" id="374">374</a>
 <a href="#375" id="375">375</a>
 <a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./networking.md&quot;</span>)]
 
-</span><span class="kw">use </span>ggrs::P2PSession;
+</span><span class="kw">use </span>ggrs::{NetworkStats, P2PSession, PlayerHandle};
 <span class="kw">use </span>jumpy_core::input::PlayerControl;
 <span class="kw">use </span>rand::Rng;
 
@@ -826,6 +840,20 @@
             } <span class="kw">else </span>{
                 <span class="kw">break</span>;
             }
+        }
+
+        <span class="comment">// Fetch GGRS network stats of remote players and send to net debug tool
+        </span><span class="kw">let </span><span class="kw-2">mut </span>network_stats: Vec&lt;(PlayerHandle, NetworkStats)&gt; = <span class="macro">vec!</span>[];
+        <span class="kw">for </span>handle <span class="kw">in </span><span class="self">self</span>.session.remote_player_handles().iter() {
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>(stats) = <span class="self">self</span>.session.network_stats(<span class="kw-2">*</span>handle) {
+                network_stats.push((<span class="kw-2">*</span>handle, stats));
+            }
+        }
+        <span class="kw">if </span>!network_stats.is_empty() {
+            NETWORK_DEBUG_CHANNEL
+                .sender
+                .try_send(NetworkDebugMessage::NetworkStats { network_stats })
+                .unwrap();
         }
 
         <span class="prelude-val">Ok</span>(())

@@ -1,6 +1,6 @@
 #![doc = include_str!("./networking.md")]
 
-use ggrs::P2PSession;
+use ggrs::{NetworkStats, P2PSession, PlayerHandle};
 use jumpy_core::input::PlayerControl;
 use rand::Rng;
 
@@ -354,6 +354,20 @@ impl crate::session::SessionRunner for GgrsSessionRunner {
             } else {
                 break;
             }
+        }
+
+        // Fetch GGRS network stats of remote players and send to net debug tool
+        let mut network_stats: Vec<(PlayerHandle, NetworkStats)> = vec![];
+        for handle in self.session.remote_player_handles().iter() {
+            if let Ok(stats) = self.session.network_stats(*handle) {
+                network_stats.push((*handle, stats));
+            }
+        }
+        if !network_stats.is_empty() {
+            NETWORK_DEBUG_CHANNEL
+                .sender
+                .try_send(NetworkDebugMessage::NetworkStats { network_stats })
+                .unwrap();
         }
 
         Ok(())

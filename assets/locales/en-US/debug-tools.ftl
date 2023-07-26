@@ -27,6 +27,7 @@ confirmed-frame = Confirmed Frame
 delta = Delta
 predicted-frames = Predicted Frames
 predicted = predicted
+player = Player
 
 snapshot = Snapshot
 take-snapshot = Take Snapshot

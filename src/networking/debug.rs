@@ -8,6 +8,7 @@ use bevy_egui::{
     EguiContexts,
 };
 use bevy_fluent::Localization;
+use ggrs::{NetworkStats, PlayerHandle};
 use once_cell::sync::Lazy;
 
 use crate::prelude::{debug_tools::ShowDebugWindows, LocalizationExt};
@@ -27,6 +28,10 @@ pub enum NetworkDebugMessage {
     /// Update that network update loop starting at this frame froze waiting
     /// for inputs from other clients after reaching max prediction window.
     FrameFroze { frame: i32 },
+    /// Network stats per remote player
+    NetworkStats {
+        network_stats: Vec<(PlayerHandle, NetworkStats)>,
+    },
 }
 
 /// Sender and receiver for [`NetworkDebugMessage`] for network diagnostics debug tool.
@@ -80,6 +85,9 @@ pub struct NetworkDebug {
 
     /// Is network debug tool paused.
     pub paused: bool,
+
+    /// Network stats per connection to remote player
+    pub network_stats: Vec<(PlayerHandle, NetworkStats)>,
 }
 
 impl Default for NetworkDebug {
@@ -92,6 +100,7 @@ impl Default for NetworkDebug {
             frame_buffer: vec![],
             frame_buffer_display_size: 64,
             paused: false,
+            network_stats: vec![],
         }
     }
 }
@@ -125,7 +134,7 @@ impl NetworkDebug {
 pub static NETWORK_DEBUG_CHANNEL: Lazy<NetworkDebugChannel> =
     Lazy::new(NetworkDebugChannel::default);
 
-/// System displaying network diagnostics window
+/// System displaying network debug window
 pub fn network_debug_window(
     mut show: ResMut<ShowDebugWindows>,
     localization: Res<Localization>,
@@ -152,6 +161,9 @@ pub fn network_debug_window(
                 NetworkDebugMessage::FrameFroze { frame } => {
                     diagnostics.set_frozen(frame);
                 }
+                NetworkDebugMessage::NetworkStats { network_stats } => {
+                    diagnostics.network_stats = network_stats;
+                }
             }
         }
 
@@ -171,12 +183,6 @@ pub fn network_debug_window(
                         "{label}: {confirmed_frame}",
                         label = localization.get("confirmed-frame"),
                         confirmed_frame = diagnostics.confirmed_frame
-                    ));
-
-                    let delta = diagnostics.current_frame - diagnostics.confirmed_frame;
-                    ui.monospace(&format!(
-                        "{label}: {delta}",
-                        label = localization.get("delta"),
                     ));
 
                     if diagnostics.last_frame_with_skips != -1 {
@@ -236,6 +242,7 @@ pub fn network_debug_window(
                                 format!("{frame_localized}: {frame_floor}")
                             }
                         })
+                        .height(128.0)
                         .show(ui, |plot_ui| {
                             plot_ui.bar_chart(
                                 BarChart::new(
@@ -264,7 +271,14 @@ pub fn network_debug_window(
                                     )
                                 })),
                             );
-                        })
+                        });
+
+                    for (player_handle, stats) in diagnostics.network_stats.iter() {
+                        let label = format!("{} {}", localization.get("player"), player_handle);
+                        ui.collapsing(label, |ui| {
+                            ui.monospace(&format!("{stats:?}"));
+                        });
+                    }
                 });
         }
     }

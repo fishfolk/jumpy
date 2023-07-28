@@ -577,6 +577,7 @@ fn hydrate_players(
                 has_mass: true,
                 has_friction: false,
                 gravity: meta.gravity,
+                is_controlled: true,
                 ..default()
             },
         );

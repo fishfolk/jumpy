@@ -80,6 +80,16 @@ pub struct KinematicBody {
     /// This is important to make sure that it falls through JumpThrough platforms if it happens to
     /// spawn inside of one.
     pub is_spawning: bool,
+
+    /// If body is controlled by player or some system simulating input.
+    /// Allows us to make safe optimizations of non-controlled kinematics that have not moved.
+    pub is_controlled: bool,
+
+    /// Position cached from last kinematic body update, used to determine if object is "sleeping"
+    /// (is not moving) to avoid collision detection / resolution against static objects.
+    pub last_update_position: Vec2,
+    /// See comment for `last_update_position`, this tracks previous rotation to detect if object has moved.
+    pub last_update_rotation: f32,
 }
 
 impl KinematicBody {
@@ -149,7 +159,15 @@ fn update_kinematic_bodies(
             collision_world.colliders.get_mut(entity).unwrap().disabled = false;
         }
 
-        if body.has_mass {
+        // has the body moved since last call to update_kinematic_bodies?
+        let has_moved = {
+            let transform = transforms.get(entity).copied().unwrap();
+            let rotation = transform.rotation.to_euler(EulerRot::XYZ).2;
+            body.last_update_position != transform.translation.xy()
+                || body.last_update_rotation != rotation
+                || body.is_spawning // Don't consider new objects
+        };
+        if body.has_mass && has_moved {
             puffin::profile_scope!("Shove objects out of walls");
 
             // Shove objects out of walls
@@ -238,17 +256,23 @@ fn update_kinematic_bodies(
         {
             let mut transform = transforms.get(entity).copied().unwrap();
 
-            // Don't get stuck floating in fall-through platforms
-            if body.velocity == Vec2::ZERO
-                && collision_world.tile_collision_filtered(transform, body.shape, |ent| {
-                    collision_world
-                        .tile_collision_kinds
-                        .get(ent)
-                        .map(|x| *x == TileCollisionKind::JumpThrough)
-                        .unwrap_or(false)
-                }) == TileCollisionKind::JumpThrough
-            {
-                body.fall_through = true;
+            // If not moving, this collision test should give the same result, and will not change the value of fall_through.
+            // for controlled bodies, fall_through may be modified based on inputs, and we may actually want this to be set again here,
+            // so only skip if not moving for bodies that are not controlled.
+            if has_moved || !body.is_controlled {
+                puffin::profile_scope!("fall through check");
+                // Don't get stuck floating in fall-through platforms
+                if body.velocity == Vec2::ZERO
+                    && collision_world.tile_collision_filtered(transform, body.shape, |ent| {
+                        collision_world
+                            .tile_collision_kinds
+                            .get(ent)
+                            .map(|x| *x == TileCollisionKind::JumpThrough)
+                            .unwrap_or(false)
+                    }) == TileCollisionKind::JumpThrough
+                {
+                    body.fall_through = true;
+                }
             }
 
             // Move transform check down 1 slightly
@@ -314,6 +338,10 @@ fn update_kinematic_bodies(
                 body.shape,
             );
         }
+
+        let transform = transforms.get_mut(entity).unwrap();
+        body.last_update_position = transform.translation.xy();
+        body.last_update_rotation = transform.rotation.to_euler(EulerRot::XYZ).2;
     }
 }
 

@@ -80,6 +80,12 @@ pub struct KinematicBody {
     /// This is important to make sure that it falls through JumpThrough platforms if it happens to
     /// spawn inside of one.
     pub is_spawning: bool,
+
+    /// Position cached from last kinematic body update, used to determine if object is "sleeping"
+    /// (is not moving) to avoid collision detection / resolution against static objects.
+    pub last_update_position: Vec2,
+    /// See comment for `last_update_position`, this tracks previous rotation to detect if object has moved.
+    pub last_update_rotation: f32,
 }
 
 impl KinematicBody {
@@ -149,7 +155,15 @@ fn update_kinematic_bodies(
             collision_world.colliders.get_mut(entity).unwrap().disabled = false;
         }
 
-        if body.has_mass {
+        // has the body moved since last call to update_kinematic_bodies?
+        let has_moved = {
+            let transform = transforms.get(entity).copied().unwrap();
+            let rotation = transform.rotation.to_euler(EulerRot::XYZ).2;
+            body.last_update_position != transform.translation.xy()
+                || body.last_update_rotation != rotation
+                || body.is_spawning // Don't consider new objects
+        };
+        if body.has_mass && has_moved {
             puffin::profile_scope!("Shove objects out of walls");
 
             // Shove objects out of walls
@@ -314,6 +328,10 @@ fn update_kinematic_bodies(
                 body.shape,
             );
         }
+
+        let transform = transforms.get_mut(entity).unwrap();
+        body.last_update_position = transform.translation.xy();
+        body.last_update_rotation = transform.rotation.to_euler(EulerRot::XYZ).2;
     }
 }
 

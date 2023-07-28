@@ -1099,6 +1099,7 @@
 <a href="#1003" id="1003">1003</a>
 <a href="#1004" id="1004">1004</a>
 <a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Player controller, states, and animation implementation.
 
 </span><span class="kw">use </span>std::collections::VecDeque;
@@ -1678,6 +1679,7 @@
                 has_mass: <span class="bool-val">true</span>,
                 has_friction: <span class="bool-val">false</span>,
                 gravity: meta.gravity,
+                is_controlled: <span class="bool-val">true</span>,
                 ..default()
             },
         );

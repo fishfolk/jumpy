@@ -137,6 +137,7 @@ fn update_kinematic_bodies(
     mut bodies: CompMut<KinematicBody>,
     mut collision_world: CollisionWorld,
     mut transforms: CompMut<Transform>,
+    player_states: Comp<PlayerState>,
     time: Res<Time>,
 ) {
     puffin::profile_function!();
@@ -252,17 +253,24 @@ fn update_kinematic_bodies(
         {
             let mut transform = transforms.get(entity).copied().unwrap();
 
-            // Don't get stuck floating in fall-through platforms
-            if body.velocity == Vec2::ZERO
-                && collision_world.tile_collision_filtered(transform, body.shape, |ent| {
-                    collision_world
-                        .tile_collision_kinds
-                        .get(ent)
-                        .map(|x| *x == TileCollisionKind::JumpThrough)
-                        .unwrap_or(false)
-                }) == TileCollisionKind::JumpThrough
-            {
-                body.fall_through = true;
+            // If not moving, this collision test should give the same result, and will not change the value of fall_through.
+            // for players, fall_through may be modified based on inputs, and we may actually want this to be set again here,
+            // so only skip if not moving for bodies that are not players.
+            let is_player = player_states.get(entity).is_some();
+            if has_moved || is_player {
+                puffin::profile_scope!("fall through check");
+                // Don't get stuck floating in fall-through platforms
+                if body.velocity == Vec2::ZERO
+                    && collision_world.tile_collision_filtered(transform, body.shape, |ent| {
+                        collision_world
+                            .tile_collision_kinds
+                            .get(ent)
+                            .map(|x| *x == TileCollisionKind::JumpThrough)
+                            .unwrap_or(false)
+                    }) == TileCollisionKind::JumpThrough
+                {
+                    body.fall_through = true;
+                }
             }
 
             // Move transform check down 1 slightly

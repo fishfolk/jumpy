@@ -23,7 +23,7 @@ pub const NETWORK_FRAME_RATE_FACTOR: f32 = 0.9;
 
 /// Number of frames client may predict beyond confirmed frame before freezing and waiting
 /// for inputs from other players.
-pub const NETWORK_MAX_PREDICTION_WINDOW: usize = 8;
+pub const NETWORK_MAX_PREDICTION_WINDOW: usize = 10;
 
 /// The [`ggrs::Config`] implementation used by Jumpy.
 #[derive(Debug)]

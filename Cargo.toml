@@ -7,103 +7,102 @@ license     = "MIT OR Apache-2.0"
 name        = "jumpy"
 version     = "0.7.0"
 
-[workspace]
-members = [".", "core"]
-
 [features]
 default = []
-# Enable to simulate horrible network latency/slowness
-debug-network-slowdown = ["async-timer", "turborand"]
-# Enable bevy tracing scopes in profiling and tracy profiler support.
-profiling-full= ["bevy/trace", "dep:tracing-tracy"]
+# # Enable to simulate horrible network latency/slowness
+# debug-network-slowdown = ["async-timer", "turborand"]
+# # Enable bevy tracing scopes in profiling and tracy profiler support.
+# profiling-full = ["bevy/trace", "dep:tracing-tracy"]
 
 [dependencies]
-bones_bevy_asset    = "0.2"
-bones_bevy_renderer = "0.2"
-bones_lib           = { version = "0.2", features = ["bevy"] }
-type_ulid           = "0.2"
+bones_framework     = { git = "https://github.com/fishfolk/bones" }
+bones_bevy_renderer = { git = "https://github.com/fishfolk/bones" }
+turborand           = { version = "0.10.0", features = ["atomic"] }
+tracing             = "0.1.37"
+puffin              = "0.16.0"
+petgraph            = "0.6.4"
+rapier2d            = { version = "0.17.2", features = ["debug-render", "enhanced-determinism"] }
+indexmap            = "2.0.0"
+serde               = { version = "1.0.188", features = ["derive"] }
+shiftnanigans       = "0.3.3"
+humantime-serde     = "1.1.1"
+ordered-float       = "3.9.1"
+nalgebra = { version = "0.32", features = ["glam024"] }
+once_cell = "1.18.0"
 
-anyhow              = "1.0"
-async-channel       = "1.7"
-bevy_console        = "0.7"
-bevy-inspector-egui = { version = "0.18", default-features = false }
-bevy_egui           = "0.20"
-bevy_fluent         = "0.6"
-bevy_framepace      = "0.12"
-bevy_kira_audio     = { version = "0.15", features = ["ogg"], default-features = false }
-bevy_tweening       = { version = "0.7", default-features = false }
+# anyhow              = "1.0"
+# async-channel       = "1.7"
+# bevy_console        = "0.7"
+# bevy-inspector-egui = { version = "0.18", default-features = false }
+# bevy_egui           = "0.21.0"
+# bevy_fluent         = "0.6"
+# bevy_framepace      = "0.12"
+# bevy_kira_audio     = { version = "0.15", features = ["ogg"], default-features = false }
+# bevy_tweening       = { version = "0.7", default-features = false }
 
-async-timer            = { version = "0.7", optional = true }
-bytemuck               = "1.12"
-clap                   = { version = "4.0", features = ["derive", "env"] }
-directories            = "5.0"
-downcast-rs            = "1.2"
-egui_extras            = "0.21"
-either                 = "1.8"
-fluent                 = "0.16"
-fluent_content         = "0.0"
-futures-lite           = "1.12"
-getrandom              = { version = "0.2", features = ["js"] }
-jumpy_core             = { path = "./core" }
-leafwing-input-manager = { version = "0.9", default-features = false }
-log                    = { version = "0.4", features = ["release_max_level_debug"] }
-normalize-path         = "0.2"
-once_cell              = "1.17"
-peg                    = "0.8"
-puffin                 = { version = "0.15", features = ["web"] }
-puffin_egui            = "0.21"
-rand                   = "0.8"
-serde                  = { version = "1.0", features = ["derive"] }
-serde_yaml             = "0.9"
-thiserror              = "1.0"
-tracing                = { version = "0.1", features = ["release_max_level_debug"] }
-tracing-core           = "0.1"
-tracing-log            = "0.1"
-tracing-subscriber     = "0.3"
-unic-langid            = "0.9"
-byte-pool              = "0.2.4"
+# async-timer        = { version = "0.7", optional = true }
+# bytemuck           = "1.12"
+# clap               = { version = "4.0", features = ["derive", "env"] }
+# directories        = "5.0"
+# downcast-rs        = "1.2"
+# egui_extras        = "0.22.0"
+# either             = "1.8"
+# fluent             = "0.16"
+# fluent_content     = "0.0"
+# futures-lite       = "1.12"
+# getrandom          = { version = "0.2", features = ["js"] }
+# log                = { version = "0.4", features = ["release_max_level_debug"] }
+# normalize-path     = "0.2"
+# once_cell          = "1.17"
+# peg                = "0.8"
+# puffin             = { version = "0.15", features = ["web"] }
+# puffin_egui        = "0.21"
+# rand               = "0.8"
+# serde              = { version = "1.0", features = ["derive"] }
+# serde_yaml         = "0.9"
+# thiserror          = "1.0"
+# tracing            = { version = "0.1", features = ["release_max_level_debug"] }
+# tracing-core       = "0.1"
+# tracing-log        = "0.1"
+# tracing-subscriber = "0.3"
+# unic-langid        = "0.9"
+# byte-pool          = "0.2.4"
 
-[dependencies.turborand]
-features = ["atomic"]
-optional = true
-version  = "0.10"
+# [dependencies.turborand]
+# features = ["atomic"]
+# optional = true
+# version  = "0.10"
 
-[dependencies.bevy]
-default-features = false
-features         = ["x11", "png", "filesystem_watcher", "bevy_gilrs"]
-version          = "0.10"
+# [dependencies.tracing-tracy]
+# version          = "0.10.0"
+# default-features = false
+# features         = ["enable", "system-tracing", "context-switch-tracing", "code-transfer"]
+# optional         = true
 
-[dependencies.tracing-tracy]
-version = "0.10.0"
-default-features = false
-features = ["enable", "system-tracing", "context-switch-tracing", "code-transfer"]
-optional = true
+# [target.'cfg(target_arch = "wasm32")'.dependencies]
+# wasm-bindgen             = "0.2.83"
+# web-sys                  = { version = "0.3", features = ["Window", "Location", "Storage"] }
+# tracing-wasm             = "0.2"
+# console_error_panic_hook = "0.1"
+# js-sys                   = "0.3"
+# chrono                   = { version = "0.4", default-features = false, features = ["std", "wasmbind"] }
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2.83"
-web-sys      = { version = "0.3", features = ["Window", "Location", "Storage"] }
-tracing-wasm = "0.2"
-console_error_panic_hook = "0.1"
-js-sys       = "0.3"
-chrono       = { version = "0.4", default-features = false, features = ["std", "wasmbind"] }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-bevy_dylib = "0.10"
-mimalloc   = { version = "0.1", default-features = false }
-# Networking deps
-bitfield               = "0.14"
-bones_matchmaker_proto = "0.2"
-bytes                  = "1.4"
-ggrs                   = { version = "0.9", features = ["sync-send"] }
-mdns-sd                = { version = "0.7", default-features = false }
-numquant               = "0.2"
-ping-rs                = "0.1"
-postcard               = { version = "1.0", features = ["alloc"] }
-quinn                  = { version = "0.10", default-features = false, features = ["tls-rustls"] }
-rcgen                  = "0.10"
-rustls                 = { version = "0.21", features = ["dangerous_configuration", "quic"] }
-smallvec               = "1.10"
-quinn_runtime_bevy     = "0.2"
+# [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# mimalloc = { version = "0.1", default-features = false }
+# # Networking deps
+# bitfield               = "0.14"
+# bones_matchmaker_proto = "0.2"
+# bytes                  = "1.4"
+# ggrs                   = { version = "0.9", features = ["sync-send"] }
+# mdns-sd                = { version = "0.7", default-features = false }
+# numquant               = "0.2"
+# ping-rs                = "0.1"
+# postcard               = { version = "1.0", features = ["alloc"] }
+# quinn                  = { version = "0.10", default-features = false, features = ["tls-rustls"] }
+# rcgen                  = "0.11.1"
+# rustls                 = { version = "0.21", features = ["dangerous_configuration", "quic"] }
+# smallvec               = "1.10"
+# quinn_runtime_bevy     = "0.2"
 
 # Optimize dependencies even in development
 [profile.dev.package."*"]
@@ -112,10 +111,6 @@ debug         = 1 # Only keep line numbers
 opt-level     = 3
 
 # Optimize our code a little bit.
-[profile.dev.package.jumpy_core]
-codegen-units = 512
-opt-level     = 1
-
 [profile.dev]
 codegen-units = 128
 opt-level     = 1
@@ -131,6 +126,10 @@ lto           = true
 
 [package.metadata.cargo-machete]
 ignored = [
-    "tracing", # Needed to add `release_max_level_debug` feature
-    "getrandom", # Needed to add `js` feature
+  "tracing",   # Needed to add `release_max_level_debug` feature
+  "getrandom", # Needed to add `js` feature
 ]
+
+[patch.'https://github.com/fishfolk/bones']
+bones_framework     = { path = "/home/zicklag/git/other/bones/framework_crates/bones_framework" }
+bones_bevy_renderer = { path = "/home/zicklag/git/other/bones/framework_crates/bones_bevy_renderer" }

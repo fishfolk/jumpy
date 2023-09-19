@@ -69,7 +69,7 @@ fn hydrate(
             spawn_frames,
             uncomfortable_respawn_time,
             ..
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         {
             hydrated.insert(spawner_ent, MapElementHydrated);
 
@@ -150,7 +150,7 @@ fn update_crabs(
             same_level_threshold,
             timer_delay_max,
             ..
-        } = element_meta.data.cast();
+        } = assets.get(element_meta.data).cast_ref();
 
         let body = bodies.get_mut(entity).unwrap();
         let sprite = sprites.get_mut(entity).unwrap();

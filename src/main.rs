@@ -73,7 +73,7 @@ fn main() {
 /// System to render the home menu.
 fn menu_system(
     meta: Root<GameMeta>,
-    asset_server: Res<AssetServer>,
+    assets: Res<AssetServer>,
     ctx: Egui,
     mut sessions: ResMutInit<Sessions>,
     mut session_options: ResMutInit<SessionOptions>,
@@ -83,11 +83,10 @@ fn menu_system(
             session_options.delete = true;
 
             let session = sessions.create("game");
-            session.install_plugin(core::plugin);
-            let map_meta = asset_server.get(meta.core.stable_maps[0]);
-            session
-                .world
-                .insert_resource(LoadedMap(Arc::new(map_meta.clone())));
+            session.install_plugin(core::MatchPlugin {
+                map: assets.get(meta.core.stable_maps[0]).clone(),
+                selected_players: [Some(meta.core.players[0]), None, None, None],
+            });
         }
     });
 }

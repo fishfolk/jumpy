@@ -714,7 +714,12 @@ fn hydrate_players(
                         .core
                         .map_elements
                         .iter()
-                        .find(|handle| assets.get(**handle).data.try_cast::<SwordMeta>().is_ok())
+                        .find(|handle| {
+                            assets
+                                .get(assets.get(**handle).data)
+                                .try_cast_ref::<SwordMeta>()
+                                .is_ok()
+                        })
                         .unwrap();
                     let element_meta = assets.get(*element_handle);
                     if let Ok(SwordMeta {
@@ -724,7 +729,7 @@ fn hydrate_players(
                         bounciness,
                         grab_offset,
                         ..
-                    }) = element_meta.data.try_cast()
+                    }) = assets.get(element_meta.data).try_cast_ref()
                     {
                         let sword_ent = entities.create();
                         inventories.insert(player_entity, Inventory(Some(sword_ent)));

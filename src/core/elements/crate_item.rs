@@ -60,7 +60,7 @@ fn hydrate_crates(
             throw_velocity,
             bounciness,
             ..
-        }) = element_meta.data.try_cast() else{
+        }) = assets.get(element_meta.data).try_cast_ref() else{
             continue;
         };
 
@@ -116,7 +116,7 @@ fn update_idle_crates(
 
         let Ok(CrateMeta {
             break_timeout,..
-        }) = element_meta.data.try_cast() else {
+        }) = assets.get(element_meta.data).try_cast_ref() else {
             continue;
         };
 
@@ -192,7 +192,7 @@ fn update_thrown_crates(
             crate_break_state_1,
             crate_break_state_2,
             ..
-        }) = element_meta.data.try_cast() else {
+        }) = assets.get(element_meta.data).try_cast_ref() else {
             continue;
         };
 

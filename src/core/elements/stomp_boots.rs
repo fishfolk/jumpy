@@ -50,7 +50,7 @@ fn hydrate(
             body_size,
             map_icon,
             ..
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         {
             hydrated.insert(spawner_ent, MapElementHydrated);
 
@@ -106,7 +106,7 @@ fn update(
         let Ok(StompBootsMeta {
             player_decoration,
             ..
-        }) = element_meta.data.try_cast() else {
+        }) = assets.get(element_meta.data).try_cast_ref() else {
             unreachable!();
         };
 

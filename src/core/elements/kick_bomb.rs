@@ -57,7 +57,7 @@ fn hydrate(
             throw_velocity,
             angular_velocity,
             ..
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         {
             hydrated.insert(spawner_ent, MapElementHydrated);
 
@@ -122,7 +122,7 @@ fn update_idle_kick_bombs(
             arm_delay,
             fuse_time,
             ..
-        }) = element_meta.data.try_cast() else {
+        }) = assets.get(element_meta.data).try_cast_ref() else {
             unreachable!();
         };
 
@@ -192,7 +192,7 @@ fn update_lit_kick_bombs(
             explosion_frames,
             fin_anim,
             ..
-        }) = element_meta.data.try_cast() else {
+        }) = assets.get(element_meta.data).try_cast_ref() else {
             unreachable!();
         };
 

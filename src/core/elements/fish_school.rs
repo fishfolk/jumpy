@@ -61,7 +61,7 @@ pub fn hydrate(
             spawn_range,
             flee_range,
             ..
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         {
             // We can use the spawner entity itself for our
             // school because there is no respawning.
@@ -173,7 +173,7 @@ pub fn update_fish_schools(
         let Ok(FishSchoolMeta {
             school_size,
             ..
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         else { continue };
 
         let transform = transforms.get(school_ent).unwrap();

@@ -41,7 +41,7 @@ fn hydrate(
             bounciness,
             gravity,
             ..
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         {
             hydrated.insert(spawner_ent, MapElementHydrated);
 
@@ -96,7 +96,7 @@ fn update_urchins(
             hit_speed,
             spin,
             ..
-        }) = element_meta.data.try_cast() else {
+        }) = assets.get(element_meta.data).try_cast_ref() else {
             unreachable!();
         };
 

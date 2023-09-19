@@ -36,7 +36,7 @@ fn hydrate(
 
         if let Ok(SproingerMeta {
             atlas, body_size, ..
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         {
             new_sproingers.push(entity);
             hydrated.insert(entity, MapElementHydrated);
@@ -94,7 +94,7 @@ fn update(
             sound_volume,
             spring_velocity,
             ..
-        }) = element_meta.data.try_cast() else {
+        }) = assets.get(element_meta.data).try_cast_ref() else {
             unreachable!();
         };
 

@@ -60,7 +60,7 @@ fn hydrate(
             throw_velocity,
             angular_velocity,
             ..
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         {
             hydrated.insert(spawner_ent, MapElementHydrated);
 
@@ -124,7 +124,7 @@ fn update_idle_grenades(
             fuse_sound_volume,
             fuse_time,
             ..
-        }) = element_meta.data.try_cast() else {
+        }) = assets.get(element_meta.data).try_cast_ref() else {
             unreachable!();
         };
         let fuse_time = *fuse_time;
@@ -195,7 +195,7 @@ fn update_lit_grenades(
             explosion_frames,
             fin_anim,
             ..
-        }) = element_meta.data.try_cast() else {
+        }) = assets.get(element_meta.data).try_cast_ref() else {
             unreachable!();
         };
 

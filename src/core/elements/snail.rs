@@ -55,7 +55,7 @@ fn hydrate(
             hide_time,
             hide_frames,
             ..
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         {
             hydrated.insert(spawner_ent, MapElementHydrated);
 
@@ -143,7 +143,7 @@ fn update_snails(
             move_frame_indexes,
             hide_frames,
             ..
-        }) = element_meta.data.try_cast() else {
+        }) = assets.get(element_meta.data).try_cast_ref() else {
             unreachable!();
         };
         let Some(animated_sprite) = animated_sprites.get_mut(entity) else { continue };

@@ -66,7 +66,7 @@ fn hydrate(
             throw_velocity,
             angular_velocity,
             ..
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         {
             hydrated.insert(spawner_ent, MapElementHydrated);
 
@@ -169,7 +169,7 @@ fn update(
             sound_volume,
             killing_speed,
             ..
-        }) = element_meta.data.try_cast() else {
+        }) = assets.get(element_meta.data).try_cast_ref() else {
             unreachable!();
         };
 

@@ -1,5 +1,7 @@
 //! Player and editor input types.
 
+use std::array;
+
 use crate::{prelude::*, MAX_PLAYERS};
 
 pub fn install(session: &mut Session) {
@@ -9,14 +11,13 @@ pub fn install(session: &mut Session) {
 /// The inputs for each player in this simulation frame.
 #[derive(Clone, Debug, HasSchema)]
 pub struct PlayerInputs {
-    pub players: Vec<PlayerInput>,
+    pub players: [PlayerInput; MAX_PLAYERS],
 }
 
 impl Default for PlayerInputs {
     fn default() -> Self {
         Self {
-            players: vec![default(); MAX_PLAYERS],
-            // has_updated: false,
+            players: array::from_fn(|_| default()),
         }
     }
 }

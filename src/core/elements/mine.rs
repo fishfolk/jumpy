@@ -56,7 +56,7 @@ fn hydrate(
             bounciness,
             throw_velocity,
             ..
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         {
             hydrated.insert(spawner_ent, MapElementHydrated);
 
@@ -109,7 +109,7 @@ fn update_idle_mines(
 
         let Ok(MineMeta {
             arm_delay,..
-             }) = element_meta.data.try_cast() else {
+             }) = assets.get(element_meta.data).try_cast_ref() else {
             unreachable!();
         };
         let arm_delay = *arm_delay;
@@ -178,7 +178,7 @@ fn update_thrown_mines(
             armed_frames,
             armed_fps,
             damage_region_size,
-            damage_region_lifetime, explosion_volume, arm_sound_volume, explosion_lifetime, .. }) = element_meta.data.try_cast() else {
+            damage_region_lifetime, explosion_volume, arm_sound_volume, explosion_lifetime, .. }) = assets.get(element_meta.data).try_cast_ref() else {
             unreachable!();
         };
 

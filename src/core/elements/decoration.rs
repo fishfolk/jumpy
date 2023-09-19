@@ -27,7 +27,7 @@ fn hydrate(
             end_frame,
             fps,
             atlas,
-        }) = element_meta.data.try_cast()
+        }) = assets.get(element_meta.data).try_cast_ref()
         {
             hydrated.insert(entity, MapElementHydrated);
             atlas_sprites.insert(

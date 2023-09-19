@@ -33,7 +33,7 @@ fn hydrate(
         let element_handle = element_handles.get(entity).unwrap();
         let element_meta = assets.get(element_handle.0);
 
-        if let Ok(PlayerSpawner) = element_meta.data.try_cast() {
+        if let Ok(PlayerSpawner) = assets.get(element_meta.data).try_cast_ref() {
             hydrated.insert(entity, MapElementHydrated);
             player_spawners.insert(entity, PlayerSpawner);
 

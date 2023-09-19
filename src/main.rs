@@ -22,6 +22,13 @@ mod prelude {
 }
 use crate::prelude::*;
 
+// // This will cause Bevy to be dynamically linked during development,
+// // which can greatly reduce re-compile times in some circumstances.
+// #[cfg(all(debug_assertions, not(target_arch = "wasm32")))]
+// #[allow(unused_imports)]
+// #[allow(clippy::single_component_path_imports)]
+// use bevy_dylib;
+
 #[derive(HasSchema, Clone, Debug, Default)]
 #[type_data(metadata_asset("game"))]
 #[repr(C)]

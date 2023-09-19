@@ -27,8 +27,11 @@ serde               = { version = "1.0.188", features = ["derive"] }
 shiftnanigans       = "0.3.3"
 humantime-serde     = "1.1.1"
 ordered-float       = "3.9.1"
-nalgebra = { version = "0.32", features = ["glam024"] }
-once_cell = "1.18.0"
+nalgebra            = { version = "0.32", features = ["glam024"] }
+once_cell           = "1.18.0"
+
+# [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# bevy_dylib = "0.11"
 
 # anyhow              = "1.0"
 # async-channel       = "1.7"
@@ -126,8 +129,8 @@ lto           = true
 
 [package.metadata.cargo-machete]
 ignored = [
-  "tracing",   # Needed to add `release_max_level_debug` feature
-  "getrandom", # Needed to add `js` feature
+    "tracing",   # Needed to add `release_max_level_debug` feature
+    "getrandom", # Needed to add `js` feature
 ]
 
 [patch.'https://github.com/fishfolk/bones']

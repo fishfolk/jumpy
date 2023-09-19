@@ -23,7 +23,7 @@ pub const FPS: f32 = 60.0;
 /// The maximum number of players per match.
 pub const MAX_PLAYERS: usize = 4;
 
-use std::array;
+use std::{array, time::Duration};
 
 use crate::prelude::*;
 
@@ -72,5 +72,51 @@ impl Plugin for MatchPlugin {
                     .unwrap_or_default()
             }),
         });
+        session.runner = Box::<JumpyDefaultMatchRunner>::default();
+    }
+}
+
+#[derive(Default)]
+pub struct JumpyDefaultMatchRunner {
+    pub accumulator: f64,
+    pub last_run: Option<Instant>,
+}
+
+impl SessionRunner for JumpyDefaultMatchRunner {
+    fn step(&mut self, frame_start: Instant, world: &mut World, stages: &mut SystemStages) {
+        pub const STEP: f64 = 1.0 / FPS as f64;
+        let last_run = self.last_run.unwrap_or(frame_start);
+        let delta = (frame_start - last_run).as_secs_f64();
+
+        let mut run = || {
+            // Advance the world time
+            world
+                .resource_mut::<Time>()
+                .advance_exact(Duration::from_secs_f64(STEP));
+            // Advance the simulation
+            stages.run(world);
+        };
+
+        self.accumulator += delta;
+
+        let loop_start = Instant::now();
+        loop {
+            if self.accumulator >= STEP {
+                let loop_too_long = (Instant::now() - loop_start).as_secs_f64() > STEP;
+
+                if loop_too_long {
+                    warn!("Frame took too long: couldn't keep up with fixed update.");
+                    self.accumulator = 0.0;
+                    break;
+                } else {
+                    self.accumulator -= STEP;
+                    run()
+                }
+            } else {
+                break;
+            }
+        }
+
+        self.last_run = Some(frame_start);
     }
 }

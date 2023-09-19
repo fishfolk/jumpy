@@ -17,6 +17,7 @@ default = []
 [dependencies]
 bones_framework     = { git = "https://github.com/fishfolk/bones" }
 bones_bevy_renderer = { git = "https://github.com/fishfolk/bones" }
+bevy_tasks          = "0.11"
 turborand           = { version = "0.10.0", features = ["atomic"] }
 tracing             = "0.1.37"
 puffin              = "0.16.0"
@@ -29,8 +30,12 @@ humantime-serde     = "1.1.1"
 ordered-float       = "3.9.1"
 nalgebra            = { version = "0.32", features = ["glam024"] }
 once_cell           = "1.18.0"
+async-channel       = "1.9.0"
+serde_yaml          = "0.9.25"
+thiserror           = "1.0.48"
 
-# [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# directories = "1.0"
 # bevy_dylib = "0.11"
 
 # anyhow              = "1.0"

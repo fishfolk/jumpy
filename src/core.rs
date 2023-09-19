@@ -36,14 +36,29 @@ pub mod prelude {
     };
 }
 
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<GameMeta>()
+        .register_asset::<PlayerMeta>()
+        .register_asset::<AudioSource>()
+        .register_asset::<HatMeta>()
+        .register_asset::<MapMeta>()
+        .register_asset::<ElementMeta>()
+        .register_asset::<FishSchoolMeta>()
+        .register_asset::<KickBombMeta>()
+        .register_asset::<AnimatedDecorationMeta>()
+        .register_asset::<PlayerSpawner>()
+        .register_asset::<SwordMeta>();
+}
+
 pub struct MatchPlugin {
     pub map: MapMeta,
     pub selected_players: [Option<Handle<PlayerMeta>>; MAX_PLAYERS],
 }
 
-impl Plugin for MatchPlugin {
+impl SessionPlugin for MatchPlugin {
     fn install(self, session: &mut Session) {
-        session.install_plugin(DefaultPlugin);
+        session.install_plugin(DefaultSessionPlugin);
 
         physics::install(session);
         input::install(session);
@@ -77,7 +92,42 @@ impl Plugin for MatchPlugin {
 }
 
 #[derive(Default)]
+pub struct PlayerInputCollector {
+    last_controls: [PlayerControl; MAX_PLAYERS],
+    current_controls: [PlayerControl; MAX_PLAYERS],
+}
+
+impl PlayerInputCollector {
+    /// Update the internal state with new inputs. This must be called every render frame with the
+    /// input events.
+    pub fn update(&mut self, keyboard: &KeyboardInputs, _gamepad: &GamepadInputs) {
+        let p1 = &mut self.current_controls[0];
+
+        for event in &keyboard.key_events {
+            if event.key_code == Some(KeyCode::Space) {
+                p1.jump_pressed = event.button_state.pressed();
+            }
+        }
+    }
+
+    /// Get the player inputs for the next game simulation frame.
+    pub fn get(&mut self) -> &[PlayerControl; MAX_PLAYERS] {
+        (0..MAX_PLAYERS).for_each(|i| {
+            let current = &mut self.current_controls[i];
+            let last = &self.last_controls[i];
+
+            current.jump_just_pressed = current.jump_pressed && !last.jump_pressed
+        });
+
+        self.last_controls = self.current_controls.clone();
+
+        &self.current_controls
+    }
+}
+
+#[derive(Default)]
 pub struct JumpyDefaultMatchRunner {
+    pub input_collector: PlayerInputCollector,
     pub accumulator: f64,
     pub last_run: Option<Instant>,
 }
@@ -88,11 +138,26 @@ impl SessionRunner for JumpyDefaultMatchRunner {
         let last_run = self.last_run.unwrap_or(frame_start);
         let delta = (frame_start - last_run).as_secs_f64();
 
+        {
+            let keyboard = world.resource::<KeyboardInputs>();
+            let gamepad = world.resource::<GamepadInputs>();
+            self.input_collector.update(&keyboard, &gamepad);
+        }
+
         let mut run = || {
             // Advance the world time
             world
                 .resource_mut::<Time>()
                 .advance_exact(Duration::from_secs_f64(STEP));
+
+            let input = self.input_collector.get();
+            {
+                let mut player_inputs = world.resource_mut::<PlayerInputs>();
+                (0..MAX_PLAYERS).for_each(|i| {
+                    player_inputs.players[i].control = input[i].clone();
+                });
+            }
+
             // Advance the simulation
             stages.run(world);
         };

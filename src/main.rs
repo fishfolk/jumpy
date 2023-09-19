@@ -11,6 +11,7 @@ use bones_bevy_renderer::BonesBevyRenderer;
 use bones_framework::prelude::*;
 
 mod core;
+pub mod platform;
 
 mod prelude {
     pub use crate::{core::prelude::*, impl_system_param, GameMeta};
@@ -42,34 +43,27 @@ pub struct GameMeta {
 pub struct Dummy;
 
 fn main() {
+    // Initialize the Bevy task pool manually so that we can use it during startup.
+    bevy_tasks::IoTaskPool::init(bevy_tasks::TaskPool::new);
+
     // First create bones game.
     let mut game = Game::new();
 
     game
+        // Install game plugins
+        .install_plugin(platform::game_plugin)
+        .install_plugin(core::game_plugin)
         // We initialize the asset server.
         .init_shared_resource::<AssetServer>()
         // We must register all of our asset types before they can be loaded.
-        // TODO: Evaluate ways to decentralize asset registration.
-        // We want to see if there's a way to avoid putting all of our asset types listed in main.
-        .register_default_assets()
-        .register_asset::<GameMeta>()
-        .register_asset::<PlayerMeta>()
-        .register_asset::<AudioSource>()
-        .register_asset::<HatMeta>()
-        .register_asset::<MapMeta>()
-        .register_asset::<ElementMeta>()
-        .register_asset::<FishSchoolMeta>()
-        .register_asset::<KickBombMeta>()
-        .register_asset::<AnimatedDecorationMeta>()
-        .register_asset::<PlayerSpawner>()
-        .register_asset::<SwordMeta>();
+        .register_default_assets();
 
     // Create a new session for the game menu. Each session is it's own bones world with it's own
     // plugins, systems, and entities.
     game.sessions
         .create("menu")
         // Install the default bones_framework plugin for this session
-        .install_plugin(DefaultPlugin)
+        .install_plugin(DefaultSessionPlugin)
         // Add our menu system to the update stage
         .add_system_to_stage(Update, menu_system);
 

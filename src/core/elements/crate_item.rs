@@ -1,8 +1,39 @@
 use crate::prelude::*;
 
-use std::time::Duration;
+/// The throwable crate item
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("crate"))]
+#[repr(C)]
+pub struct CrateMeta {
+    pub atlas: Handle<Atlas>,
 
-pub fn install(session: &mut Session) {
+    pub breaking_atlas: Handle<Atlas>,
+    pub breaking_anim_frames: u32,
+    pub breaking_anim_fps: f32,
+
+    pub break_sound: Handle<AudioSource>,
+    pub break_sound_volume: f64,
+    pub bounce_sound: Handle<AudioSource>,
+    pub bounce_sound_volume: f64,
+
+    pub throw_velocity: f32,
+
+    pub body_size: Vec2,
+    pub grab_offset: Vec2,
+    // How long to wait before despawning a thrown crate, if it hans't it anything yet.
+    pub break_timeout: Duration,
+    pub bounciness: f32,
+    pub fin_anim: Ustr,
+    pub crate_break_state_1: u32,
+    pub crate_break_state_2: u32,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<CrateMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate_crates)

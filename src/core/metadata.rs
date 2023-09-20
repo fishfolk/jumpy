@@ -5,11 +5,9 @@ use std::time::Duration;
 
 use crate::prelude::*;
 
-mod element;
 mod map;
 mod player;
 
-pub use element::*;
 pub use map::*;
 pub use player::*;
 

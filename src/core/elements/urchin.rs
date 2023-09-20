@@ -1,6 +1,23 @@
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("urchin"))]
+#[repr(C)]
+pub struct UrchinMeta {
+    pub image: Handle<Image>,
+    pub body_diameter: f32,
+    pub hit_speed: f32,
+    pub gravity: f32,
+    pub bounciness: f32,
+    pub spin: f32,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<UrchinMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)

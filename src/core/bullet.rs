@@ -4,8 +4,13 @@
 
 use crate::prelude::*;
 
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<BulletMeta>();
+}
+
 /// Install this module.
-pub fn install(session: &mut Session) {
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
@@ -19,6 +24,23 @@ pub struct Bullet {
     pub direction: f32,
     /// The player entity that shot the bullet.
     pub owner: Entity,
+}
+
+#[derive(HasSchema, Clone, Debug, Default)]
+#[type_data(metadata_asset("bullet"))]
+#[repr(C)]
+pub struct BulletMeta {
+    pub velocity: Vec2,
+    pub body_diameter: f32,
+    pub atlas: Handle<Atlas>,
+
+    pub lifetime: f32,
+    pub explosion_fps: f32,
+    pub explosion_volume: f64,
+    pub explosion_lifetime: f32,
+    pub explosion_frames: u32,
+    pub explosion_atlas: Handle<Atlas>,
+    pub explosion_sound: Handle<AudioSource>,
 }
 
 /// Component containing the bullet's metadata handle.

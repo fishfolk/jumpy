@@ -1,8 +1,29 @@
-use std::time::Duration;
-
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("fish_school"))]
+#[repr(C)]
+pub struct FishSchoolMeta {
+    pub kinds: SVec<Handle<Atlas>>,
+    /// The default and most-likely to ocurr number of fish in a school
+    pub base_count: u32,
+    /// The ammount greater or less than the base number of fish that may spawn
+    pub count_variation: u32,
+    /// The distance from the spawn point on each axis that the individual fish in the school will be
+    /// initially spawned within
+    pub spawn_range: f32,
+    /// The distance that the fish wish to stay within the center of their school
+    pub school_size: f32,
+    // The distance a collider must be for the fish to run away
+    pub flee_range: f32,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<FishSchoolMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)

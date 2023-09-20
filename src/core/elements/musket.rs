@@ -1,8 +1,40 @@
-use std::time::Duration;
-
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("musket"))]
+#[repr(C)]
+pub struct MusketMeta {
+    pub grab_offset: Vec2,
+    pub fin_anim: Ustr,
+
+    pub body_size: Vec2,
+    pub bounciness: f32,
+    pub can_rotate: bool,
+    pub throw_velocity: f32,
+    pub angular_velocity: f32,
+    pub atlas: Handle<Atlas>,
+
+    pub max_ammo: u32,
+    pub cooldown: Duration,
+    pub bullet_meta: Handle<BulletMeta>,
+    pub kickback: f32,
+
+    pub shoot_fps: f32,
+    pub shoot_lifetime: f32,
+    pub shoot_frames: u32,
+    pub shoot_sound_volume: f64,
+    pub empty_shoot_sound_volume: f64,
+    pub shoot_atlas: Handle<Atlas>,
+    pub shoot_sound: Handle<AudioSource>,
+    pub empty_shoot_sound: Handle<AudioSource>,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<MusketMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)

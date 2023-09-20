@@ -28,12 +28,12 @@ impl Default for PlayerInputs {
 pub struct PlayerInput {
     /// The player is currently "connected" and actively providing input.
     pub active: bool,
+    /// The selected player skin.
     pub selected_player: Handle<PlayerMeta>,
+    /// The selected player hat.
     pub selected_hat: Option<Handle<HatMeta>>,
     /// The player control input
     pub control: PlayerControl,
-    /// The player control input from the last fixed update
-    pub previous_control: PlayerControl,
     /// The editor inputs the player is making, if any.
     pub editor_input: Option<EditorInput>,
     /// Whether or not this is an AI player.

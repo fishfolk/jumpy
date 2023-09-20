@@ -32,6 +32,37 @@ pub mod prelude {
     };
 }
 
+#[derive(HasSchema, Default, Clone, Debug)]
+#[type_data(metadata_asset("element"))]
+#[repr(C)]
+pub struct ElementMeta {
+    pub name: Ustr,
+    pub category: Ustr,
+    pub data: Handle<SchemaBox>,
+    pub editor: ElementEditorMeta,
+}
+
+#[derive(HasSchema, Deserialize, Clone, Debug)]
+#[repr(C)]
+pub struct ElementEditorMeta {
+    /// The size of the bounding rect for the element in the editor
+    pub grab_size: Vec2,
+    /// The offset of the bounding rect for the element in the editor.
+    pub grab_offset: Vec2,
+    /// Show the element name above the bounding rect in the editor.
+    pub show_name: bool,
+}
+
+impl Default for ElementEditorMeta {
+    fn default() -> Self {
+        Self {
+            grab_size: Vec2::splat(45.0),
+            grab_offset: Vec2::ZERO,
+            show_name: true,
+        }
+    }
+}
+
 /// Marker component added to map elements that have been hydrated.
 #[derive(Clone, HasSchema, Default)]
 pub struct MapElementHydrated;
@@ -225,29 +256,48 @@ impl<'a> SpawnerManager<'a> {
     }
 }
 
-pub fn install(session: &mut Session) {
-    session
-        .stages
-        .add_system_to_stage(CoreStage::First, handle_out_of_bounds_items);
+/// Helper macro to install element game and session plugins
+macro_rules! install_plugins {
+    ($($module:ident),* $(,)?) => {
+        pub fn session_plugin(session: &mut Session) {
+            session
+                .stages
+                .add_system_to_stage(CoreStage::First, handle_out_of_bounds_items);
 
-    decoration::install(session);
-    urchin::install(session);
-    player_spawner::install(session);
-    sproinger::install(session);
-    sword::install(session);
-    grenade::install(session);
-    crab::install(session);
-    snail::install(session);
-    fish_school::install(session);
-    kick_bomb::install(session);
-    mine::install(session);
-    musket::install(session);
-    stomp_boots::install(session);
-    crate_item::install(session);
-    slippery_seaweed::install(session);
-    slippery::install(session);
-    spike::install(session);
+            $(
+                session.install_plugin($module::session_plugin);
+            )*
+        }
+
+        pub fn game_plugin(game: &mut Game) {
+            game.init_shared_resource::<AssetServer>().register_asset::<ElementMeta>();
+
+            $(
+                game.install_plugin($module::game_plugin);
+            )*
+        }
+    };
 }
+
+install_plugins!(
+    decoration,
+    urchin,
+    player_spawner,
+    sproinger,
+    sword,
+    grenade,
+    crab,
+    snail,
+    fish_school,
+    kick_bomb,
+    mine,
+    musket,
+    stomp_boots,
+    crate_item,
+    slippery_seaweed,
+    slippery,
+    spike,
+);
 
 fn handle_out_of_bounds_items(
     mut commands: Commands,

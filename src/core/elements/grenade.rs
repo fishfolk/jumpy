@@ -1,7 +1,39 @@
 use crate::prelude::*;
-use std::time::Duration;
 
-pub fn install(session: &mut Session) {
+/// Grenades item
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("grenade"))]
+#[repr(C)]
+pub struct GrenadeMeta {
+    pub body_diameter: f32,
+    pub fin_anim: Ustr,
+    pub grab_offset: Vec2,
+    pub damage_region_size: Vec2,
+    pub damage_region_lifetime: f32,
+    pub throw_velocity: f32,
+    pub explosion_lifetime: f32,
+    pub explosion_frames: u32,
+    pub explosion_fps: f32,
+    pub explosion_sound: Handle<AudioSource>,
+    pub explosion_volume: f64,
+    pub fuse_sound: Handle<AudioSource>,
+    pub fuse_sound_volume: f64,
+    /// The time in seconds before a grenade explodes
+    pub fuse_time: f32,
+    pub can_rotate: bool,
+    /// The grenade atlas
+    pub atlas: Handle<Atlas>,
+    pub explosion_atlas: Handle<Atlas>,
+    pub bounciness: f32,
+    pub angular_velocity: f32,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<GrenadeMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)

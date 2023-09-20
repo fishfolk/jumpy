@@ -6,19 +6,21 @@
 // TODO: Warn on dead code.
 // This is temporarily disabled while migrating to the new bones.
 #![allow(dead_code)]
+#![allow(ambiguous_glob_reexports)]
 
 use bones_bevy_renderer::BonesBevyRenderer;
 use bones_framework::prelude::*;
 
-mod core;
+pub mod core;
+pub mod input;
 pub mod platform;
 
 mod prelude {
-    pub use crate::{core::prelude::*, impl_system_param, GameMeta};
+    pub use crate::{core::prelude::*, impl_system_param, input::*, GameMeta};
     pub use bones_framework::prelude::*;
     pub use once_cell::sync::Lazy;
     pub use serde::{Deserialize, Serialize};
-    pub use std::sync::Arc;
+    pub use std::{sync::Arc, time::Duration};
     pub use tracing::{debug, error, info, trace, warn};
 }
 use crate::prelude::*;
@@ -37,11 +39,6 @@ pub struct GameMeta {
     pub core: CoreMeta,
 }
 
-#[derive(HasSchema, Clone, Default, Debug)]
-#[repr(C)]
-#[type_data(metadata_asset("dummy"))]
-pub struct Dummy;
-
 fn main() {
     // Initialize the Bevy task pool manually so that we can use it during startup.
     bevy_tasks::IoTaskPool::init(bevy_tasks::TaskPool::new);
@@ -53,10 +50,10 @@ fn main() {
         // Install game plugins
         .install_plugin(platform::game_plugin)
         .install_plugin(core::game_plugin)
-        // We initialize the asset server.
+        // We initialize the asset server and register asset types
         .init_shared_resource::<AssetServer>()
-        // We must register all of our asset types before they can be loaded.
-        .register_default_assets();
+        .register_default_assets()
+        .register_asset::<GameMeta>();
 
     // Create a new session for the game menu. Each session is it's own bones world with it's own
     // plugins, systems, and entities.
@@ -85,7 +82,7 @@ fn menu_system(
 
             let session = sessions.create("game");
             session.install_plugin(core::MatchPlugin {
-                map: assets.get(meta.core.stable_maps[0]).clone(),
+                map: assets.get(meta.core.stable_maps[1]).clone(),
                 selected_players: [Some(meta.core.players[0]), None, None, None],
             });
         }

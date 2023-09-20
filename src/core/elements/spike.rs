@@ -1,6 +1,22 @@
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("spike"))]
+#[repr(C)]
+pub struct SpikeMeta {
+    pub atlas: Handle<Atlas>,
+    pub body_size: Vec2,
+    pub start_frame: u32,
+    pub end_frame: u32,
+    pub fps: f32,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<SpikeMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)

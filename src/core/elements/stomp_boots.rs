@@ -1,6 +1,22 @@
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("stomp_boots"))]
+#[repr(C)]
+pub struct StompBootsMeta {
+    pub map_icon: Handle<Atlas>,
+    pub player_decoration: Handle<Atlas>,
+
+    pub body_size: Vec2,
+    pub grab_offset: Vec2,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<StompBootsMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)

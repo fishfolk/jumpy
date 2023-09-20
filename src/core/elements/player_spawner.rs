@@ -1,6 +1,17 @@
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+/// Player spawner element
+#[derive(HasSchema, Default, Debug, Clone, Copy)]
+#[type_data(metadata_asset("player_spawner"))]
+#[repr(C)]
+pub struct PlayerSpawnerMeta;
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<PlayerSpawnerMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::First, hydrate)

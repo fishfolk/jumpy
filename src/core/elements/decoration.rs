@@ -1,6 +1,22 @@
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+/// An animated decoration such as seaweed or anemones
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("animated_decoration"))]
+#[repr(C)]
+pub struct AnimatedDecorationMeta {
+    pub start_frame: u32,
+    pub end_frame: u32,
+    pub fps: f32,
+    pub atlas: Handle<Atlas>,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<AnimatedDecorationMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::First, hydrate);

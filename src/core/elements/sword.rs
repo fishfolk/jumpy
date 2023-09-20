@@ -1,8 +1,30 @@
-use std::time::Duration;
-
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+/// This is a sword
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("sword"))]
+#[repr(C)]
+pub struct SwordMeta {
+    pub atlas: Handle<Atlas>,
+    pub sound: Handle<AudioSource>,
+    pub sound_volume: f64,
+    pub body_size: Vec2,
+    pub fin_anim: Ustr,
+    pub grab_offset: Vec2,
+    pub killing_speed: f32,
+    pub angular_velocity: f32,
+    pub can_rotate: bool,
+    pub bounciness: f32,
+    pub throw_velocity: f32,
+    pub cooldown_frames: u32,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<SwordMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)

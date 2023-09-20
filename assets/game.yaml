@@ -317,19 +317,19 @@ core:
 
   stable_maps:
     - /map/levels/level_1.map.yaml
-    # - /map/levels/level_2.map.yaml
-    # - /map/levels/level_3.map.yaml
-    # - /map/levels/level_4.map.yaml
-    # - /map/levels/level_5.map.yaml
-    # - /map/levels/level_6.map.yaml
-    # - /map/levels/level_7.map.yaml
-    # - /map/levels/level_8.map.yaml
-    # - /map/levels/level_9.map.yaml
-    # - /map/levels/level_10.map.yaml
-    # - /map/levels/level_11.map.yaml
-    # - /map/levels/level_12.map.yaml
-    # - /map/levels/level_13.map.yaml
-    # - /map/levels/level_14.map.yaml
+    - /map/levels/level_2.map.yaml
+    - /map/levels/level_3.map.yaml
+    - /map/levels/level_4.map.yaml
+    - /map/levels/level_5.map.yaml
+    - /map/levels/level_6.map.yaml
+    - /map/levels/level_7.map.yaml
+    - /map/levels/level_8.map.yaml
+    - /map/levels/level_9.map.yaml
+    - /map/levels/level_10.map.yaml
+    - /map/levels/level_11.map.yaml
+    - /map/levels/level_12.map.yaml
+    - /map/levels/level_13.map.yaml
+    - /map/levels/level_14.map.yaml
 
   map_tilesets:
     - /map/resources/default_tileset.atlas.yaml
@@ -341,24 +341,24 @@ core:
 
   map_elements:
     - /elements/decoration/anemones/anemones.element.yaml
-    # - /elements/decoration/seaweed/seaweed.element.yaml
-    # - /elements/environment/urchin/urchin.element.yaml
-    # - /elements/environment/fish_school/fish_school.element.yaml
-    # - /elements/environment/crab/crab.element.yaml
-    # - /elements/environment/snail/snail.element.yaml
-    # - /elements/environment/player_spawner/player_spawner.element.yaml
-    # - /elements/environment/sproinger/sproinger.element.yaml
-    # - /elements/environment/slippery/slippery.element.yaml
-    # - /elements/environment/slippery_seaweed/slippery_seaweed.element.yaml
-    # - /elements/item/crate/crate.element.yaml
-    # - /elements/item/grenade/grenade.element.yaml
-    # - /elements/item/kick_bomb/kick_bomb.element.yaml
-    # - /elements/item/mine/mine.element.yaml
-    # - /elements/item/musket/musket.element.yaml
-    # - /elements/item/stomp_boots/stomp_boots.element.yaml
-    # - /elements/item/sword/sword.element.yaml
-    # - /elements/item/sniper_rifle/sniper_rifle.element.yaml
-    # - /elements/environment/coral_spikes/coral_spikes.element.yaml
+    - /elements/decoration/seaweed/seaweed.element.yaml
+    - /elements/environment/urchin/urchin.element.yaml
+    - /elements/environment/fish_school/fish_school.element.yaml
+    - /elements/environment/crab/crab.element.yaml
+    - /elements/environment/snail/snail.element.yaml
+    - /elements/environment/player_spawner/player_spawner.element.yaml
+    - /elements/environment/sproinger/sproinger.element.yaml
+    - /elements/environment/slippery/slippery.element.yaml
+    - /elements/environment/slippery_seaweed/slippery_seaweed.element.yaml
+    - /elements/item/crate/crate.element.yaml
+    - /elements/item/grenade/grenade.element.yaml
+    - /elements/item/kick_bomb/kick_bomb.element.yaml
+    - /elements/item/mine/mine.element.yaml
+    - /elements/item/musket/musket.element.yaml
+    - /elements/item/stomp_boots/stomp_boots.element.yaml
+    - /elements/item/sword/sword.element.yaml
+    - /elements/item/sniper_rifle/sniper_rifle.element.yaml
+    - /elements/environment/coral_spikes/coral_spikes.element.yaml
 
   experimental_maps: []
 

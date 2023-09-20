@@ -4,9 +4,4 @@ editor:
   grab_size: [30, 10]
   grab_offset: [0, -5]
   show_name: false
-builtin: !Sproinger
-  atlas: ./sproinger.atlas.yaml
-  sound: ./jump.ogg
-  sound_volume: 0.1
-  body_size: [8, 8]
-  spring_velocity: 16
+data: sproinger.yaml

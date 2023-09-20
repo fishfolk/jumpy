@@ -1,6 +1,23 @@
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("sproinger"))]
+#[repr(C)]
+/// This is a sproinger
+pub struct SproingerMeta {
+    pub atlas: Handle<Atlas>,
+    pub sound: Handle<AudioSource>,
+    pub sound_volume: f64,
+    pub body_size: Vec2,
+    pub spring_velocity: f32,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<SproingerMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)

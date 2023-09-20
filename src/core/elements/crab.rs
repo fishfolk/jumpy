@@ -1,10 +1,37 @@
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+/// A crab roaming on the ocean floor
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("crab"))]
+#[repr(C)]
+pub struct CrabMeta {
+    pub body_size: Vec2,
+    pub walk_frames: SVec<u32>,
+    pub spawn_frames: SVec<u32>,
+    pub fps: f32,
+    pub comfortable_spawn_distance: f32,
+    pub comfortable_scared_distance: f32,
+    /// How long a crab has to be away from it's spawn point before it digs into the ground and
+    /// digs back out in his spawn point.
+    pub uncomfortable_respawn_time: Duration,
+    pub same_level_threshold: f32,
+    pub walk_speed: f32,
+    pub run_speed: f32,
+    // TODO: migrate this to a duration like `uncomfortable_respawn_time`.
+    pub timer_delay_max: u8,
+    pub atlas: Handle<Atlas>,
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
         .add_system_to_stage(CoreStage::PostUpdate, update_crabs);
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<CrabMeta>();
 }
 
 #[derive(Default, Clone, HasSchema, Debug, Copy)]

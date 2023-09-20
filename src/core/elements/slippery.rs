@@ -1,6 +1,21 @@
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("slippery"))]
+#[repr(C)]
+pub struct SlipperyMeta {
+    pub atlas: Handle<Atlas>,
+    pub body_size: Vec2,
+    pub player_slide: f32,
+    pub body_friction: f32,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<SlipperyMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)

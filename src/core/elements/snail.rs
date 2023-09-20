@@ -1,6 +1,32 @@
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+#[derive(HasSchema, Default, Debug, Clone)]
+#[type_data(metadata_asset("snail"))]
+#[repr(C)]
+pub struct SnailMeta {
+    pub atlas: Handle<Atlas>,
+    pub fps: f32,
+    pub body_diameter: f32,
+    pub bounciness: f32,
+    pub gravity: f32,
+    pub hit_speed: f32,
+    /// The animation frames for when the snail is crawling
+    pub crawl_frames: SVec<u32>,
+    /// The `crawl_frames` indexes in which to move the snail
+    pub move_frame_indexes: SVec<u32>,
+    /// The animation frames for when the snail is fleeing into its shell.
+    ///
+    /// **Note:** This is reversed for the snail coming out of its shell.
+    pub hide_frames: SVec<u32>,
+    pub hide_time: f32,
+}
+
+pub fn game_plugin(game: &mut Game) {
+    game.init_shared_resource::<AssetServer>()
+        .register_asset::<SnailMeta>();
+}
+
+pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)

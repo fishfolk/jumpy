@@ -37,18 +37,14 @@ pub mod prelude {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<GameMeta>()
+    game.install_plugin(elements::game_plugin)
+        .install_plugin(bullet::game_plugin)
+        .init_shared_resource::<AssetServer>()
+        // TODO: Move these asset registrations to their associated modules.
         .register_asset::<PlayerMeta>()
         .register_asset::<AudioSource>()
         .register_asset::<HatMeta>()
-        .register_asset::<MapMeta>()
-        .register_asset::<ElementMeta>()
-        .register_asset::<FishSchoolMeta>()
-        .register_asset::<KickBombMeta>()
-        .register_asset::<AnimatedDecorationMeta>()
-        .register_asset::<PlayerSpawner>()
-        .register_asset::<SwordMeta>();
+        .register_asset::<MapMeta>();
 }
 
 pub struct MatchPlugin {
@@ -64,7 +60,7 @@ impl SessionPlugin for MatchPlugin {
         input::install(session);
         map::install(session);
         player::plugin(session);
-        elements::install(session);
+        elements::session_plugin(session);
         damage::install(session);
         camera::install(session);
         lifetime::install(session);
@@ -72,7 +68,7 @@ impl SessionPlugin for MatchPlugin {
         debug::plugin(session);
         item::install(session);
         attachment::install(session);
-        bullet::install(session);
+        bullet::session_plugin(session);
         editor::install(session);
 
         session.world.insert_resource(LoadedMap(Arc::new(self.map)));
@@ -88,40 +84,6 @@ impl SessionPlugin for MatchPlugin {
             }),
         });
         session.runner = Box::<JumpyDefaultMatchRunner>::default();
-    }
-}
-
-#[derive(Default)]
-pub struct PlayerInputCollector {
-    last_controls: [PlayerControl; MAX_PLAYERS],
-    current_controls: [PlayerControl; MAX_PLAYERS],
-}
-
-impl PlayerInputCollector {
-    /// Update the internal state with new inputs. This must be called every render frame with the
-    /// input events.
-    pub fn update(&mut self, keyboard: &KeyboardInputs, _gamepad: &GamepadInputs) {
-        let p1 = &mut self.current_controls[0];
-
-        for event in &keyboard.key_events {
-            if event.key_code == Some(KeyCode::Space) {
-                p1.jump_pressed = event.button_state.pressed();
-            }
-        }
-    }
-
-    /// Get the player inputs for the next game simulation frame.
-    pub fn get(&mut self) -> &[PlayerControl; MAX_PLAYERS] {
-        (0..MAX_PLAYERS).for_each(|i| {
-            let current = &mut self.current_controls[i];
-            let last = &self.last_controls[i];
-
-            current.jump_just_pressed = current.jump_pressed && !last.jump_pressed
-        });
-
-        self.last_controls = self.current_controls.clone();
-
-        &self.current_controls
     }
 }
 

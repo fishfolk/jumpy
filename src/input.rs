@@ -13,7 +13,7 @@ impl PlayerInputCollector {
         let p1 = &mut self.current_controls[0];
 
         for event in &keyboard.key_events {
-            if event.key_code == Some(KeyCode::Space) {
+            if event.key_code == Set(KeyCode::Space) {
                 p1.jump_pressed = event.button_state.pressed();
             }
         }

@@ -104,11 +104,17 @@ fn camera_controller(
 
     let viewport_size = camera
         .viewport
+        .option()
         .map(|x| x.size.as_vec2())
         .unwrap_or(window.size);
     let viewport_aspect = viewport_size.x / viewport_size.y;
     let default_height = meta.default_height;
-    let mut scale = camera.height / default_height;
+    let camera_height = if let CameraSize::FixedHeight(height) = &camera.size {
+        *height
+    } else {
+        400.0
+    };
+    let mut scale = camera_height / default_height;
     let default_width = viewport_aspect * default_height;
     let map_size = map.grid_size.as_vec2() * map.tile_size;
 
@@ -159,7 +165,7 @@ fn camera_controller(
 
     let delta = camera_pos.truncate() - middle_point;
     let dist = delta * meta.move_lerp_factor;
-    camera.height = scale * default_height;
+    camera.size = CameraSize::FixedHeight(scale * default_height);
     *camera_pos -= dist.extend(0.0);
 }
 

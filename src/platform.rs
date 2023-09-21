@@ -36,6 +36,11 @@ pub struct Storage {
     backend_sender: Sender<StorageRequest>,
 }
 
+/// Trait implemented for things that may be stored in [`Storage`].
+pub trait StorageItem: Serialize + DeserializeOwned {
+    const STORAGE_KEY: &'static str;
+}
+
 impl Default for Storage {
     fn default() -> Self {
         let backend_sender = backend::init_storage();
@@ -111,14 +116,14 @@ impl Storage {
     }
 
     /// Try to get a value from the in-memory storage cache.
-    pub fn try_get<T>(&mut self, key: &str) -> Result<Option<T>, StorageError>
+    pub fn try_get<T>(&mut self) -> Result<Option<T>, StorageError>
     where
-        T: Serialize + DeserializeOwned,
+        T: StorageItem,
     {
         self.check_pending_data_load();
 
         if let Some(data) = &self.data {
-            let value = data.get(key).cloned();
+            let value = data.get(T::STORAGE_KEY).cloned();
 
             if let Some(value) = value {
                 let value = serde_yaml::from_value(value)?;
@@ -138,11 +143,11 @@ impl Storage {
     ///
     /// This will panic if storage has not been loaded yet or if there is a deserialization error.
     #[track_caller]
-    pub fn get<T>(&mut self, key: &str) -> Option<T>
+    pub fn get<T>(&mut self) -> Option<T>
     where
-        T: Serialize + DeserializeOwned,
+        T: StorageItem,
     {
-        match self.try_get(key) {
+        match self.try_get() {
             Ok(data) => data,
             Err(e) => {
                 error!(

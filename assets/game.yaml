@@ -30,59 +30,46 @@
 
 #   menu_width: 350
 
-# default_settings:
-#   matchmaking_server: matchmaker.bones.fishfolk.org:65534
-#   player_controls:
-#     # Gamepad controls
-#     gamepad:
-#       movement:
-#         up: !SingleAxis
-#           axis_type: !Gamepad LeftStickY
-#           positive_low: 0.1
-#           negative_low: -1.0
+default_settings:
+  matchmaking_server: matchmaker.bones.fishfolk.org:65534
+  player_controls:
+    # Gamepad controls
+    gamepad:
+      movement:
+        up: !AxisPositive LeftStickY
+        left: !AxisNegative LeftStickX
+        down: !AxisNegative LeftStickY
+        right: !AxisPositive LeftStickX
+      jump: !Button South
+      grab: !Button East
+      shoot: !Button West
+      slide: !Button North
 
-#         left: !SingleAxis
-#           axis_type: !Gamepad LeftStickX
-#           positive_low: 1.0
-#           negative_low: -0.1
+    # Controls for the first keyboard player ( left side )
+    keyboard1:
+      movement:
+        up: !Keyboard W
+        down: !Keyboard S
+        left: !Keyboard A
+        right: !Keyboard D
+      jump: !Keyboard Space
+      grab: !Keyboard V
+      shoot: !Keyboard C
+      slide: !Keyboard B
 
-#         down: !SingleAxis
-#           axis_type: !Gamepad LeftStickY
-#           positive_low: 1.0
-#           negative_low: -0.1
+    # Controls for the second keyboard player ( right side )
+    keyboard2:
+      movement:
+        up: !Keyboard Up
+        down: !Keyboard Down
+        left: !Keyboard Left
+        right: !Keyboard Right
+      jump: !Keyboard Comma
+      grab: !Keyboard ShiftRight
+      shoot: !Keyboard Period
+      slide: !Keyboard Slash
 
-#         right: !SingleAxis
-#           axis_type: !Gamepad LeftStickX
-#           positive_low: 0.1
-#           negative_low: -1.0
-#       jump: !GamepadButton South
-#       grab: !GamepadButton East
-#       shoot: !GamepadButton West
-#       slide: !GamepadButton North
-
-#     # Controls for the first keyboard player ( left side )
-#     keyboard1:
-#       movement:
-#         up: !Keyboard W
-#         down: !Keyboard S
-#         left: !Keyboard A
-#         right: !Keyboard D
-#       jump: !Keyboard Space
-#       grab: !Keyboard V
-#       shoot: !Keyboard C
-#       slide: !Keyboard B
-
-#     # Controls for the second keyboard player ( right side )
-#     keyboard2:
-#       movement:
-#         up: !Keyboard Up
-#         down: !Keyboard Down
-#         left: !Keyboard Left
-#         right: !Keyboard Right
-#       jump: !Keyboard Comma
-#       grab: !Keyboard RShift
-#       shoot: !Keyboard Period
-#       slide: !Keyboard Slash
+localization: locales/localization.yaml
 
 # ui_theme:
 #   scale: 0.60

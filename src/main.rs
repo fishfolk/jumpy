@@ -14,6 +14,7 @@ use bones_framework::prelude::*;
 pub mod core;
 pub mod input;
 pub mod platform;
+pub mod settings;
 
 mod prelude {
     pub use crate::{core::prelude::*, impl_system_param, input::*, GameMeta};
@@ -37,6 +38,8 @@ use crate::prelude::*;
 #[repr(C)]
 pub struct GameMeta {
     pub core: CoreMeta,
+    pub default_settings: settings::Settings,
+    pub localization: Handle<LocalizationAsset>,
 }
 
 fn main() {
@@ -82,7 +85,7 @@ fn menu_system(
 
             let session = sessions.create("game");
             session.install_plugin(core::MatchPlugin {
-                map: assets.get(meta.core.stable_maps[1]).clone(),
+                map: assets.get(meta.core.stable_maps[3]).clone(),
                 selected_players: [Some(meta.core.players[0]), None, None, None],
             });
         }

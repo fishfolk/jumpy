@@ -86,7 +86,12 @@ fn menu_system(
             let session = sessions.create("game");
             session.install_plugin(core::MatchPlugin {
                 map: assets.get(meta.core.stable_maps[3]).clone(),
-                selected_players: [Some(meta.core.players[0]), None, None, None],
+                selected_players: [
+                    Some(meta.core.players[0]),
+                    Some(meta.core.players[1]),
+                    None,
+                    None,
+                ],
             });
         }
     });

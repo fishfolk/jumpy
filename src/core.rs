@@ -25,7 +25,7 @@ pub const MAX_PLAYERS: usize = 4;
 
 use std::{array, time::Duration};
 
-use crate::prelude::*;
+use crate::{platform::Storage, prelude::*, settings::Settings};
 
 pub mod prelude {
     pub use super::{
@@ -101,9 +101,25 @@ impl SessionRunner for JumpyDefaultMatchRunner {
         let delta = (frame_start - last_run).as_secs_f64();
 
         {
+            let player_controls = {
+                let default_controls = {
+                    let assets = world.resource::<AssetServer>();
+                    assets
+                        .root::<GameMeta>()
+                        .default_settings
+                        .player_controls
+                        .clone()
+                };
+                let mut storage = world.resource_mut::<Storage>();
+                storage
+                    .get::<Settings>()
+                    .map(|x| x.player_controls.clone())
+                    .unwrap_or(default_controls)
+            };
             let keyboard = world.resource::<KeyboardInputs>();
             let gamepad = world.resource::<GamepadInputs>();
-            self.input_collector.update(&keyboard, &gamepad);
+            self.input_collector
+                .update(&player_controls, &keyboard, &gamepad);
         }
 
         let mut run = || {

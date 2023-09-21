@@ -44,6 +44,10 @@ pub struct PlayerInput {
 #[derive(Default, Clone, Debug)]
 #[repr(C)]
 pub struct PlayerControl {
+    pub left: f32,
+    pub right: f32,
+    pub up: f32,
+    pub down: f32,
     pub move_direction: Vec2,
     pub just_moved: bool,
     pub moving: bool,

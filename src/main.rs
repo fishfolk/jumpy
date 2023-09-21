@@ -15,6 +15,7 @@ pub mod core;
 pub mod input;
 pub mod platform;
 pub mod settings;
+pub mod ui;
 
 mod prelude {
     pub use crate::{core::prelude::*, impl_system_param, input::*, GameMeta};
@@ -40,6 +41,8 @@ pub struct GameMeta {
     pub core: CoreMeta,
     pub default_settings: settings::Settings,
     pub localization: Handle<LocalizationAsset>,
+    pub theme: ui::UiTheme,
+    pub main_menu: ui::main_menu::MainMenuMeta,
 }
 
 fn main() {
@@ -62,37 +65,8 @@ fn main() {
     // plugins, systems, and entities.
     game.sessions
         .create("menu")
-        // Install the default bones_framework plugin for this session
-        .install_plugin(DefaultSessionPlugin)
-        // Add our menu system to the update stage
-        .add_system_to_stage(Update, menu_system);
+        .install_plugin(ui::main_menu::session_plugin);
 
     // Create a bevy renderer for the bones game and run it.
     BonesBevyRenderer::new(game).app().run();
-}
-
-/// System to render the home menu.
-fn menu_system(
-    meta: Root<GameMeta>,
-    assets: Res<AssetServer>,
-    ctx: Egui,
-    mut sessions: ResMutInit<Sessions>,
-    mut session_options: ResMutInit<SessionOptions>,
-) {
-    egui::CentralPanel::default().show(&ctx, |ui| {
-        if ui.button("Start Game").clicked() {
-            session_options.delete = true;
-
-            let session = sessions.create("game");
-            session.install_plugin(core::MatchPlugin {
-                map: assets.get(meta.core.stable_maps[3]).clone(),
-                selected_players: [
-                    Some(meta.core.players[0]),
-                    Some(meta.core.players[1]),
-                    None,
-                    None,
-                ],
-            });
-        }
-    });
 }

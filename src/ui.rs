@@ -34,7 +34,7 @@ impl Default for UiTheme {
 #[repr(C)]
 pub struct ImageMeta {
     image: Handle<Image>,
-    image_size: UVec2,
+    image_size: Vec2,
 }
 
 #[derive(HasSchema, Default, Debug, Clone)]

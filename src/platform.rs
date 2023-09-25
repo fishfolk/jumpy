@@ -277,11 +277,9 @@ mod native {
         let (sender, receiver) = async_channel::unbounded();
 
         // Identify project storage file path
-        // let project_dirs = directories::ProjectDirs::from("org", "FishFolk", "Jumpy")
-        //     .expect("Identify system data dir path");
-        // let file_path = project_dirs.data_dir().join("storage.yml");
-        // TODO: use actual file path once I get back online and can install directories crate.
-        let file_path = std::path::PathBuf::from("/tmp/jumpy.yaml");
+        let project_dirs = directories::ProjectDirs::from("org", "FishFolk", "Jumpy")
+            .expect("Identify system data dir path");
+        let file_path = project_dirs.data_dir().join("storage.yml");
 
         trace!(?file_path, "Platform storage filepath");
 

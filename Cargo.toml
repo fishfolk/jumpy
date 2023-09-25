@@ -35,8 +35,8 @@ serde_yaml          = "0.9.25"
 thiserror           = "1.0.48"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-# directories = "1.0"
-# bevy_dylib = "0.11"
+directories = "1.0"
+bevy_dylib = "0.11"
 
 # anyhow              = "1.0"
 # async-channel       = "1.7"

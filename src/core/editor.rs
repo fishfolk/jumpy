@@ -310,7 +310,7 @@ impl<'a> MapManager<'a> {
 }
 
 /// Handles user input comming from the editor and makes the required changes to the map.
-fn handle_editor_input(player_inputs: Res<PlayerInputs>, mut map_manager: MapManager) {
+fn handle_editor_input(player_inputs: Res<MatchInputs>, mut map_manager: MapManager) {
     for player in &player_inputs.players {
         if let Some(editor_input) = &player.editor_input {
             match editor_input {

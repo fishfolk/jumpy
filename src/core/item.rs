@@ -240,7 +240,7 @@ pub fn throw_dropped_items(
     entities: Res<Entities>,
     item_throws: Comp<ItemThrow>,
     items: Comp<Item>,
-    player_inputs: Res<PlayerInputs>,
+    player_inputs: Res<MatchInputs>,
     player_indexes: Comp<PlayerIdx>,
     mut items_dropped: CompMut<ItemDropped>,
     mut bodies: CompMut<KinematicBody>,

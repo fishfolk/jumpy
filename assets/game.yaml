@@ -44,6 +44,7 @@ default_settings:
       grab: !Button East
       shoot: !Button West
       slide: !Button North
+      pause: !Button Start
 
     # Controls for the first keyboard player ( left side )
     keyboard1:
@@ -56,6 +57,7 @@ default_settings:
       grab: !Keyboard V
       shoot: !Keyboard C
       slide: !Keyboard B
+      pause: !Keyboard Escape
 
     # Controls for the second keyboard player ( right side )
     keyboard2:
@@ -68,6 +70,7 @@ default_settings:
       grab: !Keyboard ShiftRight
       shoot: !Keyboard Period
       slide: !Keyboard Slash
+      pause: !Keyboard PageDown
 
 localization: locales/localization.yaml
 

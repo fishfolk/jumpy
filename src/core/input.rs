@@ -5,16 +5,16 @@ use std::array;
 use crate::{prelude::*, MAX_PLAYERS};
 
 pub fn install(session: &mut Session) {
-    session.world.init_resource::<PlayerInputs>();
+    session.world.init_resource::<MatchInputs>();
 }
 
 /// The inputs for each player in this simulation frame.
 #[derive(Clone, Debug, HasSchema)]
-pub struct PlayerInputs {
+pub struct MatchInputs {
     pub players: [PlayerInput; MAX_PLAYERS],
 }
 
-impl Default for PlayerInputs {
+impl Default for MatchInputs {
     fn default() -> Self {
         Self {
             players: array::from_fn(|_| default()),
@@ -38,31 +38,6 @@ pub struct PlayerInput {
     pub editor_input: Option<EditorInput>,
     /// Whether or not this is an AI player.
     pub is_ai: bool,
-}
-
-/// Player control input state
-#[derive(Default, Clone, Debug)]
-#[repr(C)]
-pub struct PlayerControl {
-    pub left: f32,
-    pub right: f32,
-    pub up: f32,
-    pub down: f32,
-    pub move_direction: Vec2,
-    pub just_moved: bool,
-    pub moving: bool,
-
-    pub jump_pressed: bool,
-    pub jump_just_pressed: bool,
-
-    pub shoot_pressed: bool,
-    pub shoot_just_pressed: bool,
-
-    pub grab_pressed: bool,
-    pub grab_just_pressed: bool,
-
-    pub slide_pressed: bool,
-    pub slide_just_pressed: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -163,7 +163,7 @@ fn update_player_body_attachments(
     animated_sprites: Comp<AnimatedSprite>,
     animation_banks: Comp<AnimationBankSprite>,
     player_body_attachments: Comp<PlayerBodyAttachment>,
-    player_inputs: Res<PlayerInputs>,
+    player_inputs: Res<MatchInputs>,
     player_indexes: Comp<PlayerIdx>,
     assets: Res<AssetServer>,
 ) {
@@ -176,13 +176,13 @@ fn update_player_body_attachments(
         let current_frame = player_sprite.index;
         let current_anim = animation_banks.get(player_ent).unwrap().current;
 
-        let current_body_offset = meta.layers.body.animations.offsets[&current_anim][current_frame as usize]
-            .body
-            + if body_attachment.head {
-                meta.layers.body.animations.offsets[&current_anim][current_frame as usize].head
-            } else {
-                Vec2::ZERO
-            };
+        let current_body_offset =
+            meta.layers.body.animations.offsets[&current_anim][current_frame as usize].body
+                + if body_attachment.head {
+                    meta.layers.body.animations.offsets[&current_anim][current_frame as usize].head
+                } else {
+                    Vec2::ZERO
+                };
 
         player_body_attachment_markers.insert(ent, HadPlayerBodyAttachmentMarker);
         attachments.insert(

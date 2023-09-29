@@ -302,7 +302,7 @@ impl FromWorld for PathfindingDebugLines {
 fn player_ai_system(
     entities: Res<Entities>,
     nav_graph: ResMutInit<NavGraph>,
-    mut player_inputs: ResMutInit<PlayerInputs>,
+    mut player_inputs: ResMutInit<MatchInputs>,
     mut ai_players: CompMut<AiPlayer>,
     player_indexes: Comp<PlayerIdx>,
     map: Res<LoadedMap>,
@@ -479,7 +479,7 @@ fn hydrate_players(
     mut commands: Commands,
     mut entities: ResMutInit<Entities>,
     game_meta: Root<GameMeta>,
-    player_inputs: Res<PlayerInputs>,
+    player_inputs: Res<MatchInputs>,
     player_indexes: Comp<PlayerIdx>,
     assets: Res<AssetServer>,
     mut player_states: CompMut<PlayerState>,
@@ -914,7 +914,7 @@ fn player_facial_animations(
 /// the animations specified.
 fn update_player_layers(
     entities: Res<Entities>,
-    player_inputs: ResMutInit<PlayerInputs>,
+    player_inputs: ResMutInit<MatchInputs>,
     mut animation_bank_sprites: CompMut<AnimationBankSprite>,
     mut player_body_attachments: CompMut<PlayerBodyAttachment>,
     player_layers: Comp<PlayerLayers>,

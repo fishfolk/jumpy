@@ -10,7 +10,7 @@ pub fn install(session: &mut Session) {
 
 pub fn player_state_transition(
     entities: Res<Entities>,
-    player_inputs: Res<PlayerInputs>,
+    player_inputs: Res<MatchInputs>,
     player_indexes: Comp<PlayerIdx>,
     mut player_states: CompMut<PlayerState>,
     assets: Res<AssetServer>,
@@ -51,7 +51,7 @@ pub fn player_state_transition(
 
 pub fn handle_player_state(
     entities: Res<Entities>,
-    player_inputs: Res<PlayerInputs>,
+    player_inputs: Res<MatchInputs>,
     player_states: Comp<PlayerState>,
     player_indexes: Comp<PlayerIdx>,
     mut animations: CompMut<AnimationBankSprite>,

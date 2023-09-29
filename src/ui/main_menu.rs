@@ -94,8 +94,8 @@ fn home_menu(
     mut ui: In<&mut egui::Ui>,
     meta: Root<GameMeta>,
     assets: Res<AssetServer>,
-    mut sessions: ResMutInit<Sessions>,
-    mut session_options: ResMutInit<SessionOptions>,
+    mut sessions: ResMut<Sessions>,
+    mut session_options: ResMut<SessionOptions>,
     localization: Localization<GameMeta>,
 ) {
     let ui = &mut *ui;
@@ -126,7 +126,7 @@ fn home_menu(
                 {
                     session_options.delete = true;
 
-                    let session = sessions.create("game");
+                    let session = sessions.create(SessionNames::GAME);
                     session.install_plugin(crate::core::MatchPlugin {
                         map: assets.get(meta.core.stable_maps[3]).clone(),
                         selected_players: [

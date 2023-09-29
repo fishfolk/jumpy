@@ -59,7 +59,7 @@ fn update(
     player_spawners: Comp<PlayerSpawner>,
     mut player_indexes: CompMut<PlayerIdx>,
     mut transforms: CompMut<Transform>,
-    player_inputs: Res<PlayerInputs>,
+    player_inputs: Res<MatchInputs>,
     mut spawner_manager: SpawnerManager,
 ) {
     let alive_players = entities

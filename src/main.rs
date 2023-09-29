@@ -13,12 +13,11 @@ use bones_framework::prelude::*;
 
 pub mod core;
 pub mod input;
-pub mod platform;
 pub mod settings;
 pub mod ui;
 
 mod prelude {
-    pub use crate::{core::prelude::*, impl_system_param, input::*, GameMeta};
+    pub use crate::{core::prelude::*, impl_system_param, input::*, GameMeta, SessionNames};
     pub use bones_framework::prelude::*;
     pub use once_cell::sync::Lazy;
     pub use serde::{Deserialize, Serialize};
@@ -26,6 +25,13 @@ mod prelude {
     pub use tracing::{debug, error, info, trace, warn};
 }
 use crate::prelude::*;
+
+pub struct SessionNames;
+impl SessionNames {
+    pub const GAME: &str = "game";
+    pub const MAIN_MENU: &str = "main_menu";
+    pub const PAUSE_MENU: &str = "pause_menu";
+}
 
 // This will cause Bevy to be dynamically linked during development,
 // which can greatly reduce re-compile times in some circumstances.
@@ -49,12 +55,16 @@ fn main() {
     // Initialize the Bevy task pool manually so that we can use it during startup.
     bevy_tasks::IoTaskPool::init(bevy_tasks::TaskPool::new);
 
+    // Register types that we will load from persistent storage.
+    settings::Settings::schema();
+
     // First create bones game.
     let mut game = Game::new();
 
     game
         // Install game plugins
-        .install_plugin(platform::game_plugin)
+        .install_plugin(settings::game_plugin)
+        .install_plugin(input::game_plugin)
         .install_plugin(core::game_plugin)
         // We initialize the asset server and register asset types
         .init_shared_resource::<AssetServer>()
@@ -64,9 +74,28 @@ fn main() {
     // Create a new session for the game menu. Each session is it's own bones world with it's own
     // plugins, systems, and entities.
     game.sessions
-        .create("menu")
+        .create(SessionNames::MAIN_MENU)
         .install_plugin(ui::main_menu::session_plugin);
 
+    // Create a new session for the pause menu, which sits in the background by default and only
+    // does anything while the game is running.
+    game.sessions
+        .create(SessionNames::PAUSE_MENU)
+        .install_plugin(ui::pause_menu::session_plugin);
+
     // Create a bevy renderer for the bones game and run it.
-    BonesBevyRenderer::new(game).app().run();
+    BonesBevyRenderer {
+        game,
+        pixel_art: true,
+        game_version: Version::new(
+            env!("CARGO_PKG_VERSION_MAJOR").parse().unwrap(),
+            env!("CARGO_PKG_VERSION_MINOR").parse().unwrap(),
+            env!("CARGO_PKG_VERSION_PATCH").parse().unwrap(),
+        ),
+        app_namespace: ("org".into(), "fishfolk".into(), "jumpy".into()),
+        asset_dir: "assets".into(),
+        packs_dir: "packs".into(),
+    }
+    .app()
+    .run();
 }

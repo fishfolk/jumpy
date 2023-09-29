@@ -25,7 +25,7 @@ pub const MAX_PLAYERS: usize = 4;
 
 use std::{array, time::Duration};
 
-use crate::{platform::Storage, prelude::*, settings::Settings};
+use crate::{prelude::*, settings::PlayerControlMapping};
 
 pub mod prelude {
     pub use super::{
@@ -71,8 +71,22 @@ impl SessionPlugin for MatchPlugin {
         bullet::session_plugin(session);
         editor::install(session);
 
+        // Add the pause system
+        session.add_system_to_stage(
+            First,
+            |mut session_options: ResMut<SessionOptions>, player_inputs: Res<MatchInputs>| {
+                if player_inputs
+                    .players
+                    .iter()
+                    .any(|x| x.control.pause_just_pressed)
+                {
+                    session_options.active = false;
+                }
+            },
+        );
+
         session.world.insert_resource(LoadedMap(Arc::new(self.map)));
-        session.world.insert_resource(PlayerInputs {
+        session.world.insert_resource(MatchInputs {
             players: array::from_fn(|i| {
                 self.selected_players[i]
                     .map(|selected_player| PlayerInput {
@@ -89,6 +103,8 @@ impl SessionPlugin for MatchPlugin {
 
 #[derive(Default)]
 pub struct JumpyDefaultMatchRunner {
+    /// The jumpy match runner has it's own input collector instead of using the global one, because
+    /// it needs different `just_[input]` behavior due to it running on a fixed update.
     pub input_collector: PlayerInputCollector,
     pub accumulator: f64,
     pub last_run: Option<Instant>,
@@ -101,25 +117,13 @@ impl SessionRunner for JumpyDefaultMatchRunner {
         let delta = (frame_start - last_run).as_secs_f64();
 
         {
-            let player_controls = {
-                let default_controls = {
-                    let assets = world.resource::<AssetServer>();
-                    assets
-                        .root::<GameMeta>()
-                        .default_settings
-                        .player_controls
-                        .clone()
-                };
-                let mut storage = world.resource_mut::<Storage>();
-                storage
-                    .get::<Settings>()
-                    .map(|x| x.player_controls.clone())
-                    .unwrap_or(default_controls)
-            };
             let keyboard = world.resource::<KeyboardInputs>();
             let gamepad = world.resource::<GamepadInputs>();
-            self.input_collector
-                .update(&player_controls, &keyboard, &gamepad);
+            self.input_collector.update(
+                &world.resource::<PlayerControlMapping>(),
+                &keyboard,
+                &gamepad,
+            );
         }
 
         let mut run = || {
@@ -130,7 +134,7 @@ impl SessionRunner for JumpyDefaultMatchRunner {
 
             let input = self.input_collector.get();
             {
-                let mut player_inputs = world.resource_mut::<PlayerInputs>();
+                let mut player_inputs = world.resource_mut::<MatchInputs>();
                 (0..MAX_PLAYERS).for_each(|i| {
                     player_inputs.players[i].control = input[i].clone();
                 });

@@ -63,7 +63,7 @@ fn update_player_state_age(entities: Res<Entities>, mut player_states: CompMut<P
 
 fn use_drop_or_grab_items_system(id: Ustr) -> StaticSystem<(), ()> {
     (move |entities: Res<Entities>,
-           player_inputs: Res<PlayerInputs>,
+           player_inputs: Res<MatchInputs>,
            player_indexes: Comp<PlayerIdx>,
            player_states: Comp<PlayerState>,
            assets: Res<AssetServer>,

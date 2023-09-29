@@ -1,62 +1,37 @@
-use std::borrow::Cow;
+use crate::prelude::*;
 
-use serde::{de::DeserializeSeed, Serialize};
+/// Settings plugin
+pub fn game_plugin(game: &mut Game) {
+    game.systems.add_startup_system(load_settings);
+}
 
-use crate::{
-    platform::{Storage, StorageItem},
-    prelude::*,
-};
+/// Startup system to load the game settings or use the default settings specified in the game meta.
+fn load_settings(game: &mut Game) {
+    let default_settings = {
+        let assets = game.shared_resource::<AssetServer>().unwrap();
+        assets.root::<GameMeta>().default_settings.clone()
+    };
+    let mut storage = game.shared_resource_mut::<Storage>().unwrap();
+    if storage.get::<Settings>().is_none() {
+        storage.insert(default_settings);
+        storage.save();
+        storage.get::<Settings>().unwrap();
+    }
+}
 
 /// Global settings, stored and accessed through [`crate::platform::Storage`]
 #[derive(HasSchema, Debug, Clone, Default)]
 #[repr(C)]
 pub struct Settings {
     /// The player controller bindings
-    pub player_controls: PlayerControlMethods,
+    pub player_controls: PlayerControlMapping,
     /// The address of the matchmaking server to connect to for online games.
     pub matchmaking_server: String,
 }
 
-impl<'de> Deserialize<'de> for Settings {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = SchemaDeserializer(Self::schema()).deserialize(deserializer)?;
-        Ok(value.into_inner())
-    }
-}
-
-impl Serialize for Settings {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        SchemaSerializer(self.as_schema_ref()).serialize(serializer)
-    }
-}
-
-impl StorageItem for Settings {
-    const STORAGE_KEY: &'static str = "settings";
-}
-
-impl Settings {
-    /// The key used to store the settings in the [`crate::platform::Storage`] resource.
-    pub fn get_stored_or_default<'w>(
-        game: &'w GameMeta,
-        storage: &'w mut Storage,
-    ) -> Cow<'w, Self> {
-        if let Some(settings) = storage.get::<Self>() {
-            Cow::Owned(settings)
-        } else {
-            Cow::Borrowed(&game.default_settings)
-        }
-    }
-}
-
 #[derive(HasSchema, Clone, Debug, Default)]
 #[repr(C)]
-pub struct PlayerControlMethods {
+pub struct PlayerControlMapping {
     /// Controls for game remotes
     pub gamepad: PlayerControlSetting,
     /// Controls for keyboard player 1
@@ -70,6 +45,7 @@ pub struct PlayerControlMethods {
 #[repr(C)]
 pub struct PlayerControlSetting {
     pub movement: VirtualDPad,
+    pub pause: InputKind,
     pub jump: InputKind,
     pub grab: InputKind,
     pub shoot: InputKind,

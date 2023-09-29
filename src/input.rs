@@ -1,9 +1,71 @@
 use crate::{
     prelude::*,
-    settings::{InputKind, PlayerControlSetting},
+    settings::{InputKind, PlayerControlMapping, PlayerControlSetting, Settings},
 };
 
-#[derive(Default)]
+pub fn game_plugin(game: &mut Game) {
+    game.systems.add_startup_system(load_controler_mapping);
+    game.systems.add_before_system(collect_player_input);
+}
+
+// Startup system to load game control mapping resource from the storage and insert the player input
+// collector.
+fn load_controler_mapping(game: &mut Game) {
+    let control_mapping = {
+        let storage = game.shared_resource::<Storage>().unwrap();
+        storage.get::<Settings>().unwrap().player_controls.clone()
+    };
+    game.insert_shared_resource(control_mapping);
+    game.insert_shared_resource(PlayerInputCollector::default());
+}
+
+/// Game system that takes the raw input events and converts it to player controls based on the
+/// player input map.
+fn collect_player_input(game: &mut Game) {
+    let controls = {
+        let mut collector = game.shared_resource_mut::<PlayerInputCollector>().unwrap();
+        let mapping = game.shared_resource::<PlayerControlMapping>().unwrap();
+        let keyboard = game.shared_resource::<KeyboardInputs>().unwrap();
+        let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
+        collector.update(&mapping, &keyboard, &gamepad);
+        PlayerControls(collector.get().clone().into_iter().collect())
+    };
+    game.insert_shared_resource(controls);
+}
+
+#[derive(HasSchema, Clone, Default, Deref, DerefMut)]
+#[repr(C)]
+pub struct PlayerControls(SVec<PlayerControl>);
+
+/// Player control input state
+#[derive(HasSchema, Default, Clone, Debug)]
+#[repr(C)]
+pub struct PlayerControl {
+    pub left: f32,
+    pub right: f32,
+    pub up: f32,
+    pub down: f32,
+    pub move_direction: Vec2,
+    pub just_moved: bool,
+    pub moving: bool,
+
+    pub pause_pressed: bool,
+    pub pause_just_pressed: bool,
+
+    pub jump_pressed: bool,
+    pub jump_just_pressed: bool,
+
+    pub shoot_pressed: bool,
+    pub shoot_just_pressed: bool,
+
+    pub grab_pressed: bool,
+    pub grab_just_pressed: bool,
+
+    pub slide_pressed: bool,
+    pub slide_just_pressed: bool,
+}
+
+#[derive(Default, HasSchema, Clone)]
 pub struct PlayerInputCollector {
     last_controls: [PlayerControl; MAX_PLAYERS],
     current_controls: [PlayerControl; MAX_PLAYERS],
@@ -14,7 +76,7 @@ impl PlayerInputCollector {
     /// input events.
     pub fn update(
         &mut self,
-        mapping: &crate::settings::PlayerControlMethods,
+        mapping: &crate::settings::PlayerControlMapping,
         keyboard: &KeyboardInputs,
         gamepad: &GamepadInputs,
     ) {
@@ -69,6 +131,7 @@ impl PlayerInputCollector {
         let apply_controls =
             |control: &mut PlayerControl, player_idx: usize, mapping: &PlayerControlSetting| {
                 for (button_pressed, button_map) in [
+                    (&mut control.pause_pressed, &mapping.pause),
                     (&mut control.jump_pressed, &mapping.jump),
                     (&mut control.grab_pressed, &mapping.grab),
                     (&mut control.shoot_pressed, &mapping.shoot),
@@ -113,6 +176,11 @@ impl PlayerInputCollector {
             current.moving = current.move_direction.length_squared() > 0.0;
 
             for (just_pressed, current_pressed, last_pressed) in [
+                (
+                    &mut current.pause_just_pressed,
+                    current.pause_pressed,
+                    last.pause_pressed,
+                ),
                 (
                     &mut current.jump_just_pressed,
                     current.jump_pressed,

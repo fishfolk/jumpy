@@ -13,7 +13,7 @@ pub fn handle_player_state(
     mut player_states: CompMut<PlayerState>,
     player_indexes: Comp<PlayerIdx>,
     assets: Res<AssetServer>,
-    player_inputs: Res<PlayerInputs>,
+    player_inputs: Res<MatchInputs>,
     atlas_sprites: Comp<AtlasSprite>,
     mut animations: CompMut<AnimationBankSprite>,
     mut bodies: CompMut<KinematicBody>,

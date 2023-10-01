@@ -5,10 +5,10 @@ use super::ImageMeta;
 #[derive(HasSchema, Debug, Default, Clone)]
 #[repr(C)]
 pub struct MainMenuMeta {
-    title_font: FontMeta,
-    subtitle_font: FontMeta,
-    background_image: ImageMeta,
-    menu_width: f32,
+    pub title_font: FontMeta,
+    pub subtitle_font: FontMeta,
+    pub background_image: ImageMeta,
+    pub menu_width: f32,
 }
 
 pub fn session_plugin(session: &mut Session) {

@@ -74,19 +74,6 @@ impl SessionPlugin for MatchPlugin {
         bullet::session_plugin(session);
         editor::install(session);
 
-        // Add the pause system
-        session.add_system_to_stage(
-            First,
-            |mut session_options: ResMut<SessionOptions>, player_inputs: Res<MatchInputs>| {
-                if player_inputs
-                    .players
-                    .iter()
-                    .any(|x| x.control.pause_just_pressed)
-                {
-                    session_options.active = false;
-                }
-            },
-        );
 
         session.world.insert_resource(LoadedMap(Arc::new(self.map)));
         session.world.insert_resource(MatchInputs {

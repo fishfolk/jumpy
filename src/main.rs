@@ -13,11 +13,12 @@ use bones_framework::prelude::*;
 
 pub mod core;
 pub mod input;
+pub mod sessions;
 pub mod settings;
 pub mod ui;
 
 mod prelude {
-    pub use crate::{core::prelude::*, impl_system_param, input::*, GameMeta, SessionNames};
+    pub use crate::{core::prelude::*, impl_system_param, input::*, sessions::*, GameMeta};
     pub use bones_framework::prelude::*;
     pub use once_cell::sync::Lazy;
     pub use serde::{Deserialize, Serialize};
@@ -25,13 +26,6 @@ mod prelude {
     pub use tracing::{debug, error, info, trace, warn};
 }
 use crate::prelude::*;
-
-pub struct SessionNames;
-impl SessionNames {
-    pub const GAME: &str = "game";
-    pub const MAIN_MENU: &str = "main_menu";
-    pub const PAUSE_MENU: &str = "pause_menu";
-}
 
 // This will cause Bevy to be dynamically linked during development,
 // which can greatly reduce re-compile times in some circumstances.
@@ -74,9 +68,7 @@ fn main() {
 
     // Create a new session for the game menu. Each session is it's own bones world with it's own
     // plugins, systems, and entities.
-    game.sessions
-        .create(SessionNames::MAIN_MENU)
-        .install_plugin(ui::main_menu::session_plugin);
+    game.sessions.start_menu();
 
     // Create a new session for the pause menu, which sits in the background by default and only
     // does anything while the game is running.

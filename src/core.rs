@@ -1,4 +1,5 @@
 pub mod attachment;
+pub mod audio;
 pub mod bullet;
 pub mod camera;
 pub mod damage;
@@ -29,7 +30,7 @@ use crate::{prelude::*, settings::PlayerControlMapping};
 
 pub mod prelude {
     pub use super::{
-        attachment::*, bullet::*, camera::*, damage::*, debug::*, editor::*, editor::*,
+        attachment::*, audio::*, bullet::*, camera::*, damage::*, debug::*, editor::*, editor::*,
         elements::prelude::*, elements::prelude::*, globals::*, input::*, item::*, lifetime::*,
         map::*, map_constructor::*, metadata::*, physics::*, player::*, random::*, utils::*, FPS,
         MAX_PLAYERS,
@@ -54,7 +55,9 @@ pub struct MatchPlugin {
 
 impl SessionPlugin for MatchPlugin {
     fn install(self, session: &mut Session) {
-        session.install_plugin(DefaultSessionPlugin);
+        session
+            .install_plugin(DefaultSessionPlugin)
+            .install_plugin(audio::session_plugin);
 
         physics::install(session);
         input::install(session);

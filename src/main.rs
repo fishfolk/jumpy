@@ -63,6 +63,7 @@ fn main() {
 
     game
         // Install game plugins
+        .install_plugin(DefaultGamePlugin)
         .install_plugin(settings::game_plugin)
         .install_plugin(input::game_plugin)
         .install_plugin(core::game_plugin)

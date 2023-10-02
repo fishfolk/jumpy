@@ -2,6 +2,8 @@ use crate::prelude::*;
 
 use super::ImageMeta;
 
+mod credits;
+
 #[derive(HasSchema, Debug, Default, Clone)]
 #[repr(C)]
 pub struct MainMenuMeta {
@@ -84,7 +86,7 @@ fn main_menu_system(world: &World) {
             MenuPage::Settings => todo!(),
             MenuPage::PlayerSelect => todo!(),
             MenuPage::MapSelect { .. } => todo!(),
-            MenuPage::Credits => todo!(),
+            MenuPage::Credits => world.run_initialized_system(credits::widget, ui),
             MenuPage::NetworkGame => todo!(),
         });
 }
@@ -160,7 +162,12 @@ fn home_menu(
                     .min_size(vec2(ui.available_width(), 0.0))
                     .show(ui)
                     .clicked()
-                {}
+                {
+                    ui.ctx().data_mut(|data| {
+                        *data.get_temp_mut_or_default::<MenuPage>(egui::Id::null()) =
+                            MenuPage::Credits;
+                    });
+                }
             });
     });
 }

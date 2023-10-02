@@ -50,6 +50,9 @@ pub struct PlayerControlSetting {
     pub grab: InputKind,
     pub shoot: InputKind,
     pub slide: InputKind,
+    pub menu_back: InputKind,
+    pub menu_confirm: InputKind,
+    pub escape: InputKind,
 }
 
 #[derive(HasSchema, Clone, Debug, Default)]
@@ -61,17 +64,13 @@ pub struct VirtualDPad {
     pub right: InputKind,
 }
 
-#[derive(HasSchema, Clone, Debug)]
+#[derive(HasSchema, Clone, Debug, Default)]
 #[repr(C, u8)]
 pub enum InputKind {
+    #[default]
+    None,
     Button(GamepadButton),
     AxisPositive(GamepadAxis),
     AxisNegative(GamepadAxis),
     Keyboard(KeyCode),
-}
-
-impl Default for InputKind {
-    fn default() -> Self {
-        Self::Keyboard(KeyCode::Space)
-    }
 }

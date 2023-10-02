@@ -8,7 +8,7 @@ fn pause_menu_system(
     meta: Root<GameMeta>,
     mut sessions: ResMut<Sessions>,
     ctx: Egui,
-    controls: Res<PlayerControls>,
+    controls: Res<GlobalPlayerControls>,
     localization: Localization<GameMeta>,
 ) {
     let mut back_to_menu = false;

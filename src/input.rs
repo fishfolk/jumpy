@@ -28,14 +28,14 @@ fn collect_player_input(game: &mut Game) {
         let keyboard = game.shared_resource::<KeyboardInputs>().unwrap();
         let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
         collector.update(&mapping, &keyboard, &gamepad);
-        PlayerControls(collector.get().clone().into_iter().collect())
+        GlobalPlayerControls(collector.get().clone().into_iter().collect())
     };
     game.insert_shared_resource(controls);
 }
 
 #[derive(HasSchema, Clone, Default, Deref, DerefMut)]
 #[repr(C)]
-pub struct PlayerControls(SVec<PlayerControl>);
+pub struct GlobalPlayerControls(SVec<PlayerControl>);
 
 /// Player control input state
 #[derive(HasSchema, Default, Clone, Debug)]
@@ -48,6 +48,13 @@ pub struct PlayerControl {
     pub move_direction: Vec2,
     pub just_moved: bool,
     pub moving: bool,
+
+    pub menu_back_pressed: bool,
+    pub menu_back_just_pressed: bool,
+    pub menu_confirm_pressed: bool,
+    pub menu_confirm_just_pressed: bool,
+    pub escape_pressed: bool,
+    pub escape_just_pressed: bool,
 
     pub pause_pressed: bool,
     pub pause_just_pressed: bool,
@@ -83,6 +90,7 @@ impl PlayerInputCollector {
         // Helper to get the value of the given input type for the given player.
         let get_input_value = |input_map: &InputKind, player_idx: usize| {
             match input_map {
+                crate::settings::InputKind::None => (),
                 crate::settings::InputKind::Button(mapped_button) => {
                     for input in &gamepad.gamepad_events {
                         if let GamepadEvent::Button(e) = input {
@@ -136,6 +144,9 @@ impl PlayerInputCollector {
                     (&mut control.grab_pressed, &mapping.grab),
                     (&mut control.shoot_pressed, &mapping.shoot),
                     (&mut control.slide_pressed, &mapping.slide),
+                    (&mut control.menu_back_pressed, &mapping.menu_back),
+                    (&mut control.menu_confirm_pressed, &mapping.menu_confirm),
+                    (&mut control.escape_pressed, &mapping.escape),
                 ] {
                     if let Some(value) = get_input_value(button_map, player_idx) {
                         *button_pressed = value > 0.0;
@@ -200,6 +211,21 @@ impl PlayerInputCollector {
                     &mut current.slide_just_pressed,
                     current.slide_pressed,
                     last.slide_pressed,
+                ),
+                (
+                    &mut current.menu_back_just_pressed,
+                    current.menu_back_pressed,
+                    last.menu_back_pressed,
+                ),
+                (
+                    &mut current.menu_confirm_just_pressed,
+                    current.menu_confirm_pressed,
+                    last.menu_confirm_pressed,
+                ),
+                (
+                    &mut current.escape_just_pressed,
+                    current.escape_pressed,
+                    last.escape_pressed,
                 ),
                 (&mut current.just_moved, current.moving, last.moving),
             ] {

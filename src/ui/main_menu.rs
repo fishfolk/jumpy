@@ -163,6 +163,19 @@ fn home_menu(
                 {
                     ui.ctx().set_state(MenuPage::Credits);
                 }
+
+                #[cfg(not(target_arch = "wasm32"))]
+                if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("quit"))
+                    .min_size(vec2(ui.available_width(), 0.0))
+                    .show(ui)
+                    .clicked()
+                {
+                    // TODO: Gracefully exit game on quit.
+                    // Right now we don't have a way for bones to trigger a Bevy graceful shutdown.
+                    // We need to have a way for bones games to communicate that they want to exit,
+                    // and then the Bones Bevy Renderer can gracefully shutdown.
+                    std::process::exit(0);
+                }
             });
     });
 }

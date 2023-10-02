@@ -3,6 +3,68 @@ use crate::prelude::*;
 pub mod main_menu;
 pub mod pause_menu;
 
+pub fn game_plugin(game: &mut Game) {
+    game.insert_shared_resource(EguiInputHook::new(update_gamepad_ui_inputs));
+}
+
+/// Takes the player controls from gamepads and converts them to arrow key inputs for egui so that
+/// you can navigate the menu with the gamepad.
+fn update_gamepad_ui_inputs(game: &mut Game, input: &mut egui::RawInput) {
+    let Some(player_controls) = game.shared_resource::<GlobalPlayerControls>() else { return };
+
+    for player_control in player_controls.iter() {
+        if player_control.just_moved {
+            if player_control.move_direction.y > 0.1 {
+                input.events.push(egui::Event::Key {
+                    key: egui::Key::ArrowUp,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: default(),
+                });
+            } else if player_control.move_direction.y < -0.1 {
+                input.events.push(egui::Event::Key {
+                    key: egui::Key::ArrowDown,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: default(),
+                });
+            } else if player_control.move_direction.x < -0.1 {
+                input.events.push(egui::Event::Key {
+                    key: egui::Key::ArrowLeft,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: default(),
+                });
+            } else if player_control.move_direction.x > 0.1 {
+                input.events.push(egui::Event::Key {
+                    key: egui::Key::ArrowRight,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: default(),
+                });
+            }
+        }
+
+        if player_control.menu_confirm_just_pressed {
+            input.events.push(egui::Event::Key {
+                key: egui::Key::Enter,
+                pressed: true,
+                repeat: false,
+                modifiers: default(),
+            });
+        }
+
+        if player_control.menu_back_just_pressed {
+            input.events.push(egui::Event::Key {
+                key: egui::Key::Escape,
+                pressed: true,
+                repeat: false,
+                modifiers: default(),
+            });
+        }
+    }
+}
+
 #[derive(HasSchema, Clone, Debug)]
 #[repr(C)]
 pub struct UiTheme {

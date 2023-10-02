@@ -20,12 +20,6 @@ fn pause_menu_system(
             egui::CentralPanel::default()
                 .frame(egui::Frame::none())
                 .show(&ctx, |ui| {
-                    ui.heading("Paused");
-                });
-
-            egui::CentralPanel::default()
-                .frame(egui::Frame::none())
-                .show(&ctx, |ui| {
                     let screen_rect = ui.max_rect();
 
                     let pause_menu_width = meta.main_menu.menu_width;

@@ -122,6 +122,7 @@ fn home_menu(
                 )
                 .min_size(vec2(ui.available_width(), 0.0))
                 .show(ui)
+                .focus_by_default(ui)
                 .clicked()
                 {
                     session_options.delete = true;

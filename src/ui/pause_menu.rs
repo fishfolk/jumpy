@@ -61,14 +61,15 @@ fn pause_menu_system(
                                 ui.add_space(10.0);
 
                                 // Continue button
-                                let mut continue_button = BorderedButton::themed(
+                                if BorderedButton::themed(
                                     &meta.theme.buttons.normal,
                                     localization.get("continue"),
                                 )
                                 .min_size(vec2(width, 0.0))
-                                .show(ui);
-                                continue_button = continue_button.focus_by_default(ui);
-                                if continue_button.clicked() {
+                                .show(ui)
+                                .focus_by_default(ui)
+                                .clicked()
+                                {
                                     session.active = true;
                                 }
 
@@ -78,16 +79,16 @@ fn pause_menu_system(
                                     ui.set_enabled(!is_online);
 
                                     // Map select button
-                                    // if BorderedButton::themed(
-                                    //     &meta.theme.button_styles.normal,
-                                    //     &localization.get("map-select-title"),
-                                    // )
-                                    // .min_size(egui::vec2(width, 0.0))
-                                    // .show(ui)
-                                    // .clicked()
-                                    // {
-                                    //     *pause_page = PauseMenuPage::MapSelect;
-                                    // }
+                                    if BorderedButton::themed(
+                                        &meta.theme.buttons.normal,
+                                        localization.get("map-select-title"),
+                                    )
+                                    .min_size(vec2(width, 0.0))
+                                    .show(ui)
+                                    .clicked()
+                                    {
+                                        // TODO: Show map selection.
+                                    }
 
                                     // Restart button
                                     if BorderedButton::themed(

@@ -96,15 +96,13 @@ pub fn widget(
             ui.set_min_width(ui.available_width());
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
-                // Back button
-                let back_button =
-                    BorderedButton::themed(&meta.theme.buttons.normal, localization.get("back"))
-                        .show(ui)
-                        .focus_by_default(ui);
-
                 ui.add_space(normal_size / 2.0);
 
-                if back_button.clicked()
+                // Back button
+                if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("back"))
+                    .show(ui)
+                    .focus_by_default(ui)
+                    .clicked()
                     || input.iter().any(|x| x.menu_back_just_pressed)
                     || input.iter().any(|x| x.escape_just_pressed)
                 {

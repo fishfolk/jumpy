@@ -76,12 +76,10 @@ pub enum MenuPage {
 
 fn main_menu_system(world: &World) {
     let ctx = (*world.resource::<EguiCtx>()).clone();
-    let menu_page =
-        ctx.data_mut(|data| *data.get_temp_mut_or_default::<MenuPage>(egui::Id::null()));
 
     egui::CentralPanel::default()
         .frame(egui::Frame::none())
-        .show(&ctx, |ui| match menu_page {
+        .show(&ctx, |ui| match ctx.get_state::<MenuPage>() {
             MenuPage::Home => world.run_initialized_system(home_menu, ui),
             MenuPage::Settings => todo!(),
             MenuPage::PlayerSelect => todo!(),
@@ -163,10 +161,7 @@ fn home_menu(
                     .show(ui)
                     .clicked()
                 {
-                    ui.ctx().data_mut(|data| {
-                        *data.get_temp_mut_or_default::<MenuPage>(egui::Id::null()) =
-                            MenuPage::Credits;
-                    });
+                    ui.ctx().set_state(MenuPage::Credits);
                 }
             });
     });

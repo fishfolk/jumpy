@@ -108,12 +108,7 @@ pub fn widget(
                     || input.iter().any(|x| x.menu_back_just_pressed)
                     || input.iter().any(|x| x.escape_just_pressed)
                 {
-                    // TODO: Create helpe to make accessing the menu page, or maybe any global egui
-                    // state, more convenient.
-                    ui.ctx().data_mut(|data| {
-                        *data.get_temp_mut_or_default::<MenuPage>(egui::Id::null()) =
-                            MenuPage::Home;
-                    });
+                    ui.ctx().set_state(MenuPage::Home);
                 }
 
                 ui.with_layout(default(), |ui| {

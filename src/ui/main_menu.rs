@@ -3,6 +3,7 @@ use crate::prelude::*;
 use super::ImageMeta;
 
 mod credits;
+mod settings;
 
 #[derive(HasSchema, Debug, Default, Clone)]
 #[repr(C)]
@@ -81,7 +82,7 @@ fn main_menu_system(world: &World) {
         .frame(egui::Frame::none())
         .show(&ctx, |ui| match ctx.get_state::<MenuPage>() {
             MenuPage::Home => world.run_initialized_system(home_menu, ui),
-            MenuPage::Settings => todo!(),
+            MenuPage::Settings => world.run_initialized_system(settings::widget, ui),
             MenuPage::PlayerSelect => todo!(),
             MenuPage::MapSelect { .. } => todo!(),
             MenuPage::Credits => world.run_initialized_system(credits::widget, ui),
@@ -154,7 +155,9 @@ fn home_menu(
                     .min_size(vec2(ui.available_width(), 0.0))
                     .show(ui)
                     .clicked()
-                {}
+                {
+                    ui.ctx().set_state(MenuPage::Settings);
+                }
 
                 // Credits
                 if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("credits"))

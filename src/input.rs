@@ -37,6 +37,9 @@ fn collect_player_input(game: &mut Game, egui_input: &mut egui::RawInput) {
         GlobalPlayerControls(collector.get().clone().into_iter().collect())
     };
 
+    // TODO: fix issue where pressing spacebar in a text box acts like hitting enter and exits you
+    // from the text box.
+
     let events = &mut egui_input.events;
     events.retain(|e| {
         !matches!(

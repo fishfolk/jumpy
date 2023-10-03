@@ -5,7 +5,8 @@ use crate::{
 
 pub fn game_plugin(game: &mut Game) {
     game.systems.add_startup_system(load_controler_mapping);
-    game.systems.add_before_system(collect_player_input);
+    game.insert_shared_resource(EguiInputHook::new(collect_player_input));
+    game.init_shared_resource::<PlayerInputCollector>();
 }
 
 // Startup system to load game control mapping resource from the storage and insert the player input
@@ -16,20 +17,72 @@ fn load_controler_mapping(game: &mut Game) {
         storage.get::<Settings>().unwrap().player_controls.clone()
     };
     game.insert_shared_resource(control_mapping);
-    game.insert_shared_resource(PlayerInputCollector::default());
 }
 
 /// Game system that takes the raw input events and converts it to player controls based on the
 /// player input map.
-fn collect_player_input(game: &mut Game) {
-    let controls = {
+fn collect_player_input(game: &mut Game, egui_input: &mut egui::RawInput) {
+    // Collect player controls
+    //
+    // Note: We do this here in the egui input hook to make sure that the
+    // player controls are available to egui immediately without a frame delay.
+    let controls = 'controls: {
         let mut collector = game.shared_resource_mut::<PlayerInputCollector>().unwrap();
-        let mapping = game.shared_resource::<PlayerControlMapping>().unwrap();
+        let Some(mapping) = game.shared_resource::<PlayerControlMapping>() else {
+            break 'controls default()
+        };
         let keyboard = game.shared_resource::<KeyboardInputs>().unwrap();
         let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
         collector.update(&mapping, &keyboard, &gamepad);
         GlobalPlayerControls(collector.get().clone().into_iter().collect())
     };
+
+    let events = &mut egui_input.events;
+    events.retain(|e| {
+        !matches!(
+            e,
+            egui::Event::Key {
+                key: egui::Key::ArrowUp
+                    | egui::Key::ArrowLeft
+                    | egui::Key::ArrowDown
+                    | egui::Key::ArrowRight
+                    | egui::Key::Enter
+                    | egui::Key::Escape,
+                ..
+            }
+        )
+    });
+
+    let push_key = |events: &mut Vec<egui::Event>, key| {
+        events.push(egui::Event::Key {
+            key,
+            pressed: true,
+            repeat: false,
+            modifiers: default(),
+        });
+    };
+
+    for player_control in controls.iter() {
+        if player_control.just_moved {
+            if player_control.move_direction.y > 0.1 {
+                push_key(events, egui::Key::ArrowUp);
+            } else if player_control.move_direction.y < -0.1 {
+                push_key(events, egui::Key::ArrowDown);
+            } else if player_control.move_direction.x < -0.1 {
+                push_key(events, egui::Key::ArrowLeft);
+            } else if player_control.move_direction.x > 0.1 {
+                push_key(events, egui::Key::ArrowRight);
+            }
+        }
+        if player_control.menu_confirm_just_pressed {
+            push_key(events, egui::Key::Enter);
+        }
+        if player_control.menu_back_just_pressed {
+            push_key(events, egui::Key::Escape);
+        }
+    }
+
+    // Insert the player controls as a shared resource
     game.insert_shared_resource(controls);
 }
 

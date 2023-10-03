@@ -78,7 +78,7 @@ default_settings:
       slide: !Keyboard Slash
       pause: !Keyboard PageDown
       menu_back: !Keyboard ShiftRight
-      menu_confirm: !Keyboard Comma
+      menu_confirm: !Keyboard Return
       escape: !Keyboard Escape
 
 localization: locales/localization.yaml

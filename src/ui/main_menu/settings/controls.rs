@@ -210,24 +210,53 @@ pub(super) fn widget(
                                                 bottom: m.bottom * s,
                                             })
                                             .show(ui, |ui| {
-                                                ui.label(
-                                                    normal_font
-                                                        .rich(localization.get("bind-input")),
-                                                );
+                                                let msg_value = localization
+                                                    .get_message("bind-input")
+                                                    .unwrap()
+                                                    .value()
+                                                    .unwrap();
+                                                let mut args = fluent_bundle::FluentArgs::new();
+                                                args.set("binding", &**title);
+                                                args.set("binding_kind", match binding_kind {
+                                                    BindingKind::Keyboard => "keyboard",
+                                                    BindingKind::Gamepad => "gamepad",
+                                                });
+                                                ui.label(normal_font.rich(
+                                                    localization.format_pattern(
+                                                        msg_value,
+                                                        Some(&args),
+                                                        &mut Vec::new(),
+                                                    ),
+                                                ));
 
                                                 ui.add_space(normal_font.size / 2.0);
 
-                                                // Cancel button
-                                                if BorderedButton::themed(
-                                                    &meta.theme.buttons.small,
-                                                    localization.get("cancel"),
-                                                )
-                                                .show(ui)
-                                                .clicked()
-                                                {
-                                                    button.request_focus();
-                                                    state.currently_binding_input_idx = None;
-                                                }
+                                                ui.horizontal(|ui| {
+                                                    // Cancel button
+                                                    if BorderedButton::themed(
+                                                        &meta.theme.buttons.small,
+                                                        localization.get("cancel"),
+                                                    )
+                                                    .show(ui)
+                                                    .clicked()
+                                                    {
+                                                        button.request_focus();
+                                                        state.currently_binding_input_idx = None;
+                                                    }
+
+                                                    // Clear button
+                                                    if BorderedButton::themed(
+                                                        &meta.theme.buttons.small,
+                                                        localization.get("clear-binding"),
+                                                    )
+                                                    .show(ui)
+                                                    .clicked()
+                                                    {
+                                                        **input = InputKind::None;
+                                                        button.request_focus();
+                                                        state.currently_binding_input_idx = None;
+                                                    }
+                                                });
 
                                                 // See if there has been any inputs of the kind we
                                                 // are binding.

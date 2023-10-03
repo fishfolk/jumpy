@@ -1,7 +1,13 @@
 # Controller Settings
 
 controls = Controls
-bind-input = Make an input to bind.
+bind-input =
+    Make { $binding_kind ->
+        [keyboard]  a keyboard
+        [gamepad]   a gamepad
+        *[other]    an
+    } input to bind to "{ $binding }".
+clear-binding = Clear Binding
 
 keyboard-1 = Keyboard 1
 keyboard-2 = Keyboard 2

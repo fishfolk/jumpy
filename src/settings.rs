@@ -14,8 +14,6 @@ fn load_settings(game: &mut Game) {
     let mut storage = game.shared_resource_mut::<Storage>().unwrap();
     if storage.get::<Settings>().is_none() {
         storage.insert(default_settings);
-        storage.save();
-        storage.get::<Settings>().unwrap();
     }
 }
 
@@ -52,7 +50,6 @@ pub struct PlayerControlSetting {
     pub slide: InputKind,
     pub menu_back: InputKind,
     pub menu_confirm: InputKind,
-    pub escape: InputKind,
 }
 
 #[derive(HasSchema, Clone, Debug, Default)]

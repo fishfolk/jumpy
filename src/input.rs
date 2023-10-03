@@ -106,8 +106,6 @@ pub struct PlayerControl {
     pub menu_back_just_pressed: bool,
     pub menu_confirm_pressed: bool,
     pub menu_confirm_just_pressed: bool,
-    pub escape_pressed: bool,
-    pub escape_just_pressed: bool,
 
     pub pause_pressed: bool,
     pub pause_just_pressed: bool,
@@ -199,7 +197,6 @@ impl PlayerInputCollector {
                     (&mut control.slide_pressed, &mapping.slide),
                     (&mut control.menu_back_pressed, &mapping.menu_back),
                     (&mut control.menu_confirm_pressed, &mapping.menu_confirm),
-                    (&mut control.escape_pressed, &mapping.escape),
                 ] {
                     if let Some(value) = get_input_value(button_map, player_idx) {
                         *button_pressed = value > 0.0;
@@ -274,11 +271,6 @@ impl PlayerInputCollector {
                     &mut current.menu_confirm_just_pressed,
                     current.menu_confirm_pressed,
                     last.menu_confirm_pressed,
-                ),
-                (
-                    &mut current.escape_just_pressed,
-                    current.escape_pressed,
-                    last.escape_pressed,
                 ),
                 (&mut current.just_moved, current.moving, last.moving),
             ] {

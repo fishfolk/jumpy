@@ -5,7 +5,9 @@ use crate::{
 
 pub fn game_plugin(game: &mut Game) {
     game.systems.add_startup_system(load_controler_mapping);
-    game.insert_shared_resource(EguiInputHook::new(collect_player_input));
+    game.systems.add_before_system(collect_player_controls);
+    game.insert_shared_resource(EguiInputHook::new(handle_egui_input));
+    game.init_shared_resource::<GlobalPlayerControls>();
     game.init_shared_resource::<PlayerInputCollector>();
 }
 
@@ -19,13 +21,7 @@ fn load_controler_mapping(game: &mut Game) {
     game.insert_shared_resource(control_mapping);
 }
 
-/// Game system that takes the raw input events and converts it to player controls based on the
-/// player input map.
-fn collect_player_input(game: &mut Game, egui_input: &mut egui::RawInput) {
-    // Collect player controls
-    //
-    // Note: We do this here in the egui input hook to make sure that the
-    // player controls are available to egui immediately without a frame delay.
+fn collect_player_controls(game: &mut Game) {
     let controls = 'controls: {
         let mut collector = game.shared_resource_mut::<PlayerInputCollector>().unwrap();
         let Some(mapping) = game.shared_resource::<PlayerControlMapping>() else {
@@ -36,25 +32,26 @@ fn collect_player_input(game: &mut Game, egui_input: &mut egui::RawInput) {
         collector.update(&mapping, &keyboard, &gamepad);
         GlobalPlayerControls(collector.get().clone().into_iter().collect())
     };
+    game.insert_shared_resource(controls);
+}
 
-    // TODO: fix issue where pressing spacebar in a text box acts like hitting enter and exits you
-    // from the text box.
+/// Game system that takes the raw input events and converts it to player controls based on the
+/// player input map.
+fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
+    let ctx = game.shared_resource::<EguiCtx>().unwrap();
+    let controls = ctx.data_mut(|data| {
+        // Use an input collector local to the menu so that we can only collect inputs from
+        // gamepads. Keyboard input should be processed by Egui as normal.
+        let collector = data.get_temp_mut_or_default::<PlayerInputCollector>(egui::Id::null());
+        let Some(mapping) = game.shared_resource::<PlayerControlMapping>() else {
+                return std::array::from_fn(|_| PlayerControl::default())
+            };
+        let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
+        collector.update(&mapping, &default(), &gamepad);
+        collector.get().clone()
+    });
 
     let events = &mut egui_input.events;
-    events.retain(|e| {
-        !matches!(
-            e,
-            egui::Event::Key {
-                key: egui::Key::ArrowUp
-                    | egui::Key::ArrowLeft
-                    | egui::Key::ArrowDown
-                    | egui::Key::ArrowRight
-                    | egui::Key::Enter
-                    | egui::Key::Escape,
-                ..
-            }
-        )
-    });
 
     let push_key = |events: &mut Vec<egui::Event>, key| {
         events.push(egui::Event::Key {
@@ -84,9 +81,6 @@ fn collect_player_input(game: &mut Game, egui_input: &mut egui::RawInput) {
             push_key(events, egui::Key::Escape);
         }
     }
-
-    // Insert the player controls as a shared resource
-    game.insert_shared_resource(controls);
 }
 
 #[derive(HasSchema, Clone, Default, Deref, DerefMut)]
@@ -237,7 +231,7 @@ impl PlayerInputCollector {
             let last = &self.last_controls[i];
 
             current.move_direction = vec2(current.right - current.left, current.up - current.down);
-            current.moving = current.move_direction.length_squared() > 0.0;
+            current.moving = current.move_direction.length_squared() > 0.01;
 
             for (just_pressed, current_pressed, last_pressed) in [
                 (

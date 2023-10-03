@@ -1,7 +1,7 @@
 # Controller Settings
 
 controls = Controls
-bind-input = Make an input to bind or press Escape to cancel
+bind-input = Make an input to bind.
 
 keyboard-1 = Keyboard 1
 keyboard-2 = Keyboard 2

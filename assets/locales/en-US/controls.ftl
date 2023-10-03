@@ -6,3 +6,5 @@ jump = Jump
 grab-drop = Grab / Drop
 shoot = Shoot
 slide = Slide
+menu-confirm = Menu Confirm
+menu-back = Menu Back

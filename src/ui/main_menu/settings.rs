@@ -1,4 +1,7 @@
-use crate::{prelude::*, settings::Settings};
+use crate::{
+    prelude::*,
+    settings::{PlayerControlMapping, Settings},
+};
 
 use super::MenuPage;
 
@@ -33,6 +36,7 @@ pub fn widget(
     meta: Root<GameMeta>,
     localization: Localization<GameMeta>,
     input: Res<GlobalPlayerControls>,
+    mut mapping: ResMut<PlayerControlMapping>,
     mut storage: ResMut<Storage>,
     world: &World,
 ) {
@@ -112,14 +116,15 @@ pub fn widget(
                         ui.add_space(button_spacing);
 
                         // Cancel button
-                        if BorderedButton::themed(
+                        if (BorderedButton::themed(
                             &meta.theme.buttons.normal,
                             localization.get("cancel"),
                         )
                         .min_size(button_min_size)
                         .show(ui)
                         .clicked()
-                            || input.iter().any(|x| x.menu_back_just_pressed)
+                            || input.iter().any(|x| x.menu_back_just_pressed))
+                            && state.currently_binding_input_idx.is_none()
                         {
                             ui.ctx().set_state(MenuPage::Home);
                             // Reset the modified settings to their stored settings.
@@ -152,8 +157,10 @@ pub fn widget(
                         .clicked()
                         {
                             // Save the settings to disk.
+                            *mapping = state.modified_settings.player_controls.clone();
                             storage.insert(state.modified_settings.clone());
-                            storage.save()
+                            storage.save();
+                            ui.ctx().set_state(MenuPage::Home);
                         }
                     });
 

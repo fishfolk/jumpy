@@ -13,7 +13,7 @@ fn load_settings(game: &mut Game) {
     };
     let mut storage = game.shared_resource_mut::<Storage>().unwrap();
     if storage.get::<Settings>().is_none() {
-        storage.insert(dbg!(default_settings));
+        storage.insert(default_settings);
     }
 }
 

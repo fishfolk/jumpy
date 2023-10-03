@@ -30,7 +30,7 @@ pub(super) fn widget(
 
         ui.add(
             egui::TextEdit::singleline(&mut state.modified_settings.matchmaking_server)
-                .font(normal_font.id())
+                .font(normal_font)
                 .desired_width(ui.available_width() - bigger_font.size * 2.0),
         );
     });

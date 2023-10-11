@@ -31,8 +31,8 @@ pub struct MineMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<MineMeta>();
+    MineMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -141,9 +141,8 @@ fn update_idle_mines(
     {
         let element_meta = assets.get(element_handle.0);
 
-        let Ok(MineMeta {
-            arm_delay,..
-             }) = assets.get(element_meta.data).try_cast_ref() else {
+        let asset = assets.get(element_meta.data);
+        let Ok(MineMeta { arm_delay, .. }) = asset.try_cast_ref() else {
             unreachable!();
         };
         let arm_delay = *arm_delay;
@@ -203,6 +202,7 @@ fn update_thrown_mines(
     )) {
         let element_meta = assets.get(element_handle.0);
 
+        let asset = assets.get(element_meta.data);
         let Ok(MineMeta {
             explosion_fps,
             explosion_frames,
@@ -212,7 +212,13 @@ fn update_thrown_mines(
             armed_frames,
             armed_fps,
             damage_region_size,
-            damage_region_lifetime, explosion_volume, arm_sound_volume, explosion_lifetime, .. }) = assets.get(element_meta.data).try_cast_ref() else {
+            damage_region_lifetime,
+            explosion_volume,
+            arm_sound_volume,
+            explosion_lifetime,
+            ..
+        }) = asset.try_cast_ref()
+        else {
             unreachable!();
         };
 

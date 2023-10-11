@@ -102,7 +102,7 @@ pub struct Spawner {
 impl Default for Spawner {
     fn default() -> Self {
         Self {
-            group_identifier: Ulid::new().to_string(),
+            group_identifier: Ulid::create().to_string(),
         }
     }
 }
@@ -110,7 +110,7 @@ impl Default for Spawner {
 impl Spawner {
     pub fn new() -> Self {
         Spawner {
-            group_identifier: Ulid::new().to_string(),
+            group_identifier: Ulid::create().to_string(),
         }
     }
     pub fn new_grouped(group_identifier: String) -> Self {
@@ -270,7 +270,8 @@ macro_rules! install_plugins {
         }
 
         pub fn game_plugin(game: &mut Game) {
-            game.init_shared_resource::<AssetServer>().register_asset::<ElementMeta>();
+            ElementMeta::schema();
+            game.init_shared_resource::<AssetServer>();
 
             $(
                 game.install_plugin($module::game_plugin);

@@ -22,8 +22,8 @@ pub struct SnailMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<SnailMeta>();
+    SnailMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -160,6 +160,7 @@ fn update_snails(
     {
         let element_meta = assets.get(element_handle.0);
 
+        let asset = assets.get(element_meta.data);
         let Ok(SnailMeta {
             fps,
             bounciness,
@@ -169,11 +170,16 @@ fn update_snails(
             move_frame_indexes,
             hide_frames,
             ..
-        }) = assets.get(element_meta.data).try_cast_ref() else {
+        }) = asset.try_cast_ref()
+        else {
             unreachable!();
         };
-        let Some(animated_sprite) = animated_sprites.get_mut(entity) else { continue };
-        let Some(animation_bank) = animation_banks.get_mut(entity) else { continue };
+        let Some(animated_sprite) = animated_sprites.get_mut(entity) else {
+            continue;
+        };
+        let Some(animation_bank) = animation_banks.get_mut(entity) else {
+            continue;
+        };
 
         let mut hit = false;
 

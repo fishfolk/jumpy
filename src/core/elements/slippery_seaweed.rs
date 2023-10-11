@@ -12,8 +12,8 @@ pub struct SlipperySeaweedMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<SlipperySeaweedMeta>();
+    SlipperySeaweedMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {

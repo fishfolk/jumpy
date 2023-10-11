@@ -9,7 +9,8 @@ pub fn game_plugin(game: &mut Game) {
 fn load_settings(game: &mut Game) {
     let default_settings = {
         let assets = game.shared_resource::<AssetServer>().unwrap();
-        assets.root::<GameMeta>().default_settings.clone()
+        let settings = &assets.root::<GameMeta>().default_settings;
+        settings.clone()
     };
     let mut storage = game.shared_resource_mut::<Storage>().unwrap();
     if storage.get::<Settings>().is_none() {

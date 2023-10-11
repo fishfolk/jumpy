@@ -38,14 +38,13 @@ pub mod prelude {
 }
 
 pub fn game_plugin(game: &mut Game) {
+    PlayerMeta::schema();
+    AudioSource::schema();
+    HatMeta::schema();
+    MapMeta::schema();
     game.install_plugin(elements::game_plugin)
         .install_plugin(bullet::game_plugin)
-        .init_shared_resource::<AssetServer>()
-        // TODO: Move these asset registrations to their associated modules.
-        .register_asset::<PlayerMeta>()
-        .register_asset::<AudioSource>()
-        .register_asset::<HatMeta>()
-        .register_asset::<MapMeta>();
+        .init_shared_resource::<AssetServer>();
 }
 
 pub struct MatchPlugin {
@@ -73,7 +72,6 @@ impl SessionPlugin for MatchPlugin {
         attachment::install(session);
         bullet::session_plugin(session);
         editor::install(session);
-
 
         session.world.insert_resource(LoadedMap(Arc::new(self.map)));
         session.world.insert_resource(MatchInputs {

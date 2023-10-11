@@ -12,8 +12,8 @@ pub struct StompBootsMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<StompBootsMeta>();
+    StompBootsMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -119,10 +119,11 @@ fn update(
     {
         let element_meta = assets.get(element_handle.0);
 
+        let asset = assets.get(element_meta.data);
         let Ok(StompBootsMeta {
-            player_decoration,
-            ..
-        }) = assets.get(element_meta.data).try_cast_ref() else {
+            player_decoration, ..
+        }) = asset.try_cast_ref()
+        else {
             unreachable!();
         };
 

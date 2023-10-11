@@ -13,8 +13,8 @@ pub struct UrchinMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<UrchinMeta>();
+    UrchinMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -108,12 +108,11 @@ fn update_urchins(
         entities.iter_with((&mut urchins, &transforms, &element_handles))
     {
         let element_meta = assets.get(element_handle.0);
-
+        let asset = assets.get(element_meta.data);
         let Ok(UrchinMeta {
-            hit_speed,
-            spin,
-            ..
-        }) = assets.get(element_meta.data).try_cast_ref() else {
+            hit_speed, spin, ..
+        }) = asset.try_cast_ref()
+        else {
             unreachable!();
         };
 

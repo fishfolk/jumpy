@@ -55,6 +55,9 @@ fn main() {
     // First create bones game.
     let mut game = Game::new();
 
+    // Register our game asset type
+    GameMeta::schema();
+
     game
         // Install game plugins
         .install_plugin(DefaultGamePlugin)
@@ -63,8 +66,7 @@ fn main() {
         .install_plugin(core::game_plugin)
         // We initialize the asset server and register asset types
         .init_shared_resource::<AssetServer>()
-        .register_default_assets()
-        .register_asset::<GameMeta>();
+        .register_default_assets();
 
     // Create a new session for the game menu. Each session is it's own bones world with it's own
     // plugins, systems, and entities.

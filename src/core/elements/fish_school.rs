@@ -19,8 +19,8 @@ pub struct FishSchoolMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<FishSchoolMeta>();
+    FishSchoolMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -191,18 +191,19 @@ pub fn update_fish_schools(
     for (school_ent, school) in entities.iter_with(&fish_schools) {
         let element_handle = element_handles.get(school_ent).unwrap();
         let element_meta = assets.get(element_handle.0);
-        let Ok(FishSchoolMeta {
-            school_size,
-            ..
-        }) = assets.get(element_meta.data).try_cast_ref()
-        else { continue };
+        let asset = assets.get(element_meta.data);
+        let Ok(FishSchoolMeta { school_size, .. }) = asset.try_cast_ref() else {
+            continue;
+        };
 
         let transform = transforms.get(school_ent).unwrap();
         let mut fish_transforms = school
             .fish
             .iter()
             .map(|entity| transforms.get(*entity).unwrap());
-        let Some(fish_transform) = fish_transforms.next() else {continue};
+        let Some(fish_transform) = fish_transforms.next() else {
+            continue;
+        };
 
         let mut school_bounds_min = fish_transform.translation.xy();
         let mut school_bounds_max = fish_transform.translation.xy();

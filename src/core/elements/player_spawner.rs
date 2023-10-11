@@ -7,8 +7,8 @@ use crate::prelude::*;
 pub struct PlayerSpawnerMeta;
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<PlayerSpawnerMeta>();
+    PlayerSpawnerMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -81,7 +81,9 @@ fn update(
             current_spawner.0 += 1;
             current_spawner.0 %= spawn_points.len().max(1);
 
-            let Some(mut spawn_point) = spawn_points.get(current_spawner.0).copied() else { return };
+            let Some(mut spawn_point) = spawn_points.get(current_spawner.0).copied() else {
+                return;
+            };
 
             // Make sure each player spawns at a different z level ( give enough room for 10 players
             // to fit between map layers )

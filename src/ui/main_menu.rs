@@ -141,6 +141,7 @@ fn home_menu(
                 }
 
                 // Online game
+                #[cfg(not(target_arch = "wasm32"))]
                 if BorderedButton::themed(
                     &meta.theme.buttons.normal,
                     localization.get("online-game"),

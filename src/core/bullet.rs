@@ -5,8 +5,8 @@
 use crate::prelude::*;
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<BulletMeta>();
+    BulletMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 /// Install this module.
@@ -75,7 +75,7 @@ fn hydrate(
             atlas,
             body_diameter,
             ..
-        } = &bullet_meta;
+        } = &*bullet_meta;
 
         atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
 
@@ -122,7 +122,7 @@ fn update(
             explosion_frames,
             explosion_lifetime,
             ..
-        } = bullet_meta;
+        } = &*bullet_meta;
 
         // Move bullet
         let position = {

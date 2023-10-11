@@ -13,8 +13,8 @@ pub struct SproingerMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<SproingerMeta>();
+    SproingerMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -106,12 +106,14 @@ fn update(
         let element_handle = element_handles.get(entity).unwrap();
         let element_meta = assets.get(element_handle.0);
 
+        let asset = assets.get(element_meta.data);
         let Ok(SproingerMeta {
             sound,
             sound_volume,
             spring_velocity,
             ..
-        }) = assets.get(element_meta.data).try_cast_ref() else {
+        }) = asset.try_cast_ref()
+        else {
             unreachable!();
         };
 

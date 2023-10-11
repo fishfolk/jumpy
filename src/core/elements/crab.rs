@@ -30,8 +30,8 @@ pub fn session_plugin(session: &mut Session) {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<CrabMeta>();
+    CrabMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 #[derive(Default, Clone, HasSchema, Debug, Copy)]
@@ -166,6 +166,7 @@ fn update_crabs(
     {
         let element_meta = assets.get(element_handle.0);
 
+        let asset = assets.get(element_meta.data);
         let CrabMeta {
             fps,
             run_speed,
@@ -177,7 +178,7 @@ fn update_crabs(
             same_level_threshold,
             timer_delay_max,
             ..
-        } = assets.get(element_meta.data).cast_ref();
+        } = asset.cast_ref();
 
         let body = bodies.get_mut(entity).unwrap();
         let sprite = sprites.get_mut(entity).unwrap();

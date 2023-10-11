@@ -30,8 +30,8 @@ pub struct KickBombMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<KickBombMeta>();
+    KickBombMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -150,13 +150,15 @@ fn update_idle_kick_bombs(
     {
         let element_meta = assets.get(element_handle.0);
 
+        let asset = assets.get(element_meta.data);
         let Ok(KickBombMeta {
             fuse_sound,
             fuse_sound_volume,
             arm_delay,
             fuse_time,
             ..
-        }) = assets.get(element_meta.data).try_cast_ref() else {
+        }) = asset.try_cast_ref()
+        else {
             unreachable!();
         };
 
@@ -212,7 +214,7 @@ fn update_lit_kick_bombs(
         entities.iter_with((&mut lit_grenades, &element_handles, &spawners))
     {
         let element_meta = assets.get(element_handle.0);
-
+        let asset = assets.get(element_meta.data);
         let Ok(KickBombMeta {
             grab_offset,
             explosion_sound,
@@ -226,7 +228,8 @@ fn update_lit_kick_bombs(
             explosion_frames,
             fin_anim,
             ..
-        }) = assets.get(element_meta.data).try_cast_ref() else {
+        }) = asset.try_cast_ref()
+        else {
             unreachable!();
         };
 

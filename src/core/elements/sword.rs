@@ -20,8 +20,8 @@ pub struct SwordMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<SwordMeta>();
+    SwordMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -185,13 +185,15 @@ fn update(
             );
         };
 
+        let asset = assets.get(element_meta.data);
         let Ok(SwordMeta {
             cooldown_frames,
             sound,
             sound_volume,
             killing_speed,
             ..
-        }) = assets.get(element_meta.data).try_cast_ref() else {
+        }) = asset.try_cast_ref()
+        else {
             unreachable!();
         };
 

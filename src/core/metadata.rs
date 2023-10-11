@@ -18,12 +18,12 @@ pub trait MatchAssetServerExt {
 }
 impl MatchAssetServerExt for &mut AssetServer {
     fn register_match_assets(self) -> Self {
-        self.register_asset::<CoreMeta>()
-            .register_asset::<PlayerMeta>()
-            .register_asset::<ElementMeta>()
-            .register_asset::<BulletMeta>()
-            .register_asset::<HatMeta>()
-            .register_asset::<MapMeta>();
+        CoreMeta::schema();
+        PlayerMeta::schema();
+        ElementMeta::schema();
+        BulletMeta::schema();
+        MapMeta::schema();
+        HatMeta::schema();
 
         self
     }

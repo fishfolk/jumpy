@@ -29,8 +29,8 @@ pub struct GrenadeMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<GrenadeMeta>();
+    GrenadeMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -151,12 +151,14 @@ fn update_idle_grenades(
     {
         let element_meta = assets.get(element_handle.0);
 
+        let asset = assets.get(element_meta.data);
         let Ok(GrenadeMeta {
             fuse_sound,
             fuse_sound_volume,
             fuse_time,
             ..
-        }) = assets.get(element_meta.data).try_cast_ref() else {
+        }) = asset.try_cast_ref()
+        else {
             unreachable!();
         };
         let fuse_time = *fuse_time;
@@ -215,7 +217,7 @@ fn update_lit_grenades(
         entities.iter_with((&mut lit_grenades, &element_handles, &spawners))
     {
         let element_meta = assets.get(element_handle.0);
-
+        let asset = assets.get(element_meta.data);
         let Ok(GrenadeMeta {
             explosion_sound,
             explosion_volume,
@@ -227,7 +229,8 @@ fn update_lit_grenades(
             explosion_frames,
             fin_anim,
             ..
-        }) = assets.get(element_meta.data).try_cast_ref() else {
+        }) = asset.try_cast_ref()
+        else {
             unreachable!();
         };
 

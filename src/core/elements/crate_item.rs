@@ -29,8 +29,8 @@ pub struct CrateMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    game.init_shared_resource::<AssetServer>()
-        .register_asset::<CrateMeta>();
+    CrateMeta::schema();
+    game.init_shared_resource::<AssetServer>();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -83,6 +83,7 @@ fn hydrate_crates(
         let element_handle = *element_handles.get(spawner_entity).unwrap();
         let element_meta = assets.get(element_handle.0);
 
+        let asset = assets.get(element_meta.data);
         let Ok(CrateMeta {
             atlas,
             fin_anim,
@@ -91,7 +92,8 @@ fn hydrate_crates(
             throw_velocity,
             bounciness,
             ..
-        }) = assets.get(element_meta.data).try_cast_ref() else{
+        }) = asset.try_cast_ref()
+        else {
             continue;
         };
 
@@ -145,9 +147,8 @@ fn update_idle_crates(
     {
         let element_meta = assets.get(element_handle.0);
 
-        let Ok(CrateMeta {
-            break_timeout,..
-        }) = assets.get(element_meta.data).try_cast_ref() else {
+        let asset = assets.get(element_meta.data);
+        let Ok(CrateMeta { break_timeout, .. }) = asset.try_cast_ref() else {
             continue;
         };
 
@@ -212,6 +213,7 @@ fn update_thrown_crates(
     {
         let element_meta = assets.get(element_handle.0);
 
+        let asset = assets.get(element_meta.data);
         let Ok(CrateMeta {
             breaking_anim_frames,
             breaking_atlas,
@@ -223,7 +225,8 @@ fn update_thrown_crates(
             crate_break_state_1,
             crate_break_state_2,
             ..
-        }) = assets.get(element_meta.data).try_cast_ref() else {
+        }) = asset.try_cast_ref()
+        else {
             continue;
         };
 

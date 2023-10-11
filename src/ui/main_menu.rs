@@ -112,7 +112,7 @@ fn home_menu(
         ui.add_space(meta.main_menu.subtitle_font.size / 2.0);
 
         BorderedFrame::new(&meta.theme.panel.border)
-            .padding(meta.theme.panel.padding.into())
+            .padding(meta.theme.panel.padding)
             .show(ui, |ui| {
                 ui.set_width(meta.main_menu.menu_width);
 
@@ -128,8 +128,7 @@ fn home_menu(
                 {
                     session_options.delete = true;
 
-                    let session = sessions.create(SessionNames::GAME);
-                    session.install_plugin(crate::core::MatchPlugin {
+                    sessions.start_game(crate::core::MatchPlugin {
                         map: assets.get(meta.core.stable_maps[3]).clone(),
                         selected_players: [
                             Some(meta.core.players[0]),
@@ -140,16 +139,16 @@ fn home_menu(
                     });
                 }
 
-                // Online game
-                #[cfg(not(target_arch = "wasm32"))]
-                if BorderedButton::themed(
-                    &meta.theme.buttons.normal,
-                    localization.get("online-game"),
-                )
-                .min_size(vec2(ui.available_width(), 0.0))
-                .show(ui)
-                .clicked()
-                {}
+                // // Online game
+                // #[cfg(not(target_arch = "wasm32"))]
+                // if BorderedButton::themed(
+                //     &meta.theme.buttons.normal,
+                //     localization.get("online-game"),
+                // )
+                // .min_size(vec2(ui.available_width(), 0.0))
+                // .show(ui)
+                // .clicked()
+                // {}
 
                 // Settings
                 if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("settings"))

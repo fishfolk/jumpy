@@ -76,7 +76,7 @@ pub fn widget(
 
     BorderedFrame::new(&meta.theme.panel.border)
         .margin(outer_margin)
-        .padding(meta.theme.panel.padding.into())
+        .padding(meta.theme.panel.padding)
         .show(*ui, |ui| {
             let font_color = meta.theme.panel.font_color;
             let heading_font = meta.theme.font_styles.heading.with_color(font_color);

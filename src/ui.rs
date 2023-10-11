@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 pub mod main_menu;
+pub mod map_select;
 pub mod pause_menu;
 
 #[derive(HasSchema, Clone, Debug)]

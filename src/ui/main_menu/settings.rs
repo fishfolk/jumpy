@@ -69,7 +69,7 @@ pub fn widget(
 
     BorderedFrame::new(&meta.theme.panel.border)
         .margin(outer_margin)
-        .padding(meta.theme.panel.padding.into())
+        .padding(meta.theme.panel.padding)
         .show(ui, |ui| {
             // Disable all the buttons if we are currently binding an input
             ui.set_enabled(state.currently_binding_input_idx.is_none());

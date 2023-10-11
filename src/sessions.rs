@@ -11,6 +11,7 @@ pub trait SessionExt {
     fn start_menu(&mut self);
     fn end_game(&mut self);
     fn restart_game(&mut self);
+    fn start_game(&mut self, match_plugin: crate::core::MatchPlugin);
 }
 
 impl SessionExt for Sessions {
@@ -44,5 +45,10 @@ impl SessionExt for Sessions {
         } else {
             panic!("Cannot restart game when game is not running");
         }
+    }
+
+    fn start_game(&mut self, match_plugin: crate::core::MatchPlugin) {
+        let session = self.create(SessionNames::GAME);
+        session.install_plugin(match_plugin);
     }
 }

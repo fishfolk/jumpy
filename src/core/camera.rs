@@ -53,8 +53,11 @@ fn camera_controller(
 ) {
     let meta = &meta.core.camera;
 
-    let Some((_ent, (camera, camera_shake, camera_state))) = entities.iter_with((&mut cameras, &mut camera_shakes, &mut camera_states)).next() else {
-        return
+    let Some((_ent, (camera, camera_shake, camera_state))) = entities
+        .iter_with((&mut cameras, &mut camera_shakes, &mut camera_states))
+        .next()
+    else {
+        return;
     };
     if camera_state.disable_controller {
         return;

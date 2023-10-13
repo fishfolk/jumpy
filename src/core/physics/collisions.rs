@@ -122,10 +122,16 @@ impl rapier::EventHandler for &mut CollisionCache {
                     .push(a_ent);
             }
             rapier::CollisionEvent::Stopped(a, b, _) => {
-                let Some(a_ent) = colliders.get(a).map(|x| RapierUserData::entity(x.user_data)) else {
+                let Some(a_ent) = colliders
+                    .get(a)
+                    .map(|x| RapierUserData::entity(x.user_data))
+                else {
                     return;
                 };
-                let Some(b_ent) = colliders.get(b).map(|x| RapierUserData::entity(x.user_data)) else {
+                let Some(b_ent) = colliders
+                    .get(b)
+                    .map(|x| RapierUserData::entity(x.user_data))
+                else {
                     return;
                 };
 
@@ -720,9 +726,9 @@ impl<'a> CollisionWorld<'a> {
                         let ent = RapierUserData::entity(rapier_collider.user_data);
 
                         let Some(tile_kind) = self.tile_collision_kinds.get(ent) else {
-                        // Ignore non-tile collisions
-                        return false;
-                    };
+                            // Ignore non-tile collisions
+                            return false;
+                        };
 
                         // Ignore jump-through tiles if we have already seen wood.
                         !(collider.seen_wood && *tile_kind == TileCollisionKind::JumpThrough)

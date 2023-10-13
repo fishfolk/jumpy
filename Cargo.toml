@@ -140,6 +140,3 @@ ignored = [
   "getrandom", # Needed to add `js` feature
 ]
 
-[patch.'https://github.com/fishfolk/bones']
-bones_framework     = { path = "/home/zicklag/git/other/bones/framework_crates/bones_framework" }
-bones_bevy_renderer = { path = "/home/zicklag/git/other/bones/framework_crates/bones_bevy_renderer" }

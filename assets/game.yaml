@@ -46,6 +46,7 @@ default_settings:
       slide: !Button North
       pause: !Button Start
       menu_back: !Button East
+      menu_start: !Button Start
       menu_confirm: !Button South
 
     # Controls for the first keyboard player ( left side )
@@ -61,6 +62,8 @@ default_settings:
       slide: !Keyboard B
       pause: !Keyboard Escape
       menu_back: !Keyboard Escape
+      menu_start: !Keyboard Return
+      menu_confirm: !Keyboard Space
 
     # Controls for the second keyboard player ( right side )
     keyboard2:
@@ -73,6 +76,8 @@ default_settings:
       grab: !Keyboard ShiftRight
       shoot: !Keyboard Period
       slide: !Keyboard Slash
+      menu_confirm: !Keyboard Comma
+      menu_back: !Keyboard ShiftRight
 
 localization: locales/localization.yaml
 

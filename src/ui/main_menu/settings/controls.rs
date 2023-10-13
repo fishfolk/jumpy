@@ -127,6 +127,14 @@ pub(super) fn widget(
                 &mut mapping.gamepad.menu_back,
             ],
         ),
+        (
+            localization.get("menu-start"),
+            [
+                &mut mapping.keyboard1.menu_start,
+                &mut mapping.keyboard2.menu_start,
+                &mut mapping.gamepad.menu_start,
+            ],
+        ),
     ];
 
     // Create input table
@@ -181,7 +189,7 @@ pub(super) fn widget(
                         row.col(|ui| {
                             let button = BorderedButton::themed(
                                 &meta.theme.buttons.small,
-                                format_input(input),
+                                input.to_string(),
                             )
                             .show(ui);
 
@@ -210,24 +218,16 @@ pub(super) fn widget(
                                                 bottom: m.bottom * s,
                                             })
                                             .show(ui, |ui| {
-                                                let msg_value = localization
-                                                    .get_message("bind-input")
-                                                    .unwrap()
-                                                    .value()
-                                                    .unwrap();
-                                                let mut args = fluent_bundle::FluentArgs::new();
-                                                args.set("binding", &**title);
-                                                args.set("binding_kind", match binding_kind {
-                                                    BindingKind::Keyboard => "keyboard",
-                                                    BindingKind::Gamepad => "gamepad",
-                                                });
-                                                ui.label(normal_font.rich(
-                                                    localization.format_pattern(
-                                                        msg_value,
-                                                        Some(&args),
-                                                        &mut Vec::new(),
-                                                    ),
-                                                ));
+                                                ui.label(normal_font.rich(localization.get_with(
+                                                    "bind-input",
+                                                    &fluent_args! {
+                                                        "binding" => title.as_ref(),
+                                                        "binding_kind" => match binding_kind {
+                                                            BindingKind::Keyboard => "keyboard",
+                                                            BindingKind::Gamepad => "gamepad",
+                                                        }
+                                                    },
+                                                )));
 
                                                 ui.add_space(normal_font.size / 2.0);
 
@@ -328,16 +328,5 @@ fn get_input(
                     _ => None,
                 })
         }
-    }
-}
-
-/// Format an InputKind as a user-facing string
-fn format_input(input: &InputKind) -> String {
-    match input {
-        InputKind::None => "[None]".into(),
-        InputKind::Button(btn) => btn.to_string(),
-        InputKind::AxisPositive(axis) => format!("{axis} +"),
-        InputKind::AxisNegative(axis) => format!("{axis} -"),
-        InputKind::Keyboard(key) => format!("{key:?}"),
     }
 }

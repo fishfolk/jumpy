@@ -50,6 +50,7 @@ pub struct PlayerControlSetting {
     pub shoot: InputKind,
     pub slide: InputKind,
     pub menu_back: InputKind,
+    pub menu_start: InputKind,
     pub menu_confirm: InputKind,
 }
 
@@ -71,4 +72,16 @@ pub enum InputKind {
     AxisPositive(GamepadAxis),
     AxisNegative(GamepadAxis),
     Keyboard(KeyCode),
+}
+
+impl std::fmt::Display for InputKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            InputKind::None => write!(f, "[None]"),
+            InputKind::Button(btn) => write!(f, "{btn}"),
+            InputKind::AxisPositive(axis) => write!(f, "{axis} +"),
+            InputKind::AxisNegative(axis) => write!(f, "{axis} -"),
+            InputKind::Keyboard(key) => write!(f, "{key:?}"),
+        }
+    }
 }

@@ -24,7 +24,7 @@ pub const FPS: f32 = 60.0;
 /// The maximum number of players per match.
 pub const MAX_PLAYERS: usize = 4;
 
-use std::{array, time::Duration};
+use std::time::Duration;
 
 use crate::{prelude::*, settings::PlayerControlMapping};
 
@@ -49,7 +49,14 @@ pub fn game_plugin(game: &mut Game) {
 
 pub struct MatchPlugin {
     pub map: MapMeta,
-    pub selected_players: [Option<Handle<PlayerMeta>>; MAX_PLAYERS],
+    pub player_info: [PlayerInput; MAX_PLAYERS],
+}
+
+pub struct MatchPlayerInfo {
+    /// If control_source is `None` then the player is an AI.
+    pub control_source: Option<ControlSource>,
+    /// The player skin that has been selected.
+    pub selected_player: Handle<PlayerMeta>,
 }
 
 impl SessionPlugin for MatchPlugin {
@@ -75,15 +82,7 @@ impl SessionPlugin for MatchPlugin {
 
         session.world.insert_resource(LoadedMap(Arc::new(self.map)));
         session.world.insert_resource(MatchInputs {
-            players: array::from_fn(|i| {
-                self.selected_players[i]
-                    .map(|selected_player| PlayerInput {
-                        active: true,
-                        selected_player,
-                        ..default()
-                    })
-                    .unwrap_or_default()
-            }),
+            players: self.player_info,
         });
         session.runner = Box::<JumpyDefaultMatchRunner>::default();
     }
@@ -124,7 +123,11 @@ impl SessionRunner for JumpyDefaultMatchRunner {
             {
                 let mut player_inputs = world.resource_mut::<MatchInputs>();
                 (0..MAX_PLAYERS).for_each(|i| {
-                    player_inputs.players[i].control = input[i].clone();
+                    let player_input = &mut player_inputs.players[i];
+                    let Some(source) = &player_input.control_source else {
+                        return;
+                    };
+                    player_input.control = input.get(source).unwrap().clone();
                 });
             }
 

@@ -103,7 +103,7 @@ pub fn widget(
                     .show(ui)
                     .focus_by_default(ui)
                     .clicked()
-                    || input.iter().any(|x| x.menu_back_just_pressed)
+                    || input.values().any(|x| x.menu_back_just_pressed)
                 {
                     ui.ctx().set_state(MenuPage::Home);
                 }

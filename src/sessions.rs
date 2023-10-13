@@ -26,22 +26,14 @@ impl SessionExt for Sessions {
 
     #[track_caller]
     fn restart_game(&mut self) {
-        if let Some((map, selected_players)) = self.get(SessionNames::GAME).map(|session| {
+        if let Some((map, player_info)) = self.get(SessionNames::GAME).map(|session| {
             let map = (*session.world.resource::<LoadedMap>().0).clone();
             let match_inputs = session.world.resource::<MatchInputs>();
-            let selected_players = std::array::from_fn(|i| {
-                match_inputs.players[i]
-                    .active
-                    .then(|| match_inputs.players[i].selected_player)
-            });
-            (map, selected_players)
+            (map, match_inputs.players.clone())
         }) {
             self.end_game();
             self.create(SessionNames::GAME)
-                .install_plugin(crate::core::MatchPlugin {
-                    map,
-                    selected_players,
-                });
+                .install_plugin(crate::core::MatchPlugin { map, player_info });
         } else {
             panic!("Cannot restart game when game is not running");
         }

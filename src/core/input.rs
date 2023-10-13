@@ -26,7 +26,7 @@ impl Default for MatchInputs {
 /// selected player and whether the player is actually active.
 #[derive(Default, Clone, Debug, HasSchema)]
 pub struct PlayerInput {
-    /// The player is currently "connected" and actively providing input.
+    /// Whether or not the player is present.
     pub active: bool,
     /// The selected player skin.
     pub selected_player: Handle<PlayerMeta>,
@@ -36,8 +36,8 @@ pub struct PlayerInput {
     pub control: PlayerControl,
     /// The editor inputs the player is making, if any.
     pub editor_input: Option<EditorInput>,
-    /// Whether or not this is an AI player.
-    pub is_ai: bool,
+    /// If this is [`None`] it means the player is an AI.
+    pub control_source: Option<ControlSource>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

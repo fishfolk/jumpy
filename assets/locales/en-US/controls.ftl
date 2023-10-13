@@ -8,3 +8,4 @@ shoot = Shoot
 slide = Slide
 menu-confirm = Menu Confirm
 menu-back = Menu Back
+menu-start = Menu Start

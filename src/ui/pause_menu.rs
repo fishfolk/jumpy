@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::prelude::*;
 
 #[derive(Clone, Debug, Copy, Default)]
@@ -23,7 +25,7 @@ fn pause_menu_system(
     let mut restart_game = false;
     let mut select_map = None;
     if let Some(session) = sessions.get_mut(SessionNames::GAME) {
-        let pause_pressed = controls.iter().any(|x| x.pause_just_pressed);
+        let pause_pressed = controls.values().any(|x| x.pause_just_pressed);
 
         if !session.active {
             let page = ctx.get_state::<PauseMenuPage>();
@@ -82,15 +84,21 @@ fn pause_menu_system(
     } else if restart_game {
         sessions.restart_game();
     } else if let Some(map) = select_map {
+        let match_info = sessions
+            .get(SessionNames::GAME)
+            .unwrap()
+            .world
+            .resource::<MatchInputs>()
+            .deref()
+            .clone();
         sessions.end_game();
         sessions.start_game(crate::core::MatchPlugin {
             map,
-            selected_players: [
-                Some(meta.core.players[0]),
-                Some(meta.core.players[1]),
-                None,
-                None,
-            ],
+            player_info: std::array::from_fn(|i| PlayerInput {
+                control: default(),
+                editor_input: default(),
+                ..match_info.players[i]
+            }),
         })
     }
 }
@@ -104,7 +112,7 @@ fn main_pause_menu(
     let (ui, session, restart_game, back_to_menu) = &mut *param;
 
     // Unpause the game
-    if controls.iter().any(|x| x.pause_just_pressed) {
+    if controls.values().any(|x| x.pause_just_pressed) {
         session.active = true;
     }
 

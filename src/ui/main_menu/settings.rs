@@ -123,7 +123,7 @@ pub fn widget(
                         .min_size(button_min_size)
                         .show(ui)
                         .clicked()
-                            || input.iter().any(|x| x.menu_back_just_pressed))
+                            || input.values().any(|x| x.menu_back_just_pressed))
                             && state.currently_binding_input_idx.is_none()
                         {
                             ui.ctx().set_state(MenuPage::Home);

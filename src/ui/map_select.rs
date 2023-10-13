@@ -15,7 +15,7 @@ pub fn map_select_menu(
     localization: Localization<GameMeta>,
     player_controls: Res<GlobalPlayerControls>,
 ) -> MapSelectAction {
-    if player_controls.iter().any(|x| x.menu_back_just_pressed) {
+    if player_controls.values().any(|x| x.menu_back_just_pressed) {
         return MapSelectAction::GoBack;
     }
 

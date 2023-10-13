@@ -18,7 +18,9 @@ pub mod settings;
 pub mod ui;
 
 mod prelude {
-    pub use crate::{core::prelude::*, impl_system_param, input::*, sessions::*, GameMeta};
+    pub use crate::{
+        core::prelude::*, impl_system_param, input::*, sessions::*, settings::*, GameMeta,
+    };
     pub use bones_framework::prelude::*;
     pub use once_cell::sync::Lazy;
     pub use serde::{Deserialize, Serialize};

@@ -3,6 +3,8 @@ use crate::prelude::*;
 use super::ImageMeta;
 
 mod credits;
+mod map_select;
+mod player_select;
 mod settings;
 
 #[derive(HasSchema, Debug, Default, Clone)]
@@ -83,8 +85,8 @@ fn main_menu_system(world: &World) {
         .show(&ctx, |ui| match ctx.get_state::<MenuPage>() {
             MenuPage::Home => world.run_initialized_system(home_menu, ui),
             MenuPage::Settings => world.run_initialized_system(settings::widget, ui),
-            MenuPage::PlayerSelect => todo!(),
-            MenuPage::MapSelect { .. } => todo!(),
+            MenuPage::PlayerSelect => world.run_initialized_system(player_select::widget, ui),
+            MenuPage::MapSelect { .. } => world.run_initialized_system(map_select::widget, ui),
             MenuPage::Credits => world.run_initialized_system(credits::widget, ui),
             MenuPage::NetworkGame => todo!(),
         });
@@ -94,9 +96,6 @@ fn main_menu_system(world: &World) {
 fn home_menu(
     mut ui: In<&mut egui::Ui>,
     meta: Root<GameMeta>,
-    assets: Res<AssetServer>,
-    mut sessions: ResMut<Sessions>,
-    mut session_options: ResMut<SessionOptions>,
     localization: Localization<GameMeta>,
 ) {
     let ui = &mut *ui;
@@ -126,17 +125,7 @@ fn home_menu(
                 .focus_by_default(ui)
                 .clicked()
                 {
-                    session_options.delete = true;
-
-                    sessions.start_game(crate::core::MatchPlugin {
-                        map: assets.get(meta.core.stable_maps[3]).clone(),
-                        selected_players: [
-                            Some(meta.core.players[0]),
-                            Some(meta.core.players[1]),
-                            None,
-                            None,
-                        ],
-                    });
+                    ui.ctx().set_state(MenuPage::PlayerSelect);
                 }
 
                 // // Online game

@@ -1,210 +1,201 @@
-use bevy::window::PrimaryWindow;
-use bevy_egui::*;
-use bevy_fluent::Localization;
+use std::ops::Deref;
 
-use crate::{prelude::*, widgets::EguiResponseExt};
+use crate::prelude::*;
 
-use super::{
-    main_menu::map_select::MapSelectMenu,
-    widget,
-    widgets::{
-        bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiContextExt, EguiUiExt,
-    },
-    WidgetId,
-};
-
-pub struct PausePlugin;
-
-impl Plugin for PausePlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<PauseMenuPage>()
-            .add_systems(
-                (
-                    unpause_system
-                        .run_if(in_state(EngineState::InGame))
-                        .run_if(in_state(InGameState::Paused)),
-                    pause_system
-                        .run_if(in_state(EngineState::InGame))
-                        .run_if(in_state(GameEditorState::Hidden))
-                        .run_if(in_state(InGameState::Playing)),
-                )
-                    .in_base_set(CoreSet::PostUpdate),
-            )
-            .add_systems(
-                (
-                    pause_menu_default
-                        .run_if(in_state(EngineState::InGame))
-                        .run_if(in_state(InGameState::Paused))
-                        .run_if(resource_equals(PauseMenuPage::Default)),
-                    pause_menu_map_select
-                        .run_if(in_state(EngineState::InGame))
-                        .run_if(in_state(InGameState::Paused))
-                        .run_if(resource_equals(PauseMenuPage::MapSelect)),
-                )
-                    .in_base_set(CoreSet::Update),
-            );
-    }
-}
-
-/// Transition game to pause state
-fn pause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
-    let input = input.single();
-    if input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(NextState(Some(InGameState::Paused)));
-    }
-}
-
-// Transition game out of paused state
-fn unpause_system(
-    mut commands: Commands,
-    input: Query<&ActionState<MenuAction>>,
-    mut pause_page: ResMut<PauseMenuPage>,
-) {
-    let input = input.single();
-    if input.just_pressed(MenuAction::Pause) {
-        *pause_page = default();
-        commands.insert_resource(NextState(Some(InGameState::Playing)));
-    }
-}
-
-#[derive(Resource, Default, Eq, PartialEq, Copy, Clone)]
-pub enum PauseMenuPage {
+#[derive(Clone, Debug, Copy, Default)]
+enum PauseMenuPage {
     #[default]
-    Default,
+    Pause,
     MapSelect,
 }
 
-pub fn pause_menu_default(
-    mut commands: Commands,
-    game: Res<GameMeta>,
-    localization: Res<Localization>,
-    map_handle: Query<&AssetHandle<MapMeta>>,
-    map_assets: Res<Assets<MapMeta>>,
-    mut pause_page: ResMut<PauseMenuPage>,
-    mut session_manager: SessionManager,
-    mut contexts: EguiContexts,
-) {
-    let is_online = false;
-    let ui_theme = &game.ui_theme;
-
-    egui::CentralPanel::default()
-        .frame(egui::Frame::none())
-        .show(contexts.ctx_mut(), |ui| {
-            let screen_rect = ui.max_rect();
-
-            let pause_menu_width = game.main_menu.menu_width;
-            let x_margin = (screen_rect.width() - pause_menu_width) / 2.0;
-            let outer_margin = egui::style::Margin::symmetric(x_margin, screen_rect.height() * 0.2);
-
-            BorderedFrame::new(&ui_theme.panel.border)
-                .margin(outer_margin)
-                .padding(ui_theme.panel.padding.into())
-                .show(ui, |ui| {
-                    ui.set_min_width(ui.available_width());
-
-                    let heading_font = ui_theme
-                        .font_styles
-                        .heading
-                        .colored(ui_theme.panel.font_color);
-                    let bigger_font = ui_theme
-                        .font_styles
-                        .bigger
-                        .colored(ui_theme.panel.font_color);
-
-                    ui.vertical_centered(|ui| {
-                        if let Some(map_meta) = map_handle
-                            .get_single()
-                            .ok()
-                            .and_then(|handle| map_assets.get(handle))
-                        {
-                            ui.themed_label(&bigger_font, &map_meta.name);
-                        }
-                        ui.themed_label(&heading_font, &localization.get("paused"));
-
-                        ui.add_space(10.0);
-
-                        let width = ui.available_width();
-
-                        let mut continue_button = BorderedButton::themed(
-                            &ui_theme.button_styles.normal,
-                            &localization.get("continue"),
-                        )
-                        .min_size(egui::vec2(width, 0.0))
-                        .show(ui);
-
-                        continue_button = continue_button.focus_by_default(ui);
-
-                        if continue_button.clicked() {
-                            commands.insert_resource(NextState(Some(InGameState::Playing)));
-                        }
-
-                        ui.scope(|ui| {
-                            ui.set_enabled(!is_online);
-
-                            if BorderedButton::themed(
-                                &ui_theme.button_styles.normal,
-                                &localization.get("map-select-title"),
-                            )
-                            .min_size(egui::vec2(width, 0.0))
-                            .show(ui)
-                            .clicked()
-                            {
-                                *pause_page = PauseMenuPage::MapSelect;
-                            }
-
-                            if BorderedButton::themed(
-                                &ui_theme.button_styles.normal,
-                                &localization.get("restart"),
-                            )
-                            .min_size(egui::vec2(width, 0.0))
-                            .show(ui)
-                            .clicked()
-                            {
-                                session_manager.restart();
-                                commands.insert_resource(NextState(Some(InGameState::Playing)));
-                            }
-                        });
-
-                        ui.scope(|ui| {
-                            if BorderedButton::themed(
-                                &ui_theme.button_styles.normal,
-                                &localization.get("edit"),
-                            )
-                            .min_size(egui::vec2(width, 0.0))
-                            .show(ui)
-                            .clicked()
-                            {
-                                commands.insert_resource(NextState(Some(GameEditorState::Visible)));
-                                commands.insert_resource(NextState(Some(InGameState::Playing)));
-                            }
-                        });
-
-                        if BorderedButton::themed(
-                            &ui_theme.button_styles.normal,
-                            &localization.get("main-menu"),
-                        )
-                        .min_size(egui::vec2(width, 0.0))
-                        .show(ui)
-                        .clicked()
-                        {
-                            // Show the main menu
-                            commands.insert_resource(NextState(Some(EngineState::MainMenu)));
-                            ui.ctx().clear_focus();
-                        }
-                    });
-                });
-        });
+pub fn session_plugin(session: &mut Session) {
+    session.world.init_param::<Localization<GameMeta>>();
+    session.add_system_to_stage(Update, pause_menu_system);
 }
 
-fn pause_menu_map_select(world: &mut World) {
-    let mut egui_context = world
-        .query_filtered::<&mut EguiContext, With<PrimaryWindow>>()
-        .single(world)
-        .clone();
+fn pause_menu_system(
+    meta: Root<GameMeta>,
+    mut sessions: ResMut<Sessions>,
+    ctx: Res<EguiCtx>,
+    controls: Res<GlobalPlayerControls>,
+    world: &World,
+) {
+    let mut back_to_menu = false;
+    let mut restart_game = false;
+    let mut select_map = None;
+    if let Some(session) = sessions.get_mut(SessionNames::GAME) {
+        let pause_pressed = controls.values().any(|x| x.pause_just_pressed);
 
-    egui::CentralPanel::default()
-        .frame(egui::Frame::none())
-        .show(egui_context.get_mut(), |ui| {
-            widget::<MapSelectMenu>(world, ui, WidgetId::new("map-select"), false);
+        if !session.active {
+            let page = ctx.get_state::<PauseMenuPage>();
+
+            match page {
+                PauseMenuPage::Pause => {
+                    egui::CentralPanel::default()
+                        .frame(egui::Frame::none())
+                        .show(&ctx, |ui| {
+                            let screen_rect = ui.max_rect();
+
+                            let pause_menu_width = meta.main_menu.menu_width;
+                            let x_margin = (screen_rect.width() - pause_menu_width) / 2.0;
+                            let outer_margin = egui::style::Margin::symmetric(
+                                x_margin,
+                                screen_rect.height() * 0.2,
+                            );
+
+                            BorderedFrame::new(&meta.theme.panel.border)
+                                .margin(outer_margin)
+                                .padding(meta.theme.panel.padding)
+                                .show(ui, |ui| {
+                                    ui.set_min_width(ui.available_width());
+
+                                    world.run_initialized_system(
+                                        main_pause_menu,
+                                        (ui, session, &mut restart_game, &mut back_to_menu),
+                                    );
+                                });
+                        });
+                }
+                PauseMenuPage::MapSelect => {
+                    let action =
+                        world.run_initialized_system(crate::ui::map_select::map_select_menu, ());
+
+                    match action {
+                        super::map_select::MapSelectAction::None => (),
+                        super::map_select::MapSelectAction::SelectMap(map) => {
+                            select_map = Some(map);
+                            ctx.set_state(PauseMenuPage::Pause);
+                        }
+                        super::map_select::MapSelectAction::GoBack => {
+                            ctx.set_state(PauseMenuPage::Pause);
+                        }
+                    }
+                }
+            }
+        } else if pause_pressed {
+            session.active = false;
+        }
+    }
+
+    if back_to_menu {
+        sessions.end_game();
+        sessions.start_menu();
+    } else if restart_game {
+        sessions.restart_game();
+    } else if let Some(map) = select_map {
+        let match_info = sessions
+            .get(SessionNames::GAME)
+            .unwrap()
+            .world
+            .resource::<MatchInputs>()
+            .deref()
+            .clone();
+        sessions.end_game();
+        sessions.start_game(crate::core::MatchPlugin {
+            map,
+            player_info: std::array::from_fn(|i| PlayerInput {
+                control: default(),
+                editor_input: default(),
+                ..match_info.players[i]
+            }),
+        })
+    }
+}
+
+fn main_pause_menu(
+    mut param: In<(&mut egui::Ui, &mut Session, &mut bool, &mut bool)>,
+    meta: Root<GameMeta>,
+    localization: Localization<GameMeta>,
+    controls: Res<GlobalPlayerControls>,
+) {
+    let (ui, session, restart_game, back_to_menu) = &mut *param;
+
+    // Unpause the game
+    if controls.values().any(|x| x.pause_just_pressed) {
+        session.active = true;
+    }
+
+    ui.vertical_centered(|ui| {
+        let width = ui.available_width();
+
+        // Heading
+        ui.label(
+            meta.theme
+                .font_styles
+                .heading
+                .rich(localization.get("paused"))
+                .color(meta.theme.panel.font_color),
+        );
+
+        // Map title
+        if let Some(map_meta) = session.world.get_resource::<SpawnedMapMeta>() {
+            ui.label(
+                meta.theme
+                    .font_styles
+                    .bigger
+                    .rich(map_meta.name.to_string()),
+            );
+        }
+
+        ui.add_space(10.0);
+
+        // Continue button
+        if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("continue"))
+            .min_size(vec2(width, 0.0))
+            .show(ui)
+            .focus_by_default(ui)
+            .clicked()
+        {
+            session.active = true;
+        }
+
+        // Local game buttons
+        ui.scope(|ui| {
+            let is_online = false;
+            ui.set_enabled(!is_online);
+
+            // Map select button
+            if BorderedButton::themed(
+                &meta.theme.buttons.normal,
+                localization.get("map-select-title"),
+            )
+            .min_size(vec2(width, 0.0))
+            .show(ui)
+            .clicked()
+            {
+                ui.ctx().set_state(PauseMenuPage::MapSelect);
+            }
+
+            // Restart button
+            if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("restart"))
+                .min_size(vec2(width, 0.0))
+                .show(ui)
+                .clicked()
+            {
+                **restart_game = true;
+            }
         });
+
+        // Edit button
+        ui.scope(|ui| {
+            if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("edit"))
+                .min_size(vec2(width, 0.0))
+                .show(ui)
+                .clicked()
+            {
+                // TODO: show editor.
+                session.active = true;
+            }
+        });
+
+        // Main menu button
+        if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("main-menu"))
+            .min_size(vec2(width, 0.0))
+            .show(ui)
+            .clicked()
+        {
+            **back_to_menu = true;
+        }
+    });
 }

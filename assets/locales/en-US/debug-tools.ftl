@@ -9,8 +9,6 @@ pathfinding-lines = Pathfinding Lines
 network-debug = Network Debug
 networking-disabled-message = Networking not enabled on this platform.
 
-profiler = Profiler
-
 frame-diagnostics = Frame Diagnostics
 frames-per-second = Frames Per Second
 frame-time = Frame Time

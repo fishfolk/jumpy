@@ -1,137 +1,70 @@
-use std::marker::PhantomData;
+use crate::prelude::*;
 
-use bevy::{
-    app::AppExit,
-    ecs::system::{SystemParam, SystemState},
-    window::PrimaryWindow,
-};
-use bevy_egui::*;
-use bevy_fluent::Localization;
+use super::ImageMeta;
 
-use crate::{
-    localization::LocalizationExt,
-    metadata::{GameMeta, Settings},
-    platform::Storage,
-    prelude::*,
-    ui::ui_input::MenuAction,
-};
+mod credits;
+mod map_select;
+mod player_select;
+mod settings;
 
-use self::settings::ModifiedSettings;
-
-use super::{
-    widget,
-    widgets::{
-        bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiContextExt,
-        EguiResponseExt, EguiUiExt,
-    },
-    DisableMenuInput, WidgetAdjacencies, WidgetId, WidgetSystem,
-};
-
-pub mod credits;
-pub mod map_select;
-#[cfg(not(target_arch = "wasm32"))]
-pub mod network_game;
-pub mod player_select;
-pub mod settings;
-
-pub struct MainMenuPlugin;
-
-impl Plugin for MainMenuPlugin {
-    fn build(&self, app: &mut App) {
-        app.register_type::<MainMenuBackground>()
-            .init_resource::<MenuPage>()
-            .init_resource::<settings::SettingsTab>()
-            .init_resource::<settings::ModifiedSettings>()
-            .init_resource::<player_select::PlayerSelectState>()
-            .add_systems((
-                main_menu_system.run_if(in_state(EngineState::MainMenu)),
-                setup_main_menu.in_schedule(OnEnter(EngineState::MainMenu)),
-                clean_up_main_menu.in_schedule(OnExit(EngineState::MainMenu)),
-            ));
-    }
+#[derive(HasSchema, Debug, Default, Clone)]
+#[repr(C)]
+pub struct MainMenuMeta {
+    pub title_font: FontMeta,
+    pub subtitle_font: FontMeta,
+    pub background_image: ImageMeta,
+    pub menu_width: f32,
 }
 
-#[derive(Component, Reflect)]
-pub struct MainMenuBackground;
+pub fn session_plugin(session: &mut Session) {
+    session
+        // Install the default bones_framework plugin for this session
+        .install_plugin(DefaultSessionPlugin)
+        .add_startup_system(setup_menu)
+        // Add our menu system to the update stage
+        .add_system_to_stage(Update, main_menu_system);
 
-/// Spawns the background image for the main menu
-#[allow(unreachable_code)]
-pub fn setup_main_menu(
-    mut commands: Commands,
-    game: Res<GameMeta>,
-    core: Res<CoreMetaArc>,
-    mut session_manager: SessionManager,
-) {
-    session_manager.stop();
-
-    // Make sure the game editor is hidden
-    commands.insert_resource(NextState(Some(GameEditorState::Hidden)));
-
-    // Spawn menu background
-    let bg_handle = game.main_menu.background_image.image.inner.clone_weak();
-    let img_size = game.main_menu.background_image.image_size;
-    let ratio = img_size.x / img_size.y;
-    let height = core.camera.default_height;
-    let width = height * ratio;
-    commands
-        .spawn((
-            Name::new("Menu Background Parent"),
-            VisibilityBundle::default(),
-            TransformBundle::default(),
-            MainMenuBackground,
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                SpriteBundle {
-                    texture: bg_handle.clone_weak(),
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(width, height)),
-                        ..default()
-                    },
-                    transform: Transform::from_translation(Vec3::new(-width, 0.0, 0.0)),
-                    ..default()
-                },
-                Name::new("Main Menu Background Left"),
-            ));
-            parent.spawn((
-                SpriteBundle {
-                    texture: bg_handle.clone_weak(),
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(width, height)),
-                        ..default()
-                    },
-                    ..default()
-                },
-                Name::new("Main Menu Background Middle"),
-            ));
-            parent.spawn((
-                SpriteBundle {
-                    texture: bg_handle,
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(width, height)),
-                        ..default()
-                    },
-                    transform: Transform::from_translation(Vec3::new(width, 0.0, 0.0)),
-                    ..default()
-                },
-                Name::new("Main Menu Background Right"),
-            ));
-        });
+    session.world.init_param::<Localization<GameMeta>>();
 }
 
-/// Despawns the background image for the main menu
-pub fn clean_up_main_menu(
-    mut commands: Commands,
-    backgrounds: Query<Entity, With<MainMenuBackground>>,
+fn setup_menu(
+    meta: Root<GameMeta>,
+    mut egui_settings: ResMutInit<EguiSettings>,
+    mut entities: ResMut<Entities>,
+    mut sprites: CompMut<Sprite>,
+    mut transforms: CompMut<Transform>,
+    mut cameras: CompMut<Camera>,
+    mut clear_color: ResMutInit<ClearColor>,
 ) {
-    for bg in &backgrounds {
-        commands.entity(bg).despawn_recursive();
+    egui_settings.scale = meta.theme.scale;
+    **clear_color = Color::BLACK;
+    spawn_default_camera(&mut entities, &mut transforms, &mut cameras);
+
+    for i in -1..=1 {
+        let ent = entities.create();
+        transforms.insert(
+            ent,
+            Transform::from_translation(vec3(
+                meta.main_menu.background_image.image_size.x * i as f32,
+                0.,
+                0.,
+            )),
+        );
+        sprites.insert(
+            ent,
+            Sprite {
+                image: meta.main_menu.background_image.image,
+                ..default()
+            },
+        );
     }
 }
 
 /// Which page of the menu we are on
-#[derive(Resource, Clone, Copy)]
+#[derive(HasSchema, Clone, Copy, Default)]
+#[repr(C, u8)]
 pub enum MenuPage {
+    #[default]
     Home,
     Settings,
     PlayerSelect,
@@ -144,230 +77,98 @@ pub enum MenuPage {
     NetworkGame,
 }
 
-impl Default for MenuPage {
-    fn default() -> Self {
-        Self::Home
-    }
-}
-
-/// Render the main menu UI
-pub fn main_menu_system(world: &mut World) {
-    let mut egui_context = world
-        .query_filtered::<&mut EguiContext, With<PrimaryWindow>>()
-        .single(world)
-        .clone();
+fn main_menu_system(world: &World) {
+    let ctx = (*world.resource::<EguiCtx>()).clone();
 
     egui::CentralPanel::default()
         .frame(egui::Frame::none())
-        .show(egui_context.get_mut(), |ui| {
-            widget::<MainMenu>(world, ui, WidgetId::new("main-menu"), ());
+        .show(&ctx, |ui| match ctx.get_state::<MenuPage>() {
+            MenuPage::Home => world.run_initialized_system(home_menu, ui),
+            MenuPage::Settings => world.run_initialized_system(settings::widget, ui),
+            MenuPage::PlayerSelect => world.run_initialized_system(player_select::widget, ui),
+            MenuPage::MapSelect { .. } => world.run_initialized_system(map_select::widget, ui),
+            MenuPage::Credits => world.run_initialized_system(credits::widget, ui),
+            MenuPage::NetworkGame => todo!(),
         });
 }
 
-#[derive(SystemParam)]
-struct MainMenu<'w, 's> {
-    menu_page: ResMut<'w, MenuPage>,
-    disable_menu_input: ResMut<'w, DisableMenuInput>,
-    #[system_param(ignore)]
-    _phantom: PhantomData<&'s ()>,
-}
+/// System to render the home menu.
+fn home_menu(
+    mut ui: In<&mut egui::Ui>,
+    meta: Root<GameMeta>,
+    localization: Localization<GameMeta>,
+) {
+    let ui = &mut *ui;
+    ui.vertical_centered(|ui| {
+        ui.add_space(meta.main_menu.title_font.size / 2.0);
+        ui.label(meta.main_menu.title_font.rich(localization.get("title")));
+        ui.label(
+            meta.main_menu
+                .subtitle_font
+                .rich(localization.get("subtitle")),
+        );
 
-impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
-    type Args = ();
-    fn system(
-        world: &mut World,
-        state: &mut SystemState<Self>,
-        ui: &mut egui::Ui,
-        id: WidgetId,
-        _args: (),
-    ) {
-        let mut params: MainMenu = state.get_mut(world);
+        ui.add_space(meta.main_menu.subtitle_font.size / 2.0);
 
-        // Disable menu input handling on player select page, so each player can control their own
-        // player selection independently.
-        let is_player_select = matches!(*params.menu_page, MenuPage::PlayerSelect);
-        **params.disable_menu_input = is_player_select;
+        BorderedFrame::new(&meta.theme.panel.border)
+            .padding(meta.theme.panel.padding)
+            .show(ui, |ui| {
+                ui.set_width(meta.main_menu.menu_width);
 
-        // Render the menu based on the current menu selection
-        match *params.menu_page {
-            MenuPage::Home => widget::<HomeMenu>(world, ui, id.with("home"), ()),
-            MenuPage::NetworkGame =>
-            {
+                // Local game
+                if BorderedButton::themed(
+                    &meta.theme.buttons.normal,
+                    localization.get("local-game"),
+                )
+                .min_size(vec2(ui.available_width(), 0.0))
+                .show(ui)
+                .focus_by_default(ui)
+                .clicked()
+                {
+                    ui.ctx().set_state(MenuPage::PlayerSelect);
+                }
+
+                // // Online game
+                // #[cfg(not(target_arch = "wasm32"))]
+                // if BorderedButton::themed(
+                //     &meta.theme.buttons.normal,
+                //     localization.get("online-game"),
+                // )
+                // .min_size(vec2(ui.available_width(), 0.0))
+                // .show(ui)
+                // .clicked()
+                // {}
+
+                // Settings
+                if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("settings"))
+                    .min_size(vec2(ui.available_width(), 0.0))
+                    .show(ui)
+                    .clicked()
+                {
+                    ui.ctx().set_state(MenuPage::Settings);
+                }
+
+                // Credits
+                if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("credits"))
+                    .min_size(vec2(ui.available_width(), 0.0))
+                    .show(ui)
+                    .clicked()
+                {
+                    ui.ctx().set_state(MenuPage::Credits);
+                }
+
                 #[cfg(not(target_arch = "wasm32"))]
-                widget::<network_game::MatchmakingMenu>(world, ui, id.with("network-game"), ())
-            }
-            MenuPage::PlayerSelect => {
-                widget::<player_select::PlayerSelectMenu>(world, ui, id.with("player-select"), ())
-            }
-            MenuPage::MapSelect { is_waiting } => {
-                widget::<map_select::MapSelectMenu>(world, ui, id.with("map-select"), is_waiting)
-            }
-            MenuPage::Settings => {
-                widget::<settings::SettingsMenu>(world, ui, id.with("settings"), ())
-            }
-            MenuPage::Credits => widget::<credits::CreditsMenu>(world, ui, id.with("credits"), ()),
-        }
-    }
-}
-
-#[derive(SystemParam)]
-struct HomeMenu<'w, 's> {
-    commands: Commands<'w, 's>,
-    menu_page: ResMut<'w, MenuPage>,
-    player_select_state: ResMut<'w, player_select::PlayerSelectState>,
-    modified_settings: ResMut<'w, ModifiedSettings>,
-    game: Res<'w, GameMeta>,
-    localization: Res<'w, Localization>,
-    app_exit: EventWriter<'w, AppExit>,
-    storage: ResMut<'w, Storage>,
-}
-
-impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
-    type Args = ();
-    fn system(
-        world: &mut World,
-        state: &mut SystemState<Self>,
-        ui: &mut egui::Ui,
-        _: WidgetId,
-        _: (),
-    ) {
-        let mut params: HomeMenu = state.get_mut(world);
-
-        // Reset player selection when comming to the home menu
-        if params.player_select_state.is_changed() {
-            *params.player_select_state = default();
-        }
-
-        let ui_theme = &params.game.ui_theme;
-
-        ui.vertical_centered(|ui| {
-            ui.add_space(&params.game.main_menu.title_font.size / 4.0);
-            ui.themed_label(
-                &params.game.main_menu.title_font,
-                &params.localization.get("title"),
-            );
-            ui.themed_label(
-                &params.game.main_menu.subtitle_font,
-                &params.localization.get("subtitle"),
-            );
-        });
-
-        ui.add_space(params.game.main_menu.subtitle_font.size / 2.0);
-
-        // Create a vertical list of items, centered horizontally
-        ui.vertical_centered(|ui| {
-            let available_size = ui.available_size();
-
-            let menu_width = params.game.main_menu.menu_width;
-            let x_margin = (available_size.x - menu_width) / 2.0;
-            let outer_margin = egui::style::Margin::symmetric(x_margin, 0.0);
-
-            BorderedFrame::new(&params.game.ui_theme.panel.border)
-                .margin(outer_margin)
-                .padding(params.game.ui_theme.panel.padding.into())
-                .show(ui, |ui| {
-                    let min_button_size = egui::vec2(ui.available_width(), 0.0);
-
-                    // Local Game
-                    let local_game_button = BorderedButton::themed(
-                        &ui_theme.button_styles.normal,
-                        &params.localization.get("local-game"),
-                    )
-                    .min_size(min_button_size)
-                    .show(ui)
-                    .focus_by_default(ui);
-
-                    if local_game_button.clicked() {
-                        *params.menu_page = MenuPage::PlayerSelect;
-                    }
-
-                    // Network Game
-                    #[cfg(not(target_arch = "wasm32"))]
-                    {
-                        ui.scope(|ui| {
-                            let online_game_button = BorderedButton::themed(
-                                &ui_theme.button_styles.normal,
-                                &params.localization.get("network-game"),
-                            )
-                            .min_size(min_button_size)
-                            .show(ui);
-
-                            if online_game_button.clicked() {
-                                *params.menu_page = MenuPage::NetworkGame;
-                            }
-                        });
-                    }
-
-                    // Map editor
-                    ui.scope(|ui| {
-                        if BorderedButton::themed(
-                            &ui_theme.button_styles.normal,
-                            &params.localization.get("map-editor"),
-                        )
-                        .min_size(min_button_size)
-                        .show(ui)
-                        .clicked()
-                        {
-                            params
-                                .commands
-                                .insert_resource(NextState(Some(GameEditorState::Visible)));
-                            params
-                                .commands
-                                .insert_resource(NextState(Some(EngineState::InGame)));
-                            params
-                                .commands
-                                .insert_resource(NextState(Some(InGameState::Playing)));
-                        }
-                    });
-
-                    // Settings button
-                    if BorderedButton::themed(
-                        &ui_theme.button_styles.normal,
-                        &params.localization.get("settings"),
-                    )
-                    .min_size(min_button_size)
+                if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("quit"))
+                    .min_size(vec2(ui.available_width(), 0.0))
                     .show(ui)
                     .clicked()
-                    {
-                        *params.menu_page = MenuPage::Settings;
-                        **params.modified_settings = Some(
-                            params
-                                .storage
-                                .get(Settings::STORAGE_KEY)
-                                .unwrap_or_else(|| params.game.default_settings.clone()),
-                        );
-                    }
-
-                    // Credits button
-                    if BorderedButton::themed(
-                        &ui_theme.button_styles.normal,
-                        &params.localization.get("credits"),
-                    )
-                    .min_size(min_button_size)
-                    .show(ui)
-                    .clicked()
-                    {
-                        *params.menu_page = MenuPage::Credits;
-                    }
-
-                    // Quit button
-                    #[cfg(not(target_arch = "wasm32"))]
-                    // Quitting doesn't make sense in a web context
-                    if BorderedButton::themed(
-                        &ui_theme.button_styles.normal,
-                        &params.localization.get("quit"),
-                    )
-                    .min_size(min_button_size)
-                    .show(ui)
-                    .clicked()
-                    {
-                        params.app_exit.send(AppExit);
-                    }
-
-                    // use the app exit variable on WASM to avoid warnings
-                    #[cfg(target_arch = "wasm32")]
-                    let _ = params.app_exit;
-                });
-        });
-    }
+                {
+                    // TODO: Gracefully exit game on quit.
+                    // Right now we don't have a way for bones to trigger a Bevy graceful shutdown.
+                    // We need to have a way for bones games to communicate that they want to exit,
+                    // and then the Bones Bevy Renderer can gracefully shutdown.
+                    std::process::exit(0);
+                }
+            });
+    });
 }

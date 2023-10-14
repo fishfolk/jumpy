@@ -1,0 +1,165 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Fluent is a modern localization system designed to improve how software is translated."><title>jumpy::prelude::fluent - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-cb6f1f67f1bcd037.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.73.0 (cc66ad468 2023-10-03)" data-channel="1.73.0" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-1596385f77d47ef2.css" data-theme-dark-css="dark-0a43001d3fc2282c.css" data-theme-ayu-css="ayu-fd19013d6ce078bf.css" ><script src="../../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../../crates.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-1596385f77d47ef2.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-0a43001d3fc2282c.css"><link rel="stylesheet" href="../../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function (e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move;
+        position: relative;
+    }
+
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
+    .code .nodeLabel {
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><h2 class="location"><a href="#">Crate fluent</a></h2><div class="sidebar-elems"><ul class="block"><li class="version">Version 0.7.0</li><li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#types">Type Definitions</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Crate <a href="../../index.html">jumpy</a>::<wbr><a href="../index.html">prelude</a>::<wbr><a class="mod" href="#">fluent</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Fluent is a modern localization system designed to improve how software is translated.</p>
+<p>The Rust implementation provides the low level components for syntax operations, like parser
+and AST, and the core localization struct - <a href="./struct.FluentBundle.html"><code>FluentBundle</code></a>.</p>
+<p><a href="./struct.FluentBundle.html"><code>FluentBundle</code></a> is the low level container for storing and formatting localization messages
+in a single locale.</p>
+<p>This crate provides also a number of structures needed for a localization API such as <a href="./struct.FluentResource.html"><code>FluentResource</code></a>,
+<a href="./struct.FluentMessage.html"><code>FluentMessage</code></a>, <a href="./type.FluentArgs.html"><code>FluentArgs</code></a>, and <a href="./struct.FluentValue.html"><code>FluentValue</code></a>.</p>
+<p>Together, they allow implementations to build higher-level APIs that use <a href="./struct.FluentBundle.html"><code>FluentBundle</code></a>
+and add user friendly helpers, framework bindings, error fallbacking,
+language negotiation between user requested languages and available resources,
+and I/O for loading selected resources.</p>
+<h2 id="example"><a href="#example">Example</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>fluent::{FluentBundle, FluentValue, FluentResource, FluentArgs};
+
+<span class="comment">// Used to provide a locale for the bundle.
+</span><span class="kw">use </span>unic_langid::LanguageIdentifier;
+
+<span class="kw">let </span>ftl_string = String::from(<span class="string">&quot;
+hello-world = Hello, world!
+intro = Welcome, { $name }.
+&quot;</span>);
+<span class="kw">let </span>res = FluentResource::try_new(ftl_string)
+    .expect(<span class="string">&quot;Failed to parse an FTL string.&quot;</span>);
+
+<span class="kw">let </span>langid_en: LanguageIdentifier = <span class="string">&quot;en-US&quot;</span>.parse().expect(<span class="string">&quot;Parsing failed&quot;</span>);
+<span class="kw">let </span><span class="kw-2">mut </span>bundle = FluentBundle::new(<span class="macro">vec!</span>[langid_en]);
+
+bundle
+    .add_resource(res)
+    .expect(<span class="string">&quot;Failed to add FTL resources to the bundle.&quot;</span>);
+
+<span class="kw">let </span>msg = bundle.get_message(<span class="string">&quot;hello-world&quot;</span>)
+    .expect(<span class="string">&quot;Message doesn&#39;t exist.&quot;</span>);
+<span class="kw">let </span><span class="kw-2">mut </span>errors = <span class="macro">vec!</span>[];
+<span class="kw">let </span>pattern = msg.value()
+    .expect(<span class="string">&quot;Message has no value.&quot;</span>);
+<span class="kw">let </span>value = bundle.format_pattern(<span class="kw-2">&amp;</span>pattern, <span class="prelude-val">None</span>, <span class="kw-2">&amp;mut </span>errors);
+
+<span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span>value, <span class="string">&quot;Hello, world!&quot;</span>);
+
+<span class="kw">let </span><span class="kw-2">mut </span>args = FluentArgs::new();
+args.set(<span class="string">&quot;name&quot;</span>, FluentValue::from(<span class="string">&quot;John&quot;</span>));
+
+<span class="kw">let </span>msg = bundle.get_message(<span class="string">&quot;intro&quot;</span>)
+    .expect(<span class="string">&quot;Message doesn&#39;t exist.&quot;</span>);
+<span class="kw">let </span><span class="kw-2">mut </span>errors = <span class="macro">vec!</span>[];
+<span class="kw">let </span>pattern = msg.value().expect(<span class="string">&quot;Message has no value.&quot;</span>);
+<span class="kw">let </span>value = bundle.format_pattern(<span class="kw-2">&amp;</span>pattern, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>args), <span class="kw-2">&amp;mut </span>errors);
+
+<span class="comment">// The FSI/PDI isolation marks ensure that the direction of
+// the text from the variable is not affected by the translation.
+</span><span class="macro">assert_eq!</span>(value, <span class="string">&quot;Welcome, \u{2068}John\u{2069}.&quot;</span>);</code></pre></div>
+<h2 id="ergonomics--higher-level-apis"><a href="#ergonomics--higher-level-apis">Ergonomics &amp; Higher Level APIs</a></h2>
+<p>Reading the example, you may notice how verbose it feels.
+Many core methods are fallible, others accumulate errors, and there
+are intermediate structures used in operations.</p>
+<p>This is intentional as it serves as building blocks for variety of different
+scenarios allowing implementations to handle errors, cache and
+optimize results.</p>
+<p>At the moment it is expected that users will use
+the <code>fluent-bundle</code> crate directly, while the ecosystem
+matures and higher level APIs are being developed.</p>
+</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="bundle/index.html" title="mod jumpy::prelude::fluent::bundle">bundle</a></div><div class="desc docblock-short"><code>FluentBundle</code> is a collection of localization messages in Fluent.</div></li><li><div class="item-name"><a class="mod" href="types/index.html" title="mod jumpy::prelude::fluent::types">types</a></div><div class="desc docblock-short"><code>types</code> module contains types necessary for Fluent runtime
+value handling.
+The core struct is <a href="enum.FluentValue.html" title="enum jumpy::prelude::fluent::FluentValue"><code>FluentValue</code></a> which is a type that can be passed
+to the <a href="bundle/struct.FluentBundle.html" title="struct jumpy::prelude::fluent::bundle::FluentBundle"><code>FluentBundle::format_pattern</code></a> as an argument, it can be passed
+to any Fluent Function, and any function may return it.</div></li></ul><h2 id="macros" class="small-section-header"><a href="#macros">Macros</a></h2><ul class="item-table"><li><div class="item-name"><a class="macro" href="macro.fluent_args.html" title="macro jumpy::prelude::fluent::fluent_args">fluent_args</a></div><div class="desc docblock-short">A helper macro to simplify creation of FluentArgs.</div></li></ul><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.FluentArgs.html" title="struct jumpy::prelude::fluent::FluentArgs">FluentArgs</a></div><div class="desc docblock-short">A map of arguments passed from the code to
+the localization to be used for message
+formatting.</div></li><li><div class="item-name"><a class="struct" href="struct.FluentAttribute.html" title="struct jumpy::prelude::fluent::FluentAttribute">FluentAttribute</a></div><div class="desc docblock-short"><a href="struct.FluentAttribute.html" title="struct jumpy::prelude::fluent::FluentAttribute"><code>FluentAttribute</code></a> is a component of a compound <a href="struct.FluentMessage.html" title="struct jumpy::prelude::fluent::FluentMessage"><code>FluentMessage</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.FluentMessage.html" title="struct jumpy::prelude::fluent::FluentMessage">FluentMessage</a></div><div class="desc docblock-short"><a href="struct.FluentMessage.html" title="struct jumpy::prelude::fluent::FluentMessage"><code>FluentMessage</code></a> is a basic translation unit of the Fluent system.</div></li><li><div class="item-name"><a class="struct" href="struct.FluentResource.html" title="struct jumpy::prelude::fluent::FluentResource">FluentResource</a></div><div class="desc docblock-short">A resource containing a list of localization messages.</div></li></ul><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.FluentError.html" title="enum jumpy::prelude::fluent::FluentError">FluentError</a></div><div class="desc docblock-short">Core error type for Fluent runtime system.</div></li><li><div class="item-name"><a class="enum" href="enum.FluentValue.html" title="enum jumpy::prelude::fluent::FluentValue">FluentValue</a></div><div class="desc docblock-short">The <code>FluentValue</code> enum represents values which can be formatted to a String.</div></li></ul><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><ul class="item-table"><li><div class="item-name"><a class="type" href="type.FluentBundle.html" title="type jumpy::prelude::fluent::FluentBundle">FluentBundle</a></div><div class="desc docblock-short">Specialized <a href="bundle/struct.FluentBundle.html" title="struct jumpy::prelude::fluent::bundle::FluentBundle"><code>FluentBundle</code></a> over
+non-concurrent <a href="../intl_memoizer/struct.IntlLangMemoizer.html" title="struct jumpy::prelude::intl_memoizer::IntlLangMemoizer"><code>IntlLangMemoizer</code></a>.</div></li></ul></section></div></main></body></html>

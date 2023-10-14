@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["install","Install this module."]],"struct":[["DebugSettings","Resource configuring various debugging settings."],["RapierDebugContext","Resource containing the physics debug line entity."]]};

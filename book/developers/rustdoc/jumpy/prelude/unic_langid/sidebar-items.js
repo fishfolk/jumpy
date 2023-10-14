@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["CharacterDirection","LanguageIdentifierError"],"fn":["canonicalize"],"mod":["subtags"],"struct":["LanguageIdentifier"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["game_plugin","hydrate","session_plugin","update_idle_kick_bombs","update_lit_kick_bombs"],"struct":["IdleKickBomb","KickBombMeta","LitKickBomb"]};

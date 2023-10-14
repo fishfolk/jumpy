@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["install",""],["update_attachments","System to update the transforms of entities with the [`Attachment`] component."]],"struct":[["Attachment","Component for attaching an entity to another entity."],["PlayerBodyAttachment","A component for attaching an entity to the player’s body."]]};

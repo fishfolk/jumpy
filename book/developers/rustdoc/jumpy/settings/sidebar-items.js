@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["InputKind"],"fn":["game_plugin","load_settings"],"struct":["PlayerControlMapping","PlayerControlSetting","Settings","VirtualDPad"]};

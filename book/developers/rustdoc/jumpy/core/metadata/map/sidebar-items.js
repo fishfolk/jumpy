@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["BackgroundMeta","ElementSpawn","MapLayerMeta","MapMeta","MapTileMeta","ParallaxLayerMeta"]};

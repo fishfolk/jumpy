@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["BorderedFrame","A 9-patch style bordered frame."],["BorderedFramePrepared","Internal helper struct for rendering the [`BorderedFrame`]"]]};

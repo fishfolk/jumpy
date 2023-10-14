@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["PauseMenuPage",""]],"fn":[["pause_menu_default",""],["pause_menu_map_select",""],["pause_system","Transition game to pause state"],["unpause_system",""]],"struct":[["PausePlugin",""]]};
+window.SIDEBAR_ITEMS = {"enum":["PauseMenuPage"],"fn":["main_pause_menu","pause_menu_system","session_plugin"]};

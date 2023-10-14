@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["bellman_ford","[Generic] Compute shortest paths from node `source` to all other."],["find_negative_cycle","[Generic] Find the path of a negative cycle reachable from node `source`."]],"struct":[["Paths",""]]};

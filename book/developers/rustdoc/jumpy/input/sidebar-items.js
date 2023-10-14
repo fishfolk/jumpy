@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["PlayerAction","The control inputs that a player may make."]],"struct":[["CurrentEditorInput","Bevy resource containing the editor action to perform for this frame."],["JumpyPlayerInputPlugin","Input plugin."]]};
+window.SIDEBAR_ITEMS = {"enum":["ControlSource"],"fn":["collect_player_controls","game_plugin","handle_egui_input","load_controler_mapping"],"struct":["EguiInputSettings","GlobalPlayerControls","PlayerControl","PlayerInputCollector"]};

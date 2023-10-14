@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":[["INVINCIBILITY_ALPHA_RANGE","The alpha range for the player sprite during spawn invincibility."]]};

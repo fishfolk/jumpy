@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["KeyError","An error that may be caused when creating a [`Key`]."]],"struct":[["Key","A small ascii byte array stored on the stack and used similarly to a string to represent things like animation keys, etc, without requring a heap allocation."]]};

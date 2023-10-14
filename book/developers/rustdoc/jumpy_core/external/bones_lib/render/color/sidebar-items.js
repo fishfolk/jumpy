@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Color","Color type."],["HexColorError","Error type for hex color decoding"]]};

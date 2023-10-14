@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["LanMode",""],["MatchKind",""],["SearchState",""],["Status",""]],"struct":[["MatchmakingMenu",""],["OnlineState",""],["State",""]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["install","kill_players_in_damage_region"],"struct":["DamageRegion","DamageRegionOwner"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["shiftnanigans","Map randomizer using Shiftnanigans."]],"trait":[["MapConstructor","Trait implemented by map constructors."]]};

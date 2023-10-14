@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["crouch","dead","default","idle","incapacitated","midair","walk"]};

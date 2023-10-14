@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"derive":[["Bundle",""]],"struct":[["BundleId",""],["BundleInfo",""],["Bundles",""]],"trait":[["Bundle","The `Bundle` trait enables insertion and removal of [`Component`]s from an entity."]]};

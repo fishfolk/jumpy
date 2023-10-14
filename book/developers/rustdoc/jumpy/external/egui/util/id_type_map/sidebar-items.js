@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["IdTypeMap","Stores values identified by an [`Id`] AND a the [`std::any::TypeId`] of the value."],["TypeId","Like [`std::any::TypeId`], but can be serialized and deserialized."]],"trait":[["SerializableAny",""]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["StreamingSoundData","StreamingSoundHandle","StreamingSoundSettings"],"trait":["Decoder"]};

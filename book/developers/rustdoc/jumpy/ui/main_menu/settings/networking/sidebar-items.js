@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["networking_settings_ui",""]]};
+window.SIDEBAR_ITEMS = {"fn":["widget"]};

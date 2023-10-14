@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["default_true","deserialize_arc","deserialize_arc_slice","deserialize_body_animations"],"struct":["BodyAnimationsMeta","HatMeta","Offsets","PlayerBodyLayerMeta","PlayerLayerMeta","PlayerLayersMeta","PlayerMeta","PlayerSoundsMeta","PlayerStatsMeta"]};

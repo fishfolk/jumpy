@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["SLOWING_SPEED"],"fn":["handle_player_state","install"],"static":["ID"]};

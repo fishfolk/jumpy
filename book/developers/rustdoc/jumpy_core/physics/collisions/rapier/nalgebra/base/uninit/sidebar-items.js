@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Init","A type implementing `InitStatus` indicating that the value is completely initialized."],["Uninit","A type implementing `InitStatus` indicating that the value is completely unitialized."]],"trait":[["InitStatus","This trait is used to write code that may work on matrices that may or may not be initialized."]]};

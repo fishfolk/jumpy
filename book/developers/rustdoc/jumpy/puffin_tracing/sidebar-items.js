@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":[["PUFFIN_SPAN_STACK",""]],"struct":[["PuffinLayer","A tracing layer that collects data for puffin."]]};

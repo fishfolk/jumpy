@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["prelude","The prelude."]],"struct":[["Window","Information about the window the game is running in."]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["game_plugin","hydrate","session_plugin","update","update_wearer"],"struct":["StompBoots","StompBootsMeta","WearingStompBoots"]};

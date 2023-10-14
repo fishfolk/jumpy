@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"jumpy":[["impl&lt;'a&gt; MakeVisitor&lt;Writer&lt;'a&gt;&gt; for <a class=\"struct\" href=\"jumpy/profiling/struct.ProfilingScopeFormatter.html\" title=\"struct jumpy::profiling::ProfilingScopeFormatter\">ProfilingScopeFormatter</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

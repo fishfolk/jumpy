@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["spawn_menu_camera","Helper function to spawn the menu camera."]],"struct":[["MenuCamera","Marker component added to the camera that is used to render the main menu."]]};

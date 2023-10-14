@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["PhysicsStage"],"fn":["apply_rotation","hydrate_physics_bodies","install","update_kinematic_bodies"],"mod":["collisions"],"struct":["KinematicBody"]};

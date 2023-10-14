@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["AssetLoader",""]],"trait":[["RequiredBounds",""]]};

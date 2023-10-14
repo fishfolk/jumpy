@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["game_plugin","hydrate_crates","kill_all_colliding_if_freshly_thrown","session_plugin","update_idle_crates","update_thrown_crates"],"struct":["CrateMeta","IdleCrate","ThrownCrate"]};

@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"jumpy":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.67.0/std/io/trait.Write.html\" title=\"trait std::io::Write\">Write</a> for <a class=\"struct\" href=\"jumpy/console/struct.ConsoleLogBufferWriter.html\" title=\"struct jumpy::console::ConsoleLogBufferWriter\">ConsoleLogBufferWriter</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

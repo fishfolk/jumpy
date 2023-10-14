@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["SettingsTab","Which settings tab we are on"]],"mod":[["controls",""],["networking",""],["sound",""]],"struct":[["ModifiedSettings",""],["SettingsMenu",""]]};
+window.SIDEBAR_ITEMS = {"enum":["SettingsTab"],"fn":["widget"],"mod":["controls","networking"],"struct":["SettingsState"]};

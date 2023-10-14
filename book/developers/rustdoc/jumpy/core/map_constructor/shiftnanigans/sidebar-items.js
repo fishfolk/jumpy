@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["LayerPixelEntityType"],"struct":["Element","GroupedPixel","PixelType","ShiftnanigansMapConstructor","Tile","UngroupedPixel"]};

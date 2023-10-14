@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["ScrollArea","Add vertical and/or horizontal scrolling to a contained [`Ui`]."],["ScrollAreaOutput",""],["State",""]]};

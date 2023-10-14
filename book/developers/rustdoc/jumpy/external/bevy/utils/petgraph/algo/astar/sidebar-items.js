@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["astar","[Generic] A* shortest path algorithm."]]};

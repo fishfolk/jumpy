@@ -1,0 +1,295 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Organizes and applies effects to audio."><title>jumpy::prelude::kira::track - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-cb6f1f67f1bcd037.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.73.0 (cc66ad468 2023-10-03)" data-channel="1.73.0" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-1596385f77d47ef2.css" data-theme-dark-css="dark-0a43001d3fc2282c.css" data-theme-ayu-css="ayu-fd19013d6ce078bf.css" ><script src="../../../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../static.files/light-1596385f77d47ef2.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../static.files/dark-0a43001d3fc2282c.css"><link rel="stylesheet" href="../../../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function (e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move;
+        position: relative;
+    }
+
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
+    .code .nodeLabel {
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><h2 class="location"><a href="#">Module track</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../../../index.html">jumpy</a>::<wbr><a href="../../index.html">prelude</a>::<wbr><a href="../index.html">kira</a>::<wbr><a class="mod" href="#">track</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Organizes and applies effects to audio.</p>
+<p>Kira has an internal mixer which works like a real-life mixing console. Sounds
+can be played on “tracks”, which are individual streams of audio that can
+optionally have effects that modify the audio.</p>
+<h3 id="creating-and-using-tracks"><a href="#creating-and-using-tracks">Creating and using tracks</a></h3>
+<p>The mixer has a “main” track by default, and you can add any number of
+sub-tracks. To add a sub-track, use <code>AudioManager::add_sub_track</code>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>kira::{
+	manager::{
+		AudioManager, AudioManagerSettings,
+		backend::DefaultBackend,
+	},
+	track::TrackBuilder,
+};
+
+<span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
+<span class="kw">let </span>track = manager.add_sub_track(TrackBuilder::default())<span class="question-mark">?</span>;</code></pre></div>
+<p>You can configure what track a sound will play on by modifying its settings.
+This example uses <code>StaticSoundSettings</code>, but <code>StreamingSoundSettings</code> provides
+the same option.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>kira::{
+	manager::{
+		AudioManager, AudioManagerSettings,
+		backend::DefaultBackend,
+	},
+	sound::static_sound::{StaticSoundData, StaticSoundSettings},
+	track::TrackBuilder,
+};
+
+<span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
+<span class="kw">let </span>track = manager.add_sub_track(TrackBuilder::default())<span class="question-mark">?</span>;
+manager.play(StaticSoundData::from_file(
+	<span class="string">&quot;sound.ogg&quot;</span>,
+	StaticSoundSettings::new().output_destination(<span class="kw-2">&amp;</span>track),
+)<span class="question-mark">?</span>)<span class="question-mark">?</span>;</code></pre></div>
+<p>You can set the volume and panning of a track using <code>TrackHandle::set_volume</code>
+and <code>TrackHandle::set_panning</code>, respectively. The volume and panning settings
+will affect all sounds being played on the track.</p>
+<h3 id="effects"><a href="#effects">Effects</a></h3>
+<p>You can add effects to the track when creating it using
+<code>TrackBuilder::add_effect</code>. All sounds that are played on that track will have
+the effects applied sequentially.</p>
+<p>In this example, we’ll use the <code>Filter</code> effect, which in the low pass mode will
+remove high frequencies from sounds, making them sound muffled.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>kira::{
+	manager::{
+		AudioManager, AudioManagerSettings,
+		backend::DefaultBackend,
+	},
+	sound::static_sound::{StaticSoundData, StaticSoundSettings},
+	track::{
+		TrackBuilder,
+		effect::filter::FilterBuilder,
+	},
+};
+
+<span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
+<span class="kw">let </span>track = manager.add_sub_track(
+	TrackBuilder::new()
+		.with_effect(FilterBuilder::new().cutoff(<span class="number">1000.0</span>))
+)<span class="question-mark">?</span>;
+manager.play(StaticSoundData::from_file(
+	<span class="string">&quot;sound.ogg&quot;</span>,
+	StaticSoundSettings::new().output_destination(<span class="kw-2">&amp;</span>track),
+)<span class="question-mark">?</span>)<span class="question-mark">?</span>;</code></pre></div>
+<p><code>TrackBuilder:add_effect</code> returns a handle that can be used to modify the effect
+after the track has been created.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span><span class="kw-2">mut </span>filter;
+<span class="kw">let </span>track = manager.add_sub_track({
+	<span class="kw">let </span><span class="kw-2">mut </span>builder = TrackBuilder::new();
+	filter = builder.add_effect(FilterBuilder::new().cutoff(<span class="number">1000.0</span>));
+	builder
+})<span class="question-mark">?</span>;
+filter.set_cutoff(<span class="number">4000.0</span>, Tween::default())<span class="question-mark">?</span>;</code></pre></div>
+<h3 id="track-routing"><a href="#track-routing">Track routing</a></h3>
+<p>By default, the output of all sub-tracks will be fed into the input of the main
+mixer track without any volume change. It can be useful to customize this
+behavior.</p>
+<p>Let’s say we want to be able to control the volume level of gameplay sounds
+separately from music. We may also want to apply effects to gameplay sounds that
+come from the player specifically.</p>
+<p>We’ll end up with a hierarchy like this:</p>
+<div class="example-wrap"><pre class="language-text"><code>.        ┌──────────┐
+.        │Main track│
+.        └─▲──────▲─┘
+.          │      │
+.          │      │
+.     ┌────┴─┐   ┌┴────┐
+.     │Sounds│   │Music│
+.     └──▲───┘   └─────┘
+.        │
+. ┌──────┴──────┐
+. │Player sounds│
+. └─────────────┘
+</code></pre></div>
+<p>We can set up the <code>sounds</code> and <code>player_sounds</code> hierarchy using <code>TrackRoutes</code>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>kira::{
+	manager::{
+		AudioManager, AudioManagerSettings,
+		backend::DefaultBackend,
+	},
+	track::{TrackRoutes, TrackBuilder},
+};
+
+<span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
+<span class="kw">let </span>sounds = manager.add_sub_track(TrackBuilder::default())<span class="question-mark">?</span>;
+<span class="kw">let </span>player_sounds = manager.add_sub_track(
+	TrackBuilder::new().routes(TrackRoutes::parent(<span class="kw-2">&amp;</span>sounds)),
+)<span class="question-mark">?</span>;</code></pre></div>
+<p>The default <code>TrackRoutes</code> has a single route to the main mixer track.
+<code>TrackRoutes::parent</code> will instead create a single route to the track of your
+choosing.</p>
+<p>You can also have one track feed its audio into multiple other tracks. This can
+be useful for sharing effects between tracks.</p>
+<p>For example, let’s say we have our sounds split up into player sounds and
+ambience. This game takes place in a vast cave, so we want all of the sounds to
+have a reverb effect. We want the ambience to have more reverb than the player
+sounds so that it feels farther away.</p>
+<p>We could put separate reverb effects on both the <code>player</code> and <code>ambience</code> tracks.
+Since both the player and the ambient sounds are in the same cave, we’ll use the
+same settings for both reverb effects, but we’ll increase the <code>mix</code> setting for
+the ambience, since ambient sounds are supposed to have more reverb. This has
+some downsides, however:</p>
+<ul>
+<li>Since most of the settings are supposed to be the same between the two tracks,
+if we want to change the reverb settings, we have to change them in two
+different places.</li>
+<li>We have two separate reverb effects running, which has a higher CPU cost than
+if we just had one.</li>
+</ul>
+<p>A better alternative would be to make a separate reverb track that both the
+<code>player</code> and <code>ambience</code> tracks are routed to.</p>
+<div class="example-wrap"><pre class="language-text"><code>.         ┌──────────┐
+.    ┌────►Main track◄───────┐
+.    │    └─▲────────┘       │
+.    │      │                │
+.    │      │            ┌───┴──┐
+.    │ ┌────┼────────────►Reverb│
+.    │ │    │            └──▲───┘
+.    │ │    │               │
+.    │ │    │               │
+. ┌──┴─┴─┐  │   ┌────────┐  │
+. │Player│  └───┤Ambience├──┘
+. └──────┘      └────────┘
+</code></pre></div>
+<p>Here’s what this looks like in practice:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>kira::{
+	manager::{
+		AudioManager, AudioManagerSettings,
+		backend::DefaultBackend,
+	},
+	track::{
+		TrackRoutes, TrackBuilder,
+		effect::reverb::ReverbBuilder,
+	},
+};
+
+<span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
+<span class="comment">// 1.
+</span><span class="kw">let </span>reverb = manager.add_sub_track({
+	<span class="kw">let </span><span class="kw-2">mut </span>builder = TrackBuilder::new();
+	builder.add_effect(ReverbBuilder::new().mix(<span class="number">1.0</span>));
+	builder
+})<span class="question-mark">?</span>;
+<span class="comment">// 2.
+</span><span class="kw">let </span>player = manager.add_sub_track(
+	TrackBuilder::new().routes(TrackRoutes::new().with_route(<span class="kw-2">&amp;</span>reverb, <span class="number">0.25</span>)),
+);
+<span class="comment">// 3.
+</span><span class="kw">let </span>ambience = manager.add_sub_track(
+	TrackBuilder::new().routes(TrackRoutes::new().with_route(<span class="kw-2">&amp;</span>reverb, <span class="number">0.5</span>)),
+);</code></pre></div>
+<ol>
+<li>
+<p>We create the <code>reverb</code> track with a <code>Reverb</code> effect. We set the <code>mix</code> to <code>1.0</code>
+so that only the reverb signal is output from this track. We don’t need any of
+the dry signal to come out of this track, since the <code>player</code> and <code>ambience</code>
+tracks will already be outputting their dry signal to the main track.</p>
+</li>
+<li>
+<p>We create the <code>player</code> track with two routes:</p>
+<ul>
+<li>The route to the main track with 100% volume. We don’t have to set this one
+explicitly because <code>TrackRoutes::new()</code> adds that route by default.</li>
+<li>The route to the <code>reverb</code> track with 25% volume.</li>
+</ul>
+</li>
+<li>
+<p>The <code>ambience</code> track is set up the same way, except the route to the <code>reverb</code>
+track has 50% volume, giving us more reverb for these sounds.</p>
+</li>
+</ol>
+</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="effect/index.html" title="mod jumpy::prelude::kira::track::effect">effect</a></div><div class="desc docblock-short">Modifies audio signals.</div></li></ul><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.SubTrackId.html" title="struct jumpy::prelude::kira::track::SubTrackId">SubTrackId</a></div><div class="desc docblock-short">A unique identifier for a mixer sub-track.</div></li><li><div class="item-name"><a class="struct" href="struct.TrackBuilder.html" title="struct jumpy::prelude::kira::track::TrackBuilder">TrackBuilder</a></div><div class="desc docblock-short">Configures a mixer track.</div></li><li><div class="item-name"><a class="struct" href="struct.TrackHandle.html" title="struct jumpy::prelude::kira::track::TrackHandle">TrackHandle</a></div><div class="desc docblock-short">Controls a mixer track.</div></li><li><div class="item-name"><a class="struct" href="struct.TrackRoutes.html" title="struct jumpy::prelude::kira::track::TrackRoutes">TrackRoutes</a></div><div class="desc docblock-short">Defines how the output of a mixer sub-track will be
+fed into the input of other mixer tracks.</div></li></ul><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.SetRouteError.html" title="enum jumpy::prelude::kira::track::SetRouteError">SetRouteError</a></div><div class="desc docblock-short">Errors that can occur when changing the volume of a track route.</div></li><li><div class="item-name"><a class="enum" href="enum.TrackId.html" title="enum jumpy::prelude::kira::track::TrackId">TrackId</a></div><div class="desc docblock-short">A unique identifier for a track.</div></li></ul></section></div></main></body></html>

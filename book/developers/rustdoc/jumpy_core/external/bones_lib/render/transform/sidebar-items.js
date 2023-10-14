@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Transform","The main transform component."]]};

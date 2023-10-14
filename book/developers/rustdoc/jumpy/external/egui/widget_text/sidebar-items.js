@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["WidgetText","This is how you specify text for a widget."]],"struct":[["RichText","Text and optional style choices for it."],["WidgetTextGalley","Text that has been layed out and ready to be painted."],["WidgetTextJob",""]]};

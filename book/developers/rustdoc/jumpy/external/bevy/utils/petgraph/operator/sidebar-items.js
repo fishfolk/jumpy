@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["complement","[Generic] complement of the graph"]]};

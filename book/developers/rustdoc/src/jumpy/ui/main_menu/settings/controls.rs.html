@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/main_menu/settings/controls.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>controls.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../../../source-files.js"></script><script defer src="../../../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/main_menu/settings/controls.rs`."><title>controls.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-cb6f1f67f1bcd037.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.73.0 (cc66ad468 2023-10-03)" data-channel="1.73.0" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-1596385f77d47ef2.css" data-theme-dark-css="dark-0a43001d3fc2282c.css" data-theme-ayu-css="ayu-fd19013d6ce078bf.css" ><script src="../../../../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../../../src-files.js"></script><script defer src="../../../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../../static.files/light-1596385f77d47ef2.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../../static.files/dark-0a43001d3fc2282c.css"><link rel="stylesheet" href="../../../../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -93,8 +93,7 @@
     }
 </style>
 
-</head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../../jumpy/index.html">
-                        <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -426,214 +425,151 @@
 <a href="#330" id="330">330</a>
 <a href="#331" id="331">331</a>
 <a href="#332" id="332">332</a>
-<a href="#333" id="333">333</a>
-<a href="#334" id="334">334</a>
-<a href="#335" id="335">335</a>
-<a href="#336" id="336">336</a>
-<a href="#337" id="337">337</a>
-<a href="#338" id="338">338</a>
-<a href="#339" id="339">339</a>
-<a href="#340" id="340">340</a>
-<a href="#341" id="341">341</a>
-<a href="#342" id="342">342</a>
-<a href="#343" id="343">343</a>
-<a href="#344" id="344">344</a>
-<a href="#345" id="345">345</a>
-<a href="#346" id="346">346</a>
-<a href="#347" id="347">347</a>
-<a href="#348" id="348">348</a>
-<a href="#349" id="349">349</a>
-<a href="#350" id="350">350</a>
-<a href="#351" id="351">351</a>
-<a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
-<a href="#355" id="355">355</a>
-<a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a>
-<a href="#358" id="358">358</a>
-<a href="#359" id="359">359</a>
-<a href="#360" id="360">360</a>
-<a href="#361" id="361">361</a>
-<a href="#362" id="362">362</a>
-<a href="#363" id="363">363</a>
-<a href="#364" id="364">364</a>
-<a href="#365" id="365">365</a>
-<a href="#366" id="366">366</a>
-<a href="#367" id="367">367</a>
-<a href="#368" id="368">368</a>
-<a href="#369" id="369">369</a>
-<a href="#370" id="370">370</a>
-<a href="#371" id="371">371</a>
-<a href="#372" id="372">372</a>
-<a href="#373" id="373">373</a>
-<a href="#374" id="374">374</a>
-<a href="#375" id="375">375</a>
-<a href="#376" id="376">376</a>
-<a href="#377" id="377">377</a>
-<a href="#378" id="378">378</a>
-<a href="#379" id="379">379</a>
-<a href="#380" id="380">380</a>
-<a href="#381" id="381">381</a>
-<a href="#382" id="382">382</a>
-<a href="#383" id="383">383</a>
-<a href="#384" id="384">384</a>
-<a href="#385" id="385">385</a>
-<a href="#386" id="386">386</a>
-<a href="#387" id="387">387</a>
-<a href="#388" id="388">388</a>
-<a href="#389" id="389">389</a>
-<a href="#390" id="390">390</a>
-<a href="#391" id="391">391</a>
-<a href="#392" id="392">392</a>
-<a href="#393" id="393">393</a>
-<a href="#394" id="394">394</a>
-<a href="#395" id="395">395</a>
-<a href="#396" id="396">396</a>
-<a href="#397" id="397">397</a>
-<a href="#398" id="398">398</a>
-<a href="#399" id="399">399</a>
-<a href="#400" id="400">400</a>
-<a href="#401" id="401">401</a>
-<a href="#402" id="402">402</a>
-<a href="#403" id="403">403</a>
-<a href="#404" id="404">404</a>
-<a href="#405" id="405">405</a>
-<a href="#406" id="406">406</a>
-<a href="#407" id="407">407</a>
-<a href="#408" id="408">408</a>
-<a href="#409" id="409">409</a>
-<a href="#410" id="410">410</a>
-<a href="#411" id="411">411</a>
-<a href="#412" id="412">412</a>
-<a href="#413" id="413">413</a>
-<a href="#414" id="414">414</a>
-<a href="#415" id="415">415</a>
-<a href="#416" id="416">416</a>
-<a href="#417" id="417">417</a>
-<a href="#418" id="418">418</a>
-<a href="#419" id="419">419</a>
-<a href="#420" id="420">420</a>
-<a href="#421" id="421">421</a>
-</pre><pre class="rust"><code><span class="kw">use </span>bevy::input::gamepad::{GamepadAxisChangedEvent, GamepadEvent};
-<span class="kw">use </span>egui_extras::Column;
+</pre></div><pre class="rust"><code><span class="kw">use </span>egui_extras::{Column, TableBuilder};
+
+<span class="kw">use </span><span class="kw">crate</span>::settings::InputKind;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-<span class="comment">// Render the control input grid
-</span><span class="kw">pub fn </span>controls_settings_ui(
-    params: <span class="kw-2">&amp;mut </span>SettingsMenu,
-    ui: <span class="kw-2">&amp;mut </span>egui::Ui,
-    should_reset: bool,
-    settings_tabs: <span class="kw-2">&amp;</span>[egui::Response],
-    bottom_buttons: <span class="kw-2">&amp;</span>[egui::Response],
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>widget(
+    <span class="kw-2">mut </span>args: In&lt;(<span class="kw-2">&amp;mut </span>egui::Ui, <span class="kw-2">&amp;mut </span>SettingsState, bool)&gt;,
+    meta: Root&lt;GameMeta&gt;,
+    localization: Localization&lt;GameMeta&gt;,
+    keyboard: Res&lt;KeyboardInputs&gt;,
+    gamepad: Res&lt;GamepadInputs&gt;,
 ) {
-    <span class="kw">let </span>ui_theme = <span class="kw-2">&amp;</span>params.game.ui_theme;
+    <span class="kw">let </span>(ui, state, should_reset) = <span class="kw-2">&amp;mut *</span>args;
 
-    <span class="comment">// Reset the settings when reset button is clicked
-    </span><span class="kw">if </span>should_reset {
-        params.modified_settings.<span class="number">0</span>.as_mut().unwrap().player_controls =
-            params.game.default_settings.player_controls.clone();
+    <span class="kw">if </span><span class="kw-2">*</span>should_reset {
+        state.modified_settings.player_controls = meta.default_settings.player_controls.clone();
     }
 
-    <span class="comment">// Get the font meta for the table headings and labels
-    </span><span class="kw">let </span>bigger_font = <span class="kw-2">&amp;</span>ui_theme
+    <span class="kw">let </span>bigger_font = meta
+        .theme
         .font_styles
         .bigger
-        .colored(ui_theme.panel.font_color);
-    <span class="kw">let </span>label_font = <span class="kw-2">&amp;</span>ui_theme
+        .with_color(meta.theme.panel.font_color);
+    <span class="kw">let </span>normal_font = meta
+        .theme
         .font_styles
         .normal
-        .colored(ui_theme.panel.font_color);
+        .with_color(meta.theme.panel.font_color);
 
     ui.add_space(bigger_font.size * <span class="number">0.1</span>);
 
     <span class="comment">// Calculate the row height so that it can fit the input buttons
-    </span><span class="kw">let </span>small_button_style = <span class="kw-2">&amp;</span>ui_theme.button_styles.small;
+    </span><span class="kw">let </span>small_button_style = <span class="kw-2">&amp;</span>meta.theme.buttons.small;
     <span class="kw">let </span>row_height = small_button_style.font.size
         + small_button_style.padding.top
         + small_button_style.padding.bottom;
 
-    <span class="comment">// Mutably borrow the player controlls settings
-    </span><span class="kw">let </span>controls = <span class="kw-2">&amp;mut </span>params.modified_settings.<span class="number">0</span>.as_mut().unwrap().player_controls;
+    <span class="kw">let </span>mapping = <span class="kw-2">&amp;mut </span>state.modified_settings.player_controls;
 
-    <span class="comment">// Build the table rows of control bindings as an array of mutable InputKind&#39;s
-    </span><span class="kw">let </span><span class="kw-2">mut </span>input_rows = [
+    <span class="kw">let </span><span class="kw-2">mut </span>input_rows = [
         (
-            <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;move-up&quot;</span>),
+            localization.get(<span class="string">&quot;move-up&quot;</span>),
             [
-                <span class="kw-2">&amp;mut </span>controls.keyboard1.movement.up,
-                <span class="kw-2">&amp;mut </span>controls.keyboard2.movement.up,
-                <span class="kw-2">&amp;mut </span>controls.gamepad.movement.up,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.movement.up,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.movement.up,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.movement.up,
             ],
         ),
         (
-            <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;move-down&quot;</span>),
+            localization.get(<span class="string">&quot;move-down&quot;</span>),
             [
-                <span class="kw-2">&amp;mut </span>controls.keyboard1.movement.down,
-                <span class="kw-2">&amp;mut </span>controls.keyboard2.movement.down,
-                <span class="kw-2">&amp;mut </span>controls.gamepad.movement.down,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.movement.down,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.movement.down,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.movement.down,
             ],
         ),
         (
-            <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;move-left&quot;</span>),
+            localization.get(<span class="string">&quot;move-left&quot;</span>),
             [
-                <span class="kw-2">&amp;mut </span>controls.keyboard1.movement.left,
-                <span class="kw-2">&amp;mut </span>controls.keyboard2.movement.left,
-                <span class="kw-2">&amp;mut </span>controls.gamepad.movement.left,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.movement.left,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.movement.left,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.movement.left,
             ],
         ),
         (
-            <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;move-right&quot;</span>),
+            localization.get(<span class="string">&quot;move-right&quot;</span>),
             [
-                <span class="kw-2">&amp;mut </span>controls.keyboard1.movement.right,
-                <span class="kw-2">&amp;mut </span>controls.keyboard2.movement.right,
-                <span class="kw-2">&amp;mut </span>controls.gamepad.movement.right,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.movement.right,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.movement.right,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.movement.right,
             ],
         ),
         (
-            <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;jump&quot;</span>),
+            localization.get(<span class="string">&quot;jump&quot;</span>),
             [
-                <span class="kw-2">&amp;mut </span>controls.keyboard1.jump,
-                <span class="kw-2">&amp;mut </span>controls.keyboard2.jump,
-                <span class="kw-2">&amp;mut </span>controls.gamepad.jump,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.jump,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.jump,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.jump,
             ],
         ),
         (
-            <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;grab-drop&quot;</span>),
+            localization.get(<span class="string">&quot;grab-drop&quot;</span>),
             [
-                <span class="kw-2">&amp;mut </span>controls.keyboard1.grab,
-                <span class="kw-2">&amp;mut </span>controls.keyboard2.grab,
-                <span class="kw-2">&amp;mut </span>controls.gamepad.grab,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.grab,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.grab,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.grab,
             ],
         ),
         (
-            <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;shoot&quot;</span>),
+            localization.get(<span class="string">&quot;shoot&quot;</span>),
             [
-                <span class="kw-2">&amp;mut </span>controls.keyboard1.shoot,
-                <span class="kw-2">&amp;mut </span>controls.keyboard2.shoot,
-                <span class="kw-2">&amp;mut </span>controls.gamepad.shoot,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.shoot,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.shoot,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.shoot,
             ],
         ),
         (
-            <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;slide&quot;</span>),
+            localization.get(<span class="string">&quot;slide&quot;</span>),
             [
-                <span class="kw-2">&amp;mut </span>controls.keyboard1.slide,
-                <span class="kw-2">&amp;mut </span>controls.keyboard2.slide,
-                <span class="kw-2">&amp;mut </span>controls.gamepad.slide,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.slide,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.slide,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.slide,
+            ],
+        ),
+        (
+            localization.get(<span class="string">&quot;pause&quot;</span>),
+            [
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.pause,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.pause,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.pause,
+            ],
+        ),
+        (
+            localization.get(<span class="string">&quot;menu-confirm&quot;</span>),
+            [
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.menu_confirm,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.menu_confirm,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.menu_confirm,
+            ],
+        ),
+        (
+            localization.get(<span class="string">&quot;menu-back&quot;</span>),
+            [
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.menu_back,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.menu_back,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.menu_back,
+            ],
+        ),
+        (
+            localization.get(<span class="string">&quot;menu-start&quot;</span>),
+            [
+                <span class="kw-2">&amp;mut </span>mapping.keyboard1.menu_start,
+                <span class="kw-2">&amp;mut </span>mapping.keyboard2.menu_start,
+                <span class="kw-2">&amp;mut </span>mapping.gamepad.menu_start,
             ],
         ),
     ];
 
-    <span class="comment">// Collect input button responses for building adjacency graph
-    </span><span class="kw">let </span><span class="kw-2">mut </span>input_buttons = Vec::new();
-
     <span class="comment">// Create input table
     </span><span class="kw">let </span>width = ui.available_width();
-    <span class="kw">let </span>label_size = label_font.size * <span class="number">7.0</span>;
+    <span class="kw">let </span>label_size = normal_font.size * <span class="number">7.0</span>;
     <span class="kw">let </span>remaining_width = width - label_size;
-    <span class="kw">let </span>cell_width = remaining_width / <span class="number">3.0</span>;
-    egui_extras::TableBuilder::new(ui)
+    <span class="kw">let </span>cell_width = remaining_width / <span class="number">3.1</span>;
+    TableBuilder::new(ui)
         .cell_layout(egui::Layout::centered_and_justified(
             egui::Direction::LeftToRight,
         ))
@@ -643,16 +579,16 @@
         .column(Column::exact(cell_width))
         .header(bigger_font.size * <span class="number">1.5</span>, |<span class="kw-2">mut </span>row| {
             row.col(|ui| {
-                ui.themed_label(bigger_font, <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;action&quot;</span>));
+                ui.label(bigger_font.rich(localization.get(<span class="string">&quot;action&quot;</span>)));
             });
             row.col(|ui| {
-                ui.themed_label(bigger_font, <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;keyboard-1&quot;</span>));
+                ui.label(bigger_font.rich(localization.get(<span class="string">&quot;keyboard-1&quot;</span>)));
             });
             row.col(|ui| {
-                ui.themed_label(bigger_font, <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;keyboard-2&quot;</span>));
+                ui.label(bigger_font.rich(localization.get(<span class="string">&quot;keyboard-2&quot;</span>)));
             });
             row.col(|ui| {
-                ui.themed_label(bigger_font, <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;gamepad&quot;</span>));
+                ui.label(bigger_font.rich(localization.get(<span class="string">&quot;gamepad&quot;</span>)));
             });
         })
         .body(|<span class="kw-2">mut </span>body| {
@@ -664,7 +600,7 @@
                 body.row(row_height, |<span class="kw-2">mut </span>row| {
                     <span class="comment">// Add row label
                     </span>row.col(|ui| {
-                        ui.themed_label(label_font, title);
+                        ui.label(normal_font.rich(title.to_string()));
                     });
 
                     <span class="comment">// Add buttons for each kind of input
@@ -673,24 +609,23 @@
                         </span><span class="kw">let </span>binding_kind = <span class="kw">if </span>button_idx == <span class="number">2 </span>{
                             BindingKind::Gamepad
                         } <span class="kw">else </span>{
-                            BindingKind::KeyboardMouse
+                            BindingKind::Keyboard
                         };
 
                         <span class="comment">// Render the button
                         </span>row.col(|ui| {
                             <span class="kw">let </span>button = BorderedButton::themed(
-                                <span class="kw-2">&amp;</span>ui_theme.button_styles.small,
-                                format_input(input),
+                                <span class="kw-2">&amp;</span>meta.theme.buttons.small,
+                                input.to_string(),
                             )
                             .show(ui);
 
                             <span class="comment">// Start an input binding if the button is clicked
                             </span><span class="kw">if </span>button.clicked() {
-                                <span class="kw-2">*</span>params.currently_binding_input_idx = <span class="prelude-val">Some</span>(input_idx);
+                                state.currently_binding_input_idx = <span class="prelude-val">Some</span>(input_idx);
                             }
-
                             <span class="comment">// If we are binding an input for this button
-                            </span><span class="kw">if </span><span class="kw-2">*</span>params.currently_binding_input_idx == <span class="prelude-val">Some</span>(input_idx) {
+                            </span><span class="kw">else if </span>state.currently_binding_input_idx == <span class="prelude-val">Some</span>(input_idx) {
                                 <span class="comment">// Render the binding window
                                 </span>egui::Window::new(<span class="string">&quot;input_binding_overlay&quot;</span>)
                                     .auto_sized()
@@ -699,39 +634,66 @@
                                     .frame(egui::Frame::none())
                                     .title_bar(<span class="bool-val">false</span>)
                                     .show(ui.ctx(), |ui| {
-                                        <span class="kw">let </span>font = params
-                                            .game
-                                            .ui_theme
-                                            .font_styles
-                                            .normal
-                                            .colored(params.game.ui_theme.panel.font_color);
-
-                                        <span class="kw">let </span>border = <span class="kw-2">&amp;</span>params.game.ui_theme.panel.border;
-                                        <span class="kw">let </span>m = <span class="kw-2">&amp;</span>border.border_size;
-                                        <span class="kw">let </span>s = border.scale;
-                                        BorderedFrame::new(border)
+                                        <span class="kw">let </span>m = meta.theme.panel.border.border_size;
+                                        <span class="kw">let </span>s = meta.theme.panel.border.scale;
+                                        BorderedFrame::new(<span class="kw-2">&amp;</span>meta.theme.panel.border)
                                             <span class="comment">// Just enough padding to fit the frame&#39;s border image
-                                            </span>.padding(Margin {
+                                            </span>.padding(egui::Margin {
                                                 left: m.left * s,
                                                 right: m.right * s,
                                                 top: m.top * s,
                                                 bottom: m.bottom * s,
                                             })
                                             .show(ui, |ui| {
-                                                ui.themed_label(
-                                                    <span class="kw-2">&amp;</span>font,
-                                                    <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;bind-input&quot;</span>),
-                                                );
+                                                ui.label(normal_font.rich(localization.get_with(
+                                                    <span class="string">&quot;bind-input&quot;</span>,
+                                                    <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
+                                                        <span class="string">&quot;binding&quot; </span>=&gt; title.as_ref(),
+                                                        <span class="string">&quot;binding_kind&quot; </span>=&gt; <span class="kw">match </span>binding_kind {
+                                                            BindingKind::Keyboard =&gt; <span class="string">&quot;keyboard&quot;</span>,
+                                                            BindingKind::Gamepad =&gt; <span class="string">&quot;gamepad&quot;</span>,
+                                                        }
+                                                    },
+                                                )));
+
+                                                ui.add_space(normal_font.size / <span class="number">2.0</span>);
+
+                                                ui.horizontal(|ui| {
+                                                    <span class="comment">// Cancel button
+                                                    </span><span class="kw">if </span>BorderedButton::themed(
+                                                        <span class="kw-2">&amp;</span>meta.theme.buttons.small,
+                                                        localization.get(<span class="string">&quot;cancel&quot;</span>),
+                                                    )
+                                                    .show(ui)
+                                                    .clicked()
+                                                    {
+                                                        button.request_focus();
+                                                        state.currently_binding_input_idx = <span class="prelude-val">None</span>;
+                                                    }
+
+                                                    <span class="comment">// Clear button
+                                                    </span><span class="kw">if </span>BorderedButton::themed(
+                                                        <span class="kw-2">&amp;</span>meta.theme.buttons.small,
+                                                        localization.get(<span class="string">&quot;clear-binding&quot;</span>),
+                                                    )
+                                                    .show(ui)
+                                                    .clicked()
+                                                    {
+                                                        <span class="kw-2">**</span>input = InputKind::None;
+                                                        button.request_focus();
+                                                        state.currently_binding_input_idx = <span class="prelude-val">None</span>;
+                                                    }
+                                                });
 
                                                 <span class="comment">// See if there has been any inputs of the kind we
                                                 // are binding.
-                                                </span><span class="kw">let </span>get_input =
-                                                    params.control_inputs.get_event(binding_kind);
+                                                </span><span class="kw">let </span>bound_input =
+                                                    get_input(binding_kind, <span class="kw-2">&amp;</span>keyboard, <span class="kw-2">&amp;</span>gamepad);
 
                                                 <span class="comment">// If there has been an input
-                                                </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(input_kind)) = get_input {
+                                                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(input_kind) = bound_input {
                                                     <span class="comment">// Stop listening for inputs
-                                                    </span><span class="kw-2">*</span>params.currently_binding_input_idx = <span class="prelude-val">None</span>;
+                                                    </span>state.currently_binding_input_idx = <span class="prelude-val">None</span>;
 
                                                     <span class="comment">// Reset the focus on the input button
                                                     </span>button.request_focus();
@@ -739,28 +701,10 @@
                                                     <span class="comment">// Set the input for this button to the pressed
                                                     // input
                                                     </span><span class="kw-2">**</span>input = input_kind;
-
-                                                <span class="comment">// If the user cancelled the input binding
-                                                </span>} <span class="kw">else if </span>get_input.is_err() {
-                                                    <span class="comment">// Set the focus back on the button
-                                                    </span>button.request_focus();
-                                                    <span class="comment">// And stop listening for inputs
-                                                    </span><span class="kw-2">*</span>params.currently_binding_input_idx = <span class="prelude-val">None</span>;
-                                                }
-
-                                                <span class="comment">// Make sure we don&#39;t double-trigger any menu
-                                                // actions while on this menu by consuming all menu
-                                                // actions.
-                                                </span><span class="kw">let </span><span class="kw-2">mut </span>menu_input = params.menu_input.single_mut();
-                                                <span class="kw">for </span>action <span class="kw">in </span>MenuAction::variants() {
-                                                    menu_input.consume(action);
                                                 }
                                             });
                                     });
                             }
-
-                            <span class="comment">// Add input button to the list
-                            </span>input_buttons.push(button);
                         });
 
                         <span class="comment">// Increment the input button index
@@ -769,172 +713,48 @@
                 });
             }
         });
-
-    <span class="comment">// Set adjacency for all of the gamepad input buttons
-    </span><span class="kw">for </span>row_idx <span class="kw">in </span><span class="number">0</span>..input_rows.len() {
-        <span class="kw">if </span>row_idx == <span class="number">0 </span>{
-            <span class="comment">// Reverse button order here so that the first input button gets priority when
-            // navigating down from the tabs.
-            </span><span class="kw">for </span>i <span class="kw">in </span>(<span class="number">0</span>..<span class="number">3</span>).rev() {
-                <span class="kw">let </span>button = <span class="kw-2">&amp;</span>input_buttons[row_idx * <span class="number">3 </span>+ i];
-
-                <span class="comment">// The top row of buttons is below the settings tabs
-                </span><span class="kw">for </span>tab <span class="kw">in </span>settings_tabs {
-                    params.adjacencies.widget(tab).above(button);
-                }
-
-                <span class="comment">// The last tab is considered to the left of the first button
-                </span><span class="kw">if </span>i == <span class="number">0 </span>{
-                    params
-                        .adjacencies
-                        .widget(button)
-                        .to_right_of(<span class="kw-2">&amp;</span>settings_tabs[settings_tabs.len() - <span class="number">1</span>]);
-                }
-            }
-
-        <span class="comment">// If this is the last row, the input buttons are above the bottom buttons
-        </span>} <span class="kw">else if </span>row_idx == input_rows.len() - <span class="number">1 </span>{
-            <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">3 </span>{
-                <span class="kw">let </span>button_above = <span class="kw-2">&amp;</span>input_buttons[(row_idx - <span class="number">1</span>) * <span class="number">3 </span>+ i];
-                <span class="kw">let </span>button = <span class="kw-2">&amp;</span>input_buttons[row_idx * <span class="number">3 </span>+ i];
-
-                params
-                    .adjacencies
-                    .widget(button)
-                    .above(<span class="kw-2">&amp;</span>bottom_buttons[i])
-                    .below(button_above);
-
-                <span class="comment">// The first bottom button is to the right of the last input button
-                </span><span class="kw">if </span>i == <span class="number">2 </span>{
-                    params
-                        .adjacencies
-                        .widget(button)
-                        .to_left_of(<span class="kw-2">&amp;</span>bottom_buttons[<span class="number">0</span>]);
-                }
-            }
-
-        <span class="comment">// If this is a middle row, set the input buttons to be below the ones in the row above
-        </span>} <span class="kw">else </span>{
-            <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">3 </span>{
-                <span class="kw">let </span>button_above = <span class="kw-2">&amp;</span>input_buttons[(row_idx - <span class="number">1</span>) * <span class="number">3 </span>+ i];
-                <span class="kw">let </span>button = <span class="kw-2">&amp;</span>input_buttons[row_idx * <span class="number">3 </span>+ i];
-
-                params.adjacencies.widget(button).below(button_above);
-            }
-        }
-    }
-}
-
-<span class="doccomment">/// Format an InputKind as a user-facing string
-</span><span class="kw">fn </span>format_input(input: <span class="kw-2">&amp;</span>InputKind) -&gt; String {
-    <span class="kw">match </span>input {
-        InputKind::SingleAxis(axis) =&gt; {
-            <span class="comment">// If we set the positive low to 1.0, then that means we don&#39;t trigger on positive
-            // movement, and it must be a negative movement binding.
-            </span><span class="kw">let </span>direction = <span class="kw">if </span>axis.positive_low == <span class="number">1.0 </span>{ <span class="string">&quot;-&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;+&quot; </span>};
-
-            <span class="kw">let </span>stick = <span class="kw">match </span>axis.axis_type {
-                leafwing_input_manager::axislike::AxisType::Gamepad(axis) =&gt; {
-                    <span class="macro">format!</span>(<span class="string">&quot;{axis:?}&quot;</span>)
-                }
-                other =&gt; <span class="macro">format!</span>(<span class="string">&quot;{other:?}&quot;</span>),
-            };
-
-            <span class="macro">format!</span>(<span class="string">&quot;{stick} {direction}&quot;</span>)
-        }
-        other =&gt; other.to_string(),
-    }
-}
-
-<span class="doccomment">/// Helper system param to get input events that we are interested in for input binding.
-</span><span class="attr">#[derive(SystemParam)]
-</span><span class="kw">pub struct </span>ControlInputBindingEvents&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
-    keys: Res&lt;<span class="lifetime">&#39;w</span>, Input&lt;KeyCode&gt;&gt;,
-    gamepad_buttons: Res&lt;<span class="lifetime">&#39;w</span>, Input&lt;GamepadButton&gt;&gt;,
-    gamepad_events: EventReader&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>, bevy::input::gamepad::GamepadEvent&gt;,
-    mouse: Res&lt;<span class="lifetime">&#39;w</span>, Input&lt;MouseButton&gt;&gt;,
 }
 
 <span class="doccomment">/// The kind of input binding to listen for.
 </span><span class="kw">enum </span>BindingKind {
-    KeyboardMouse,
+    Keyboard,
     Gamepad,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; ControlInputBindingEvents&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
-    <span class="comment">// Get the next event, if any
-    </span><span class="kw">fn </span>get_event(<span class="kw-2">&amp;mut </span><span class="self">self</span>, binding_kind: BindingKind) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;InputKind&gt;, ()&gt; {
-        <span class="kw">if </span><span class="self">self</span>.keys.just_pressed(KeyCode::Escape) {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(());
-        }
-
-        <span class="prelude-val">Ok</span>(<span class="kw">match </span>binding_kind {
-            <span class="comment">// If we are looking for keyboard or mouse inputs
-            </span>BindingKind::KeyboardMouse =&gt; {
-                <span class="comment">// Check for mouse input first
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>mouse_button) = <span class="self">self</span>.mouse.get_just_pressed().next() {
-                    <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(mouse_button.into()));
-                }
-                <span class="comment">// Just return the first pressed button we find
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>key_code) = <span class="self">self</span>.keys.get_just_pressed().next() {
-                    <span class="prelude-val">Some</span>(key_code.into())
-                } <span class="kw">else </span>{
-                    <span class="prelude-val">None
-                </span>}
-            }
-            <span class="comment">// If we are looking for gamepad events
-            </span>BindingKind::Gamepad =&gt; {
-                <span class="comment">// Return the first pressed button we find, if any
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>button) = <span class="self">self</span>.gamepad_buttons.get_just_pressed().next() {
-                    <span class="prelude-val">Some</span>(button.button_type.into())
-
-                <span class="comment">// If we can&#39;t find a button pressed
-                </span>} <span class="kw">else </span>{
-                    <span class="comment">// Look for axes tilted more than 0.5 in either direction.
-                    </span><span class="kw">for </span>gamepad_event <span class="kw">in </span><span class="self">self</span>.gamepad_events.iter() {
-                        <span class="kw">if let </span>GamepadEvent::Axis(GamepadAxisChangedEvent {
-                            axis_type,
-                            value,
-                            ..
-                        }) = gamepad_event
-                        {
-                            <span class="comment">// Create an axis positive movement binding
-                            </span><span class="kw">if </span>value &gt; <span class="kw-2">&amp;</span><span class="number">0.5 </span>{
-                                <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(
-                                    SingleAxis {
-                                        axis_type:
-                                            leafwing_input_manager::axislike::AxisType::Gamepad(
-                                                <span class="kw-2">*</span>axis_type,
-                                            ),
-                                        positive_low: <span class="number">0.1</span>,
-                                        negative_low: -<span class="number">1.0</span>,
-                                        value: <span class="prelude-val">None</span>,
-                                    }
-                                    .into(),
-                                ));
-                            <span class="comment">// Create an axis negative movement binding
-                            </span>} <span class="kw">else if </span>value &lt; <span class="kw-2">&amp;</span>-<span class="number">0.5 </span>{
-                                <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(
-                                    SingleAxis {
-                                        axis_type:
-                                            leafwing_input_manager::axislike::AxisType::Gamepad(
-                                                <span class="kw-2">*</span>axis_type,
-                                            ),
-                                        positive_low: <span class="number">1.0</span>,
-                                        negative_low: -<span class="number">0.1</span>,
-                                        value: <span class="prelude-val">None</span>,
-                                    }
-                                    .into(),
-                                ));
-                            }
-                        }
+<span class="kw">fn </span>get_input(
+    kind: BindingKind,
+    keyboard: <span class="kw-2">&amp;</span>KeyboardInputs,
+    gamepad: <span class="kw-2">&amp;</span>GamepadInputs,
+) -&gt; <span class="prelude-ty">Option</span>&lt;InputKind&gt; {
+    <span class="kw">match </span>kind {
+        BindingKind::Keyboard =&gt; keyboard.key_events.iter().next().and_then(|event| {
+            event
+                .button_state
+                .pressed()
+                .then(|| event.key_code.option().map(InputKind::Keyboard))
+                .flatten()
+        }),
+        BindingKind::Gamepad =&gt; {
+            gamepad
+                .gamepad_events
+                .iter()
+                .next()
+                .and_then(|event| <span class="kw">match </span>event {
+                    GamepadEvent::Button(e) =&gt; {
+                        (e.value.abs() &gt; <span class="number">0.1</span>).then(|| InputKind::Button(e.button.clone()))
                     }
-
-                    <span class="prelude-val">None
-                </span>}
-            }
-        })
+                    GamepadEvent::Axis(e) =&gt; {
+                        <span class="kw">if </span>e.value &gt; <span class="number">0.1 </span>{
+                            <span class="prelude-val">Some</span>(InputKind::AxisPositive(e.axis.clone()))
+                        } <span class="kw">else if </span>e.value &lt; -<span class="number">0.1 </span>{
+                            <span class="prelude-val">Some</span>(InputKind::AxisNegative(e.axis.clone()))
+                        } <span class="kw">else </span>{
+                            <span class="prelude-val">None
+                        </span>}
+                    }
+                    <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+                })
+        }
     }
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

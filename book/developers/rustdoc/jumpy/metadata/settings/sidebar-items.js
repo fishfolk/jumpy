@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["PlayerControlMethods",""],["PlayerControls","Binds inputs to player actions"],["Settings","Global settings, stored and accessed through [`crate::platform::Storage`]"]]};

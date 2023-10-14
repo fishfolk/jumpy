@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["debug_render_colliders","debug_render_damage_regions","debug_render_emote_regions","plugin"],"struct":["DebugSettings","RapierDebugBackend","RapierDebugContext"]};

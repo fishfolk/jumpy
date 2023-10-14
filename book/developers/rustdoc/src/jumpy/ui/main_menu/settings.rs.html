@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/main_menu/settings.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>settings.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/main_menu/settings.rs`."><title>settings.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-cb6f1f67f1bcd037.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.73.0 (cc66ad468 2023-10-03)" data-channel="1.73.0" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-1596385f77d47ef2.css" data-theme-dark-css="dark-0a43001d3fc2282c.css" data-theme-ayu-css="ayu-fd19013d6ce078bf.css" ><script src="../../../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../static.files/light-1596385f77d47ef2.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../static.files/dark-0a43001d3fc2282c.css"><link rel="stylesheet" href="../../../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -93,8 +93,7 @@
     }
 </style>
 
-</head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../jumpy/index.html">
-                        <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -277,270 +276,187 @@
 <a href="#181" id="181">181</a>
 <a href="#182" id="182">182</a>
 <a href="#183" id="183">183</a>
-<a href="#184" id="184">184</a>
-<a href="#185" id="185">185</a>
-<a href="#186" id="186">186</a>
-<a href="#187" id="187">187</a>
-<a href="#188" id="188">188</a>
-<a href="#189" id="189">189</a>
-<a href="#190" id="190">190</a>
-<a href="#191" id="191">191</a>
-<a href="#192" id="192">192</a>
-<a href="#193" id="193">193</a>
-<a href="#194" id="194">194</a>
-<a href="#195" id="195">195</a>
-<a href="#196" id="196">196</a>
-<a href="#197" id="197">197</a>
-<a href="#198" id="198">198</a>
-<a href="#199" id="199">199</a>
-<a href="#200" id="200">200</a>
-<a href="#201" id="201">201</a>
-<a href="#202" id="202">202</a>
-<a href="#203" id="203">203</a>
-<a href="#204" id="204">204</a>
-<a href="#205" id="205">205</a>
-<a href="#206" id="206">206</a>
-<a href="#207" id="207">207</a>
-<a href="#208" id="208">208</a>
-<a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
-<a href="#211" id="211">211</a>
-<a href="#212" id="212">212</a>
-<a href="#213" id="213">213</a>
-<a href="#214" id="214">214</a>
-<a href="#215" id="215">215</a>
-<a href="#216" id="216">216</a>
-<a href="#217" id="217">217</a>
-<a href="#218" id="218">218</a>
-<a href="#219" id="219">219</a>
-<a href="#220" id="220">220</a>
-<a href="#221" id="221">221</a>
-<a href="#222" id="222">222</a>
-<a href="#223" id="223">223</a>
-<a href="#224" id="224">224</a>
-</pre><pre class="rust"><code><span class="kw">use </span>bevy_inspector_egui::egui::style::Margin;
-<span class="kw">use </span>leafwing_input_manager::{axislike::SingleAxis, user_input::InputKind, Actionlike};
+</pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
+    prelude::<span class="kw-2">*</span>,
+    settings::{PlayerControlMapping, Settings},
+};
 
-<span class="kw">use super</span>::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">super</span>::MenuPage;
 
 <span class="kw">mod </span>controls;
 <span class="kw">mod </span>networking;
-<span class="kw">mod </span>sound;
+
+<span class="attr">#[derive(Clone, Default)]
+</span><span class="kw">struct </span>SettingsState {
+    tab: SettingsTab,
+    modified_settings: Settings,
+    settings_loaded: bool,
+    currently_binding_input_idx: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+}
 
 <span class="doccomment">/// Which settings tab we are on
-</span><span class="attr">#[derive(Resource, Clone, Copy, PartialEq, Eq)]
-</span><span class="kw">pub enum </span>SettingsTab {
-    Controls,
-    <span class="attr">#[allow(unused)] </span><span class="comment">// TODO: Just for now until we get sound settings setup
-    </span>Sound,
+</span><span class="attr">#[derive(Clone, Copy, PartialEq, Eq, Default)]
+</span><span class="kw">enum </span>SettingsTab {
+    <span class="attr">#[default]
+    </span>Controls,
     Networking,
 }
 
 <span class="kw">impl </span>SettingsTab {
     <span class="kw">const </span>TABS: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<span class="self">Self</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str)] = <span class="kw-2">&amp;</span>[
         (<span class="self">Self</span>::Controls, <span class="string">&quot;controls&quot;</span>),
-        (<span class="self">Self</span>::Networking, <span class="string">&quot;networking&quot;</span>), <span class="comment">// For now, hide the sound tab because we don&#39;t have it working yet.
-                                          // (Self::Sound, &quot;sound&quot;)
-    </span>];
+        (<span class="self">Self</span>::Networking, <span class="string">&quot;networking&quot;</span>),
+    ];
 }
 
-<span class="kw">impl </span>Default <span class="kw">for </span>SettingsTab {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="self">Self</span>::Controls
+<span class="kw">pub fn </span>widget(
+    <span class="kw-2">mut </span>ui: In&lt;<span class="kw-2">&amp;mut </span>egui::Ui&gt;,
+    meta: Root&lt;GameMeta&gt;,
+    localization: Localization&lt;GameMeta&gt;,
+    input: Res&lt;GlobalPlayerControls&gt;,
+    <span class="kw-2">mut </span>mapping: ResMut&lt;PlayerControlMapping&gt;,
+    <span class="kw-2">mut </span>storage: ResMut&lt;Storage&gt;,
+    world: <span class="kw-2">&amp;</span>World,
+) {
+    <span class="kw">let </span>ui = <span class="kw-2">&amp;mut *</span>ui;
+    <span class="kw">let </span><span class="kw-2">mut </span>state = ui.ctx().get_state::&lt;SettingsState&gt;();
+    <span class="kw">let </span>screen_rect = ui.max_rect();
+
+    <span class="kw">if </span>!state.settings_loaded {
+        state.modified_settings = storage.get::&lt;Settings&gt;().unwrap().clone();
+        state.settings_loaded = <span class="bool-val">true</span>;
     }
-}
 
-<span class="attr">#[derive(Resource, Default, Deref, DerefMut)]
-</span><span class="kw">pub struct </span>ModifiedSettings(<span class="kw">pub </span><span class="prelude-ty">Option</span>&lt;Settings&gt;);
+    <span class="kw">let </span><span class="kw-2">mut </span>should_reset = <span class="bool-val">false</span>;
 
-<span class="attr">#[derive(SystemParam)]
-</span><span class="kw">pub struct </span>SettingsMenu&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
-    game: Res&lt;<span class="lifetime">&#39;w</span>, GameMeta&gt;,
-    current_tab: ResMut&lt;<span class="lifetime">&#39;w</span>, SettingsTab&gt;,
-    menu_page: ResMut&lt;<span class="lifetime">&#39;w</span>, MenuPage&gt;,
-    modified_settings: ResMut&lt;<span class="lifetime">&#39;w</span>, ModifiedSettings&gt;,
-    currently_binding_input_idx: Local&lt;<span class="lifetime">&#39;s</span>, <span class="prelude-ty">Option</span>&lt;usize&gt;&gt;,
-    localization: Res&lt;<span class="lifetime">&#39;w</span>, Localization&gt;,
-    adjacencies: ResMut&lt;<span class="lifetime">&#39;w</span>, WidgetAdjacencies&gt;,
-    storage: ResMut&lt;<span class="lifetime">&#39;w</span>, Storage&gt;,
-    control_inputs: controls::ControlInputBindingEvents&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
-    menu_input: Query&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="kw-2">mut </span>ActionState&lt;MenuAction&gt;&gt;,
-    <span class="attr">#[system_param(ignore)]
-    </span>_phantom: PhantomData&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;w </span>(), <span class="kw-2">&amp;</span><span class="lifetime">&#39;s </span>())&gt;,
-}
+    <span class="comment">// Calculate a margin
+    </span><span class="kw">let </span>outer_margin = screen_rect.size() * <span class="number">0.10</span>;
+    <span class="kw">let </span>outer_margin = egui::Margin {
+        left: outer_margin.x,
+        right: outer_margin.x,
+        <span class="comment">// Make top and bottom margins smaller
+        </span>top: outer_margin.y / <span class="number">1.5</span>,
+        bottom: outer_margin.y / <span class="number">1.5</span>,
+    };
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; WidgetSystem <span class="kw">for </span>SettingsMenu&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
-    <span class="kw">type </span>Args = ();
+    <span class="kw">let </span>heading_font = meta
+        .theme
+        .font_styles
+        .heading
+        .with_color(meta.theme.panel.font_color);
 
-    <span class="kw">fn </span>system(
-        world: <span class="kw-2">&amp;mut </span>World,
-        state: <span class="kw-2">&amp;mut </span>SystemState&lt;<span class="self">Self</span>&gt;,
-        ui: <span class="kw-2">&amp;mut </span>egui::Ui,
-        _id: WidgetId,
-        _args: <span class="self">Self</span>::Args,
-    ) {
-        <span class="kw">let </span><span class="kw-2">mut </span>params: SettingsMenu = state.get_mut(world);
+    BorderedFrame::new(<span class="kw-2">&amp;</span>meta.theme.panel.border)
+        .margin(outer_margin)
+        .padding(meta.theme.panel.padding)
+        .show(ui, |ui| {
+            <span class="comment">// Disable all the buttons if we are currently binding an input
+            </span>ui.set_enabled(state.currently_binding_input_idx.is_none());
 
-        <span class="kw">let </span>screen_rect = ui.max_rect();
+            ui.vertical_centered(|ui| {
+                <span class="comment">// Settings Heading
+                </span>ui.label(heading_font.rich(localization.get(<span class="string">&quot;settings&quot;</span>)));
 
-        <span class="comment">// Calculate a margin
-        </span><span class="kw">let </span>outer_margin = screen_rect.size() * <span class="number">0.10</span>;
-        <span class="kw">let </span>outer_margin = Margin {
-            left: outer_margin.x,
-            right: outer_margin.x,
-            <span class="comment">// Make top and bottom margins smaller
-            </span>top: outer_margin.y / <span class="number">1.5</span>,
-            bottom: outer_margin.y / <span class="number">1.5</span>,
-        };
+                <span class="comment">// Add tab list at the top of the panel
+                </span>ui.horizontal(|ui| {
+                    <span class="kw">for </span>(i, (tab, name)) <span class="kw">in </span>SettingsTab::TABS.iter().enumerate() {
+                        <span class="kw">let </span>name = localization.get(name);
+                        <span class="kw">let </span><span class="kw-2">mut </span>name = egui::RichText::new(name);
 
-        BorderedFrame::new(<span class="kw-2">&amp;</span>params.game.ui_theme.panel.border)
-            .margin(outer_margin)
-            .padding(params.game.ui_theme.panel.padding.into())
-            .show(ui, |ui| {
-                <span class="comment">// Disable all the buttons if we are currently binding an input
-                </span>ui.set_enabled(params.currently_binding_input_idx.is_none());
+                        <span class="comment">// Underline the current tab
+                        </span><span class="kw">if </span><span class="kw-2">*</span>tab == state.tab {
+                            name = name.underline();
+                        }
 
-                ui.vertical_centered(|ui| {
-                    <span class="comment">// Settings Heading
-                    </span>ui.themed_label(
-                        <span class="kw-2">&amp;</span>params.game.ui_theme.font_styles.heading,
-                        <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;settings&quot;</span>),
-                    );
+                        <span class="kw">let </span><span class="kw-2">mut </span>button =
+                            BorderedButton::themed(<span class="kw-2">&amp;</span>meta.theme.buttons.normal, name).show(ui);
 
-                    <span class="comment">// Add tab list at the top of the panel
-                    </span><span class="kw">let </span><span class="kw-2">mut </span>tabs = Vec::new();
+                        <span class="comment">// Focus the first tab by default
+                        </span><span class="kw">if </span>i == <span class="number">0 </span>{
+                            button = button.focus_by_default(ui);
+                        }
+
+                        <span class="comment">// Change tab when clicked
+                        </span><span class="kw">if </span>button.clicked() {
+                            state.tab = <span class="kw-2">*</span>tab;
+                        }
+                    }
+                });
+
+                <span class="comment">// Add buttons to the bottom
+                </span>ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                     ui.horizontal(|ui| {
-                        <span class="kw">for </span>(i, (tab, name)) <span class="kw">in </span>SettingsTab::TABS.iter().enumerate() {
-                            <span class="kw">let </span>name = <span class="kw-2">&amp;</span>params.localization.get(<span class="kw-2">*</span>name);
-                            <span class="kw">let </span><span class="kw-2">mut </span>name = egui::RichText::new(name);
+                        <span class="comment">// Calculate button size and spacing
+                        </span><span class="kw">let </span>width = ui.available_width();
+                        <span class="kw">let </span>button_width = width / <span class="number">4.0</span>;
+                        <span class="kw">let </span>button_min_size = vec2(button_width, <span class="number">0.0</span>);
+                        <span class="kw">let </span>button_spacing = (width - <span class="number">3.0 </span>* button_width) / <span class="number">4.0</span>;
 
-                            <span class="comment">// Underline the current tab
-                            </span><span class="kw">if </span>tab == <span class="kw-2">&amp;*</span>params.current_tab {
-                                name = name.underline();
-                            }
+                        ui.add_space(button_spacing);
 
-                            <span class="kw">let </span><span class="kw-2">mut </span>button = BorderedButton::themed(
-                                <span class="kw-2">&amp;</span>params.game.ui_theme.button_styles.normal,
-                                name,
-                            )
-                            .show(ui);
+                        <span class="comment">// Cancel button
+                        </span><span class="kw">if </span>(BorderedButton::themed(
+                            <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
+                            localization.get(<span class="string">&quot;cancel&quot;</span>),
+                        )
+                        .min_size(button_min_size)
+                        .show(ui)
+                        .clicked()
+                            || input.values().any(|x| x.menu_back_just_pressed))
+                            &amp;&amp; state.currently_binding_input_idx.is_none()
+                        {
+                            ui.ctx().set_state(MenuPage::Home);
+                            <span class="comment">// Reset the modified settings to their stored settings.
+                            </span>state.modified_settings = storage.get::&lt;Settings&gt;().unwrap().clone();
+                        }
 
-                            <span class="comment">// Focus the first tab by default
-                            </span><span class="kw">if </span>i == <span class="number">0 </span>{
-                                button = button.focus_by_default(ui);
-                            }
+                        ui.add_space(button_spacing);
 
-                            <span class="comment">// Change tab when clicked
-                            </span><span class="kw">if </span>button.clicked() {
-                                <span class="kw-2">*</span>params.current_tab = <span class="kw-2">*</span>tab;
-                            }
+                        <span class="comment">// Reset button
+                        </span><span class="kw">if </span>BorderedButton::themed(
+                            <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
+                            localization.get(<span class="string">&quot;reset&quot;</span>),
+                        )
+                        .min_size(button_min_size)
+                        .show(ui)
+                        .clicked()
+                        {
+                            should_reset = <span class="bool-val">true</span>;
+                        }
 
-                            tabs.push(button);
+                        ui.add_space(button_spacing);
+
+                        <span class="comment">// Save button
+                        </span><span class="kw">if </span>BorderedButton::themed(
+                            <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
+                            localization.get(<span class="string">&quot;save&quot;</span>),
+                        )
+                        .min_size(button_min_size)
+                        .show(ui)
+                        .clicked()
+                        {
+                            <span class="comment">// Save the settings to disk.
+                            </span><span class="kw-2">*</span>mapping = state.modified_settings.player_controls.clone();
+                            storage.insert(state.modified_settings.clone());
+                            storage.save();
+                            ui.ctx().set_state(MenuPage::Home);
                         }
                     });
 
-                    <span class="comment">// Add buttons to the bottom
-                    </span>ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                        <span class="comment">// Collect button responses so we can add them to adjacency map later
-                        </span><span class="kw">let </span>bottom_buttons = ui
-                            .horizontal(|ui| {
-                                <span class="comment">// Calculate button size and spacing
-                                </span><span class="kw">let </span>width = ui.available_width();
-                                <span class="kw">let </span>button_width = width / <span class="number">4.0</span>;
-                                <span class="kw">let </span>button_min_size = egui::vec2(button_width, <span class="number">0.0</span>);
-                                <span class="kw">let </span>button_spacing = (width - <span class="number">3.0 </span>* button_width) / <span class="number">4.0</span>;
-
-                                ui.add_space(button_spacing);
-
-                                <span class="comment">// Cancel button
-                                </span><span class="kw">let </span>cancel_button = BorderedButton::themed(
-                                    <span class="kw-2">&amp;</span>params.game.ui_theme.button_styles.normal,
-                                    <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;cancel&quot;</span>),
-                                )
-                                .min_size(button_min_size)
-                                .show(ui);
-
-                                <span class="comment">// Go to menu when cancel is clicked
-                                </span><span class="kw">if </span>cancel_button.clicked()
-                                    || params.menu_input.single().just_pressed(MenuAction::Back)
-                                {
-                                    <span class="kw-2">*</span>params.menu_page = MenuPage::Home;
-                                    ui.ctx().clear_focus();
-                                }
-
-                                ui.add_space(button_spacing);
-
-                                <span class="comment">// Reset button
-                                </span><span class="kw">let </span>reset_button = BorderedButton::themed(
-                                    <span class="kw-2">&amp;</span>params.game.ui_theme.button_styles.normal,
-                                    <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;reset&quot;</span>),
-                                )
-                                .min_size(button_min_size)
-                                .show(ui);
-
-                                ui.add_space(button_spacing);
-
-                                <span class="comment">// Save button
-                                </span><span class="kw">let </span>save_button = BorderedButton::themed(
-                                    <span class="kw-2">&amp;</span>params.game.ui_theme.button_styles.normal,
-                                    <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;save&quot;</span>),
-                                )
-                                .min_size(button_min_size)
-                                .show(ui);
-
-                                <span class="comment">// Save new settings if settings button clicked
-                                </span><span class="kw">if </span>save_button.clicked() {
-                                    <span class="comment">// Update in-memory settings
-                                    </span>params.storage.set(
-                                        Settings::STORAGE_KEY,
-                                        params.modified_settings.<span class="number">0</span>.as_ref().unwrap(),
-                                    );
-                                    <span class="comment">// Persist to storage
-                                    </span>params.storage.save();
-
-                                    <span class="comment">// Go to main menu
-                                    </span><span class="kw-2">*</span>params.menu_page = MenuPage::Home;
-                                    ui.ctx().clear_focus();
-                                }
-
-                                [cancel_button, reset_button, save_button]
-                            })
-                            .inner;
-
-                        <span class="comment">// Set the last bottom button&#39;s adjacency to be to the &quot;left&quot; of the first tab. This way
-                        // you can wrap around from the bottom right button to the top left.
-                        </span>params
-                            .adjacencies
-                            .widget(<span class="kw-2">&amp;</span>bottom_buttons[bottom_buttons.len() - <span class="number">1</span>])
-                            .to_left_of(<span class="kw-2">&amp;</span>tabs[<span class="number">0</span>]);
-
-                        ui.vertical(|ui| {
-                            <span class="comment">// Render selected tab
-                            </span><span class="kw">match </span><span class="kw-2">*</span>params.current_tab {
-                                SettingsTab::Controls =&gt; {
-                                    controls::controls_settings_ui(
-                                        <span class="kw-2">&amp;mut </span>params,
-                                        ui,
-                                        <span class="comment">// Reset button clicked
-                                        </span>bottom_buttons[<span class="number">1</span>].clicked(),
-                                        <span class="kw-2">&amp;</span>tabs,
-                                        <span class="kw-2">&amp;</span>bottom_buttons,
-                                    )
-                                }
-                                SettingsTab::Networking =&gt; networking::networking_settings_ui(
-                                    <span class="kw-2">&amp;mut </span>params,
-                                    ui,
-                                    bottom_buttons[<span class="number">1</span>].clicked(),
-                                    <span class="kw-2">&amp;</span>tabs,
-                                    <span class="kw-2">&amp;</span>bottom_buttons,
-                                ),
-                                SettingsTab::Sound =&gt; sound::sound_settings_ui(ui, <span class="kw-2">&amp;</span>params.game),
-                            }
-                        });
+                    ui.vertical(|ui| <span class="kw">match </span>state.tab {
+                        SettingsTab::Controls =&gt; world.run_initialized_system(
+                            controls::widget,
+                            (ui, <span class="kw-2">&amp;mut </span>state, should_reset),
+                        ),
+                        SettingsTab::Networking =&gt; world.run_initialized_system(
+                            networking::widget,
+                            (ui, <span class="kw-2">&amp;mut </span>state, should_reset),
+                        ),
                     });
                 });
             });
-    }
+        });
+
+    <span class="comment">// Update the state with our modified one
+    </span>ui.ctx().set_state(state);
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

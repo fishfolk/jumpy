@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"jumpy":[["impl <a class=\"trait\" href=\"jumpy/prelude/trait.FromWorld.html\" title=\"trait jumpy::prelude::FromWorld\">FromWorld</a> for <a class=\"struct\" href=\"jumpy/platform/struct.Storage.html\" title=\"struct jumpy::platform::Storage\">Storage</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

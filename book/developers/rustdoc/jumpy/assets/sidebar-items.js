@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["AssetHandle","A wrapper around [`Handle<T>`] that also contains the [`AssetPath`][crate::external::bevy::asset::AssetPath] used to load the asset."],["EguiFont","Asset type containing [`egui::FontData`][crate::external::egui::FontData]."],["EguiFontLoader","Bevy asset loader for [`EguiFont`] assets."],["JumpyAssetPlugin","Asset plugin."]]};

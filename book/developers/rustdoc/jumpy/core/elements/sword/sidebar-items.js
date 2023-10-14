@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["SwordState"],"fn":["game_plugin","hydrate","session_plugin","sword_drop","update"],"struct":["PendingDamageRegions","Sword","SwordMeta"]};

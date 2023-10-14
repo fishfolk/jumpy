@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAP_LAYERS_GAP_DEPTH","MAP_LAYERS_MIN_DEPTH"],"fn":["create_nav_graph","handle_out_of_bounds_players","install","spawn_map","z_depth_for_map_layer"],"struct":["LoadedMap","MapSpawned","NavGraph","NavGraphEdge","NavNode","SpawnedMapLayerMeta","SpawnedMapMeta"],"type":["NavGraphInner"]};

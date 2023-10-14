@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":[["ENTITY_FIELD_COMPONENTS",""],["ENTITY_STRUCT",""],["SCENE_ENTITIES",""],["SCENE_STRUCT",""]],"struct":[["ComponentDeserializer",""],["ComponentsSerializer",""],["EntitiesSerializer",""],["EntitySerializer",""],["SceneDeserializer",""],["SceneEntitiesDeserializer",""],["SceneEntityDeserializer",""],["SceneSerializer",""]]};

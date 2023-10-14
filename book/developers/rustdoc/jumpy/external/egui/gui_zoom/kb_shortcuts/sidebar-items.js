@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":[["ZOOM_IN",""],["ZOOM_OUT",""],["ZOOM_RESET",""]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AddEmitterError","AddListenerError"],"struct":["SpatialSceneHandle","SpatialSceneId","SpatialSceneSettings"]};

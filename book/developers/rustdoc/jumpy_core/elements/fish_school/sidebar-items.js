@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["FishState",""]],"fn":[["hydrate",""],["install",""],["update_fish_schools",""]],"struct":[["Fish",""],["FishSchool",""]]};

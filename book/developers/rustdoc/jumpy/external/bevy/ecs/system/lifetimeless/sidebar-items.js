@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"type":[["Read",""],["SCommands",""],["SQuery",""],["SRes",""],["SResMut",""],["Write",""]]};

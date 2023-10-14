@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["propagate_transforms","Update [`GlobalTransform`] component of entities based on entity hierarchy and [`Transform`] component."],["sync_simple_transforms","Update [`GlobalTransform`] component of entities that aren’t in the hierarchy"]]};

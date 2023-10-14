@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":[["GIT","The word `git`."],["GITHUB","The Github logo."],["OS_ANDROID","The Android logo."],["OS_APPLE","The Apple logo."],["OS_LINUX","Tux, the Linux penguin."],["OS_WINDOWS","The Windows logo."],["TWITTER","The Twitter bird."]]};

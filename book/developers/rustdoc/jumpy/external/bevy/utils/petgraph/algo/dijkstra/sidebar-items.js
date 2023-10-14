@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["dijkstra","[Generic] Dijkstra’s shortest path algorithm."]]};

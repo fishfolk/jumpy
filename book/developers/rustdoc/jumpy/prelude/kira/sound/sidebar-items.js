@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["EndPosition","FromFileError","PlaybackPosition","PlaybackRate","PlaybackState"],"mod":["static_sound","streaming"],"struct":["Region"],"trait":["IntoOptionalRegion","Sound","SoundData"]};

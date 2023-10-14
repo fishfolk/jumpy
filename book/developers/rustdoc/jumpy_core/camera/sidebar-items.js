@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["install","Install this module."]],"struct":[["CameraState","The state of the camera."],["ParallaxBackgroundSprite","A sprite that is spawned as a part of the parallax background."]]};

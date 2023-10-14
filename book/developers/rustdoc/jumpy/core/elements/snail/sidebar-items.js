@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Snail"],"fn":["game_plugin","hydrate","session_plugin","update_snails"],"struct":["SnailMeta"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":[["define_atomic_id",""],["render_resource_wrapper",""]]};

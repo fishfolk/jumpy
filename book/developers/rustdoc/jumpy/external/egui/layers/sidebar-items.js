@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Order","Different layer categories"]],"struct":[["LayerId","An identifier for a paint layer. Also acts as an identifier for [`Area`]:s."],["PaintList","A list of [`Shape`]s paired with a clip rectangle."],["ShapeIdx","A unique identifier of a specific [`Shape`] in a [`PaintList`]."]]};

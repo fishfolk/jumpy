@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["install","Install this module."]],"struct":[["Bullet","Bullet component."],["BulletHandle","Component containing the bullet’s metadata handle."]]};

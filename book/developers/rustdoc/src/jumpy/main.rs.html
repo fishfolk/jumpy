@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/main.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>main.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/main.rs`."><title>main.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-cb6f1f67f1bcd037.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.73.0 (cc66ad468 2023-10-03)" data-channel="1.73.0" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-1596385f77d47ef2.css" data-theme-dark-css="dark-0a43001d3fc2282c.css" data-theme-ayu-css="ayu-fd19013d6ce078bf.css" ><script src="../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-1596385f77d47ef2.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-0a43001d3fc2282c.css"><link rel="stylesheet" href="../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -93,8 +93,7 @@
     }
 </style>
 
-</head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../jumpy/index.html">
-                        <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -193,85 +192,37 @@
 <a href="#97" id="97">97</a>
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-<a href="#104" id="104">104</a>
-<a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
-<a href="#108" id="108">108</a>
-<a href="#109" id="109">109</a>
-<a href="#110" id="110">110</a>
-<a href="#111" id="111">111</a>
-<a href="#112" id="112">112</a>
-<a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
-<a href="#115" id="115">115</a>
-<a href="#116" id="116">116</a>
-<a href="#117" id="117">117</a>
-<a href="#118" id="118">118</a>
-<a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
-<a href="#131" id="131">131</a>
-<a href="#132" id="132">132</a>
-<a href="#133" id="133">133</a>
-<a href="#134" id="134">134</a>
-<a href="#135" id="135">135</a>
-<a href="#136" id="136">136</a>
-<a href="#137" id="137">137</a>
-<a href="#138" id="138">138</a>
-<a href="#139" id="139">139</a>
-<a href="#140" id="140">140</a>
-<a href="#141" id="141">141</a>
-<a href="#142" id="142">142</a>
-<a href="#143" id="143">143</a>
-<a href="#144" id="144">144</a>
-<a href="#145" id="145">145</a>
-<a href="#146" id="146">146</a>
-</pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./README.md&quot;</span>)]
-#![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
+</pre></div><pre class="rust"><code><span class="attr">#![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
 </span><span class="attr">#![cfg_attr(doc, allow(unknown_lints))]
 #![deny(rustdoc::all)]
-#![allow(rustdoc::private_intra_doc_links)]
-#![allow(clippy::type_complexity)]
-#![allow(clippy::forget_non_drop)]
 #![allow(clippy::too_many_arguments)]
+</span><span class="comment">// TODO: Warn on dead code.
+// This is temporarily disabled while migrating to the new bones.
+</span><span class="attr">#![allow(dead_code)]
+#![allow(ambiguous_glob_reexports)]
+#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./README.md&quot;</span>)]
 
-</span><span class="doccomment">/// Sets the global Rust allocator to MiMalloc instead of the system one.
-///
-/// Doesn&#39;t do anything on WASM builds. ( We may want an alternative allocator for WASM later. )
-</span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-#[global_allocator]
-</span><span class="kw">static </span>GLOBAL_ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
+</span><span class="kw">use </span>bones_bevy_renderer::BonesBevyRenderer;
+<span class="kw">use </span>bones_framework::prelude::<span class="kw-2">*</span>;
 
-<span class="doccomment">/// External crate documentation.
-///
-/// This module only exists during docs builds and serves to make it eaiser to link to relevant
-/// documentation in external crates.
-</span><span class="attr">#[cfg(doc)]
-</span><span class="kw">pub mod </span>external {
-    <span class="attr">#[doc(inline)]
-    </span><span class="kw">pub use </span>bevy;
-    <span class="attr">#[doc(inline)]
-    </span><span class="kw">pub use </span>bevy_egui::egui;
-    <span class="attr">#[doc(inline)]
-    </span><span class="kw">pub use </span>bones_matchmaker_proto;
-    <span class="attr">#[doc(inline)]
-    </span><span class="kw">pub use </span>ggrs;
+<span class="kw">pub mod </span>core;
+<span class="kw">pub mod </span>input;
+<span class="kw">pub mod </span>sessions;
+<span class="kw">pub mod </span>settings;
+<span class="kw">pub mod </span>ui;
+
+<span class="kw">mod </span>prelude {
+    <span class="kw">pub use crate</span>::{
+        core::prelude::<span class="kw-2">*</span>, impl_system_param, input::<span class="kw-2">*</span>, sessions::<span class="kw-2">*</span>, settings::<span class="kw-2">*</span>, GameMeta,
+    };
+    <span class="kw">pub use </span>bones_framework::prelude::<span class="kw-2">*</span>;
+    <span class="kw">pub use </span>once_cell::sync::Lazy;
+    <span class="kw">pub use </span>serde::{Deserialize, Serialize};
+    <span class="kw">pub use </span>std::{sync::Arc, time::Duration};
+    <span class="kw">pub use </span>tracing::{debug, error, info, trace, warn};
 }
+<span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="comment">// This will cause Bevy to be dynamically linked during development,
 // which can greatly reduce re-compile times in some circumstances.
@@ -280,111 +231,64 @@
 #[allow(clippy::single_component_path_imports)]
 </span><span class="kw">use </span>bevy_dylib;
 
-<span class="kw">pub mod </span>assets;
-<span class="kw">pub mod </span>audio;
-<span class="kw">pub mod </span>bevy_states;
-<span class="kw">pub mod </span>config;
-<span class="kw">pub mod </span>console;
-<span class="kw">pub mod </span>debug;
-<span class="kw">pub mod </span>input;
-<span class="kw">pub mod </span>loading;
-<span class="kw">pub mod </span>localization;
-<span class="kw">pub mod </span>logs;
-<span class="kw">pub mod </span>metadata;
-<span class="kw">pub mod </span>platform;
-<span class="kw">pub mod </span>profiling;
-<span class="kw">pub mod </span>puffin_tracing;
-<span class="kw">pub mod </span>session;
-<span class="kw">pub mod </span>ui;
-<span class="kw">pub mod </span>utils;
-
-<span class="kw">pub mod </span>camera;
-<span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-</span><span class="kw">pub mod </span>networking;
-<span class="kw">pub mod </span>prelude;
-<span class="kw">use </span>prelude::<span class="kw-2">*</span>;
-
-<span class="doccomment">/// The entrypoint function for the jumpy game.
-///
-/// This function:
-///
-/// - Parses engine config:
-///     - On native: commandline arguments
-///     - On web: query string parameters
-/// - Initializes the Bevy [`App`]
-/// - Initializes settings and resources
-/// - Installs our Bevy plugins
-///     - This includes 3rd party plugins, and our custom bevy plugins
-///     - Nearly all of the game logic resides in these plugins
-/// - Starts the game
-</span><span class="kw">pub fn </span>main() {
-    <span class="comment">// Load engine config. This will parse CLI arguments or web query string so we want to do it
-    // before we create the app to make sure everything is in order.
-    </span><span class="kw">let </span>engine_config = Lazy::force(<span class="kw-2">&amp;</span>config::ENGINE_CONFIG);
-
-    <span class="kw">let </span><span class="kw-2">mut </span>app = App::new();
-
-    app
-        <span class="comment">// Initialize resources
-        </span>.insert_resource(ClearColor(Color::BLACK))
-        <span class="comment">// Set initial game state
-        </span>.add_state::&lt;EngineState&gt;()
-        .add_state::&lt;InGameState&gt;()
-        .add_state::&lt;GameEditorState&gt;()
-        <span class="comment">// Install plugins
-        //
-        // Log plugin is added first to ensure console_error_panic_hook is set early on,
-        // otherwise in wasm an exception may occur without being logged to browser console.
-        </span>.add_plugin(JumpyLogPlugin {
-            filter: engine_config.log_level.clone(),
-            ..default()
-        })
-        .add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: <span class="prelude-val">Some</span>(Window {
-                        title: <span class="string">&quot;Fish Folk: Jumpy&quot;</span>.to_string(),
-                        fit_canvas_to_parent: <span class="bool-val">true</span>,
-                        ..default()
-                    }),
-                    ..default()
-                })
-                .set(ImagePlugin::default_nearest())
-                .set(bevy::asset::AssetPlugin {
-                    watch_for_changes: engine_config.hot_reload,
-                    asset_folder: engine_config
-                        .asset_dir
-                        .clone()
-                        .unwrap_or_else(|| <span class="string">&quot;assets&quot;</span>.into()),
-                })
-                <span class="comment">// We are using JumpyLogPlugin, disabled to avoid conflicts in global logging/tracing.
-                </span>.disable::&lt;bevy::log::LogPlugin&gt;(),
-        )
-        .add_plugin(bevy_tweening::TweeningPlugin)
-        .add_plugin(bevy_framepace::FramepacePlugin)
-        .add_plugin(JumpyPlayerInputPlugin)
-        .add_plugin(JumpySessionPlugin)
-        .add_plugin(JumpyUiPlugin)
-        .add_plugin(JumpyAudioPlugin)
-        .add_plugin(JumpyPlatformPlugin)
-        .add_plugin(JumpyLoadingPlugin)
-        .add_plugin(JumpyAssetPlugin)
-        .add_plugin(JumpyLocalizationPlugin)
-        .add_plugin(JumpyDebugPlugin)
-        .add_plugin(JumpyConsolePlugin);
-
-    <span class="macro">debug!</span>(<span class="question-mark">?</span>engine_config, <span class="string">&quot;Starting game&quot;</span>);
-
-    <span class="comment">// Get the game handle
-    </span><span class="kw">let </span>asset_server = app.world.get_resource::&lt;AssetServer&gt;().unwrap();
-    <span class="kw">let </span>game_asset = <span class="kw-2">&amp;</span>engine_config.game_asset;
-    <span class="kw">let </span>game_handle = GameMetaHandle(asset_server.load(game_asset));
-
-    <span class="comment">// Insert game handle resource
-    </span>app.world.insert_resource(game_handle);
-
-    <span class="comment">// Start the game
-    </span>app.run()
+<span class="attr">#[derive(HasSchema, Clone, Debug, Default)]
+#[type_data(metadata_asset(<span class="string">&quot;game&quot;</span>))]
+#[repr(C)]
+</span><span class="kw">pub struct </span>GameMeta {
+    <span class="kw">pub </span>core: CoreMeta,
+    <span class="kw">pub </span>default_settings: settings::Settings,
+    <span class="kw">pub </span>localization: Handle&lt;LocalizationAsset&gt;,
+    <span class="kw">pub </span>theme: ui::UiTheme,
+    <span class="kw">pub </span>main_menu: ui::main_menu::MainMenuMeta,
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+
+<span class="kw">fn </span>main() {
+    <span class="comment">// Initialize the Bevy task pool manually so that we can use it during startup.
+    </span>bevy_tasks::IoTaskPool::init(bevy_tasks::TaskPool::new);
+
+    <span class="comment">// Register types that we will load from persistent storage.
+    </span>settings::Settings::schema();
+
+    <span class="comment">// First create bones game.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>game = Game::new();
+
+    <span class="comment">// Register our game asset type
+    </span>GameMeta::schema();
+
+    game
+        <span class="comment">// Install game plugins
+        </span>.install_plugin(DefaultGamePlugin)
+        .install_plugin(settings::game_plugin)
+        .install_plugin(input::game_plugin)
+        .install_plugin(core::game_plugin)
+        <span class="comment">// We initialize the asset server and register asset types
+        </span>.init_shared_resource::&lt;AssetServer&gt;()
+        .register_default_assets();
+
+    <span class="comment">// Create a new session for the game menu. Each session is it&#39;s own bones world with it&#39;s own
+    // plugins, systems, and entities.
+    </span>game.sessions.start_menu();
+
+    <span class="comment">// Create a new session for the pause menu, which sits in the background by default and only
+    // does anything while the game is running.
+    </span>game.sessions
+        .create(SessionNames::PAUSE_MENU)
+        .install_plugin(ui::pause_menu::session_plugin);
+
+    <span class="comment">// Create a bevy renderer for the bones game and run it.
+    </span>BonesBevyRenderer {
+        game,
+        pixel_art: <span class="bool-val">true</span>,
+        game_version: Version::new(
+            <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION_MAJOR&quot;</span>).parse().unwrap(),
+            <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION_MINOR&quot;</span>).parse().unwrap(),
+            <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION_PATCH&quot;</span>).parse().unwrap(),
+        ),
+        app_namespace: (<span class="string">&quot;org&quot;</span>.into(), <span class="string">&quot;fishfolk&quot;</span>.into(), <span class="string">&quot;jumpy&quot;</span>.into()),
+        asset_dir: <span class="string">&quot;assets&quot;</span>.into(),
+        packs_dir: <span class="string">&quot;packs&quot;</span>.into(),
+    }
+    .app()
+    .run();
+}
+</code></pre></div></section></main></body></html>

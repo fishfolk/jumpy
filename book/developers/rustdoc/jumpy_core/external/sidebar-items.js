@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["bones_bevy_asset","An asset integration between Bevy and bones."],["bones_lib","Opinionated game meta-engine built on Bevy."]]};

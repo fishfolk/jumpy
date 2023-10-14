@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Event","`Event`s represent single points in time where something occurred during the execution of a program."]]};

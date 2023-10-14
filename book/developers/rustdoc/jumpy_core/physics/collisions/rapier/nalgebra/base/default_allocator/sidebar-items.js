@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["DefaultAllocator","An allocator based on [`ArrayStorage`] and [`VecStorage`] for statically-sized and dynamically-sized matrices respectively."]]};

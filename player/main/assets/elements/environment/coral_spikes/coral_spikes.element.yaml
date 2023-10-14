@@ -4,9 +4,4 @@ editor:
   grab_size: [70, 50]
   grab_offset: [0, 0]
   show_name: false
-builtin: !Spike
-  atlas: ./coral_spikes.atlas.yaml
-  body_size: [45, 25]
-  start_frame: 0
-  end_frame: 5
-  fps: 12
+data: spike.yaml

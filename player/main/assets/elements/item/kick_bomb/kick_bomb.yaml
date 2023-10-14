@@ -1,0 +1,26 @@
+fuse_time: 8s
+kick_velocity: [10, 6]
+throw_velocity: 10
+damage_region_size: [60, 60]
+damage_region_lifetime: 0.6
+
+atlas: ./kick_bomb.atlas.yaml
+
+explosion_atlas: ./explosion.atlas.yaml
+explosion_lifetime: 1.0
+explosion_frames: 12
+explosion_fps: 8
+explosion_sound: ./explosion.ogg
+explosion_volume: 0.1
+
+fuse_sound_volume: 0.1
+fuse_sound: ./fuse.ogg
+
+body_diameter: 26
+grab_offset: [5, -2]
+fin_anim: grab_2
+can_rotate: true
+bounciness: 0.6
+angular_velocity: 0.1
+# arm_delay: 0.02
+arm_delay: 500ms

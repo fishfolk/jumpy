@@ -2,4 +2,4 @@ name: Player Spawner
 category: Map
 editor:
   grab_size: [32, 48]
-builtin: !PlayerSpawner
+data: player_spawner.yaml

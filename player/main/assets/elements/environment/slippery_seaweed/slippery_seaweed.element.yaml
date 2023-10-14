@@ -3,9 +3,4 @@ category: Gameplay
 editor:
   grab_size: [40, 51]
   show_name: false
-builtin: !SlipperySeaweed
-  atlas: ./slippery_seaweed.atlas.yaml
-  body_size: [8, 8]
-  start_frame: 0
-  end_frame: 4
-  fps: 6
+data: slippery_seaweed.yaml

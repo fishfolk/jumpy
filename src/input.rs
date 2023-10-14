@@ -46,7 +46,7 @@ pub struct EguiInputSettings {
 
 /// Game system that takes the raw input events and converts it to player controls based on the
 /// player input map.
-fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
+pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
     // We collect the global player controls here in the egui input hoook so that it will be
     // available immediately to egui, and then available to the rest of the systems that run after.
     collect_player_controls(game);

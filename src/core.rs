@@ -127,7 +127,7 @@ impl SessionRunner for JumpyDefaultMatchRunner {
                     let Some(source) = &player_input.control_source else {
                         return;
                     };
-                    player_input.control = input.get(source).unwrap().clone();
+                    player_input.control = *input.get(source).unwrap();
                 });
             }
 

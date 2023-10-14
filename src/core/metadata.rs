@@ -11,7 +11,7 @@ mod player;
 pub use map::*;
 pub use player::*;
 
-/// Extension trait for the bones [`AssetServer`][bones_asset::AssetServer].
+/// Extension trait for the bones [`AssetServer`].
 pub trait MatchAssetServerExt {
     /// Register the default assets from `bones_framework`.
     fn register_match_assets(self) -> Self;

@@ -94,10 +94,15 @@ impl std::hash::Hash for ColliderShape {
 
 impl PartialOrd for ColliderShape {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for ColliderShape {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         use ordered_float::OrderedFloat as F;
         use std::cmp::Ordering::*;
 
-        Some(match self {
+        match self {
             ColliderShape::Circle { diameter: r1 } => match other {
                 ColliderShape::Circle { diameter: r2 } => F(*r1).cmp(&F(*r2)),
                 ColliderShape::Rectangle { .. } => Less,
@@ -113,11 +118,6 @@ impl PartialOrd for ColliderShape {
                 }
                 ColliderShape::Circle { .. } => Greater,
             },
-        })
-    }
-}
-impl Ord for ColliderShape {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(other).unwrap()
+        }
     }
 }

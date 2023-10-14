@@ -313,7 +313,7 @@ fn player_select_panel(
     // If the handle is empty
     if *player_handle == default() {
         // Select the first player
-        *player_handle = meta.core.players[0].clone();
+        *player_handle = meta.core.players[0];
     }
 
     // Handle player joining
@@ -390,7 +390,7 @@ fn player_select_panel(
                     .map(|x| if x == 0 { None } else { Some(x - 1) })
                     .unwrap_or(Some(meta.core.player_hats.len() - 1))
             };
-            slot.selected_hat = next_idx.map(|idx| meta.core.player_hats.get(idx).unwrap().clone());
+            slot.selected_hat = next_idx.map(|idx| *meta.core.player_hats.get(idx).unwrap());
 
             // #[cfg(not(target_arch = "wasm32"))]
             // if let Some(socket) = &params.network_socket {
@@ -418,7 +418,7 @@ fn player_select_panel(
                     .players
                     .get(current_player_handle_idx + 1)
                     .cloned()
-                    .unwrap_or_else(|| meta.core.players[0].clone());
+                    .unwrap_or_else(|| meta.core.players[0]);
             } else if direction.x <= 0.0 {
                 if current_player_handle_idx > 0 {
                     *player_handle = meta
@@ -428,7 +428,7 @@ fn player_select_panel(
                         .cloned()
                         .unwrap();
                 } else {
-                    *player_handle = meta.core.players.iter().last().unwrap().clone();
+                    *player_handle = *meta.core.players.iter().last().unwrap();
                 }
             }
 
@@ -607,7 +607,7 @@ fn player_select_panel(
                             slot.active = true;
                             let rand_idx =
                                 THREAD_RNG.with(|rng| rng.usize(0..meta.core.players.len()));
-                            slot.selected_player = meta.core.players[rand_idx].clone();
+                            slot.selected_player = meta.core.players[rand_idx];
                         }
                     }
                 });

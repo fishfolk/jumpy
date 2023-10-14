@@ -18,7 +18,8 @@ allow = [
   "CC0-1.0",
   "ISC",
   "BSD-2-Clause",
-  "MPL-2.0",                        # TODO(zicklag): I believe MPL is fine for us, but maybe double-check this.
+  "BSD-2-Clause-Patent",
+  "MPL-2.0",
   "OpenSSL",
 ]
 default = "deny"

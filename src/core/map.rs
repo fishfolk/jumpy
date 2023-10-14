@@ -120,17 +120,17 @@ impl From<NavNode> for IVec2 {
 }
 impl std::cmp::Ord for NavNode {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(other).unwrap()
+        let xcmp = self.0.x.cmp(&other.0.x);
+        if xcmp == std::cmp::Ordering::Equal {
+            self.0.y.cmp(&other.0.y)
+        } else {
+            xcmp
+        }
     }
 }
 impl std::cmp::PartialOrd for NavNode {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        let xcmp = self.0.x.cmp(&other.0.x);
-        Some(if xcmp == std::cmp::Ordering::Equal {
-            self.0.y.cmp(&other.0.y)
-        } else {
-            xcmp
-        })
+        Some(self.cmp(other))
     }
 }
 

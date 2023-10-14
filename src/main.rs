@@ -7,6 +7,7 @@
 // This is temporarily disabled while migrating to the new bones.
 #![allow(dead_code)]
 #![allow(ambiguous_glob_reexports)]
+#![doc = include_str!("./README.md")]
 
 use bones_bevy_renderer::BonesBevyRenderer;
 use bones_framework::prelude::*;

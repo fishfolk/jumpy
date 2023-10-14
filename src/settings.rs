@@ -18,7 +18,7 @@ fn load_settings(game: &mut Game) {
     }
 }
 
-/// Global settings, stored and accessed through [`crate::platform::Storage`]
+/// Global settings, stored and accessed through [`Storage`].
 #[derive(HasSchema, Debug, Clone, Default)]
 #[repr(C)]
 pub struct Settings {

@@ -1,17 +1,17 @@
-# music:
-#   title_screen: music/01 fishycuffs.ogg
-#   fight:
-#     - music/02 whalecome.ogg
-#     - music/03 ahoy!.ogg
-#     - music/04 bait the hook.ogg
-#     - music/05 fire in the hole.ogg
-#     - music/06 fishsticks.ogg
-#     - music/07 jolly roger.ogg
-#     - music/08 krill or be krilled.ogg
-#     - music/09 landlubber.ogg
-#   character_screen: music/10 fish bucket.ogg
-#   results_screen: music/11 thar she blows!.ogg
-#   credits: music/12 all hands hoay!.ogg
+music:
+  title_screen: music/01 fishycuffs.ogg
+  fight:
+    - music/02 whalecome.ogg
+    - music/03 ahoy!.ogg
+    - music/04 bait the hook.ogg
+    - music/05 fire in the hole.ogg
+    - music/06 fishsticks.ogg
+    - music/07 jolly roger.ogg
+    - music/08 krill or be krilled.ogg
+    - music/09 landlubber.ogg
+  character_screen: music/10 fish bucket.ogg
+  results_screen: music/11 thar she blows!.ogg
+  credits: music/12 all hands hoay!.ogg
 
 
 main_menu:

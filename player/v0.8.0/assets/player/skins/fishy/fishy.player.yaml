@@ -1,0 +1,242 @@
+name: Fishy
+
+sounds:
+  jump: ../../sounds/jump.ogg
+  jump_volume: 0.05
+  land: ../../sounds/land.ogg
+  land_volume: 0.025
+  grab: ../../sounds/grab.ogg
+  grab_volume: 0.05
+  drop: ../../sounds/drop.ogg
+  drop_volume: 0.05
+
+stats:
+  air_speed: 6
+  accel_air_speed: 1
+  walk_speed: 6
+  accel_walk_speed: 1
+  jump_speed: 11
+  slow_fall_speed: 1.5
+  slowdown: 0.8
+
+body_size: [32, 48]
+slide_body_size: [48, 32]
+gravity: 0.6
+
+layers:
+  body:
+    atlas: ./fishy-body.atlas.yaml
+    animations: &default_anims
+      idle:
+        frames:
+          - idx: 0
+            offset: [0, 0]
+          - idx: 1
+            offset: [0, 0]
+          - idx: 2
+            offset: [0, -1]
+          - idx: 3
+            offset: [0, -2]
+          - idx: 4
+            offset: [0, -2]
+          - idx: 5
+            offset: [0, -1]
+          - idx: 6
+            offset: [0, 0]
+          - idx: 7
+            offset: [0, 0]
+          - idx: 8
+            offset: [0, 0]
+          - idx: 9
+            offset: [0, -1]
+          - idx: 10
+            offset: [0, -2]
+          - idx: 11
+            offset: [0, -2]
+          - idx: 12
+            offset: [0, -1]
+          - idx: 13
+            offset: [0, 0]
+        fps: &fps 9
+        repeat: true
+      fall:
+        frames:
+          - idx: 42
+            offset: [0, 3]
+        fps: *fps
+        repeat: false
+      rise:
+        frames:
+          - idx: 28
+            offset: [0, 3]
+        fps: *fps
+        repeat: false
+      walk:
+        frames:
+          - idx: 14
+            offset: [0, 0]
+          - idx: 15
+            offset: [0, -1]
+          - idx: 16
+            offset: [0, -2]
+          - idx: 17
+            offset: [0, 0]
+          - idx: 18
+            offset: [0, -1]
+          - idx: 19
+            offset: [0, -2]
+        fps: *fps
+        repeat: true
+      crouch:
+        frames:
+          - idx: 56
+            offset: [0, -4]
+        fps: *fps
+        repeat: false
+      slide:
+        fps: *fps
+        frames:
+          - idx: 58
+            offset: [1, -8]
+            head_offset: [9, -17]
+        repeat: false
+      death_spine:
+        frames:
+          - idx: 70
+          - idx: 71
+          - idx: 72
+          - idx: 73
+          - idx: 74
+          - idx: 75
+          - idx: 76
+        fps: *fps
+        repeat: false
+      death_belly:
+        frames:
+          - idx: 84
+          - idx: 85
+          - idx: 86
+          - idx: 87
+          - idx: 88
+          - idx: 89
+          - idx: 90
+        fps: *fps
+        repeat: false
+  fin:
+    atlas: ./fishy-fin.atlas.yaml
+    offset: [-14, 3]
+    animations:
+      idle:
+        fps: *fps
+        frames:
+          - 0
+          - 0
+          - 1
+          - 1
+          - 0
+          - 2
+          - 2
+          - 0
+          - 0
+          - 1
+          - 1
+          - 0
+          - 2
+          - 2
+      walk:
+        fps: *fps
+        frames:
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+      rise:
+        fps: *fps
+        frames:
+          - 10
+      fall:
+        fps: *fps
+        frames:
+          - 15
+      crouch:
+        fps: *fps
+        frames:
+          - 20
+      slide:
+        fps: *fps
+        frames:
+          - 25
+      death_spine:
+        fps: *fps
+        frames:
+          - 3 # Intentionally an invisible frame
+      death_belly:
+        fps: *fps
+        frames:
+          - 3 # Intentionally an invisible frame
+      grab_1:
+        fps: *fps
+        frames:
+          - 25
+      grab_2:
+        fps: *fps
+        frames:
+          - 30
+  face:
+    atlas: ./fishy-face.atlas.yaml
+    offset: [11, 15]
+    animations:
+      idle:
+        fps: *fps
+        frames:
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 4
+          - 5
+          - 6
+          - 0
+      walk:
+        fps: *fps
+        frames:
+          - 0
+      rise:
+        fps: *fps
+        frames:
+          - 1
+      fall:
+        fps: *fps
+        frames:
+          - 2
+      crouch:
+        fps: *fps
+        frames:
+          - 5
+      slide:
+        fps: *fps
+        frames:
+          - 10 # Intentionally an invisible frame
+      death_spine:
+        fps: *fps
+        frames:
+          - 10 # Intentionally an invisible frame
+      death_belly:
+        fps: *fps
+        frames:
+          - 10 # Intentionally an invisible frame
+      emote_alarm:
+        fps: *fps
+        frames:
+          - 9
+          - 8
+          - 9
+          - 8
+          - 9
+          - 8

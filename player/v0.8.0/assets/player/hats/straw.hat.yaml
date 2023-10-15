@@ -1,0 +1,5 @@
+name: Straw Hat
+atlas: ./straw.atlas.yaml
+
+offset: [-3, 28]
+body_size: [46, 29]

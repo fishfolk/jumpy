@@ -1,0 +1,4 @@
+image: ./seaweed.png
+tile_size: [48, 51]
+rows: 1
+columns: 5

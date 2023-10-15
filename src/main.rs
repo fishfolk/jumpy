@@ -14,6 +14,7 @@ use bones_framework::prelude::*;
 
 pub mod core;
 pub mod input;
+pub mod music;
 pub mod sessions;
 pub mod settings;
 pub mod ui;
@@ -46,6 +47,17 @@ pub struct GameMeta {
     pub localization: Handle<LocalizationAsset>,
     pub theme: ui::UiTheme,
     pub main_menu: ui::main_menu::MainMenuMeta,
+    pub music: GameMusic,
+}
+
+#[derive(HasSchema, Clone, Debug, Default)]
+#[repr(C)]
+pub struct GameMusic {
+    pub title_screen: Handle<AudioSource>,
+    pub fight: SVec<Handle<AudioSource>>,
+    pub character_screen: Handle<AudioSource>,
+    pub results_screen: Handle<AudioSource>,
+    pub credits: Handle<AudioSource>,
 }
 
 fn main() {
@@ -64,6 +76,7 @@ fn main() {
     game
         // Install game plugins
         .install_plugin(DefaultGamePlugin)
+        .install_plugin(music::game_plugin)
         .install_plugin(settings::game_plugin)
         .install_plugin(input::game_plugin)
         .install_plugin(core::game_plugin)

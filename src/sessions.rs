@@ -5,6 +5,7 @@ impl SessionNames {
     pub const GAME: &str = "game";
     pub const MAIN_MENU: &str = "main_menu";
     pub const PAUSE_MENU: &str = "pause_menu";
+    pub const MUSIC_PLAYER: &str = "music_player";
 }
 
 pub trait SessionExt {

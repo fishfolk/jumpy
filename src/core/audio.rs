@@ -45,7 +45,7 @@ pub enum AudioEvent {
 }
 
 fn play_sounds(
-    audio: Res<AudioManager>,
+    mut audio: ResMut<AudioManager>,
     mut audio_events: ResMut<AudioEvents>,
     assets: Res<AssetServer>,
 ) {
@@ -56,10 +56,9 @@ fn play_sounds(
                 sound_source,
                 volume,
             } => {
-                if let Err(e) = audio.borrow_mut().play(
+                if let Err(e) = audio.play(
                     assets
                         .get(sound_source)
-                        .0
                         .with_settings(StaticSoundSettings::default().volume(volume)),
                 ) {
                     warn!("Error playing sound: {e}");

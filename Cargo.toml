@@ -140,3 +140,8 @@ ignored = [
   "getrandom", # Needed to add `js` feature
 ]
 
+# # Uncomment for testing during bones development, if you clone bones adjacent to the jumpy
+# # repo.
+# [patch.'https://github.com/fishfolk/bones']
+# bones_framework     = { path = "../bones/framework_crates/bones_framework" }
+# bones_bevy_renderer = { path = "../bones/framework_crates/bones_bevy_renderer" }

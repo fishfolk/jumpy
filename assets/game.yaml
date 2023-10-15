@@ -82,7 +82,7 @@ default_settings:
 localization: locales/localization.yaml
 
 theme:
-  scale: 1.00
+  scale: 1.2
   colors:
     positive: 3EC761
 

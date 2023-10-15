@@ -122,8 +122,8 @@ opt-level     = 3
 
 # Optimize our code a little bit.
 [profile.dev]
-codegen-units = 128
-opt-level     = 0
+codegen-units = 256
+opt-level     = 1
 
 [profile.dev-optimized]
 debug     = 1

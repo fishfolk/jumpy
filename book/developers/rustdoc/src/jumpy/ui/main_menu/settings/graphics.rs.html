@@ -122,6 +122,10 @@
 <a href="#27" id="27">27</a>
 <a href="#28" id="28">28</a>
 <a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>widget(
@@ -143,12 +147,16 @@
 
     ui.add_space(normal_font.size / <span class="number">2.0</span>);
 
-    ui.horizontal(|ui| {
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span>ui.horizontal(|ui| {
         ui.add_space(normal_font.size * <span class="number">3.0</span>);
         ui.checkbox(
             <span class="kw-2">&amp;mut </span>state.modified_settings.fullscreen,
             normal_font.rich(localization.get(<span class="string">&quot;fullscreen&quot;</span>)),
         );
     });
+
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+    </span>ui.label(normal_font.rich(localization.get(<span class="string">&quot;no-graphics-settings-on-web&quot;</span>)));
 }
 </code></pre></div></section></main></body></html>

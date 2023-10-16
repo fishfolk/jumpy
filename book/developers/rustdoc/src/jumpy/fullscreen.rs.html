@@ -117,6 +117,12 @@
 <a href="#22" id="22">22</a>
 <a href="#23" id="23">23</a>
 <a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>game_plugin(game: <span class="kw-2">&amp;mut </span>Game) {
@@ -124,21 +130,27 @@
 }
 
 <span class="kw">fn </span>update_fullscreen(game: <span class="kw-2">&amp;mut </span>Game) {
-    <span class="kw">let </span>storage = game.shared_resource_cell::&lt;Storage&gt;().unwrap();
-    <span class="kw">let </span><span class="kw-2">mut </span>storage = storage.borrow_mut();
-    <span class="kw">let </span>window = game.shared_resource_cell::&lt;Window&gt;().unwrap();
-    <span class="kw">let </span><span class="kw-2">mut </span>window = window.borrow_mut();
-    <span class="kw">let </span>keyboard = game.shared_resource::&lt;KeyboardInputs&gt;().unwrap();
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+    </span><span class="kw">let _ </span>= game;
 
-    <span class="kw">let </span>f11_pressed = keyboard
-        .key_events
-        .iter()
-        .any(|x| x.key_code == Set(KeyCode::F11) &amp;&amp; x.button_state.pressed());
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span>{
+        <span class="kw">let </span>storage = game.shared_resource_cell::&lt;Storage&gt;().unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>storage = storage.borrow_mut();
+        <span class="kw">let </span>window = game.shared_resource_cell::&lt;Window&gt;().unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>window = window.borrow_mut();
+        <span class="kw">let </span>keyboard = game.shared_resource::&lt;KeyboardInputs&gt;().unwrap();
 
-    <span class="kw">let </span>settings = storage.get_mut::&lt;Settings&gt;().unwrap();
-    <span class="kw">if </span>f11_pressed {
-        settings.fullscreen = !settings.fullscreen;
+        <span class="kw">let </span>f11_pressed = keyboard
+            .key_events
+            .iter()
+            .any(|x| x.key_code == Set(KeyCode::F11) &amp;&amp; x.button_state.pressed());
+
+        <span class="kw">let </span>settings = storage.get_mut::&lt;Settings&gt;().unwrap();
+        <span class="kw">if </span>f11_pressed {
+            settings.fullscreen = !settings.fullscreen;
+        }
+        window.fullscreen = settings.fullscreen;
     }
-    window.fullscreen = settings.fullscreen;
 }
 </code></pre></div></section></main></body></html>

@@ -6,6 +6,7 @@ use crate::{
 use super::MenuPage;
 
 mod controls;
+mod graphics;
 mod networking;
 
 #[derive(Clone, Default)]
@@ -22,12 +23,14 @@ enum SettingsTab {
     #[default]
     Controls,
     Networking,
+    Graphics,
 }
 
 impl SettingsTab {
     const TABS: &'static [(Self, &'static str)] = &[
         (Self::Controls, "controls"),
         (Self::Networking, "networking"),
+        (Self::Graphics, "graphics"),
     ];
 }
 
@@ -171,6 +174,10 @@ pub fn widget(
                         ),
                         SettingsTab::Networking => world.run_initialized_system(
                             networking::widget,
+                            (ui, &mut state, should_reset),
+                        ),
+                        SettingsTab::Graphics => world.run_initialized_system(
+                            graphics::widget,
                             (ui, &mut state, should_reset),
                         ),
                     });

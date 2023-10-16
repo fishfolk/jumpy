@@ -19,13 +19,25 @@ fn load_settings(game: &mut Game) {
 }
 
 /// Global settings, stored and accessed through [`Storage`].
-#[derive(HasSchema, Debug, Clone, Default)]
+#[derive(HasSchema, Debug, Clone)]
 #[repr(C)]
 pub struct Settings {
+    /// Whether to display the game fullscreen.
+    pub fullscreen: bool,
     /// The player controller bindings
     pub player_controls: PlayerControlMapping,
     /// The address of the matchmaking server to connect to for online games.
     pub matchmaking_server: String,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            fullscreen: true,
+            player_controls: default(),
+            matchmaking_server: default(),
+        }
+    }
 }
 
 #[derive(HasSchema, Clone, Debug, Default)]

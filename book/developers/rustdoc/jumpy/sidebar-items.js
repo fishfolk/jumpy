@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["main"],"macro":["impl_system_param"],"mod":["core","input","music","prelude","sessions","settings","ui"],"struct":["GameMeta","GameMusic"]};
+window.SIDEBAR_ITEMS = {"fn":["load_progress","main"],"macro":["impl_system_param"],"mod":["core","input","music","prelude","sessions","settings","ui"],"struct":["GameMeta","GameMusic"]};

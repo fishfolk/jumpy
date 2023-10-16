@@ -19,6 +19,7 @@ pub(super) fn widget(
 
     ui.add_space(normal_font.size / 2.0);
 
+    #[cfg(not(target_arch = "wasm32"))]
     ui.horizontal(|ui| {
         ui.add_space(normal_font.size * 3.0);
         ui.checkbox(
@@ -26,4 +27,7 @@ pub(super) fn widget(
             normal_font.rich(localization.get("fullscreen")),
         );
     });
+
+    #[cfg(target_arch = "wasm32")]
+    ui.label(normal_font.rich(localization.get("no-graphics-settings-on-web")));
 }

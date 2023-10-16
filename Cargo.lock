@@ -409,7 +409,7 @@ dependencies = [
  "bevy_render",
  "bevy_transform",
  "bevy_utils",
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
  "radsort",
  "serde",
 ]
@@ -666,7 +666,7 @@ dependencies = [
  "bevy_transform",
  "bevy_utils",
  "bevy_window",
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
  "bytemuck",
  "naga_oil",
  "radsort",
@@ -750,7 +750,7 @@ dependencies = [
  "bevy_transform",
  "bevy_utils",
  "bevy_window",
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
  "bytemuck",
  "codespan-reporting",
  "downcast-rs",
@@ -824,7 +824,7 @@ dependencies = [
  "bevy_render",
  "bevy_transform",
  "bevy_utils",
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
  "bytemuck",
  "fixedbitset",
  "guillotiere",
@@ -947,7 +947,7 @@ version = "0.68.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "726e4313eb6ec35d2730258ad4e15b547ee75d6afaa1361a922e78e59b7d8078"
 dependencies = [
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
  "cexpr",
  "clang-sys",
  "lazy_static",
@@ -984,9 +984,9 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "bitflags"
-version = "2.4.0"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4682ae6287fcf752ecaabbfcc7b6f9b72aa33933dc23a554d853aea8eea8635"
+checksum = "327762f6e5a765692301e5bb513e0d9fef63be86bbc14528052b1cd3e6f03e07"
 dependencies = [
  "serde",
 ]
@@ -1046,7 +1046,7 @@ dependencies = [
 [[package]]
 name = "bones_asset"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#65d667e2ccd691388f0318c76d3a236bee9d11be"
+source = "git+https://github.com/fishfolk/bones#04d55b1d3fe8f25b8bf4d1c1b6c1045abc1c1661"
 dependencies = [
  "anyhow",
  "append-only-vec",
@@ -1075,7 +1075,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_renderer"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#65d667e2ccd691388f0318c76d3a236bee9d11be"
+source = "git+https://github.com/fishfolk/bones#04d55b1d3fe8f25b8bf4d1c1b6c1045abc1c1661"
 dependencies = [
  "anyhow",
  "bevy",
@@ -1092,7 +1092,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#65d667e2ccd691388f0318c76d3a236bee9d11be"
+source = "git+https://github.com/fishfolk/bones#04d55b1d3fe8f25b8bf4d1c1b6c1045abc1c1661"
 dependencies = [
  "anyhow",
  "atomicell",
@@ -1107,7 +1107,7 @@ dependencies = [
 [[package]]
 name = "bones_framework"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#65d667e2ccd691388f0318c76d3a236bee9d11be"
+source = "git+https://github.com/fishfolk/bones#04d55b1d3fe8f25b8bf4d1c1b6c1045abc1c1661"
 dependencies = [
  "bones_asset",
  "bones_lib",
@@ -1135,7 +1135,7 @@ dependencies = [
 [[package]]
 name = "bones_lib"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#65d667e2ccd691388f0318c76d3a236bee9d11be"
+source = "git+https://github.com/fishfolk/bones#04d55b1d3fe8f25b8bf4d1c1b6c1045abc1c1661"
 dependencies = [
  "bones_ecs",
  "instant",
@@ -1144,7 +1144,7 @@ dependencies = [
 [[package]]
 name = "bones_schema"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#65d667e2ccd691388f0318c76d3a236bee9d11be"
+source = "git+https://github.com/fishfolk/bones#04d55b1d3fe8f25b8bf4d1c1b6c1045abc1c1661"
 dependencies = [
  "append-only-vec",
  "bones_schema_macros",
@@ -1161,7 +1161,7 @@ dependencies = [
 [[package]]
 name = "bones_schema_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#65d667e2ccd691388f0318c76d3a236bee9d11be"
+source = "git+https://github.com/fishfolk/bones#04d55b1d3fe8f25b8bf4d1c1b6c1045abc1c1661"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1171,7 +1171,7 @@ dependencies = [
 [[package]]
 name = "bones_utils"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#65d667e2ccd691388f0318c76d3a236bee9d11be"
+source = "git+https://github.com/fishfolk/bones#04d55b1d3fe8f25b8bf4d1c1b6c1045abc1c1661"
 dependencies = [
  "bevy_ptr",
  "bones_utils_macros",
@@ -1193,7 +1193,7 @@ dependencies = [
 [[package]]
 name = "bones_utils_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#65d667e2ccd691388f0318c76d3a236bee9d11be"
+source = "git+https://github.com/fishfolk/bones#04d55b1d3fe8f25b8bf4d1c1b6c1045abc1c1661"
 dependencies = [
  "quote",
  "venial",
@@ -2222,7 +2222,7 @@ version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cc11df1ace8e7e564511f53af41f3e42ddc95b56fd07b3f4445d2a6048bc682c"
 dependencies = [
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
  "gpu-descriptor-types",
  "hashbrown 0.14.1",
 ]
@@ -2233,7 +2233,7 @@ version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6bf0b36e6f090b7e1d8a4b49c0cb81c1f8376f72198c65dd3ad9ff3556b8b78c"
 dependencies = [
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
 ]
 
 [[package]]
@@ -2980,7 +2980,7 @@ version = "6.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6205bd8bb1e454ad2e27422015fb5e4f2bcc7e08fa8f27058670d208324a4d2d"
 dependencies = [
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
  "crossbeam-channel",
  "filetime",
  "fsevent-sys",
@@ -3759,7 +3759,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b91f7eff05f748767f183df4320a63d6936e9c6107d97c9e6bdd9784f4289c94"
 dependencies = [
  "base64",
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
  "serde",
  "serde_derive",
 ]
@@ -4703,7 +4703,7 @@ checksum = "8f478237b4bf0d5b70a39898a66fa67ca3a007d79f2520485b8b0c3dfc46f8c2"
 dependencies = [
  "arrayvec",
  "bit-vec",
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
  "codespan-reporting",
  "log",
  "naga",
@@ -4728,7 +4728,7 @@ dependencies = [
  "arrayvec",
  "ash",
  "bit-set",
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
  "block",
  "core-graphics-types",
  "d3d12",
@@ -4766,7 +4766,7 @@ version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0c153280bb108c2979eb5c7391cb18c56642dd3c072e55f52065e13e2a1252a"
 dependencies = [
- "bitflags 2.4.0",
+ "bitflags 2.4.1",
  "js-sys",
  "web-sys",
 ]

@@ -18,3 +18,7 @@ action = Action
 # Networking settings
 networking = Networking
 matchmaking-server = Matchmaking Server
+
+# Graphics settings
+graphics = Graphics
+fullscreen = Fullscreen

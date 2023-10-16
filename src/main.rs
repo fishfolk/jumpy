@@ -13,6 +13,7 @@ use bones_bevy_renderer::BonesBevyRenderer;
 use bones_framework::prelude::*;
 
 pub mod core;
+pub mod fullscreen;
 pub mod input;
 pub mod music;
 pub mod sessions;
@@ -78,6 +79,7 @@ fn main() {
         .install_plugin(DefaultGamePlugin)
         .install_plugin(music::game_plugin)
         .install_plugin(settings::game_plugin)
+        .install_plugin(fullscreen::game_plugin)
         .install_plugin(input::game_plugin)
         .install_plugin(core::game_plugin)
         // We initialize the asset server and register asset types

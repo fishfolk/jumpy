@@ -22,3 +22,4 @@ matchmaking-server = Matchmaking Server
 # Graphics settings
 graphics = Graphics
 fullscreen = Fullscreen
+no-graphics-settings-on-web = There are no graphics settings on web.

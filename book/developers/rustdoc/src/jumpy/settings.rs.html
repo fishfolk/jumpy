@@ -180,6 +180,18 @@
 <a href="#85" id="85">85</a>
 <a href="#86" id="86">86</a>
 <a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Settings plugin
@@ -201,13 +213,25 @@
 }
 
 <span class="doccomment">/// Global settings, stored and accessed through [`Storage`].
-</span><span class="attr">#[derive(HasSchema, Debug, Clone, Default)]
+</span><span class="attr">#[derive(HasSchema, Debug, Clone)]
 #[repr(C)]
 </span><span class="kw">pub struct </span>Settings {
+    <span class="doccomment">/// Whether to display the game fullscreen.
+    </span><span class="kw">pub </span>fullscreen: bool,
     <span class="doccomment">/// The player controller bindings
     </span><span class="kw">pub </span>player_controls: PlayerControlMapping,
     <span class="doccomment">/// The address of the matchmaking server to connect to for online games.
     </span><span class="kw">pub </span>matchmaking_server: String,
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>Settings {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            fullscreen: <span class="bool-val">true</span>,
+            player_controls: default(),
+            matchmaking_server: default(),
+        }
+    }
 }
 
 <span class="attr">#[derive(HasSchema, Clone, Debug, Default)]

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["game_plugin","update_fullscreen"]};

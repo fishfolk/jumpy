@@ -1082,7 +1082,7 @@ dependencies = [
  "bevy_egui",
  "bevy_prototype_lyon",
  "bones_framework",
- "directories 5.0.1",
+ "directories",
  "glam",
  "serde",
  "serde_yaml",
@@ -1620,16 +1620,6 @@ dependencies = [
 
 [[package]]
 name = "directories"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72d337a64190607d4fcca2cb78982c5dd57f4916e19696b48a575fa746b6cb0f"
-dependencies = [
- "libc",
- "winapi",
-]
-
-[[package]]
-name = "directories"
 version = "5.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a49173b84e034382284f27f1af4dcbbd231ffa358c0fe316541a7337f376a35"
@@ -2070,6 +2060,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
 dependencies = [
  "byteorder",
+]
+
+[[package]]
+name = "gc-arena"
+version = "0.3.3"
+source = "git+https://github.com/kyren/gc-arena#933ab987ed0e8b2eaf34d58e415da86ec700f01d"
+dependencies = [
+ "allocator-api2",
+ "gc-arena-derive",
+ "hashbrown 0.14.1",
+ "sptr",
+]
+
+[[package]]
+name = "gc-arena-derive"
+version = "0.3.3"
+source = "git+https://github.com/kyren/gc-arena#933ab987ed0e8b2eaf34d58e415da86ec700f01d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.38",
+ "synstructure",
 ]
 
 [[package]]
@@ -2530,8 +2542,8 @@ dependencies = [
  "bevy_tasks",
  "bones_bevy_renderer",
  "bones_framework",
- "directories 1.0.2",
  "egui_extras",
+ "gc-arena",
  "humantime-serde",
  "indexmap 2.0.2",
  "nalgebra",
@@ -2539,8 +2551,10 @@ dependencies = [
  "ordered-float",
  "peg",
  "petgraph",
+ "piccolo",
  "puffin",
  "rapier2d",
+ "send_wrapper",
  "serde",
  "serde_yaml",
  "shiftnanigans",
@@ -3420,6 +3434,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "piccolo"
+version = "0.1.1"
+source = "git+https://github.com/triplehex/piccolo.git#a1bf6ac9fc24eb7fde204a48d2da8bd9912b85d6"
+dependencies = [
+ "allocator-api2",
+ "anyhow",
+ "gc-arena",
+ "hashbrown 0.14.1",
+ "rand 0.8.5",
+ "rustc-hash",
+ "thiserror",
+]
+
+[[package]]
 name = "pin-project-lite"
 version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3854,6 +3882,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "send_wrapper"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd0b0ec5f1c1ca621c432a25813d8d60c88abe6d3e08a3eb9cf37d97a0fe3d73"
+
+[[package]]
 name = "serde"
 version = "1.0.189"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4150,6 +4184,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "synstructure"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "285ba80e733fac80aa4270fbcdf83772a79b80aa35c97075320abfee4a915b06"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.38",
+ "unicode-xid",
 ]
 
 [[package]]

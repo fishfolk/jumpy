@@ -16,13 +16,15 @@ pub mod core;
 pub mod fullscreen;
 pub mod input;
 pub mod music;
+pub mod scripting;
 pub mod sessions;
 pub mod settings;
 pub mod ui;
 
 mod prelude {
     pub use crate::{
-        core::prelude::*, impl_system_param, input::*, sessions::*, settings::*, GameMeta,
+        core::prelude::*, impl_system_param, input::*, scripting::*, sessions::*, settings::*,
+        GameMeta,
     };
     pub use bones_framework::prelude::*;
     pub use once_cell::sync::Lazy;
@@ -79,6 +81,7 @@ fn main() {
         .install_plugin(DefaultGamePlugin)
         .install_plugin(music::game_plugin)
         .install_plugin(settings::game_plugin)
+        .install_plugin(scripting::game_plugin)
         .install_plugin(fullscreen::game_plugin)
         .install_plugin(input::game_plugin)
         .install_plugin(core::game_plugin)

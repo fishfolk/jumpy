@@ -1,9 +1,6 @@
 name: 🚀 Release
 
 on:
-  schedule:
-    # Run every night
-    - cron: "0 4 * * *"
   workflow_dispatch:
   push:
     tags:

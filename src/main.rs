@@ -106,8 +106,12 @@ fn main() {
             env!("CARGO_PKG_VERSION_PATCH").parse().unwrap(),
         ),
         app_namespace: ("org".into(), "fishfolk".into(), "jumpy".into()),
-        asset_dir: "assets".into(),
-        packs_dir: "packs".into(),
+        asset_dir: std::env::var("JUMPY_ASSETS")
+            .unwrap_or_else(|_| "assets".into())
+            .into(),
+        packs_dir: std::env::var("JUMPY_ASSET_PACKS")
+            .unwrap_or_else(|_| "packs".into())
+            .into(),
         custom_load_progress: Some(Box::new(load_progress)),
     }
     .app()

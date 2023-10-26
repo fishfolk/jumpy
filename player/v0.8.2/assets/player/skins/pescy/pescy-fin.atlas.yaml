@@ -1,0 +1,4 @@
+image: ./pescy-fin.png
+tile_size: [24, 34]
+columns: 5
+rows: 7

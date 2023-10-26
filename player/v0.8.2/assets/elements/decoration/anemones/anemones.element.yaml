@@ -1,0 +1,7 @@
+name: Anemones
+category: Decorations
+editor:
+  grab_size: [48, 27]
+  grab_offset: [0, -12]
+  show_name: false
+data: animated_decoration.yaml

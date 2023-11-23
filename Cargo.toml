@@ -37,7 +37,6 @@ peg                 = "0.8.1"
 egui_extras         = { version = "0.23.0", default-features = false }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-directories = "1.0"
 bevy_dylib  = "0.11"
 
 # anyhow              = "1.0"
@@ -140,8 +139,8 @@ ignored = [
   "getrandom", # Needed to add `js` feature
 ]
 
-# # Uncomment for testing during bones development, if you clone bones adjacent to the jumpy
-# # repo.
-# [patch.'https://github.com/fishfolk/bones']
-# bones_framework     = { path = "../bones/framework_crates/bones_framework" }
-# bones_bevy_renderer = { path = "../bones/framework_crates/bones_bevy_renderer" }
+# Uncomment for testing during bones development, if you clone bones adjacent to the jumpy
+# repo.
+[patch.'https://github.com/fishfolk/bones']
+bones_framework     = { path = "../bones/framework_crates/bones_framework" }
+bones_bevy_renderer = { path = "../bones/framework_crates/bones_bevy_renderer" }

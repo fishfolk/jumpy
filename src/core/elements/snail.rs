@@ -22,7 +22,7 @@ pub struct SnailMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    SnailMeta::schema();
+    SnailMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

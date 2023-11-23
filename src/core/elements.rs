@@ -270,7 +270,7 @@ macro_rules! install_plugins {
         }
 
         pub fn game_plugin(game: &mut Game) {
-            ElementMeta::schema();
+            ElementMeta::register_schema();
             game.init_shared_resource::<AssetServer>();
 
             $(

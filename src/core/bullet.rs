@@ -5,7 +5,7 @@
 use crate::prelude::*;
 
 pub fn game_plugin(game: &mut Game) {
-    BulletMeta::schema();
+    BulletMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

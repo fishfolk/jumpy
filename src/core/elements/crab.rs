@@ -30,7 +30,7 @@ pub fn session_plugin(session: &mut Session) {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    CrabMeta::schema();
+    CrabMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

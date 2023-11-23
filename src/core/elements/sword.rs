@@ -20,7 +20,7 @@ pub struct SwordMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    SwordMeta::schema();
+    SwordMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

@@ -13,7 +13,7 @@ pub struct SproingerMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    SproingerMeta::schema();
+    SproingerMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

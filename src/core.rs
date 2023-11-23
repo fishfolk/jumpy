@@ -38,10 +38,10 @@ pub mod prelude {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    PlayerMeta::schema();
-    AudioSource::schema();
-    HatMeta::schema();
-    MapMeta::schema();
+    PlayerMeta::register_schema();
+    AudioSource::register_schema();
+    HatMeta::register_schema();
+    MapMeta::register_schema();
     game.install_plugin(elements::game_plugin)
         .install_plugin(bullet::game_plugin)
         .init_shared_resource::<AssetServer>();

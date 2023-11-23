@@ -75,7 +75,8 @@ impl FromWorld for RapierDebugContext {
     fn from_world(world: &mut World) -> Self {
         let path_entity = world.resource_mut::<Entities>().create();
 
-        let mut transforms = world.components.get_mut::<Transform>().unwrap();
+        let transforms = world.components.get::<Transform>();
+        let mut transforms = transforms.borrow_mut();
         transforms.insert(
             path_entity,
             Transform::from_translation(vec3(0.0, 0.0, -1.0)),

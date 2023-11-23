@@ -30,7 +30,7 @@ pub struct KickBombMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    KickBombMeta::schema();
+    KickBombMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

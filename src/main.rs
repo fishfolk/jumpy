@@ -66,13 +66,13 @@ fn main() {
     bevy_tasks::IoTaskPool::init(bevy_tasks::TaskPool::new);
 
     // Register types that we will load from persistent storage.
-    settings::Settings::schema();
+    settings::Settings::register_schema();
 
     // First create bones game.
     let mut game = Game::new();
 
     // Register our game asset type
-    GameMeta::schema();
+    GameMeta::register_schema();
 
     game
         // Install game plugins

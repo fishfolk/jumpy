@@ -30,7 +30,7 @@ pub struct MusketMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    MusketMeta::schema();
+    MusketMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

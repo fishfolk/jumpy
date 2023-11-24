@@ -50,6 +50,8 @@ pub fn game_plugin(game: &mut Game) {
 pub struct MatchPlugin {
     pub map: MapMeta,
     pub player_info: [PlayerInput; MAX_PLAYERS],
+    /// The lua plugins to enable for this match.
+    pub plugins: Arc<Vec<Handle<LuaPlugin>>>,
 }
 
 pub struct MatchPlayerInfo {
@@ -63,6 +65,7 @@ impl SessionPlugin for MatchPlugin {
     fn install(self, session: &mut Session) {
         session
             .install_plugin(DefaultSessionPlugin)
+            .install_plugin(LuaPluginLoaderSessionPlugin(self.plugins))
             .install_plugin(audio::session_plugin);
 
         physics::install(session);

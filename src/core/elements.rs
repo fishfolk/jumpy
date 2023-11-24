@@ -40,6 +40,7 @@ pub struct ElementMeta {
     pub category: Ustr,
     pub data: Handle<SchemaBox>,
     pub editor: ElementEditorMeta,
+    pub plugin: Handle<LuaPlugin>,
 }
 
 #[derive(HasSchema, Deserialize, Clone, Debug)]
@@ -65,6 +66,7 @@ impl Default for ElementEditorMeta {
 
 /// Marker component added to map elements that have been hydrated.
 #[derive(Clone, HasSchema, Default)]
+#[repr(C)]
 pub struct MapElementHydrated;
 
 /// Component that contains the [`Entity`] to de-hydrate when the entity with this component is out
@@ -73,10 +75,12 @@ pub struct MapElementHydrated;
 /// This is useful for map elements that spawn items: when the item falls off the map, it should
 /// de-hydrate it's spawner, so that the spawner will re-spawn the item in it's default state.
 #[derive(Clone, HasSchema, Default, Deref, DerefMut)]
+#[repr(C)]
 pub struct DehydrateOutOfBounds(pub Entity);
 
 /// Component containing an element's metadata handle.
 #[derive(Clone, Copy, HasSchema, Default, Deref, DerefMut)]
+#[repr(C)]
 pub struct ElementHandle(pub Handle<ElementMeta>);
 
 #[derive(Clone, HasSchema)]
@@ -178,6 +182,7 @@ impl<'a> SpawnerManager<'a> {
 
         self.spawners.insert(entity, spawner);
     }
+
     /// Stores the spawned elements as having come from the same group of spawners as the spawner_elements.
     pub fn insert_spawned_entity_into_grouped_spawner<T: HasSchema>(
         &mut self,
@@ -260,6 +265,10 @@ impl<'a> SpawnerManager<'a> {
 macro_rules! install_plugins {
     ($($module:ident),* $(,)?) => {
         pub fn session_plugin(session: &mut Session) {
+            ElementHandle::register_schema();
+            MapElementHydrated::register_schema();
+            DehydrateOutOfBounds::register_schema();
+
             session
                 .stages
                 .add_system_to_stage(CoreStage::First, handle_out_of_bounds_items);

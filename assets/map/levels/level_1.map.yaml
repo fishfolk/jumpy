@@ -1238,6 +1238,10 @@ layers:
     - 555.0
     element: /elements/item/sword/sword.element.yaml
   - pos:
+    - 300.0
+    - 700.0
+    element: /plugins/anchor/element.yaml
+  - pos:
     - 480.0
     - 118.5
     element: /elements/item/kick_bomb/kick_bomb.element.yaml

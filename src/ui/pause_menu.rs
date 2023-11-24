@@ -20,6 +20,7 @@ fn pause_menu_system(
     ctx: Res<EguiCtx>,
     controls: Res<GlobalPlayerControls>,
     world: &World,
+    assets: Res<AssetServer>,
 ) {
     let mut back_to_menu = false;
     let mut restart_game = false;
@@ -99,6 +100,7 @@ fn pause_menu_system(
                 editor_input: default(),
                 ..match_info.players[i]
             }),
+            plugins: meta.get_plugins(&assets),
         })
     }
 }

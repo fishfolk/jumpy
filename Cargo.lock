@@ -248,9 +248,9 @@ dependencies = [
 
 [[package]]
 name = "async-executor"
-version = "1.7.2"
+version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc5ea910c42e5ab19012bab31f53cb4d63d54c3a27730f9a833a88efcf4bb52d"
+checksum = "17ae5ebefcc48e7452b4987947920dac9450be1110cadf34d1b8c116bdbaf97c"
 dependencies = [
  "async-lock",
  "async-task",
@@ -262,11 +262,11 @@ dependencies = [
 
 [[package]]
 name = "async-lock"
-version = "3.1.1"
+version = "3.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "655b9c7fe787d3b25cc0f804a1a8401790f0c5bc395beb5a64dc77d8de079105"
+checksum = "dea8b3453dd7cc96711834b75400d671b73e3656975fa68d9f277163b7f7e316"
 dependencies = [
- "event-listener 3.1.0",
+ "event-listener 4.0.0",
  "event-listener-strategy",
  "pin-project-lite",
 ]
@@ -1050,6 +1050,7 @@ dependencies = [
 [[package]]
 name = "bones_asset"
 version = "0.3.0"
+source = "git+https://github.com/fishfolk/bones#a0e378443c565da47bfdc29539bff8ac0bd3183c"
 dependencies = [
  "anyhow",
  "append-only-vec",
@@ -1080,6 +1081,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_renderer"
 version = "0.3.0"
+source = "git+https://github.com/fishfolk/bones#a0e378443c565da47bfdc29539bff8ac0bd3183c"
 dependencies = [
  "anyhow",
  "bevy",
@@ -1096,6 +1098,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs"
 version = "0.3.0"
+source = "git+https://github.com/fishfolk/bones#a0e378443c565da47bfdc29539bff8ac0bd3183c"
 dependencies = [
  "anyhow",
  "atomicell",
@@ -1111,6 +1114,7 @@ dependencies = [
 [[package]]
 name = "bones_framework"
 version = "0.3.0"
+source = "git+https://github.com/fishfolk/bones#a0e378443c565da47bfdc29539bff8ac0bd3183c"
 dependencies = [
  "bones_asset",
  "bones_lib",
@@ -1139,6 +1143,7 @@ dependencies = [
 [[package]]
 name = "bones_lib"
 version = "0.3.0"
+source = "git+https://github.com/fishfolk/bones#a0e378443c565da47bfdc29539bff8ac0bd3183c"
 dependencies = [
  "bones_ecs",
  "instant",
@@ -1147,6 +1152,7 @@ dependencies = [
 [[package]]
 name = "bones_schema"
 version = "0.3.0"
+source = "git+https://github.com/fishfolk/bones#a0e378443c565da47bfdc29539bff8ac0bd3183c"
 dependencies = [
  "append-only-vec",
  "bones_schema_macros",
@@ -1164,6 +1170,7 @@ dependencies = [
 [[package]]
 name = "bones_schema_macros"
 version = "0.3.0"
+source = "git+https://github.com/fishfolk/bones#a0e378443c565da47bfdc29539bff8ac0bd3183c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1173,6 +1180,7 @@ dependencies = [
 [[package]]
 name = "bones_scripting"
 version = "0.3.0"
+source = "git+https://github.com/fishfolk/bones#a0e378443c565da47bfdc29539bff8ac0bd3183c"
 dependencies = [
  "async-channel",
  "bevy_tasks",
@@ -1190,6 +1198,7 @@ dependencies = [
 [[package]]
 name = "bones_utils"
 version = "0.3.0"
+source = "git+https://github.com/fishfolk/bones#a0e378443c565da47bfdc29539bff8ac0bd3183c"
 dependencies = [
  "bones_utils_macros",
  "branches",
@@ -1210,6 +1219,7 @@ dependencies = [
 [[package]]
 name = "bones_utils_macros"
 version = "0.3.0"
+source = "git+https://github.com/fishfolk/bones#a0e378443c565da47bfdc29539bff8ac0bd3183c"
 dependencies = [
  "quote",
  "venial",
@@ -1804,9 +1814,9 @@ dependencies = [
 
 [[package]]
 name = "enum-map"
-version = "2.7.2"
+version = "2.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09e6b4f374c071b18172e23134e01026653dc980636ee139e0dfe59c538c61e5"
+checksum = "6866f3bfdf8207509a033af1a75a7b08abda06bbaaeae6669323fd5a097df2e9"
 dependencies = [
  "enum-map-derive",
  "serde",
@@ -1814,9 +1824,9 @@ dependencies = [
 
 [[package]]
 name = "enum-map-derive"
-version = "0.16.0"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bfdb3d73d1beaf47c8593a1364e577fde072677cbfd103600345c0f547408cc0"
+checksum = "f282cfdfe92516eb26c2af8589c274c7c17681f5ecc03c18255fe741c6aa64eb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1902,12 +1912,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "event-listener-strategy"
-version = "0.3.0"
+name = "event-listener"
+version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d96b852f1345da36d551b9473fa1e2b1eb5c5195585c6c018118bc92a8d91160"
+checksum = "770d968249b5d99410d61f5bf89057f3199a077a04d087092f58e7d10692baae"
 dependencies = [
- "event-listener 3.1.0",
+ "concurrent-queue",
+ "parking",
+ "pin-project-lite",
+]
+
+[[package]]
+name = "event-listener-strategy"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "958e4d70b6d5e81971bebec42271ec641e7ff4e170a6fa605f2b8a8b65cb97d3"
+dependencies = [
+ "event-listener 4.0.0",
  "pin-project-lite",
 ]
 
@@ -2036,9 +2057,9 @@ checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
 name = "form_urlencoded"
-version = "1.2.0"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a62bc1cf6f830c2ec14a513a9fb124d0a213a629668a4186f329db21fe045652"
+checksum = "e13624c2627564efccf4934284bdd98cbaa14e79b0b5a141218e507b3a823456"
 dependencies = [
  "percent-encoding",
 ]
@@ -2210,9 +2231,9 @@ dependencies = [
 
 [[package]]
 name = "gimli"
-version = "0.28.0"
+version = "0.28.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fb8d784f27acf97159b40fc4db5ecd8aa23b9ad5ef69cdd136d3bc80665f0c0"
+checksum = "4271d37baee1b8c7e4b708028c57d816cf9d2434acb33a549475f78c181f6253"
 
 [[package]]
 name = "glam"
@@ -2386,9 +2407,9 @@ dependencies = [
 
 [[package]]
 name = "idna"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d20d6b07bfbc108882d88ed8e37d39636dcc260e15e30c45e6ba089610b917c"
+checksum = "634d9b1461af396cad843f47fdba5597a4f9e6ddd4bfb6ff5d85028c25cb12f6"
 dependencies = [
  "unicode-bidi",
  "unicode-normalization",
@@ -3313,9 +3334,9 @@ checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
 
 [[package]]
 name = "once_map"
-version = "0.4.12"
+version = "0.4.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c64e67adc739ad601550e953442818011f3c21bc7bd2c77236dc167bfd4d4c42"
+checksum = "eba3de7c2ff90d756ee0713daaae3a3547fa2424b3b9cca46bce0b4dcd1d7ef2"
 dependencies = [
  "ahash",
  "hashbrown 0.14.2",
@@ -3472,9 +3493,9 @@ checksum = "36bae92c60fa2398ce4678b98b2c4b5a7c61099961ca1fa305aec04a9ad28922"
 
 [[package]]
 name = "percent-encoding"
-version = "2.3.0"
+version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b2a4787296e9989611394c33f193f676704af1686e70b8f8033ab5ba9a35a94"
+checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
 
 [[package]]
 name = "petgraph"
@@ -3531,7 +3552,7 @@ dependencies = [
 [[package]]
 name = "piccolo"
 version = "0.2.0"
-source = "git+https://github.com/kyren/piccolo.git#7a389d14b69ba48d54e1b91795e8540d77dff92a"
+source = "git+https://github.com/kyren/piccolo.git#bc2b4282a078ebb463613a9678372a0ffb6836f1"
 dependencies = [
  "allocator-api2",
  "anyhow",
@@ -4617,9 +4638,9 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "ureq"
-version = "2.9.0"
+version = "2.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7830e33f6e25723d41a63f77e434159dad02919f18f55a512b5f16f3b1d77138"
+checksum = "f8cdd25c339e200129fe4de81451814e5228c9b771d57378817d6117cc2b3f97"
 dependencies = [
  "base64",
  "flate2",
@@ -4633,9 +4654,9 @@ dependencies = [
 
 [[package]]
 name = "url"
-version = "2.4.1"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "143b538f18257fac9cad154828a57c6bf5157e1aa604d4816b5995bf6de87ae5"
+checksum = "31e6302e3bb753d46e83516cae55ae196fc0c309407cf11ab35cc51a4c2a4633"
 dependencies = [
  "form_urlencoded",
  "idna",
@@ -4827,9 +4848,9 @@ dependencies = [
 
 [[package]]
 name = "webpki-roots"
-version = "0.25.2"
+version = "0.25.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14247bb57be4f377dfb94c72830b8ce8fc6beac03cf4bf7b9732eadd414123fc"
+checksum = "1778a42e8b3b90bff8d0f5032bf22250792889a5cdc752aa0020c84abe3aaf10"
 
 [[package]]
 name = "weezl"

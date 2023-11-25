@@ -13,7 +13,7 @@ pub struct UrchinMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    UrchinMeta::schema();
+    UrchinMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

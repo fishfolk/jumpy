@@ -2,10 +2,10 @@ use crate::prelude::*;
 
 pub struct SessionNames;
 impl SessionNames {
-    pub const GAME: &str = "game";
-    pub const MAIN_MENU: &str = "main_menu";
-    pub const PAUSE_MENU: &str = "pause_menu";
-    pub const MUSIC_PLAYER: &str = "music_player";
+    pub const GAME: &'static str = "game";
+    pub const MAIN_MENU: &'static str = "main_menu";
+    pub const PAUSE_MENU: &'static str = "pause_menu";
+    pub const MUSIC_PLAYER: &'static str = "music_player";
 }
 
 pub trait SessionExt {
@@ -27,14 +27,22 @@ impl SessionExt for Sessions {
 
     #[track_caller]
     fn restart_game(&mut self) {
-        if let Some((map, player_info)) = self.get(SessionNames::GAME).map(|session| {
+        if let Some((map, player_info, plugins)) = self.get(SessionNames::GAME).map(|session| {
             let map = (*session.world.resource::<LoadedMap>().0).clone();
             let match_inputs = session.world.resource::<MatchInputs>();
-            (map, match_inputs.players.clone())
+            (
+                map,
+                match_inputs.players.clone(),
+                session.world.resource::<LuaPlugins>().0.clone(),
+            )
         }) {
             self.end_game();
             self.create(SessionNames::GAME)
-                .install_plugin(crate::core::MatchPlugin { map, player_info });
+                .install_plugin(crate::core::MatchPlugin {
+                    map,
+                    player_info,
+                    plugins,
+                });
         } else {
             panic!("Cannot restart game when game is not running");
         }

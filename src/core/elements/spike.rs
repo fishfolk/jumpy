@@ -12,7 +12,7 @@ pub struct SpikeMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    SpikeMeta::schema();
+    SpikeMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

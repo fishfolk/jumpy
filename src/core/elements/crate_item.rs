@@ -29,7 +29,7 @@ pub struct CrateMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    CrateMeta::schema();
+    CrateMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

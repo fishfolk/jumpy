@@ -5,9 +5,16 @@
 use crate::prelude::*;
 
 pub fn install(session: &mut Session) {
+    Item::register_schema();
+    ItemThrow::register_schema();
+    ItemGrab::register_schema();
+    DropItem::register_schema();
+    ItemUsed::register_schema();
+
     session
         .stages
         .add_system_to_stage(CoreStage::Last, grab_items)
+        .add_system_to_stage(CoreStage::Last, drop_items)
         .add_system_to_stage(CoreStage::Last, throw_dropped_items);
 }
 
@@ -15,11 +22,17 @@ pub fn install(session: &mut Session) {
 ///
 /// Items are any entity that players can pick up and use.
 #[derive(Clone, Copy, HasSchema, Default)]
+#[repr(C)]
 pub struct Item;
 
 /// An intventory component, indicating another entity that the player is carrying.
 #[derive(Clone, HasSchema, Default, Deref, DerefMut)]
 pub struct Inventory(pub Option<Entity>);
+
+/// Marker component that may be added to an item to cause it to be droped by a player.
+#[derive(Clone, HasSchema, Default)]
+#[repr(C)]
+pub struct DropItem;
 
 /// A helper struct containing a player-inventory pair that indicates the given player is holding
 /// the other entity in their inventory.
@@ -37,10 +50,7 @@ impl<'a> SystemParam for PlayerInventories<'a> {
     type State = [Option<Inv>; MAX_PLAYERS];
     type Param<'s> = PlayerInventories<'s>;
 
-    fn initialize(world: &mut World) {
-        world.components.init::<Inventory>();
-        world.components.init::<PlayerIdx>();
-    }
+    fn initialize(_world: &mut World) {}
 
     fn get_state(world: &World) -> Self::State {
         world.run_initialized_system(
@@ -83,6 +93,7 @@ pub struct ItemGrabbed {
 
 /// Marker component added to items when they are used.
 #[derive(Clone, Copy, HasSchema, Default)]
+#[repr(C)]
 pub struct ItemUsed {
     /// The player that used the item
     pub owner: Entity,
@@ -94,10 +105,25 @@ pub struct ItemUsed {
 /// [`ItemGrabbed`] components for entities which have this component.
 /// [`Item`] is required for the system to take affect.
 #[derive(Clone, HasSchema, Default)]
+#[repr(C)]
 pub struct ItemGrab {
     pub fin_anim: Ustr,
     pub grab_offset: Vec2,
     pub sync_animation: bool,
+}
+
+/// Drop items that have the `DropItem` component added to them.
+pub fn drop_items(
+    mut commands: Commands,
+    mut drop_items: CompMut<DropItem>,
+    player_inventories: PlayerInventories,
+) {
+    for Inv { player, inventory } in player_inventories.iter().flatten() {
+        if drop_items.contains(*inventory) {
+            drop_items.remove(*inventory);
+            commands.add(PlayerCommand::set_inventory(*player, None));
+        }
+    }
 }
 
 pub fn grab_items(
@@ -145,6 +171,7 @@ pub fn grab_items(
 /// [`ItemDropped`] components for entities which have this component.
 /// [`Item`] is required for the system to take affect.
 #[derive(Clone, HasSchema)]
+#[repr(C)]
 pub struct ItemThrow {
     normal: Vec2,
     fast: Vec2,
@@ -153,6 +180,7 @@ pub struct ItemThrow {
     lob: Vec2,
     roll: Vec2,
     spin: f32,
+    #[schema(opaque)]
     /// An optional system value that gets run once on throw.
     system: Option<Arc<AtomicCell<StaticSystem<(), ()>>>>,
 }
@@ -252,8 +280,8 @@ pub fn throw_dropped_items(
     player_spawnwers: Comp<PlayerSpawner>,
     mut commands: Commands,
 ) {
-    for (entity, (_items, item_throw, body, transform)) in
-        entities.iter_with((&items, &item_throws, &mut bodies, &mut transforms))
+    for (entity, (_items, item_throw, transform)) in
+        entities.iter_with((&items, &item_throws, &mut transforms))
     {
         if let Some(ItemDropped { player }) = items_dropped.get(entity).cloned() {
             if let Some(system) = item_throw.system.clone() {
@@ -291,11 +319,13 @@ pub fn throw_dropped_items(
                 transform.translation.z = z_depth_for_map_layer(layer.layer_idx);
             }
 
-            body.velocity = throw_velocity * horizontal_flip_factor;
-            body.angular_velocity =
-                item_throw.spin * horizontal_flip_factor.x * throw_velocity.y.signum();
+            if let Some(body) = bodies.get_mut(entity) {
+                body.velocity = throw_velocity * horizontal_flip_factor;
+                body.angular_velocity =
+                    item_throw.spin * horizontal_flip_factor.x * throw_velocity.y.signum();
 
-            body.is_deactivated = false;
+                body.is_deactivated = false;
+            }
         }
     }
 }

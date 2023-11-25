@@ -12,7 +12,7 @@ impl ColliderShapeCache {
 
 /// The Jumpy collision shape type.
 #[derive(Clone, Copy, Debug, HasSchema)]
-#[schema(opaque)]
+#[repr(C, u8)]
 pub enum ColliderShape {
     Circle { diameter: f32 },
     Rectangle { size: Vec2 },

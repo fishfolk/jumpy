@@ -43,12 +43,29 @@ use bevy_dylib;
 #[type_data(metadata_asset("game"))]
 #[repr(C)]
 pub struct GameMeta {
+    pub plugins: SVec<Handle<LuaPlugin>>,
     pub core: CoreMeta,
     pub default_settings: settings::Settings,
     pub localization: Handle<LocalizationAsset>,
     pub theme: ui::UiTheme,
     pub main_menu: ui::main_menu::MainMenuMeta,
     pub music: GameMusic,
+}
+
+impl GameMeta {
+    /// Get the lua plugins loaded by the game.
+    pub fn get_plugins(&self, asset_server: &AssetServer) -> Arc<Vec<Handle<LuaPlugin>>> {
+        let mut plugins = Vec::new();
+        plugins.extend(self.plugins.iter().copied());
+        plugins.extend(
+            self.core
+                .map_elements
+                .iter()
+                .map(|eh| asset_server.get(*eh).plugin)
+                .filter(|plugin_handle| plugin_handle != &Handle::default()),
+        );
+        Arc::new(plugins)
+    }
 }
 
 #[derive(HasSchema, Clone, Debug, Default)]
@@ -66,13 +83,13 @@ fn main() {
     bevy_tasks::IoTaskPool::init(bevy_tasks::TaskPool::new);
 
     // Register types that we will load from persistent storage.
-    settings::Settings::schema();
+    settings::Settings::register_schema();
 
     // First create bones game.
     let mut game = Game::new();
 
     // Register our game asset type
-    GameMeta::schema();
+    GameMeta::register_schema();
 
     game
         // Install game plugins

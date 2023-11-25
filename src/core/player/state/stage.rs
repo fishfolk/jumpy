@@ -38,8 +38,6 @@ impl SystemStage for PlayerStateStageImpl {
     }
 
     fn initialize(&mut self, world: &mut World) {
-        world.components.init::<PlayerIdx>();
-        world.components.init::<PlayerState>();
         for system in &mut self.systems {
             system.initialize(world);
         }

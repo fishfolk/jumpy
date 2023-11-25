@@ -8,6 +8,9 @@ use super::utils::Rect;
 
 /// Install this module.
 pub fn install(session: &mut Session) {
+    DamageRegion::register_schema();
+    DamageRegionOwner::register_schema();
+
     session
         .stages
         .add_system_to_stage(CoreStage::PostUpdate, kill_players_in_damage_region);
@@ -18,6 +21,7 @@ pub fn install(session: &mut Session) {
 /// While this _might_ change in the future, damage regions will kill players immediately, so there
 /// is no "damage" field.
 #[derive(Debug, Clone, Default, HasSchema)]
+#[repr(C)]
 pub struct DamageRegion {
     /// The size of the damage region in pixels
     pub size: Vec2,
@@ -33,7 +37,9 @@ impl DamageRegion {
 /// A component that may be added to a damage region entity to indicate the triggering entity.
 ///
 /// If this entity is a player, it will not be harmed by the damage region.
+// TODO: Make `DamageRegionOwner` a part of the `DamageRegion` component?
 #[derive(Debug, Clone, HasSchema, Default)]
+#[repr(C)]
 pub struct DamageRegionOwner(pub Entity);
 
 /// System that will eliminate players that are intersecting with a damage region.

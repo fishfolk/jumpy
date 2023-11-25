@@ -7,7 +7,7 @@ use crate::prelude::*;
 pub struct PlayerSpawnerMeta;
 
 pub fn game_plugin(game: &mut Game) {
-    PlayerSpawnerMeta::schema();
+    PlayerSpawnerMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

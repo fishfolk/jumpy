@@ -29,9 +29,8 @@ pub struct KickBombMeta {
     pub arm_delay: Duration,
 }
 
-pub fn game_plugin(game: &mut Game) {
-    KickBombMeta::schema();
-    game.init_shared_resource::<AssetServer>();
+pub fn game_plugin(_game: &mut Game) {
+    KickBombMeta::register_schema();
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -63,7 +62,7 @@ fn hydrate(
     mut atlas_sprites: CompMut<AtlasSprite>,
     assets: Res<AssetServer>,
     mut hydrated: CompMut<MapElementHydrated>,
-    mut element_handles: CompMut<ElementHandle>,
+    element_handles: Comp<ElementHandle>,
     mut animated_sprites: CompMut<AnimatedSprite>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
     mut spawner_manager: SpawnerManager,
@@ -113,8 +112,6 @@ fn hydrate(
             atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
-            element_handles.insert(entity, element_handle);
-            hydrated.insert(entity, MapElementHydrated);
             animated_sprites.insert(entity, default());
             bodies.insert(
                 entity,

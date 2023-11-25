@@ -9,8 +9,10 @@ use super::MenuPage;
 pub fn widget(
     ui: In<&mut egui::Ui>,
     world: &World,
+    meta: Root<GameMeta>,
     mut sessions: ResMut<Sessions>,
     mut session_options: ResMut<SessionOptions>,
+    assets: Res<AssetServer>,
 ) {
     let select_action = world.run_initialized_system(map_select_menu, ());
 
@@ -35,6 +37,7 @@ pub fn widget(
                         control: default(),
                     }
                 }),
+                plugins: meta.get_plugins(&assets),
             });
             ui.ctx().set_state(PlayerSelectState::default());
         }

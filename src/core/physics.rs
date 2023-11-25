@@ -29,6 +29,9 @@ impl StageLabel for PhysicsStage {
 }
 
 pub fn install(session: &mut Session) {
+    KinematicBody::register_schema();
+    ColliderShape::register_schema();
+
     session
         .stages
         // TODO: Think again about exactly how to organize the physics sync systems. At the time of
@@ -74,6 +77,7 @@ pub struct KinematicBody {
     pub has_mass: bool,
     pub has_friction: bool,
     pub can_rotate: bool,
+    /// Whether or not physics has been disabled for this body.
     pub is_deactivated: bool,
     /// Whether or not the body should fall through jump_through platforms
     pub fall_through: bool,

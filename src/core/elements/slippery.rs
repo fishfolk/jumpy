@@ -11,7 +11,7 @@ pub struct SlipperyMeta {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    SlipperyMeta::schema();
+    SlipperyMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 

@@ -38,10 +38,10 @@ pub mod prelude {
 }
 
 pub fn game_plugin(game: &mut Game) {
-    PlayerMeta::schema();
-    AudioSource::schema();
-    HatMeta::schema();
-    MapMeta::schema();
+    PlayerMeta::register_schema();
+    AudioSource::register_schema();
+    HatMeta::register_schema();
+    MapMeta::register_schema();
     game.install_plugin(elements::game_plugin)
         .install_plugin(bullet::game_plugin)
         .init_shared_resource::<AssetServer>();
@@ -50,6 +50,8 @@ pub fn game_plugin(game: &mut Game) {
 pub struct MatchPlugin {
     pub map: MapMeta,
     pub player_info: [PlayerInput; MAX_PLAYERS],
+    /// The lua plugins to enable for this match.
+    pub plugins: Arc<Vec<Handle<LuaPlugin>>>,
 }
 
 pub struct MatchPlayerInfo {
@@ -63,6 +65,7 @@ impl SessionPlugin for MatchPlugin {
     fn install(self, session: &mut Session) {
         session
             .install_plugin(DefaultSessionPlugin)
+            .install_plugin(LuaPluginLoaderSessionPlugin(self.plugins))
             .install_plugin(audio::session_plugin);
 
         physics::install(session);

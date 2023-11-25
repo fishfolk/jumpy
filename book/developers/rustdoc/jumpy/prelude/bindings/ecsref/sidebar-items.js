@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["EcsRefBorrowError","EcsRefBorrowKind","EcsRefBorrowMutKind","EcsRefData"],"fn":["metatable"],"struct":["AssetRef","ComponentBorrow","ComponentBorrowMut","ComponentRef","EcsRef","EcsRefBorrow","EcsRefBorrowMut","SchemaLuaEcsRefMetatable"]};

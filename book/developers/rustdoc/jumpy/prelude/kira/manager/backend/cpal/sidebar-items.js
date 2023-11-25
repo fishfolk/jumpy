@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["CpalBackend"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["CpalBackend","CpalBackendSettings"]};

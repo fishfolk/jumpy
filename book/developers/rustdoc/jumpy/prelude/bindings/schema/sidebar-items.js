@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["metatable","schema_fn","schema_of_fn"]};

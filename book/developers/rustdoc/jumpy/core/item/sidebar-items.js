@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["grab_items","install","throw_dropped_items"],"struct":["Inv","Inventory","Item","ItemDropped","ItemGrab","ItemGrabbed","ItemThrow","ItemUsed","PlayerInventories"]};
+window.SIDEBAR_ITEMS = {"fn":["drop_items","grab_items","install","throw_dropped_items"],"struct":["DropItem","Inv","Inventory","Item","ItemDropped","ItemGrab","ItemGrabbed","ItemThrow","ItemUsed","PlayerInventories"]};

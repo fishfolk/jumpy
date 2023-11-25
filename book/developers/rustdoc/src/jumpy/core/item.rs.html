@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/item.rs`."><title>item.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-cb6f1f67f1bcd037.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.73.0 (cc66ad468 2023-10-03)" data-channel="1.73.0" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-1596385f77d47ef2.css" data-theme-dark-css="dark-0a43001d3fc2282c.css" data-theme-ayu-css="ayu-fd19013d6ce078bf.css" ><script src="../../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-1596385f77d47ef2.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-0a43001d3fc2282c.css"><link rel="stylesheet" href="../../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/item.rs`."><title>item.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0 (79e9716c9 2023-11-13)" data-channel="1.74.0" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -394,6 +394,36 @@
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
 <a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Common item code.
 //!
 //! An item is anything in the game that can be picked up by the player.
@@ -401,9 +431,16 @@
 </span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>Session) {
+    Item::register_schema();
+    ItemThrow::register_schema();
+    ItemGrab::register_schema();
+    DropItem::register_schema();
+    ItemUsed::register_schema();
+
     session
         .stages
         .add_system_to_stage(CoreStage::Last, grab_items)
+        .add_system_to_stage(CoreStage::Last, drop_items)
         .add_system_to_stage(CoreStage::Last, throw_dropped_items);
 }
 
@@ -411,11 +448,17 @@
 ///
 /// Items are any entity that players can pick up and use.
 </span><span class="attr">#[derive(Clone, Copy, HasSchema, Default)]
+#[repr(C)]
 </span><span class="kw">pub struct </span>Item;
 
 <span class="doccomment">/// An intventory component, indicating another entity that the player is carrying.
 </span><span class="attr">#[derive(Clone, HasSchema, Default, Deref, DerefMut)]
 </span><span class="kw">pub struct </span>Inventory(<span class="kw">pub </span><span class="prelude-ty">Option</span>&lt;Entity&gt;);
+
+<span class="doccomment">/// Marker component that may be added to an item to cause it to be droped by a player.
+</span><span class="attr">#[derive(Clone, HasSchema, Default)]
+#[repr(C)]
+</span><span class="kw">pub struct </span>DropItem;
 
 <span class="doccomment">/// A helper struct containing a player-inventory pair that indicates the given player is holding
 /// the other entity in their inventory.
@@ -433,10 +476,7 @@
     <span class="kw">type </span>State = [<span class="prelude-ty">Option</span>&lt;Inv&gt;; MAX_PLAYERS];
     <span class="kw">type </span>Param&lt;<span class="lifetime">&#39;s</span>&gt; = PlayerInventories&lt;<span class="lifetime">&#39;s</span>&gt;;
 
-    <span class="kw">fn </span>initialize(world: <span class="kw-2">&amp;mut </span>World) {
-        world.components.init::&lt;Inventory&gt;();
-        world.components.init::&lt;PlayerIdx&gt;();
-    }
+    <span class="kw">fn </span>initialize(_world: <span class="kw-2">&amp;mut </span>World) {}
 
     <span class="kw">fn </span>get_state(world: <span class="kw-2">&amp;</span>World) -&gt; <span class="self">Self</span>::State {
         world.run_initialized_system(
@@ -479,6 +519,7 @@
 
 <span class="doccomment">/// Marker component added to items when they are used.
 </span><span class="attr">#[derive(Clone, Copy, HasSchema, Default)]
+#[repr(C)]
 </span><span class="kw">pub struct </span>ItemUsed {
     <span class="doccomment">/// The player that used the item
     </span><span class="kw">pub </span>owner: Entity,
@@ -490,10 +531,25 @@
 /// [`ItemGrabbed`] components for entities which have this component.
 /// [`Item`] is required for the system to take affect.
 </span><span class="attr">#[derive(Clone, HasSchema, Default)]
+#[repr(C)]
 </span><span class="kw">pub struct </span>ItemGrab {
     <span class="kw">pub </span>fin_anim: Ustr,
     <span class="kw">pub </span>grab_offset: Vec2,
     <span class="kw">pub </span>sync_animation: bool,
+}
+
+<span class="doccomment">/// Drop items that have the `DropItem` component added to them.
+</span><span class="kw">pub fn </span>drop_items(
+    <span class="kw-2">mut </span>commands: Commands,
+    <span class="kw-2">mut </span>drop_items: CompMut&lt;DropItem&gt;,
+    player_inventories: PlayerInventories,
+) {
+    <span class="kw">for </span>Inv { player, inventory } <span class="kw">in </span>player_inventories.iter().flatten() {
+        <span class="kw">if </span>drop_items.contains(<span class="kw-2">*</span>inventory) {
+            drop_items.remove(<span class="kw-2">*</span>inventory);
+            commands.add(PlayerCommand::set_inventory(<span class="kw-2">*</span>player, <span class="prelude-val">None</span>));
+        }
+    }
 }
 
 <span class="kw">pub fn </span>grab_items(
@@ -541,6 +597,7 @@
 /// [`ItemDropped`] components for entities which have this component.
 /// [`Item`] is required for the system to take affect.
 </span><span class="attr">#[derive(Clone, HasSchema)]
+#[repr(C)]
 </span><span class="kw">pub struct </span>ItemThrow {
     normal: Vec2,
     fast: Vec2,
@@ -549,7 +606,8 @@
     lob: Vec2,
     roll: Vec2,
     spin: f32,
-    <span class="doccomment">/// An optional system value that gets run once on throw.
+    <span class="attr">#[schema(opaque)]
+    </span><span class="doccomment">/// An optional system value that gets run once on throw.
     </span>system: <span class="prelude-ty">Option</span>&lt;Arc&lt;AtomicCell&lt;StaticSystem&lt;(), ()&gt;&gt;&gt;&gt;,
 }
 
@@ -648,8 +706,8 @@
     player_spawnwers: Comp&lt;PlayerSpawner&gt;,
     <span class="kw-2">mut </span>commands: Commands,
 ) {
-    <span class="kw">for </span>(entity, (_items, item_throw, body, transform)) <span class="kw">in
-        </span>entities.iter_with((<span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>item_throws, <span class="kw-2">&amp;mut </span>bodies, <span class="kw-2">&amp;mut </span>transforms))
+    <span class="kw">for </span>(entity, (_items, item_throw, transform)) <span class="kw">in
+        </span>entities.iter_with((<span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>item_throws, <span class="kw-2">&amp;mut </span>transforms))
     {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(ItemDropped { player }) = items_dropped.get(entity).cloned() {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(system) = item_throw.system.clone() {
@@ -687,11 +745,13 @@
                 transform.translation.z = z_depth_for_map_layer(layer.layer_idx);
             }
 
-            body.velocity = throw_velocity * horizontal_flip_factor;
-            body.angular_velocity =
-                item_throw.spin * horizontal_flip_factor.x * throw_velocity.y.signum();
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(body) = bodies.get_mut(entity) {
+                body.velocity = throw_velocity * horizontal_flip_factor;
+                body.angular_velocity =
+                    item_throw.spin * horizontal_flip_factor.x * throw_velocity.y.signum();
 
-            body.is_deactivated = <span class="bool-val">false</span>;
+                body.is_deactivated = <span class="bool-val">false</span>;
+            }
         }
     }
 }

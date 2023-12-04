@@ -1,0 +1,5 @@
+image: ./anchor.png
+tile_size: [28, 35]
+columns: 1
+rows: 1
+

@@ -13,7 +13,6 @@ music:
   results_screen: music/11 thar she blows!.ogg
   credits: music/12 all hands hoay!.ogg
 
-
 main_menu:
   title_font:
     family: Fairfax SM
@@ -297,6 +296,7 @@ core:
     - /map/resources/coral.atlas.yaml
 
   map_elements:
+    - /plugins/anchor/element.yaml
     - /elements/decoration/anemones/anemones.element.yaml
     - /elements/decoration/seaweed/seaweed.element.yaml
     - /elements/environment/urchin/urchin.element.yaml

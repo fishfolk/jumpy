@@ -294,8 +294,6 @@
 <a href="#199" id="199">199</a>
 <a href="#200" id="200">200</a>
 <a href="#201" id="201">201</a>
-<a href="#202" id="202">202</a>
-<a href="#203" id="203">203</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
 
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
@@ -308,7 +306,6 @@
 }
 
 <span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>Session) {
-    session.world.init_param::&lt;Localization&lt;GameMeta&gt;&gt;();
     session.add_system_to_stage(Update, pause_menu_system);
 }
 
@@ -349,7 +346,7 @@
                                 .show(ui, |ui| {
                                     ui.set_min_width(ui.available_width());
 
-                                    world.run_initialized_system(
+                                    world.run_system(
                                         main_pause_menu,
                                         (ui, session, <span class="kw-2">&amp;mut </span>restart_game, <span class="kw-2">&amp;mut </span>back_to_menu),
                                     );
@@ -357,8 +354,7 @@
                         });
                 }
                 PauseMenuPage::MapSelect =&gt; {
-                    <span class="kw">let </span>action =
-                        world.run_initialized_system(<span class="kw">crate</span>::ui::map_select::map_select_menu, ());
+                    <span class="kw">let </span>action = world.run_system(<span class="kw">crate</span>::ui::map_select::map_select_menu, ());
 
                     <span class="kw">match </span>action {
                         <span class="kw">super</span>::map_select::MapSelectAction::None =&gt; (),

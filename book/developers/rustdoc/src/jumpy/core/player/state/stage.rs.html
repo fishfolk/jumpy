@@ -195,12 +195,6 @@
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
 <a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-<a href="#104" id="104">104</a>
-<a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
-<a href="#108" id="108">108</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(Debug)]
@@ -240,17 +234,11 @@
         <span class="string">&quot;PlayerStateStage&quot;</span>.into()
     }
 
-    <span class="kw">fn </span>initialize(<span class="kw-2">&amp;mut </span><span class="self">self</span>, world: <span class="kw-2">&amp;mut </span>World) {
-        <span class="kw">for </span>system <span class="kw">in </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.systems {
-            system.initialize(world);
-        }
-    }
-
-    <span class="kw">fn </span>run(<span class="kw-2">&amp;mut </span><span class="self">self</span>, world: <span class="kw-2">&amp;mut </span>World) {
+    <span class="kw">fn </span>run(<span class="kw-2">&amp;mut </span><span class="self">self</span>, world: <span class="kw-2">&amp;</span>World) {
         <span class="macro">trace!</span>(<span class="string">&quot;Starting player state transitions&quot;</span>);
         <span class="kw">loop </span>{
             <span class="comment">// Get the current player states
-            </span><span class="kw">let </span>last_player_states = world.run_initialized_system(
+            </span><span class="kw">let </span>last_player_states = world.run_system(
                 |entities: Res&lt;Entities&gt;,
                  player_indexes: Comp&lt;PlayerIdx&gt;,
                  player_states: Comp&lt;PlayerState&gt;| {
@@ -274,7 +262,7 @@
             }
 
             <span class="comment">// Get whether the states have changed
-            </span><span class="kw">let </span>has_changed = world.run_initialized_system(
+            </span><span class="kw">let </span>has_changed = world.run_system(
                 <span class="kw">move </span>|entities: Res&lt;Entities&gt;,
                       player_indexes: Comp&lt;PlayerIdx&gt;,
                       <span class="kw-2">mut </span>player_states: CompMut&lt;PlayerState&gt;| {

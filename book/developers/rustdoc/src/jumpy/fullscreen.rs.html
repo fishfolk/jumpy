@@ -136,9 +136,9 @@
     <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
     </span>{
         <span class="kw">let </span>storage = game.shared_resource_cell::&lt;Storage&gt;().unwrap();
-        <span class="kw">let </span><span class="kw-2">mut </span>storage = storage.borrow_mut();
+        <span class="kw">let </span><span class="kw-2">mut </span>storage = storage.borrow_mut().unwrap();
         <span class="kw">let </span>window = game.shared_resource_cell::&lt;Window&gt;().unwrap();
-        <span class="kw">let </span><span class="kw-2">mut </span>window = window.borrow_mut();
+        <span class="kw">let </span><span class="kw-2">mut </span>window = window.borrow_mut().unwrap();
         <span class="kw">let </span>keyboard = game.shared_resource::&lt;KeyboardInputs&gt;().unwrap();
 
         <span class="kw">let </span>f11_pressed = keyboard

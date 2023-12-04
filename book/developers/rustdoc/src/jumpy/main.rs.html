@@ -283,6 +283,31 @@
 <a href="#188" id="188">188</a>
 <a href="#189" id="189">189</a>
 <a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
 </pre></div><pre class="rust"><code><span class="attr">#![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
 </span><span class="attr">#![cfg_attr(doc, allow(unknown_lints))]
@@ -337,6 +362,18 @@
     <span class="kw">pub </span>music: GameMusic,
 }
 
+<span class="attr">#[derive(HasSchema, Clone, Debug, Default)]
+#[type_data(metadata_asset(<span class="string">&quot;assets&quot;</span>))]
+#[repr(C)]
+</span><span class="kw">pub struct </span>PackMeta {
+    <span class="kw">pub </span>plugins: SVec&lt;Handle&lt;LuaPlugin&gt;&gt;,
+    <span class="kw">pub </span>map_tilesets: SVec&lt;Handle&lt;Atlas&gt;&gt;,
+    <span class="kw">pub </span>players: SVec&lt;Handle&lt;PlayerMeta&gt;&gt;,
+    <span class="kw">pub </span>player_hats: SVec&lt;Handle&lt;HatMeta&gt;&gt;,
+    <span class="kw">pub </span>maps: SVec&lt;Handle&lt;MapMeta&gt;&gt;,
+    <span class="kw">pub </span>map_elements: SVec&lt;Handle&lt;ElementMeta&gt;&gt;,
+}
+
 <span class="kw">impl </span>GameMeta {
     <span class="doccomment">/// Get the lua plugins loaded by the game.
     </span><span class="kw">pub fn </span>get_plugins(<span class="kw-2">&amp;</span><span class="self">self</span>, asset_server: <span class="kw-2">&amp;</span>AssetServer) -&gt; Arc&lt;Vec&lt;Handle&lt;LuaPlugin&gt;&gt;&gt; {
@@ -349,6 +386,18 @@
                 .map(|eh| asset_server.get(<span class="kw-2">*</span>eh).plugin)
                 .filter(|plugin_handle| plugin_handle != <span class="kw-2">&amp;</span>Handle::default()),
         );
+
+        <span class="kw">for </span>pack <span class="kw">in </span>asset_server.packs() {
+            <span class="kw">let </span>pack_meta = asset_server.get(pack.root.typed::&lt;PackMeta&gt;());
+            plugins.extend(pack_meta.plugins.iter().copied());
+            plugins.extend(
+                pack_meta
+                    .map_elements
+                    .iter()
+                    .map(|eh| asset_server.get(<span class="kw-2">*</span>eh).plugin)
+                    .filter(|plugin_handle| plugin_handle != <span class="kw-2">&amp;</span>Handle::default()),
+            );
+        }
         Arc::new(plugins)
     }
 }
@@ -373,8 +422,9 @@
     <span class="comment">// First create bones game.
     </span><span class="kw">let </span><span class="kw-2">mut </span>game = Game::new();
 
-    <span class="comment">// Register our game asset type
+    <span class="comment">// Register our game and pack meta types
     </span>GameMeta::register_schema();
+    PackMeta::register_schema();
 
     game
         <span class="comment">// Install game plugins

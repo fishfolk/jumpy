@@ -155,7 +155,7 @@
     <span class="kw-2">mut </span>session_options: ResMut&lt;SessionOptions&gt;,
     assets: Res&lt;AssetServer&gt;,
 ) {
-    <span class="kw">let </span>select_action = world.run_initialized_system(map_select_menu, ());
+    <span class="kw">let </span>select_action = world.run_system(map_select_menu, ());
 
     <span class="kw">match </span>select_action {
         MapSelectAction::None =&gt; (),

@@ -265,8 +265,6 @@
 <a href="#170" id="170">170</a>
 <a href="#171" id="171">171</a>
 <a href="#172" id="172">172</a>
-<a href="#173" id="173">173</a>
-<a href="#174" id="174">174</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">use </span><span class="kw">super</span>::ImageMeta;
@@ -292,8 +290,6 @@
         .add_startup_system(setup_menu)
         <span class="comment">// Add our menu system to the update stage
         </span>.add_system_to_stage(Update, main_menu_system);
-
-    session.world.init_param::&lt;Localization&lt;GameMeta&gt;&gt;();
 }
 
 <span class="kw">fn </span>setup_menu(
@@ -352,11 +348,11 @@
     egui::CentralPanel::default()
         .frame(egui::Frame::none())
         .show(<span class="kw-2">&amp;</span>ctx, |ui| <span class="kw">match </span>ctx.get_state::&lt;MenuPage&gt;() {
-            MenuPage::Home =&gt; world.run_initialized_system(home_menu, ui),
-            MenuPage::Settings =&gt; world.run_initialized_system(settings::widget, ui),
-            MenuPage::PlayerSelect =&gt; world.run_initialized_system(player_select::widget, ui),
-            MenuPage::MapSelect { .. } =&gt; world.run_initialized_system(map_select::widget, ui),
-            MenuPage::Credits =&gt; world.run_initialized_system(credits::widget, ui),
+            MenuPage::Home =&gt; world.run_system(home_menu, ui),
+            MenuPage::Settings =&gt; world.run_system(settings::widget, ui),
+            MenuPage::PlayerSelect =&gt; world.run_system(player_select::widget, ui),
+            MenuPage::MapSelect { .. } =&gt; world.run_system(map_select::widget, ui),
+            MenuPage::Credits =&gt; world.run_system(credits::widget, ui),
             MenuPage::NetworkGame =&gt; <span class="macro">todo!</span>(),
         });
 }

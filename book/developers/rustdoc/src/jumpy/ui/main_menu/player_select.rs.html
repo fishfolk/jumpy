@@ -831,10 +831,24 @@
 <a href="#736" id="736">736</a>
 <a href="#737" id="737">737</a>
 <a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
+<a href="#743" id="743">743</a>
+<a href="#744" id="744">744</a>
+<a href="#745" id="745">745</a>
+<a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
 </pre></div><pre class="rust"><code><span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
 // use crate::networking::{NetworkMatchSocket, SocketTarget};
 
-</span><span class="kw">use super</span>::<span class="kw-2">*</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::PackMeta;
+
+<span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="comment">// const GAMEPAD_ACTION_IDX: usize = 0;
 // const KEYPAD_ACTION_IDX: usize = 1;
@@ -842,6 +856,10 @@
 </span><span class="attr">#[derive(Default, Clone, Debug)]
 </span><span class="kw">pub struct </span>PlayerSelectState {
     <span class="kw">pub </span>slots: [PlayerSlot; MAX_PLAYERS],
+    <span class="doccomment">/// Cache of available players from the game and packs.
+    </span><span class="kw">pub </span>players: Vec&lt;Handle&lt;PlayerMeta&gt;&gt;,
+    <span class="doccomment">/// Cache of available hats from the game and packs.
+    </span><span class="kw">pub </span>hats: Vec&lt;<span class="prelude-ty">Option</span>&lt;Handle&lt;HatMeta&gt;&gt;&gt;,
 }
 
 <span class="attr">#[derive(Default, Clone, Copy, Debug)]
@@ -996,7 +1014,7 @@
 
                 ui.columns(MAX_PLAYERS, |columns| {
                     <span class="kw">for </span>(i, ui) <span class="kw">in </span>columns.iter_mut().enumerate() {
-                        world.run_initialized_system(player_select_panel, (ui, i, <span class="kw-2">&amp;mut </span>state))
+                        world.run_system(player_select_panel, (ui, i, <span class="kw-2">&amp;mut </span>state))
                     }
                 });
             });
@@ -1040,6 +1058,33 @@
     world: <span class="kw-2">&amp;</span>World,
 ) {
     <span class="kw">let </span>(ui, slot_id, state) = <span class="kw-2">&amp;mut *</span>params;
+
+    <span class="comment">// Cache the player list
+    </span><span class="kw">if </span>state.players.is_empty() {
+        <span class="kw">for </span>player <span class="kw">in </span>meta.core.players.iter() {
+            state.players.push(<span class="kw-2">*</span>player);
+        }
+        <span class="kw">for </span>pack <span class="kw">in </span>asset_server.packs() {
+            <span class="kw">let </span>pack_meta = asset_server.get(pack.root.typed::&lt;PackMeta&gt;());
+            <span class="kw">for </span>player <span class="kw">in </span>pack_meta.players.iter() {
+                state.players.push(<span class="kw-2">*</span>player)
+            }
+        }
+    }
+
+    <span class="comment">// Cache the hat list
+    </span><span class="kw">if </span>state.hats.is_empty() {
+        state.hats.push(<span class="prelude-val">None</span>); <span class="comment">// No hat selected
+        </span><span class="kw">for </span>hat <span class="kw">in </span>meta.core.player_hats.iter() {
+            state.hats.push(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>hat));
+        }
+        <span class="kw">for </span>pack <span class="kw">in </span>asset_server.packs() {
+            <span class="kw">let </span>pack_meta = asset_server.get(pack.root.typed::&lt;PackMeta&gt;());
+            <span class="kw">for </span>hat <span class="kw">in </span>pack_meta.player_hats.iter() {
+                state.hats.push(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>hat));
+            }
+        }
+    }
 
     <span class="kw">let </span>is_network = <span class="bool-val">false</span>;
     <span class="comment">// #[cfg(target_arch = &quot;wasm32&quot;)]
@@ -1146,7 +1191,7 @@
     <span class="comment">// If the handle is empty
     </span><span class="kw">if </span><span class="kw-2">*</span>player_handle == default() {
         <span class="comment">// Select the first player
-        </span><span class="kw-2">*</span>player_handle = meta.core.players[<span class="number">0</span>];
+        </span><span class="kw-2">*</span>player_handle = state.players[<span class="number">0</span>];
     }
 
     <span class="comment">// Handle player joining
@@ -1198,32 +1243,25 @@
 
         <span class="comment">// Select a hat if the player has been confirmed
         </span><span class="kw">if </span>slot.confirmed {
-            <span class="kw">let </span>current_hat_handle_idx = slot.selected_hat.as_ref().map(|player_hat| {
-                meta.core
-                    .player_hats
-                    .iter()
-                    .enumerate()
-                    .find(|(<span class="kw">_</span>, handle)| <span class="kw-2">*</span>handle == player_hat)
-                    .map(|(i, <span class="kw">_</span>)| i)
-                    .unwrap_or(<span class="number">0</span>)
-            });
+            <span class="kw">let </span>current_hat_handle_idx = state
+                .hats
+                .iter()
+                .enumerate()
+                .find(|(<span class="kw">_</span>, handle)| <span class="kw-2">**</span>handle == slot.selected_hat)
+                .map(|(i, <span class="kw">_</span>)| i)
+                .unwrap_or(<span class="number">0</span>);
 
             <span class="kw">let </span>next_idx = <span class="kw">if </span>direction.x &gt; <span class="number">0.0 </span>{
-                current_hat_handle_idx
-                    .map(|x| {
-                        <span class="kw">if </span>x &lt; meta.core.player_hats.len() - <span class="number">1 </span>{
-                            <span class="prelude-val">Some</span>(x + <span class="number">1</span>)
-                        } <span class="kw">else </span>{
-                            <span class="prelude-val">None
-                        </span>}
-                    })
-                    .unwrap_or(<span class="prelude-val">Some</span>(<span class="number">0</span>))
+                (current_hat_handle_idx + <span class="number">1</span>) % state.hats.len()
             } <span class="kw">else </span>{
-                current_hat_handle_idx
-                    .map(|x| <span class="kw">if </span>x == <span class="number">0 </span>{ <span class="prelude-val">None </span>} <span class="kw">else </span>{ <span class="prelude-val">Some</span>(x - <span class="number">1</span>) })
-                    .unwrap_or(<span class="prelude-val">Some</span>(meta.core.player_hats.len() - <span class="number">1</span>))
+                <span class="kw">let </span>idx = current_hat_handle_idx <span class="kw">as </span>i32 - <span class="number">1</span>;
+                <span class="kw">if </span>idx == -<span class="number">1 </span>{
+                    state.hats.len() - <span class="number">1
+                </span>} <span class="kw">else </span>{
+                    idx <span class="kw">as </span>usize
+                }
             };
-            slot.selected_hat = next_idx.map(|idx| <span class="kw-2">*</span>meta.core.player_hats.get(idx).unwrap());
+            slot.selected_hat = state.hats[next_idx];
 
             <span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
             // if let Some(socket) = &amp;params.network_socket {
@@ -1236,34 +1274,24 @@
 
             // Select player skin if the player has not be confirmed
         </span>} <span class="kw">else </span>{
-            <span class="kw">let </span>current_player_handle_idx = meta
-                .core
+            <span class="kw">let </span>current_player_handle_idx = state
                 .players
                 .iter()
                 .enumerate()
                 .find(|(<span class="kw">_</span>, handle)| <span class="kw-2">*</span>handle == player_handle)
                 .map(|(i, <span class="kw">_</span>)| i)
                 .unwrap_or(<span class="number">0</span>);
-
-            <span class="kw">if </span>direction.x &gt; <span class="number">0.0 </span>{
-                <span class="kw-2">*</span>player_handle = meta
-                    .core
-                    .players
-                    .get(current_player_handle_idx + <span class="number">1</span>)
-                    .cloned()
-                    .unwrap_or_else(|| meta.core.players[<span class="number">0</span>]);
-            } <span class="kw">else if </span>direction.x &lt;= <span class="number">0.0 </span>{
-                <span class="kw">if </span>current_player_handle_idx &gt; <span class="number">0 </span>{
-                    <span class="kw-2">*</span>player_handle = meta
-                        .core
-                        .players
-                        .get(current_player_handle_idx - <span class="number">1</span>)
-                        .cloned()
-                        .unwrap();
-                } <span class="kw">else </span>{
-                    <span class="kw-2">*</span>player_handle = <span class="kw-2">*</span>meta.core.players.iter().last().unwrap();
+            <span class="kw">let </span>next_idx = <span class="kw">if </span>direction.x &gt; <span class="number">0.0 </span>{
+                (current_player_handle_idx + <span class="number">1</span>) % state.players.len()
+            } <span class="kw">else </span>{
+                <span class="kw">let </span>idx = current_player_handle_idx <span class="kw">as </span>i32 - <span class="number">1</span>;
+                <span class="kw">if </span>idx == -<span class="number">1 </span>{
+                    state.players.len() - <span class="number">1
+                </span>} <span class="kw">else </span>{
+                    idx <span class="kw">as </span>usize
                 }
-            }
+            };
+            slot.selected_player = state.players[next_idx];
 
             <span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
             // if let Some(socket) = &amp;params.network_socket {
@@ -1401,10 +1429,7 @@
                         };
                         ui.label(smaller_font.rich(<span class="kw">if </span>slot.confirmed { <span class="kw-2">&amp;</span>hat_label } <span class="kw">else </span>{ <span class="string">&quot;&quot; </span>}));
 
-                        world.run_initialized_system(
-                            player_image,
-                            (ui, <span class="kw-2">&amp;</span>player_meta, hat_meta.as_deref()),
-                        );
+                        world.run_system(player_image, (ui, <span class="kw-2">&amp;</span>player_meta, hat_meta.as_deref()));
                     });
                 });
 
@@ -1438,9 +1463,8 @@
                         {
                             slot.confirmed = <span class="bool-val">true</span>;
                             slot.active = <span class="bool-val">true</span>;
-                            <span class="kw">let </span>rand_idx =
-                                THREAD_RNG.with(|rng| rng.usize(<span class="number">0</span>..meta.core.players.len()));
-                            slot.selected_player = meta.core.players[rand_idx];
+                            <span class="kw">let </span>rand_idx = THREAD_RNG.with(|rng| rng.usize(<span class="number">0</span>..state.players.len()));
+                            slot.selected_player = state.players[rand_idx];
                         }
                     }
                 });

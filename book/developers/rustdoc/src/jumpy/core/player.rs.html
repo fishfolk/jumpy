@@ -1355,9 +1355,9 @@
 }
 
 <span class="kw">impl </span>FromWorld <span class="kw">for </span>PathfindingDebugLines {
-    <span class="kw">fn </span>from_world(world: <span class="kw-2">&amp;mut </span>World) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span>entities = world.run_initialized_system(
-            |<span class="kw-2">mut </span>entities: ResMutInit&lt;Entities&gt;, <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;| {
+    <span class="kw">fn </span>from_world(world: <span class="kw-2">&amp;</span>World) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>entities = world.run_system(
+            |<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;, <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;| {
                 (<span class="number">0</span>..MAX_PLAYERS)
                     .map(|<span class="kw">_</span>| {
                         <span class="kw">let </span>ent = entities.create();

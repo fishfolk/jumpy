@@ -386,7 +386,7 @@
 }
 
 <span class="kw">impl </span>FromWorld <span class="kw">for </span>RapierDebugContext {
-    <span class="kw">fn </span>from_world(world: <span class="kw-2">&amp;mut </span>World) -&gt; <span class="self">Self </span>{
+    <span class="kw">fn </span>from_world(world: <span class="kw-2">&amp;</span>World) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>path_entity = world.resource_mut::&lt;Entities&gt;().create();
 
         <span class="kw">let </span>transforms = world.components.get::&lt;Transform&gt;();

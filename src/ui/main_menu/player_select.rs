@@ -1,6 +1,8 @@
 // #[cfg(not(target_arch = "wasm32"))]
 // use crate::networking::{NetworkMatchSocket, SocketTarget};
 
+use crate::PackMeta;
+
 use super::*;
 
 // const GAMEPAD_ACTION_IDX: usize = 0;
@@ -9,6 +11,10 @@ use super::*;
 #[derive(Default, Clone, Debug)]
 pub struct PlayerSelectState {
     pub slots: [PlayerSlot; MAX_PLAYERS],
+    /// Cache of available players from the game and packs.
+    pub players: Vec<Handle<PlayerMeta>>,
+    /// Cache of available hats from the game and packs.
+    pub hats: Vec<Option<Handle<HatMeta>>>,
 }
 
 #[derive(Default, Clone, Copy, Debug)]
@@ -163,7 +169,7 @@ pub fn widget(
 
                 ui.columns(MAX_PLAYERS, |columns| {
                     for (i, ui) in columns.iter_mut().enumerate() {
-                        world.run_initialized_system(player_select_panel, (ui, i, &mut state))
+                        world.run_system(player_select_panel, (ui, i, &mut state))
                     }
                 });
             });
@@ -207,6 +213,33 @@ fn player_select_panel(
     world: &World,
 ) {
     let (ui, slot_id, state) = &mut *params;
+
+    // Cache the player list
+    if state.players.is_empty() {
+        for player in meta.core.players.iter() {
+            state.players.push(*player);
+        }
+        for pack in asset_server.packs() {
+            let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
+            for player in pack_meta.players.iter() {
+                state.players.push(*player)
+            }
+        }
+    }
+
+    // Cache the hat list
+    if state.hats.is_empty() {
+        state.hats.push(None); // No hat selected
+        for hat in meta.core.player_hats.iter() {
+            state.hats.push(Some(*hat));
+        }
+        for pack in asset_server.packs() {
+            let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
+            for hat in pack_meta.player_hats.iter() {
+                state.hats.push(Some(*hat));
+            }
+        }
+    }
 
     let is_network = false;
     // #[cfg(target_arch = "wasm32")]
@@ -313,7 +346,7 @@ fn player_select_panel(
     // If the handle is empty
     if *player_handle == default() {
         // Select the first player
-        *player_handle = meta.core.players[0];
+        *player_handle = state.players[0];
     }
 
     // Handle player joining
@@ -365,32 +398,25 @@ fn player_select_panel(
 
         // Select a hat if the player has been confirmed
         if slot.confirmed {
-            let current_hat_handle_idx = slot.selected_hat.as_ref().map(|player_hat| {
-                meta.core
-                    .player_hats
-                    .iter()
-                    .enumerate()
-                    .find(|(_, handle)| *handle == player_hat)
-                    .map(|(i, _)| i)
-                    .unwrap_or(0)
-            });
+            let current_hat_handle_idx = state
+                .hats
+                .iter()
+                .enumerate()
+                .find(|(_, handle)| **handle == slot.selected_hat)
+                .map(|(i, _)| i)
+                .unwrap_or(0);
 
             let next_idx = if direction.x > 0.0 {
-                current_hat_handle_idx
-                    .map(|x| {
-                        if x < meta.core.player_hats.len() - 1 {
-                            Some(x + 1)
-                        } else {
-                            None
-                        }
-                    })
-                    .unwrap_or(Some(0))
+                (current_hat_handle_idx + 1) % state.hats.len()
             } else {
-                current_hat_handle_idx
-                    .map(|x| if x == 0 { None } else { Some(x - 1) })
-                    .unwrap_or(Some(meta.core.player_hats.len() - 1))
+                let idx = current_hat_handle_idx as i32 - 1;
+                if idx == -1 {
+                    state.hats.len() - 1
+                } else {
+                    idx as usize
+                }
             };
-            slot.selected_hat = next_idx.map(|idx| *meta.core.player_hats.get(idx).unwrap());
+            slot.selected_hat = state.hats[next_idx];
 
             // #[cfg(not(target_arch = "wasm32"))]
             // if let Some(socket) = &params.network_socket {
@@ -403,34 +429,24 @@ fn player_select_panel(
 
             // Select player skin if the player has not be confirmed
         } else {
-            let current_player_handle_idx = meta
-                .core
+            let current_player_handle_idx = state
                 .players
                 .iter()
                 .enumerate()
                 .find(|(_, handle)| *handle == player_handle)
                 .map(|(i, _)| i)
                 .unwrap_or(0);
-
-            if direction.x > 0.0 {
-                *player_handle = meta
-                    .core
-                    .players
-                    .get(current_player_handle_idx + 1)
-                    .cloned()
-                    .unwrap_or_else(|| meta.core.players[0]);
-            } else if direction.x <= 0.0 {
-                if current_player_handle_idx > 0 {
-                    *player_handle = meta
-                        .core
-                        .players
-                        .get(current_player_handle_idx - 1)
-                        .cloned()
-                        .unwrap();
+            let next_idx = if direction.x > 0.0 {
+                (current_player_handle_idx + 1) % state.players.len()
+            } else {
+                let idx = current_player_handle_idx as i32 - 1;
+                if idx == -1 {
+                    state.players.len() - 1
                 } else {
-                    *player_handle = *meta.core.players.iter().last().unwrap();
+                    idx as usize
                 }
-            }
+            };
+            slot.selected_player = state.players[next_idx];
 
             // #[cfg(not(target_arch = "wasm32"))]
             // if let Some(socket) = &params.network_socket {
@@ -568,10 +584,7 @@ fn player_select_panel(
                         };
                         ui.label(smaller_font.rich(if slot.confirmed { &hat_label } else { "" }));
 
-                        world.run_initialized_system(
-                            player_image,
-                            (ui, &player_meta, hat_meta.as_deref()),
-                        );
+                        world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref()));
                     });
                 });
 
@@ -605,9 +618,8 @@ fn player_select_panel(
                         {
                             slot.confirmed = true;
                             slot.active = true;
-                            let rand_idx =
-                                THREAD_RNG.with(|rng| rng.usize(0..meta.core.players.len()));
-                            slot.selected_player = meta.core.players[rand_idx];
+                            let rand_idx = THREAD_RNG.with(|rng| rng.usize(0..state.players.len()));
+                            slot.selected_player = state.players[rand_idx];
                         }
                     }
                 });

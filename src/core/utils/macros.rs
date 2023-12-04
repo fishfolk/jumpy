@@ -27,12 +27,6 @@ macro_rules! impl_system_param {
             );
             type Param<'p> = $t<'p>;
 
-            fn initialize(world: &mut World) {
-                $(
-                    <$f_ty as SystemParam>::initialize(world);
-                )*
-            }
-
             fn get_state(world: &World) -> Self::State {
                 (
                     $(

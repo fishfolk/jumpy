@@ -14,7 +14,7 @@ pub fn widget(
     mut session_options: ResMut<SessionOptions>,
     assets: Res<AssetServer>,
 ) {
-    let select_action = world.run_initialized_system(map_select_menu, ());
+    let select_action = world.run_system(map_select_menu, ());
 
     match select_action {
         MapSelectAction::None => (),

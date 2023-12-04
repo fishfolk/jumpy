@@ -1,0 +1,4 @@
+image: ./pink_pirate.png
+tile_size: [50, 29]
+columns: 1
+rows: 1

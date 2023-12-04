@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, PackMeta};
 
 #[derive(Clone, Debug, Default)]
 pub enum MapSelectAction {
@@ -63,6 +63,22 @@ pub fn map_select_menu(
 
                                     if button.clicked() {
                                         return MapSelectAction::SelectMap(map_meta.clone());
+                                    }
+                                }
+
+                                for pack in asset_server.packs() {
+                                    let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
+                                    for map in pack_meta.maps.iter() {
+                                        let map_meta = asset_server.get(*map);
+                                        let button = BorderedButton::themed(
+                                            &meta.theme.buttons.small,
+                                            map_meta.name.to_string(),
+                                        )
+                                        .show(ui);
+
+                                        if button.clicked() {
+                                            return MapSelectAction::SelectMap(map_meta.clone());
+                                        }
                                     }
                                 }
 

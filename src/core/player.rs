@@ -278,9 +278,9 @@ pub struct PathfindingDebugLines {
 }
 
 impl FromWorld for PathfindingDebugLines {
-    fn from_world(world: &mut World) -> Self {
-        let entities = world.run_initialized_system(
-            |mut entities: ResMutInit<Entities>, mut transforms: CompMut<Transform>| {
+    fn from_world(world: &World) -> Self {
+        let entities = world.run_system(
+            |mut entities: ResMut<Entities>, mut transforms: CompMut<Transform>| {
                 (0..MAX_PLAYERS)
                     .map(|_| {
                         let ent = entities.create();

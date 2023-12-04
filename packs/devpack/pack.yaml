@@ -1,0 +1,6 @@
+name: Dev Pack
+id: devpack_01hgrar12df9rva3mxrh2x3vgj
+version: 0.1.0
+game_version: 0.9.0
+root: ./assets.yaml
+

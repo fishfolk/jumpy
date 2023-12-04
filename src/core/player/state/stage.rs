@@ -37,17 +37,11 @@ impl SystemStage for PlayerStateStageImpl {
         "PlayerStateStage".into()
     }
 
-    fn initialize(&mut self, world: &mut World) {
-        for system in &mut self.systems {
-            system.initialize(world);
-        }
-    }
-
-    fn run(&mut self, world: &mut World) {
+    fn run(&mut self, world: &World) {
         trace!("Starting player state transitions");
         loop {
             // Get the current player states
-            let last_player_states = world.run_initialized_system(
+            let last_player_states = world.run_system(
                 |entities: Res<Entities>,
                  player_indexes: Comp<PlayerIdx>,
                  player_states: Comp<PlayerState>| {
@@ -71,7 +65,7 @@ impl SystemStage for PlayerStateStageImpl {
             }
 
             // Get whether the states have changed
-            let has_changed = world.run_initialized_system(
+            let has_changed = world.run_system(
                 move |entities: Res<Entities>,
                       player_indexes: Comp<PlayerIdx>,
                       mut player_states: CompMut<PlayerState>| {

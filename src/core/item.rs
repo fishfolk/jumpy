@@ -50,10 +50,8 @@ impl<'a> SystemParam for PlayerInventories<'a> {
     type State = [Option<Inv>; MAX_PLAYERS];
     type Param<'s> = PlayerInventories<'s>;
 
-    fn initialize(_world: &mut World) {}
-
     fn get_state(world: &World) -> Self::State {
-        world.run_initialized_system(
+        world.run_system(
             |entities: Res<Entities>,
              player_indexes: Comp<PlayerIdx>,
              inventories: Comp<Inventory>| {

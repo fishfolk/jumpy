@@ -1,0 +1,5 @@
+name: Pink Pirate Hat
+atlas: ./pink_pirate.atlas.yaml
+
+offset: [-2, 33]
+body_size: [50, 29]

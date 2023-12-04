@@ -72,7 +72,7 @@ impl Clone for RapierDebugContext {
 }
 
 impl FromWorld for RapierDebugContext {
-    fn from_world(world: &mut World) -> Self {
+    fn from_world(world: &World) -> Self {
         let path_entity = world.resource_mut::<Entities>().create();
 
         let transforms = world.components.get::<Transform>();

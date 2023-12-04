@@ -23,8 +23,6 @@ pub fn session_plugin(session: &mut Session) {
         .add_startup_system(setup_menu)
         // Add our menu system to the update stage
         .add_system_to_stage(Update, main_menu_system);
-
-    session.world.init_param::<Localization<GameMeta>>();
 }
 
 fn setup_menu(
@@ -83,11 +81,11 @@ fn main_menu_system(world: &World) {
     egui::CentralPanel::default()
         .frame(egui::Frame::none())
         .show(&ctx, |ui| match ctx.get_state::<MenuPage>() {
-            MenuPage::Home => world.run_initialized_system(home_menu, ui),
-            MenuPage::Settings => world.run_initialized_system(settings::widget, ui),
-            MenuPage::PlayerSelect => world.run_initialized_system(player_select::widget, ui),
-            MenuPage::MapSelect { .. } => world.run_initialized_system(map_select::widget, ui),
-            MenuPage::Credits => world.run_initialized_system(credits::widget, ui),
+            MenuPage::Home => world.run_system(home_menu, ui),
+            MenuPage::Settings => world.run_system(settings::widget, ui),
+            MenuPage::PlayerSelect => world.run_system(player_select::widget, ui),
+            MenuPage::MapSelect { .. } => world.run_system(map_select::widget, ui),
+            MenuPage::Credits => world.run_system(credits::widget, ui),
             MenuPage::NetworkGame => todo!(),
         });
 }

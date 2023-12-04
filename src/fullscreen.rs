@@ -11,9 +11,9 @@ fn update_fullscreen(game: &mut Game) {
     #[cfg(not(target_arch = "wasm32"))]
     {
         let storage = game.shared_resource_cell::<Storage>().unwrap();
-        let mut storage = storage.borrow_mut();
+        let mut storage = storage.borrow_mut().unwrap();
         let window = game.shared_resource_cell::<Window>().unwrap();
-        let mut window = window.borrow_mut();
+        let mut window = window.borrow_mut().unwrap();
         let keyboard = game.shared_resource::<KeyboardInputs>().unwrap();
 
         let f11_pressed = keyboard

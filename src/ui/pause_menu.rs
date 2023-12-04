@@ -10,7 +10,6 @@ enum PauseMenuPage {
 }
 
 pub fn session_plugin(session: &mut Session) {
-    session.world.init_param::<Localization<GameMeta>>();
     session.add_system_to_stage(Update, pause_menu_system);
 }
 
@@ -51,7 +50,7 @@ fn pause_menu_system(
                                 .show(ui, |ui| {
                                     ui.set_min_width(ui.available_width());
 
-                                    world.run_initialized_system(
+                                    world.run_system(
                                         main_pause_menu,
                                         (ui, session, &mut restart_game, &mut back_to_menu),
                                     );
@@ -59,8 +58,7 @@ fn pause_menu_system(
                         });
                 }
                 PauseMenuPage::MapSelect => {
-                    let action =
-                        world.run_initialized_system(crate::ui::map_select::map_select_menu, ());
+                    let action = world.run_system(crate::ui::map_select::map_select_menu, ());
 
                     match action {
                         super::map_select::MapSelectAction::None => (),

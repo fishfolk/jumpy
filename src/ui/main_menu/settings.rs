@@ -168,18 +168,15 @@ pub fn widget(
                     });
 
                     ui.vertical(|ui| match state.tab {
-                        SettingsTab::Controls => world.run_initialized_system(
-                            controls::widget,
-                            (ui, &mut state, should_reset),
-                        ),
-                        SettingsTab::Networking => world.run_initialized_system(
-                            networking::widget,
-                            (ui, &mut state, should_reset),
-                        ),
-                        SettingsTab::Graphics => world.run_initialized_system(
-                            graphics::widget,
-                            (ui, &mut state, should_reset),
-                        ),
+                        SettingsTab::Controls => {
+                            world.run_system(controls::widget, (ui, &mut state, should_reset))
+                        }
+                        SettingsTab::Networking => {
+                            world.run_system(networking::widget, (ui, &mut state, should_reset))
+                        }
+                        SettingsTab::Graphics => {
+                            world.run_system(graphics::widget, (ui, &mut state, should_reset))
+                        }
                     });
                 });
             });

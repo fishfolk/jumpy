@@ -52,6 +52,18 @@ pub struct GameMeta {
     pub music: GameMusic,
 }
 
+#[derive(HasSchema, Clone, Debug, Default)]
+#[type_data(metadata_asset("assets"))]
+#[repr(C)]
+pub struct PackMeta {
+    pub plugins: SVec<Handle<LuaPlugin>>,
+    pub map_tilesets: SVec<Handle<Atlas>>,
+    pub players: SVec<Handle<PlayerMeta>>,
+    pub player_hats: SVec<Handle<HatMeta>>,
+    pub maps: SVec<Handle<MapMeta>>,
+    pub map_elements: SVec<Handle<ElementMeta>>,
+}
+
 impl GameMeta {
     /// Get the lua plugins loaded by the game.
     pub fn get_plugins(&self, asset_server: &AssetServer) -> Arc<Vec<Handle<LuaPlugin>>> {
@@ -64,6 +76,18 @@ impl GameMeta {
                 .map(|eh| asset_server.get(*eh).plugin)
                 .filter(|plugin_handle| plugin_handle != &Handle::default()),
         );
+
+        for pack in asset_server.packs() {
+            let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
+            plugins.extend(pack_meta.plugins.iter().copied());
+            plugins.extend(
+                pack_meta
+                    .map_elements
+                    .iter()
+                    .map(|eh| asset_server.get(*eh).plugin)
+                    .filter(|plugin_handle| plugin_handle != &Handle::default()),
+            );
+        }
         Arc::new(plugins)
     }
 }
@@ -88,8 +112,9 @@ fn main() {
     // First create bones game.
     let mut game = Game::new();
 
-    // Register our game asset type
+    // Register our game and pack meta types
     GameMeta::register_schema();
+    PackMeta::register_schema();
 
     game
         // Install game plugins

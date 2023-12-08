@@ -11,6 +11,9 @@ pub fn game_plugin(game: &mut Game) {
 
 /// Install this module.
 pub fn session_plugin(session: &mut Session) {
+    Bullet::register_schema();
+    BulletHandle::register_schema();
+
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
@@ -19,9 +22,10 @@ pub fn session_plugin(session: &mut Session) {
 
 /// Bullet component.
 #[derive(Clone, Debug, HasSchema, Default, Copy)]
+#[repr(C)]
 pub struct Bullet {
-    /// The direction that the bullet is moving on the X axis.
-    pub direction: f32,
+    /// The direction that the bullet is moving.
+    pub direction: Vec2,
     /// The player entity that shot the bullet.
     pub owner: Entity,
 }
@@ -30,7 +34,7 @@ pub struct Bullet {
 #[type_data(metadata_asset("bullet"))]
 #[repr(C)]
 pub struct BulletMeta {
-    pub velocity: Vec2,
+    pub speed: f32,
     pub body_diameter: f32,
     pub atlas: Handle<Atlas>,
 
@@ -45,6 +49,7 @@ pub struct BulletMeta {
 
 /// Component containing the bullet's metadata handle.
 #[derive(Deref, DerefMut, HasSchema, Default, Clone)]
+#[repr(C)]
 pub struct BulletHandle(pub Handle<BulletMeta>);
 
 /// Hydrate bullets.
@@ -113,7 +118,7 @@ fn update(
         let bullet_meta = asset_server.get(bullet_handle.0);
 
         let BulletMeta {
-            velocity,
+            speed,
             body_diameter,
             explosion_fps,
             explosion_volume,
@@ -127,7 +132,7 @@ fn update(
         // Move bullet
         let position = {
             let position = transforms.get_mut(entity).unwrap();
-            position.translation += bullet.direction * velocity.extend(0.0);
+            position.translation += (bullet.direction * *speed).extend(0.0);
 
             let emote_size = Vec2::new(*body_diameter * 6.0, *body_diameter * 3.5);
             emote_regions.insert(entity, EmoteRegion::basic(Emote::Alarm, emote_size, true));

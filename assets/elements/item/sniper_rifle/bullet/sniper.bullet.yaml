@@ -1,5 +1,5 @@
 lifetime: 2.0
-velocity: [25, 0]
+speed: 25
 body_diameter: 7.5
 atlas: ./sniper_bullet.atlas.yaml
 

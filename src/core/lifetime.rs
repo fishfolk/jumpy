@@ -5,6 +5,8 @@ use std::time::Duration;
 use crate::{core::FPS, prelude::*};
 
 pub fn install(session: &mut Session) {
+    Lifetime::register_schema();
+
     session
         .stages
         .add_system_to_stage(CoreStage::PostUpdate, lifetime_system)
@@ -19,6 +21,7 @@ pub fn install(session: &mut Session) {
 /// >
 /// > Also, the age and lifetime are public, subject to other system's modification.
 #[derive(Copy, Clone, Default, HasSchema)]
+#[repr(C)]
 pub struct Lifetime {
     /// How long the entity should be allowed to live in seconds.
     pub lifetime: f32,

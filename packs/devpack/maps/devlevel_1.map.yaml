@@ -1240,7 +1240,8 @@ layers:
   - pos:
     - 300.0
     - 700.0
-    element: core:/plugins/anchor/element.yaml
+    element: core:/elements/item/sword/sword.element.yaml
+    element: /items/blunderbass/element.yaml
   - pos:
     - 480.0
     - 118.5

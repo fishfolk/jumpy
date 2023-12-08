@@ -1,0 +1,6 @@
+name: Blunderbass
+full_name: devpack::Blunderbass
+kind: !Struct
+  fields:
+    - name: cooldown
+      schema: f32

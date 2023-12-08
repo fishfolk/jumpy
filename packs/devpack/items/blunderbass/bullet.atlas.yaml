@@ -1,0 +1,4 @@
+image: ./bullet.png
+tile_size: [6, 6]
+rows: 1
+columns: 1

@@ -262,7 +262,11 @@ fn update(
                                 ent,
                                 Bullet {
                                     owner: player,
-                                    direction: if player_flip_x { -1.0 } else { 1.0 },
+                                    direction: if player_flip_x {
+                                        vec2(-1.0, 0.0)
+                                    } else {
+                                        vec2(1.0, 0.0)
+                                    },
                                 },
                             );
                             transforms.insert(ent, shoot_animation_transform);

@@ -1,0 +1,4 @@
+name: Blunderbass
+category: Weapons
+data: blunderbass.yaml
+plugin: ./plugin.lua

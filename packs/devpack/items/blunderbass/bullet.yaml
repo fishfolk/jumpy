@@ -1,0 +1,11 @@
+lifetime: 1.0
+speed: 12
+body_diameter: 15
+atlas: ./bullet.atlas.yaml
+
+explosion_fps: 12
+explosion_frames: 3
+explosion_volume: 0.025
+explosion_lifetime: 0.4
+explosion_sound: ./bullet_hit_dull.ogg
+explosion_atlas: ./explosion.atlas.yaml

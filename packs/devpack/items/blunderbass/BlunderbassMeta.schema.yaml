@@ -1,0 +1,26 @@
+name: BlunderbassMeta
+full_name: devpack::BlunderbassMeta
+asset_extension: blunderbass
+kind: !Struct
+  fields:
+    - name: sprite
+      schema: UntypedHandle # Handle<Image>
+    - name: bullet_sprite
+      schema: UntypedHandle # Handle<Image>
+    - name: body_size
+      schema: Vec2
+    - name: grab_offset
+      schema: Vec2
+    - name: throw_velocity
+      schema: f32
+    - name: fin_anim
+      schema: Ustr
+    - name: cooldown
+      schema: f32
+    - name: bullet_count
+      schema: u32
+    - name: bullet_spread
+      schema: f32
+    - name: bullet
+      schema: UntypedHandle # Handle<BulletMeta>
+

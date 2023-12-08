@@ -1,0 +1,10 @@
+sprite: blunderbass.png
+bullet_sprite: bullet.png
+body_size: [32, 8]
+grab_offset: [5, -7]
+throw_velocity: 6
+fin_anim: grab_2
+cooldown: 0.75
+bullet_count: 4
+bullet_spread: 0.8
+bullet: ./bullet.yaml

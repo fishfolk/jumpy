@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["StashedFunction","StaticValue"],"struct":["Registry","StashedCallback","StashedClosure","StashedExecutor","StashedString","StashedTable","StashedThread","StashedUserData"],"trait":["Fetchable","Singleton","Stashable"]};

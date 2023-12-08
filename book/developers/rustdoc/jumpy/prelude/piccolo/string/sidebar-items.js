@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["StringError"],"struct":["InternedStringSet","String"]};

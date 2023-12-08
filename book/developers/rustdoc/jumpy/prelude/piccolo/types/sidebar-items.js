@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["UpValueDescriptor"],"struct":["ConstantIndex16","ConstantIndex8","Opt254","PrototypeIndex","RegisterIndex","UpValueIndex","VarCount"]};

@@ -81,6 +81,13 @@ local function update()
             local player_ent = used.owner
             local player_sprite = components:get(player_ent, AtlasSprite)
             local player_transform = components:get(player_ent, Transform)
+            local player_body = components:get(player_ent, KinematicBody)
+            
+            if player_sprite.flip_x then
+                player_body.velocity.x = player_body.velocity.x + blunderbass_meta.kickback
+            else
+                player_body.velocity.x = player_body.velocity.x - blunderbass_meta.kickback
+            end
             
             -- Spawn bullets
             for i = 1, blunderbass_meta.bullet_count do

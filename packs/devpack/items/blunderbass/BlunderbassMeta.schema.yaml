@@ -23,4 +23,6 @@ kind: !Struct
       schema: f32
     - name: bullet
       schema: UntypedHandle # Handle<BulletMeta>
+    - name: kickback
+      schema: f32
 

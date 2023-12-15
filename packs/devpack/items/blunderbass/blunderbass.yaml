@@ -8,3 +8,5 @@ cooldown: 0.75
 bullet_count: 4
 bullet_spread: 0.8
 bullet: ./bullet.yaml
+kickback: 10
+

@@ -1,0 +1,10 @@
+atlas: ./snail.atlas.yaml
+fps: 6
+body_diameter: 10
+bounciness: 0.6
+gravity: 0.5
+hit_speed: 6.0
+hide_time: 3.0
+crawl_frames: [3, 0, 1, 2, 1, 0]
+move_frame_indexes: [1, 2, 3]
+hide_frames: [0, 4, 5]

@@ -1,0 +1,17 @@
+name: AnchorMeta
+full_name: core::AnchorMeta
+asset_extension: anchor
+kind: !Struct
+  fields:
+    - name: atlas
+      # Handle<Atlas>
+      schema: UntypedHandle
+    - name: fall_speed
+      schema: f32
+    - name: body_size
+      schema: Vec2
+    - name: fin_anim
+      schema: Ustr
+    - name: grab_offset
+      schema: Vec2
+

@@ -308,6 +308,8 @@
 <a href="#213" id="213">213</a>
 <a href="#214" id="214">214</a>
 <a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
 </pre></div><pre class="rust"><code><span class="attr">#![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
 </span><span class="attr">#![cfg_attr(doc, allow(unknown_lints))]
@@ -323,6 +325,7 @@
 <span class="kw">use </span>bones_framework::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub mod </span>core;
+<span class="kw">pub mod </span>debug;
 <span class="kw">pub mod </span>fullscreen;
 <span class="kw">pub mod </span>input;
 <span class="kw">pub mod </span>music;
@@ -434,6 +437,7 @@
         .install_plugin(fullscreen::game_plugin)
         .install_plugin(input::game_plugin)
         .install_plugin(core::game_plugin)
+        .install_plugin(debug::game_plugin)
         <span class="comment">// We initialize the asset server and register asset types
         </span>.init_shared_resource::&lt;AssetServer&gt;()
         .register_default_assets();

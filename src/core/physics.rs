@@ -173,6 +173,11 @@ fn update_kinematic_bodies(
                 || body.last_update_rotation != rotation
                 || body.is_spawning // Don't consider new objects
         };
+
+        let transform = transforms.get_mut(entity).unwrap();
+        body.last_update_position = transform.translation.xy();
+        body.last_update_rotation = transform.rotation.to_euler(EulerRot::XYZ).2;
+
         if body.has_mass && has_moved {
             puffin::profile_scope!("Shove objects out of walls");
 
@@ -344,10 +349,6 @@ fn update_kinematic_bodies(
                 body.shape,
             );
         }
-
-        let transform = transforms.get_mut(entity).unwrap();
-        body.last_update_position = transform.translation.xy();
-        body.last_update_rotation = transform.rotation.to_euler(EulerRot::XYZ).2;
     }
 }
 

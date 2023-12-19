@@ -468,6 +468,7 @@
 <a href="#373" id="373">373</a>
 <a href="#374" id="374">374</a>
 <a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Physics and collision detection.
 
 </span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
@@ -643,6 +644,11 @@
                 || body.last_update_rotation != rotation
                 || body.is_spawning <span class="comment">// Don&#39;t consider new objects
         </span>};
+
+        <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
+        body.last_update_position = transform.translation.xy();
+        body.last_update_rotation = transform.rotation.to_euler(EulerRot::XYZ).<span class="number">2</span>;
+
         <span class="kw">if </span>body.has_mass &amp;&amp; has_moved {
             <span class="macro">puffin::profile_scope!</span>(<span class="string">&quot;Shove objects out of walls&quot;</span>);
 
@@ -814,10 +820,6 @@
                 body.shape,
             );
         }
-
-        <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-        body.last_update_position = transform.translation.xy();
-        body.last_update_rotation = transform.rotation.to_euler(EulerRot::XYZ).<span class="number">2</span>;
     }
 }
 

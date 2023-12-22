@@ -1,0 +1,321 @@
+music:
+  title_screen: music/01 fishycuffs.ogg
+  fight:
+    - music/02 whalecome.ogg
+    - music/03 ahoy!.ogg
+    - music/04 bait the hook.ogg
+    - music/05 fire in the hole.ogg
+    - music/06 fishsticks.ogg
+    - music/07 jolly roger.ogg
+    - music/08 krill or be krilled.ogg
+    - music/09 landlubber.ogg
+  character_screen: music/10 fish bucket.ogg
+  results_screen: music/11 thar she blows!.ogg
+  credits: music/12 all hands hoay!.ogg
+
+main_menu:
+  title_font:
+    family: Fairfax SM
+    color: FFFFFF
+    size: 85
+  subtitle_font:
+    family: Fairfax SM
+    color: FFFFFF
+    size: 60
+
+  background_image:
+    image: ui/menu-background.png
+    image_size: [896, 480]
+
+  menu_width: 350
+
+default_settings:
+  matchmaking_server: matchmaker.bones.fishfolk.org:65534
+  player_controls:
+    # Gamepad controls
+    gamepad:
+      movement:
+        up: !AxisPositive LeftStickY
+        left: !AxisNegative LeftStickX
+        down: !AxisNegative LeftStickY
+        right: !AxisPositive LeftStickX
+      jump: !Button South
+      grab: !Button East
+      shoot: !Button West
+      slide: !Button North
+      pause: !Button Start
+      menu_back: !Button East
+      menu_start: !Button Start
+      menu_confirm: !Button South
+
+    # Controls for the first keyboard player ( left side )
+    keyboard1:
+      movement:
+        up: !Keyboard W
+        down: !Keyboard S
+        left: !Keyboard A
+        right: !Keyboard D
+      jump: !Keyboard Space
+      grab: !Keyboard V
+      shoot: !Keyboard C
+      slide: !Keyboard B
+      pause: !Keyboard Escape
+      menu_back: !Keyboard Escape
+      menu_start: !Keyboard Return
+      menu_confirm: !Keyboard Space
+
+    # Controls for the second keyboard player ( right side )
+    keyboard2:
+      movement:
+        up: !Keyboard Up
+        down: !Keyboard Down
+        left: !Keyboard Left
+        right: !Keyboard Right
+      jump: !Keyboard Comma
+      grab: !Keyboard ShiftRight
+      shoot: !Keyboard Period
+      slide: !Keyboard Slash
+      menu_confirm: !Keyboard Comma
+      menu_back: !Keyboard ShiftRight
+
+localization: locales/localization.yaml
+
+theme:
+  scale: 1.2
+  colors:
+    positive: 3EC761
+
+  widgets:
+    border_radius: 1.5
+    default: &default
+      bg_fill: 3A4444
+      bg_stroke: &default-stroke 181425
+      text: FFFFFF
+    hovered:
+      bg_fill: 566363
+      bg_stroke: *default-stroke
+      text: FFFFFF
+    active:
+      bg_fill: 566363
+      bg_stroke: 86809B
+      text: FFFFFF
+    noninteractive:
+      bg_fill: 262B44
+      bg_stroke: 181425
+      text: FFFFFF
+    menu: *default
+    window_fill: 262B44
+
+  fonts:
+    - ui/FairfaxSM.ttf
+    - ui/ark-pixel-16px-latin.ttf
+
+  font_styles:
+    heading:
+      family: Ark Pixel 16px latin
+      size: 40
+      color: FFFFFF
+    bigger:
+      family: Ark Pixel 16px latin
+      size: 25
+      color: FFFFFF
+    normal:
+      family: Ark Pixel 16px latin
+      size: 20
+      color: FFFFFF
+    smaller:
+      family: Ark Pixel 16px latin
+      size: 15
+      color: FFFFFF
+
+  editor:
+    icons:
+      elements:
+        image: ui/editor/Object.png
+        image_size: [64, 64]
+      tiles:
+        image: ui/editor/Tile.png
+        image_size: [64, 64]
+      collisions:
+        image: ui/editor/PointerAndMap.png
+        image_size: [64, 64]
+      select:
+        image: ui/editor/Cursor.png
+        image_size: [64, 64]
+
+  panel:
+    font_color: FFFFFF
+    padding:
+      top: 25
+      bottom: 25
+      left: 25
+      right: 25
+    border:
+      image: ui/panel.png
+      image_size: [38, 34]
+      border_size:
+        top: 11
+        bottom: 11
+        left: 12
+        right: 21
+      scale: 4
+
+  buttons:
+    normal:
+      font:
+        family: Ark Pixel 16px latin
+        color: FFFFFF
+        size: 20
+      padding:
+        top: 6
+        left: 6
+        right: 6
+        bottom: 9
+      borders:
+        default:
+          image: ui/button.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        focused:
+          image: ui/button-focused.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        clicked:
+          image: ui/button-down.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+
+    small:
+      font:
+        family: Ark Pixel 16px latin
+        color: FFFFFF
+        size: 17
+      padding:
+        top: 4
+        left: 4
+        right: 4
+        bottom: 6
+      borders:
+        default:
+          image: ui/button.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        focused:
+          image: ui/button-focused.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        clicked:
+          image: ui/button-down.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+
+core:
+  config:
+    respawn_invincibility_time: 2s
+
+  camera:
+    default_height: 448
+    border_right: 300
+    border_left: 300
+    border_top: 50
+    border_bottom: 200
+    player_camera_box_size: [100, 250]
+    min_camera_size: [400, 500]
+    zoom_in_lerp_factor: 0.05
+    zoom_out_lerp_factor: 0.1
+    move_lerp_factor: 0.1
+
+  physics:
+    terminal_velocity: 30
+    friction_lerp: 0.85
+    stop_threshold: 1.0
+    gravity: 0.6
+
+  players:
+    - ./player/skins/fishy/fishy.player.yaml
+    - ./player/skins/pescy/pescy.player.yaml
+    - ./player/skins/sharky/sharky.player.yaml
+    - ./player/skins/orcy/orcy.player.yaml
+
+  player_hats:
+    - /player/hats/pirate.hat.yaml
+    - /player/hats/straw.hat.yaml
+
+  stable_maps:
+    - /map/levels/level_1.map.yaml
+    - /map/levels/level_2.map.yaml
+    - /map/levels/level_3.map.yaml
+    - /map/levels/level_4.map.yaml
+    - /map/levels/level_5.map.yaml
+    - /map/levels/level_6.map.yaml
+    - /map/levels/level_7.map.yaml
+    - /map/levels/level_8.map.yaml
+    - /map/levels/level_9.map.yaml
+    - /map/levels/level_10.map.yaml
+    - /map/levels/level_11.map.yaml
+    - /map/levels/level_12.map.yaml
+    - /map/levels/level_13.map.yaml
+    - /map/levels/level_14.map.yaml
+
+  map_tilesets:
+    - /map/resources/default_tileset.atlas.yaml
+    - /map/resources/ground_rock.atlas.yaml
+    - /map/resources/ground_wood.atlas.yaml
+    - /map/resources/ground_metal.atlas.yaml
+    - /map/resources/ship_decorations.atlas.yaml
+    - /map/resources/coral.atlas.yaml
+
+  map_elements:
+    - /plugins/anchor/element.yaml
+    - /elements/decoration/anemones/anemones.element.yaml
+    - /elements/decoration/seaweed/seaweed.element.yaml
+    - /elements/environment/urchin/urchin.element.yaml
+    - /elements/environment/fish_school/fish_school.element.yaml
+    - /elements/environment/crab/crab.element.yaml
+    - /elements/environment/snail/snail.element.yaml
+    - /elements/environment/player_spawner/player_spawner.element.yaml
+    - /elements/environment/sproinger/sproinger.element.yaml
+    - /elements/environment/slippery/slippery.element.yaml
+    - /elements/environment/slippery_seaweed/slippery_seaweed.element.yaml
+    - /elements/item/crate/crate.element.yaml
+    - /elements/item/grenade/grenade.element.yaml
+    - /elements/item/kick_bomb/kick_bomb.element.yaml
+    - /elements/item/mine/mine.element.yaml
+    - /elements/item/musket/musket.element.yaml
+    - /elements/item/stomp_boots/stomp_boots.element.yaml
+    - /elements/item/sword/sword.element.yaml
+    - /elements/item/sniper_rifle/sniper_rifle.element.yaml
+    - /elements/environment/coral_spikes/coral_spikes.element.yaml
+
+  experimental_maps: []
+

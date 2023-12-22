@@ -1,0 +1,6 @@
+name: Slippery Seaweed
+category: Gameplay
+editor:
+  grab_size: [40, 51]
+  show_name: false
+data: slippery_seaweed.yaml

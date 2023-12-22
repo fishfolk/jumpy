@@ -1,0 +1,5 @@
+map_icon: ./stomp_boots_icon.atlas.yaml
+player_decoration: ./stomp_boots.atlas.yaml
+
+body_size: [32, 18]
+grab_offset: [-8, -4]

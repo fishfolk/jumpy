@@ -1,0 +1,4 @@
+start_frame: 0
+end_frame: 4
+fps: 6
+atlas: ./seaweed.atlas.yaml

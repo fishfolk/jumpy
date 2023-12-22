@@ -198,55 +198,63 @@ impl PlayerInputCollector {
         gamepad: &GamepadInputs,
     ) {
         // Helper to get the value of the given input type for the given player.
-        let get_input_value = |input_map: &InputKind, control_source: &ControlSource| {
-            match (input_map, control_source) {
-                (InputKind::Button(mapped_button), ControlSource::Gamepad(idx)) => {
-                    for input in &gamepad.gamepad_events {
-                        if let GamepadEvent::Button(e) = input {
-                            if &e.button == mapped_button && e.gamepad == *idx {
-                                let value = if e.value < 0.1 { 0.0 } else { e.value };
-                                return Some(value);
-                            }
+        let get_input_value = |input_map: &InputKind, control_source: &ControlSource| match (
+            input_map,
+            control_source,
+        ) {
+            (InputKind::Button(mapped_button), ControlSource::Gamepad(idx)) => {
+                let mut out = None;
+                for input in &gamepad.gamepad_events {
+                    if let GamepadEvent::Button(e) = input {
+                        if &e.button == mapped_button && e.gamepad == *idx {
+                            let value = if e.value < 0.1 { 0.0 } else { e.value };
+                            out = Some(value);
                         }
                     }
                 }
-                (InputKind::AxisPositive(mapped_axis), ControlSource::Gamepad(idx)) => {
-                    for input in &gamepad.gamepad_events {
-                        if let GamepadEvent::Axis(e) = input {
-                            if &e.axis == mapped_axis && e.gamepad == *idx {
-                                let value = if e.value < 0.1 { 0.0 } else { e.value };
-                                return Some(value);
-                            }
+                out
+            }
+            (InputKind::AxisPositive(mapped_axis), ControlSource::Gamepad(idx)) => {
+                let mut out = None;
+                for input in &gamepad.gamepad_events {
+                    if let GamepadEvent::Axis(e) = input {
+                        if &e.axis == mapped_axis && e.gamepad == *idx {
+                            let value = if e.value < 0.1 { 0.0 } else { e.value };
+                            out = Some(value);
                         }
                     }
                 }
-                (InputKind::AxisNegative(mapped_axis), ControlSource::Gamepad(idx)) => {
-                    for input in &gamepad.gamepad_events {
-                        if let GamepadEvent::Axis(e) = input {
-                            if &e.axis == mapped_axis && e.gamepad == *idx {
-                                let value = if e.value > -0.1 { 0.0 } else { e.value };
-                                return Some(value);
-                            }
+                out
+            }
+            (InputKind::AxisNegative(mapped_axis), ControlSource::Gamepad(idx)) => {
+                let mut out = None;
+                for input in &gamepad.gamepad_events {
+                    if let GamepadEvent::Axis(e) = input {
+                        if &e.axis == mapped_axis && e.gamepad == *idx {
+                            let value = if e.value > -0.1 { 0.0 } else { e.value };
+                            out = Some(value);
                         }
                     }
                 }
-                (
-                    InputKind::Keyboard(mapped_key),
-                    ControlSource::Keyboard1 | ControlSource::Keyboard2,
-                ) => {
-                    for input in &keyboard.key_events {
-                        if input.key_code == Set(*mapped_key) {
-                            return Some(if input.button_state.pressed() {
-                                1.0
-                            } else {
-                                0.0
-                            });
-                        }
+                out
+            }
+            (
+                InputKind::Keyboard(mapped_key),
+                ControlSource::Keyboard1 | ControlSource::Keyboard2,
+            ) => {
+                let mut out = None;
+                for input in &keyboard.key_events {
+                    if input.key_code.option() == Some(*mapped_key) {
+                        out = Some(if input.button_state.pressed() {
+                            1.0
+                        } else {
+                            0.0
+                        });
                     }
                 }
-                _ => (),
-            };
-            None
+                out
+            }
+            _ => None,
         };
 
         let apply_controls = |control: &mut PlayerControl,

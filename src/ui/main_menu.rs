@@ -88,6 +88,22 @@ fn main_menu_system(world: &World) {
             MenuPage::Credits => world.run_system(credits::widget, ui),
             MenuPage::NetworkGame => todo!(),
         });
+
+    egui::CentralPanel::default()
+        .frame(egui::Frame::none())
+        .show(&ctx, |ui| {
+            ui.with_layout(egui::Layout::bottom_up(egui::Align::Max), |ui| {
+                ui.add_space(5.0);
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Max), |ui| {
+                    ui.add_space(5.0);
+                    ui.add(
+                        egui::TextEdit::singleline(&mut git_version::git_version!())
+                            .text_color(egui::Color32::WHITE)
+                            .horizontal_align(egui::Align::Max),
+                    );
+                })
+            });
+        });
 }
 
 /// System to render the home menu.

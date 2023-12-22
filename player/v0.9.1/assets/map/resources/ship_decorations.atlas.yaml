@@ -1,0 +1,4 @@
+image: ./ship_decorations.png
+tile_size: [32, 32]
+columns: 11
+rows: 5

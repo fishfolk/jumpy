@@ -79,6 +79,26 @@ pub enum MenuPage {
     NetworkGame,
 }
 
+static VERSION_STRING: Lazy<String> = Lazy::new(|| {
+    format!(
+        "{}{}",
+        build_info::PKG_VERSION,
+        if !build_info::SHORT_COMMIT.is_empty() {
+            format!(
+                "-{}{}",
+                build_info::SHORT_COMMIT,
+                if build_info::GIT_CLEAN {
+                    ""
+                } else {
+                    " (dirty)"
+                }
+            )
+        } else {
+            String::default()
+        }
+    )
+});
+
 fn main_menu_system(world: &World) {
     let ctx = (*world.resource::<EguiCtx>()).clone();
 
@@ -100,16 +120,11 @@ fn main_menu_system(world: &World) {
                 ui.add_space(5.0);
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Max), |ui| {
                     ui.add_space(5.0);
+
                     ui.add(
-                        egui::TextEdit::singleline(&mut format!(
-                            "{}{}",
-                            build_info::VERSION,
-                            (!build_info::COMMIT_HASH.is_empty())
-                                .then_some(format!(" ({})", build_info::COMMIT_HASH))
-                                .unwrap_or_default()
-                        ))
-                        .text_color(egui::Color32::WHITE)
-                        .horizontal_align(egui::Align::Max),
+                        egui::TextEdit::singleline(&mut VERSION_STRING.as_str())
+                            .text_color(egui::Color32::WHITE)
+                            .horizontal_align(egui::Align::Max),
                     );
                 })
             });

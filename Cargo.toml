@@ -35,7 +35,7 @@ serde_yaml          = "0.9.25"
 thiserror           = "1.0.48"
 peg                 = "0.8.1"
 egui_extras         = { version = "0.23.0", default-features = false }
-git-version         = "0.3.9"
+shadow-rs           = { version = "0.25.0", default-features = false }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 bevy_dylib = "0.11"
@@ -133,6 +133,9 @@ opt-level = 3
 [profile.release]
 codegen-units = 1    # Improved rapier physics perf, so it might help other stuff, too
 lto           = true
+
+[build-dependencies]
+shadow-rs = "0.25.0"
 
 [package.metadata.cargo-machete]
 ignored = [

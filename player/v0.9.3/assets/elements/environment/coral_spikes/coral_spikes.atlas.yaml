@@ -1,0 +1,4 @@
+image: ./coral_spikes54x35.png
+tile_size: [54, 35]
+rows: 1
+columns: 6

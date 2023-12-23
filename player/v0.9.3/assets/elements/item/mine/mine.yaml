@@ -1,0 +1,23 @@
+damage_region_size: [60, 60]
+damage_region_lifetime: 0.6
+arm_delay: 0.5
+throw_velocity: 9
+
+atlas: ./mine.atlas.yaml
+
+explosion_atlas: ./explosion.atlas.yaml
+explosion_lifetime: 1.0
+explosion_frames: 12
+explosion_fps: 8
+explosion_volume: 0.1
+explosion_sound: ./explosion.ogg
+
+armed_frames: 12
+armed_fps: 15
+arm_sound_volume: 0.1
+arm_sound: ./arm.ogg
+
+body_size: [34, 34]
+grab_offset: [14, -2]
+fin_anim: grab_2
+bounciness: 0.3

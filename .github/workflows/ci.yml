@@ -78,7 +78,7 @@ jobs:
           CARGO_TARGET_DIR: ${{ matrix.config.target_dir }}
         with:
           command: clippy
-          args: --target ${{ matrix.config.target }} -- -W clippy::correctness -D warnings
+          args: --target ${{ matrix.config.target }} --locked -- -W clippy::correctness -D warnings
 
   cargo-deny:
     name: ©️ License and advisories check

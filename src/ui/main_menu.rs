@@ -6,6 +6,10 @@ mod credits;
 mod map_select;
 mod player_select;
 mod settings;
+use shadow_rs::shadow;
+
+// Generate build info.
+shadow!(build_info);
 
 #[derive(HasSchema, Debug, Default, Clone)]
 #[repr(C)]
@@ -97,9 +101,15 @@ fn main_menu_system(world: &World) {
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Max), |ui| {
                     ui.add_space(5.0);
                     ui.add(
-                        egui::TextEdit::singleline(&mut git_version::git_version!())
-                            .text_color(egui::Color32::WHITE)
-                            .horizontal_align(egui::Align::Max),
+                        egui::TextEdit::singleline(&mut format!(
+                            "{}{}",
+                            build_info::VERSION,
+                            (!build_info::COMMIT_HASH.is_empty())
+                                .then_some(format!(" ({})", build_info::COMMIT_HASH))
+                                .unwrap_or_default()
+                        ))
+                        .text_color(egui::Color32::WHITE)
+                        .horizontal_align(egui::Align::Max),
                     );
                 })
             });

@@ -1,0 +1,5 @@
+atlas: ./sproinger.atlas.yaml
+sound: ./jump.ogg
+sound_volume: 0.1
+body_size: [8, 8]
+spring_velocity: 16

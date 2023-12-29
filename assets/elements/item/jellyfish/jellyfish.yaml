@@ -1,0 +1,8 @@
+atlas: ./jellyfish.atlas.yaml
+body_size: [32, 29]
+throw_velocity: 6
+angular_velocity: 0.1
+fin_anim: grab_2
+grab_offset: [0, 0]
+
+flappy_meta: ./flappy_jellyfish/flappy_jellyfish.yaml

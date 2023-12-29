@@ -10,7 +10,9 @@ pub mod crab;
 pub mod crate_item;
 pub mod decoration;
 pub mod fish_school;
+pub mod flappy_jellyfish;
 pub mod grenade;
+pub mod jellyfish;
 pub mod kick_bomb;
 pub mod mine;
 pub mod musket;
@@ -26,9 +28,9 @@ pub mod urchin;
 
 pub mod prelude {
     pub use super::{
-        crab::*, crate_item::*, decoration::*, fish_school::*, grenade::*, kick_bomb::*, mine::*,
-        musket::*, player_spawner::*, slippery::*, slippery_seaweed::*, snail::*, spike::*,
-        sproinger::*, stomp_boots::*, sword::*, urchin::*, *,
+        crab::*, crate_item::*, decoration::*, fish_school::*, grenade::*, jellyfish::*,
+        kick_bomb::*, mine::*, musket::*, player_spawner::*, slippery::*, slippery_seaweed::*,
+        snail::*, spike::*, sproinger::*, stomp_boots::*, sword::*, urchin::*, *,
     };
 }
 
@@ -290,23 +292,24 @@ macro_rules! install_plugins {
 }
 
 install_plugins!(
-    decoration,
-    urchin,
-    player_spawner,
-    sproinger,
-    sword,
-    grenade,
     crab,
-    snail,
+    crate_item,
+    decoration,
     fish_school,
+    grenade,
+    jellyfish,
     kick_bomb,
     mine,
     musket,
-    stomp_boots,
-    crate_item,
+    player_spawner,
     slippery_seaweed,
     slippery,
+    snail,
     spike,
+    sproinger,
+    stomp_boots,
+    sword,
+    urchin,
 );
 
 fn handle_out_of_bounds_items(

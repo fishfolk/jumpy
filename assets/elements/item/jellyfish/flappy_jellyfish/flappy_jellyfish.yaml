@@ -1,0 +1,4 @@
+atlas: ./flappy_jellyfish.atlas.yaml
+start_frame: 0
+end_frame: 2
+fps: 2

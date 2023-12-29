@@ -98,7 +98,9 @@ fn hydrate(
             );
             item_throws.insert(
                 entity,
-                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+                ItemThrow::strength(*throw_velocity)
+                    .with_spin(*angular_velocity)
+                    .with_system(jellyfish_dropped_callback(entity)),
             );
             element_handles.insert(entity, element_handle);
             atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
@@ -118,6 +120,20 @@ fn hydrate(
             spawner_manager.create_spawner(spawner_ent, vec![entity]);
         }
     }
+}
+
+fn jellyfish_dropped_callback(entity: Entity) -> StaticSystem<(), ()> {
+    (move |mut jellyfishes: CompMut<Jellyfish>, mut entities: ResMut<Entities>| {
+        let Some(jellyfish) = jellyfishes.get_mut(entity) else {
+            return;
+        };
+        if let JellyfishStatus::Mounted { flappy } = jellyfish.status {
+            debug!("FLAPPY JELLYFISH | boom");
+            entities.kill(flappy);
+            debug!("FLAPPY JELLYFISH | despawned");
+        }
+    })
+    .system()
 }
 
 fn update(

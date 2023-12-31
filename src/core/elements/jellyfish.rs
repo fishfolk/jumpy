@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-use super::flappy_jellyfish::{FlappyJellyfish, FlappyJellyfishMeta};
+use super::flappy_jellyfish::{self, FlappyJellyfishMeta};
 
 #[derive(HasSchema, Default, Debug, Clone)]
 #[type_data(metadata_asset("jellyfish"))]
@@ -30,7 +30,7 @@ pub fn session_plugin(session: &mut Session) {
 
 #[derive(Clone, Debug, HasSchema, Default)]
 pub struct Jellyfish {
-    status: JellyfishStatus,
+    pub status: JellyfishStatus,
 }
 
 #[derive(Copy, Clone, Debug, Default)]
@@ -123,14 +123,13 @@ fn hydrate(
 }
 
 fn jellyfish_dropped_callback(entity: Entity) -> StaticSystem<(), ()> {
-    (move |mut jellyfishes: CompMut<Jellyfish>, mut entities: ResMut<Entities>| {
+    (move |mut commands: Commands, mut jellyfishes: CompMut<Jellyfish>| {
         let Some(jellyfish) = jellyfishes.get_mut(entity) else {
             return;
         };
         if let JellyfishStatus::Mounted { flappy } = jellyfish.status {
             debug!("FLAPPY JELLYFISH | boom");
-            entities.kill(flappy);
-            debug!("FLAPPY JELLYFISH | despawned");
+            commands.add(flappy_jellyfish::kill(flappy));
         }
     })
     .system()
@@ -164,47 +163,11 @@ fn update(
                 items_used.remove(entity);
                 if let JellyfishStatus::Unmounted = jellyfish.status {
                     debug!("JELLYFISH | mount");
-                    let jellyfish_ent = entity;
-                    let flappy_meta_handle = *flappy_meta;
-                    commands.add(
-                        move |mut entities: ResMut<Entities>,
-                              mut jellyfishes: CompMut<Jellyfish>,
-                              mut flappy_jellyfishes: CompMut<FlappyJellyfish>,
-                              assets: Res<AssetServer>,
-                              mut atlas_sprites: CompMut<AtlasSprite>,
-                              mut animated_sprites: CompMut<AnimatedSprite>,
-                              mut transforms: CompMut<Transform>| {
-                            let Some(jellyfish) = jellyfishes.get_mut(jellyfish_ent) else {
-                                return;
-                            };
-                            let flappy_ent = entities.create();
-                            jellyfish.status = JellyfishStatus::Mounted { flappy: flappy_ent };
-                            flappy_jellyfishes
-                                .insert(flappy_ent, FlappyJellyfish { owner: player });
-                            let flappy_meta = assets.get(flappy_meta_handle);
-                            atlas_sprites.insert(flappy_ent, AtlasSprite::new(flappy_meta.atlas));
-                            animated_sprites.insert(
-                                flappy_ent,
-                                AnimatedSprite {
-                                    frames: flappy_meta.frames(),
-                                    fps: flappy_meta.fps,
-                                    repeat: true,
-                                    ..default()
-                                },
-                            );
-                            let mut transf = *transforms.get(player).unwrap();
-                            transf.translation.y += 75.0;
-                            transforms.insert(flappy_ent, transf);
-                            debug!("FLAPPY JELLYFISH | spawned");
-                        },
-                    );
+                    commands.add(flappy_jellyfish::spawn(player, entity, *flappy_meta));
                 } else if let JellyfishStatus::Mounted { flappy } = jellyfish.status {
                     debug!("JELLYFISH | boom");
                     jellyfish.status = JellyfishStatus::Unmounted;
-                    commands.add(move |mut entities: ResMut<Entities>| {
-                        entities.kill(flappy);
-                        debug!("FLAPPY JELLYFISH | despawned");
-                    });
+                    commands.add(flappy_jellyfish::kill(flappy));
                 }
             }
         }

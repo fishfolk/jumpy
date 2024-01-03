@@ -25,6 +25,7 @@ pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
+        .add_system_to_stage(CoreStage::PostUpdate, handle_dropped_jellyfishes)
         .add_system_to_stage(CoreStage::PostUpdate, update);
 }
 
@@ -98,9 +99,7 @@ fn hydrate(
             );
             item_throws.insert(
                 entity,
-                ItemThrow::strength(*throw_velocity)
-                    .with_spin(*angular_velocity)
-                    .with_system(jellyfish_dropped_callback(entity)),
+                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
             );
             element_handles.insert(entity, element_handle);
             atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
@@ -122,17 +121,18 @@ fn hydrate(
     }
 }
 
-fn jellyfish_dropped_callback(entity: Entity) -> StaticSystem<(), ()> {
-    (move |mut commands: Commands, mut jellyfishes: CompMut<Jellyfish>| {
-        let Some(jellyfish) = jellyfishes.get_mut(entity) else {
-            return;
-        };
+fn handle_dropped_jellyfishes(
+    entities: Res<Entities>,
+    mut jellyfishes: CompMut<Jellyfish>,
+    item_drops: Comp<ItemDropped>,
+    mut commands: Commands,
+) {
+    for (_e, (jellyfish, _drop)) in entities.iter_with((&mut jellyfishes, &item_drops)) {
         if let JellyfishStatus::Mounted { flappy } = jellyfish.status {
             debug!("FLAPPY JELLYFISH | boom");
             commands.add(flappy_jellyfish::kill(flappy));
         }
-    })
-    .system()
+    }
 }
 
 fn update(

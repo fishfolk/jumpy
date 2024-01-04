@@ -25,6 +25,7 @@ pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
+        .add_system_to_stage(CoreStage::PostUpdate, handle_grabbed_jellyfishes)
         .add_system_to_stage(CoreStage::PostUpdate, handle_dropped_jellyfishes)
         .add_system_to_stage(CoreStage::PostUpdate, update);
 }
@@ -37,8 +38,12 @@ pub struct Jellyfish {
 #[derive(Copy, Clone, Debug, Default)]
 pub enum JellyfishStatus {
     #[default]
-    Unmounted,
-    Mounted {
+    Dropped,
+    Holding {
+        owner: Entity,
+    },
+    Driving {
+        owner: Entity,
         flappy: Entity,
     },
 }
@@ -121,16 +126,34 @@ fn hydrate(
     }
 }
 
+fn handle_grabbed_jellyfishes(
+    entities: Res<Entities>,
+    mut jellyfishes: CompMut<Jellyfish>,
+    item_grabs: Comp<ItemGrabbed>,
+    player_inventories: PlayerInventories,
+) {
+    for (jellyfish_ent, (jellyfish, _grab)) in entities.iter_with((&mut jellyfishes, &item_grabs)) {
+        if let JellyfishStatus::Dropped = jellyfish.status {
+            let Some(inventory) = player_inventories
+                .iter()
+                .find_map(|inv| inv.filter(|i| i.inventory == jellyfish_ent))
+            else {
+                continue;
+            };
+            let owner = inventory.player;
+            jellyfish.status = JellyfishStatus::Holding { owner };
+        }
+    }
+}
+
 fn handle_dropped_jellyfishes(
     entities: Res<Entities>,
     mut jellyfishes: CompMut<Jellyfish>,
     item_drops: Comp<ItemDropped>,
-    mut commands: Commands,
 ) {
     for (_e, (jellyfish, _drop)) in entities.iter_with((&mut jellyfishes, &item_drops)) {
-        if let JellyfishStatus::Mounted { flappy } = jellyfish.status {
-            debug!("FLAPPY JELLYFISH | boom");
-            commands.add(flappy_jellyfish::kill(flappy));
+        if let JellyfishStatus::Holding { .. } = jellyfish.status {
+            jellyfish.status = JellyfishStatus::Dropped;
         }
     }
 }
@@ -141,7 +164,6 @@ fn update(
     element_handles: Comp<ElementHandle>,
     assets: Res<AssetServer>,
     mut items_used: CompMut<ItemUsed>,
-    player_inventories: PlayerInventories,
     mut commands: Commands,
 ) {
     for (entity, (jellyfish, element_handle)) in
@@ -153,20 +175,17 @@ fn update(
             continue;
         };
 
-        if let Some(inventory) = player_inventories
-            .iter()
-            .find_map(|inv| inv.filter(|i| i.inventory == entity))
-        {
-            let player = inventory.player;
-
-            if items_used.get(entity).is_some() {
-                items_used.remove(entity);
-                if let JellyfishStatus::Unmounted = jellyfish.status {
+        if items_used.get(entity).is_some() {
+            items_used.remove(entity);
+            match jellyfish.status {
+                JellyfishStatus::Dropped => {}
+                JellyfishStatus::Holding { owner } => {
                     debug!("JELLYFISH | mount");
-                    commands.add(flappy_jellyfish::spawn(player, entity, *flappy_meta));
-                } else if let JellyfishStatus::Mounted { flappy } = jellyfish.status {
+                    commands.add(flappy_jellyfish::spawn(owner, entity, *flappy_meta));
+                }
+                JellyfishStatus::Driving { owner, flappy } => {
                     debug!("JELLYFISH | boom");
-                    jellyfish.status = JellyfishStatus::Unmounted;
+                    jellyfish.status = JellyfishStatus::Holding { owner };
                     commands.add(flappy_jellyfish::kill(flappy));
                 }
             }

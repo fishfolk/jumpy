@@ -46,13 +46,14 @@ pub fn plugin(session: &mut Session) {
         .stages
         .add_system_to_stage(CoreStage::Last, update_player_state_age);
 
-    default::install(session);
-    idle::install(session);
     crouch::install(session);
+    dead::install(session);
+    default::install(session);
+    drive::install(session);
+    idle::install(session);
+    incapacitated::install(session);
     midair::install(session);
     walk::install(session);
-    dead::install(session);
-    incapacitated::install(session);
 }
 
 fn update_player_state_age(entities: Res<Entities>, mut player_states: CompMut<PlayerState>) {

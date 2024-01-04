@@ -37,7 +37,10 @@ pub fn spawn(
             return;
         };
         let flappy_ent = entities.create();
-        jellyfish.status = JellyfishStatus::Mounted { flappy: flappy_ent };
+        jellyfish.status = JellyfishStatus::Driving {
+            owner,
+            flappy: flappy_ent,
+        };
         flappy_jellyfishes.insert(flappy_ent, FlappyJellyfish { owner });
         let flappy_meta = assets.get(flappy_meta_handle);
         atlas_sprites.insert(flappy_ent, AtlasSprite::new(flappy_meta.atlas));

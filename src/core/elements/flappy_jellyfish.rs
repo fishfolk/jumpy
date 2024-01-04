@@ -27,21 +27,21 @@ pub fn spawn(
     flappy_meta_handle: Handle<FlappyJellyfishMeta>,
 ) -> StaticSystem<(), ()> {
     (move |mut entities: ResMut<Entities>,
-           mut jellyfishes: CompMut<Jellyfish>,
+           mut driving_jellyfishes: CompMut<DrivingJellyfish>,
            mut flappy_jellyfishes: CompMut<FlappyJellyfish>,
            mut fall_velocities: CompMut<FallVelocity>,
            assets: Res<AssetServer>,
            mut atlas_sprites: CompMut<AtlasSprite>,
            mut animated_sprites: CompMut<AnimatedSprite>,
            mut transforms: CompMut<Transform>| {
-        let Some(jellyfish) = jellyfishes.get_mut(jellyfish_ent) else {
-            return;
-        };
         let flappy_ent = entities.create();
-        jellyfish.status = JellyfishStatus::Driving {
-            owner,
-            flappy: flappy_ent,
-        };
+        driving_jellyfishes.insert(
+            jellyfish_ent,
+            DrivingJellyfish {
+                owner,
+                flappy: flappy_ent,
+            },
+        );
         flappy_jellyfishes.insert(flappy_ent, FlappyJellyfish { owner });
         fall_velocities.insert(flappy_ent, FallVelocity::default());
         let flappy_meta = assets.get(flappy_meta_handle);

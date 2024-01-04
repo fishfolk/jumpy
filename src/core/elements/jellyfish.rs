@@ -25,31 +25,21 @@ pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
-        .add_system_to_stage(CoreStage::PostUpdate, handle_grabbed_jellyfishes)
-        .add_system_to_stage(CoreStage::PostUpdate, handle_dropped_jellyfishes)
-        .add_system_to_stage(CoreStage::PostUpdate, update)
+        .add_system_to_stage(CoreStage::PostUpdate, update_unused_jellyfishes)
+        .add_system_to_stage(CoreStage::PostUpdate, update_driving_jellyfishes)
         .add_system_to_stage(
             CoreStage::PostUpdate,
             flappy_jellyfish::move_flappy_jellyfish,
         );
 }
 
-#[derive(Clone, Debug, HasSchema, Default)]
-pub struct Jellyfish {
-    pub status: JellyfishStatus,
-}
+#[derive(Clone, Debug, Default, HasSchema)]
+pub struct Jellyfish;
 
-#[derive(Copy, Clone, Debug, Default)]
-pub enum JellyfishStatus {
-    #[default]
-    Dropped,
-    Holding {
-        owner: Entity,
-    },
-    Driving {
-        owner: Entity,
-        flappy: Entity,
-    },
+#[derive(Clone, Copy, Debug, Default, HasSchema)]
+pub struct DrivingJellyfish {
+    pub owner: Entity,
+    pub flappy: Entity,
 }
 
 fn hydrate(
@@ -96,7 +86,7 @@ fn hydrate(
 
             let entity = entities.create();
             hydrated.insert(entity, MapElementHydrated);
-            jellyfishes.insert(entity, Jellyfish::default());
+            jellyfishes.insert(entity, Jellyfish);
             items.insert(entity, Item);
             item_grabs.insert(
                 entity,
@@ -130,14 +120,32 @@ fn hydrate(
     }
 }
 
-fn handle_grabbed_jellyfishes(
+fn update_unused_jellyfishes(
     entities: Res<Entities>,
-    mut jellyfishes: CompMut<Jellyfish>,
-    item_grabs: Comp<ItemGrabbed>,
+    jellyfishes: Comp<Jellyfish>,
+    driving_jellyfishes: Comp<DrivingJellyfish>,
+    element_handles: Comp<ElementHandle>,
+    mut items_used: CompMut<ItemUsed>,
+    assets: Res<AssetServer>,
     player_inventories: PlayerInventories,
+    mut commands: Commands,
 ) {
-    for (jellyfish_ent, (jellyfish, _grab)) in entities.iter_with((&mut jellyfishes, &item_grabs)) {
-        if let JellyfishStatus::Dropped = jellyfish.status {
+    for (jellyfish_ent, (_jellyfish, element_h)) in
+        entities.iter_with((&jellyfishes, &element_handles))
+    {
+        if driving_jellyfishes.contains(jellyfish_ent) {
+            continue;
+        }
+
+        if items_used.contains(jellyfish_ent) {
+            items_used.remove(jellyfish_ent);
+
+            let element_meta = assets.get(element_h.0);
+            let asset = assets.get(element_meta.data);
+            let Ok(JellyfishMeta { flappy_meta, .. }) = asset.try_cast_ref() else {
+                continue;
+            };
+
             let Some(inventory) = player_inventories
                 .iter()
                 .find_map(|inv| inv.filter(|i| i.inventory == jellyfish_ent))
@@ -145,54 +153,28 @@ fn handle_grabbed_jellyfishes(
                 continue;
             };
             let owner = inventory.player;
-            jellyfish.status = JellyfishStatus::Holding { owner };
+
+            debug!("JELLYFISH | mount");
+            commands.add(flappy_jellyfish::spawn(owner, jellyfish_ent, *flappy_meta));
         }
     }
 }
 
-fn handle_dropped_jellyfishes(
+fn update_driving_jellyfishes(
     entities: Res<Entities>,
-    mut jellyfishes: CompMut<Jellyfish>,
-    item_drops: Comp<ItemDropped>,
-) {
-    for (_e, (jellyfish, _drop)) in entities.iter_with((&mut jellyfishes, &item_drops)) {
-        if let JellyfishStatus::Holding { .. } = jellyfish.status {
-            jellyfish.status = JellyfishStatus::Dropped;
-        }
-    }
-}
-
-fn update(
-    entities: Res<Entities>,
-    mut jellyfishes: CompMut<Jellyfish>,
-    element_handles: Comp<ElementHandle>,
-    assets: Res<AssetServer>,
+    driving_jellyfishes: Comp<DrivingJellyfish>,
     mut items_used: CompMut<ItemUsed>,
     mut commands: Commands,
 ) {
-    for (entity, (jellyfish, element_handle)) in
-        entities.iter_with((&mut jellyfishes, &element_handles))
-    {
-        let element_meta = assets.get(element_handle.0);
-        let asset = assets.get(element_meta.data);
-        let Ok(JellyfishMeta { flappy_meta, .. }) = asset.try_cast_ref() else {
-            continue;
-        };
+    for (jellyfish_ent, driving_jellyfish) in entities.iter_with(&driving_jellyfishes) {
+        if items_used.contains(jellyfish_ent) {
+            items_used.remove(jellyfish_ent);
 
-        if items_used.get(entity).is_some() {
-            items_used.remove(entity);
-            match jellyfish.status {
-                JellyfishStatus::Dropped => {}
-                JellyfishStatus::Holding { owner } => {
-                    debug!("JELLYFISH | mount");
-                    commands.add(flappy_jellyfish::spawn(owner, entity, *flappy_meta));
-                }
-                JellyfishStatus::Driving { owner, flappy } => {
-                    debug!("JELLYFISH | boom");
-                    jellyfish.status = JellyfishStatus::Holding { owner };
-                    commands.add(flappy_jellyfish::kill(flappy));
-                }
-            }
+            debug!("JELLYFISH | boom");
+            commands.add(flappy_jellyfish::kill(driving_jellyfish.flappy));
+            commands.add(move |mut driving_jellyfishes: CompMut<DrivingJellyfish>| {
+                driving_jellyfishes.remove(jellyfish_ent);
+            });
         }
     }
 }

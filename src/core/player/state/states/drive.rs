@@ -8,27 +8,30 @@ pub fn install(session: &mut Session) {
 }
 
 pub fn player_state_transition(
+    entities: Res<Entities>,
     jellyfishes: Comp<Jellyfish>,
+    driving_jellyfishes: Comp<DrivingJellyfish>,
     mut player_states: CompMut<PlayerState>,
+    player_inventories: PlayerInventories,
 ) {
-    for jellyfish in jellyfishes.iter() {
-        match jellyfish.status {
-            JellyfishStatus::Dropped => {}
-            JellyfishStatus::Driving { owner, .. } => {
-                let Some(player_state) = player_states.get_mut(owner) else {
-                    continue;
-                };
-                if player_state.current != *ID {
-                    player_state.current = *ID;
-                }
+    for (jellyfish_ent, _) in entities.iter_with(&jellyfishes) {
+        if let Some(driving) = driving_jellyfishes.get(jellyfish_ent) {
+            let Some(player_state) = player_states.get_mut(driving.owner) else {
+                continue;
+            };
+            if player_state.current != *ID {
+                player_state.current = *ID;
             }
-            JellyfishStatus::Holding { owner } => {
-                let Some(player_state) = player_states.get_mut(owner) else {
-                    continue;
-                };
-                if player_state.current == *ID {
-                    player_state.current = *idle::ID;
-                }
+        } else {
+            let Some(player_state) = player_inventories
+                .iter()
+                .find_map(|inv| inv.filter(|i| i.inventory == jellyfish_ent))
+                .and_then(|inventory| player_states.get_mut(inventory.player))
+            else {
+                continue;
+            };
+            if player_state.current == *ID {
+                player_state.current = *idle::ID;
             }
         }
     }

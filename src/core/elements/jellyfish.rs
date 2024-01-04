@@ -47,7 +47,6 @@ fn hydrate(
     assets: Res<AssetServer>,
     mut jellyfishes: CompMut<Jellyfish>,
     mut atlas_sprites: CompMut<AtlasSprite>,
-    mut animated_sprites: CompMut<AnimatedSprite>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
     mut items: CompMut<Item>,
     mut item_grabs: CompMut<ItemGrab>,
@@ -99,7 +98,6 @@ fn hydrate(
             );
             element_handles.insert(entity, element_handle);
             atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
-            animated_sprites.insert(entity, default());
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             bodies.insert(

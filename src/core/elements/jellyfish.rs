@@ -27,7 +27,11 @@ pub fn session_plugin(session: &mut Session) {
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
         .add_system_to_stage(CoreStage::PostUpdate, handle_grabbed_jellyfishes)
         .add_system_to_stage(CoreStage::PostUpdate, handle_dropped_jellyfishes)
-        .add_system_to_stage(CoreStage::PostUpdate, update);
+        .add_system_to_stage(CoreStage::PostUpdate, update)
+        .add_system_to_stage(
+            CoreStage::PostUpdate,
+            flappy_jellyfish::move_flappy_jellyfish,
+        );
 }
 
 #[derive(Clone, Debug, HasSchema, Default)]

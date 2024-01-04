@@ -35,12 +35,9 @@ pub struct FlappyJellyfish {
     pub owner: Entity,
 }
 
-pub fn spawn(
-    owner: Entity,
-    jellyfish_ent: Entity,
-    flappy_meta_handle: Handle<FlappyJellyfishMeta>,
-) -> StaticSystem<(), ()> {
+pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
     (move |mut entities: ResMut<Entities>,
+           element_handles: Comp<ElementHandle>,
            mut driving_jellyfishes: CompMut<DrivingJellyfish>,
            mut flappy_jellyfishes: CompMut<FlappyJellyfish>,
            mut fall_velocities: CompMut<FallVelocity>,
@@ -48,6 +45,16 @@ pub fn spawn(
            mut atlas_sprites: CompMut<AtlasSprite>,
            mut animated_sprites: CompMut<AnimatedSprite>,
            mut transforms: CompMut<Transform>| {
+        let Some(flappy_meta) = element_handles
+            .get(jellyfish_ent)
+            .map(|element_h| assets.get(element_h.0))
+            .map(|element_meta| assets.get(element_meta.data))
+            .and_then(JellyfishMeta::get_flappy_meta_from_asset)
+            .map(|flappy_h| assets.get(flappy_h))
+        else {
+            return;
+        };
+
         let flappy_ent = entities.create();
         driving_jellyfishes.insert(
             jellyfish_ent,
@@ -58,7 +65,6 @@ pub fn spawn(
         );
         flappy_jellyfishes.insert(flappy_ent, FlappyJellyfish { owner });
         fall_velocities.insert(flappy_ent, FallVelocity::default());
-        let flappy_meta = assets.get(flappy_meta_handle);
         atlas_sprites.insert(flappy_ent, AtlasSprite::new(flappy_meta.atlas));
         animated_sprites.insert(
             flappy_ent,
@@ -88,20 +94,17 @@ pub fn kill(jellyfish: Entity, flappy: Entity) -> StaticSystem<(), ()> {
            mut animated_sprites: CompMut<AnimatedSprite>,
            mut damage_regions: CompMut<DamageRegion>,
            mut lifetimes: CompMut<Lifetime>| {
-        let Some(jellyfish_h) = element_handles.get(jellyfish) else {
-            warn!("failed to get jellyfish element handle");
+        let Some(flappy_meta) = element_handles
+            .get(jellyfish)
+            .map(|element_h| assets.get(element_h.0))
+            .map(|element_meta| assets.get(element_meta.data))
+            .and_then(JellyfishMeta::get_flappy_meta_from_asset)
+            .map(|flappy_h| assets.get(flappy_h))
+        else {
             return;
         };
-        let jellyfish_meta = assets.get(jellyfish_h.0);
-        let asset = assets.get(jellyfish_meta.data);
-        let Ok(JellyfishMeta { flappy_meta, .. }) = asset.try_cast_ref() else {
-            warn!("failed to cast element data to jellyfish meta");
-            return;
-        };
-        let flappy_meta = assets.get(*flappy_meta);
 
         let Some(mut explosion_transform) = transforms.get(flappy).copied() else {
-            warn!("failed to get flappy jellyfish transform");
             return;
         };
         explosion_transform.translation.z = -10.0;

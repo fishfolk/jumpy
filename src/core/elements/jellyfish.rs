@@ -1,3 +1,5 @@
+use bones_framework::asset::dashmap::mapref::one::MappedRef;
+
 use crate::prelude::*;
 
 use super::flappy_jellyfish::{self, FlappyJellyfishMeta};
@@ -13,6 +15,17 @@ pub struct JellyfishMeta {
     pub fin_anim: Ustr,
     pub grab_offset: Vec2,
     pub flappy_meta: Handle<FlappyJellyfishMeta>,
+}
+
+impl JellyfishMeta {
+    pub fn get_flappy_meta_from_asset(
+        asset: MappedRef<'_, Cid, LoadedAsset, SchemaBox>,
+    ) -> Option<Handle<FlappyJellyfishMeta>> {
+        asset
+            .try_cast_ref::<JellyfishMeta>()
+            .ok()
+            .map(|m| m.flappy_meta)
+    }
 }
 
 pub fn game_plugin(game: &mut Game) {
@@ -119,27 +132,17 @@ fn update_unused_jellyfishes(
     entities: Res<Entities>,
     jellyfishes: Comp<Jellyfish>,
     driving_jellyfishes: Comp<DrivingJellyfish>,
-    element_handles: Comp<ElementHandle>,
     mut items_used: CompMut<ItemUsed>,
-    assets: Res<AssetServer>,
     player_inventories: PlayerInventories,
     mut commands: Commands,
 ) {
-    for (jellyfish_ent, (_jellyfish, element_h)) in
-        entities.iter_with((&jellyfishes, &element_handles))
-    {
+    for (jellyfish_ent, _jellyfish) in entities.iter_with(&jellyfishes) {
         if driving_jellyfishes.contains(jellyfish_ent) {
             continue;
         }
 
         if items_used.contains(jellyfish_ent) {
             items_used.remove(jellyfish_ent);
-
-            let element_meta = assets.get(element_h.0);
-            let asset = assets.get(element_meta.data);
-            let Ok(JellyfishMeta { flappy_meta, .. }) = asset.try_cast_ref() else {
-                continue;
-            };
 
             let Some(inventory) = player_inventories
                 .iter()
@@ -150,7 +153,7 @@ fn update_unused_jellyfishes(
             let owner = inventory.player;
 
             debug!("JELLYFISH | mount");
-            commands.add(flappy_jellyfish::spawn(owner, jellyfish_ent, *flappy_meta));
+            commands.add(flappy_jellyfish::spawn(owner, jellyfish_ent));
         }
     }
 }

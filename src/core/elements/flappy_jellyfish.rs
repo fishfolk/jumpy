@@ -16,6 +16,12 @@ impl FlappyJellyfishMeta {
     }
 }
 
+pub fn session_plugin(session: &mut Session) {
+    session
+        .stages
+        .add_system_to_stage(CoreStage::PostUpdate, move_flappy_jellyfish);
+}
+
 #[derive(Clone, Copy, Debug, HasSchema, Default)]
 pub struct FlappyJellyfish {
     pub owner: Entity,

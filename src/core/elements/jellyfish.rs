@@ -12,7 +12,7 @@ pub struct JellyfishMeta {
     pub angular_velocity: f32,
     pub fin_anim: Ustr,
     pub grab_offset: Vec2,
-    flappy_meta: Handle<FlappyJellyfishMeta>,
+    pub flappy_meta: Handle<FlappyJellyfishMeta>,
 }
 
 pub fn game_plugin(game: &mut Game) {
@@ -166,7 +166,10 @@ fn update_driving_jellyfishes(
             items_used.remove(jellyfish_ent);
 
             debug!("JELLYFISH | boom");
-            commands.add(flappy_jellyfish::kill(driving_jellyfish.flappy));
+            commands.add(flappy_jellyfish::kill(
+                jellyfish_ent,
+                driving_jellyfish.flappy,
+            ));
             commands.add(move |mut driving_jellyfishes: CompMut<DrivingJellyfish>| {
                 driving_jellyfishes.remove(jellyfish_ent);
             });

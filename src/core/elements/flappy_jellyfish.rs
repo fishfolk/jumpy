@@ -8,6 +8,14 @@ pub struct FlappyJellyfishMeta {
     pub start_frame: u32,
     pub end_frame: u32,
     pub fps: f32,
+    pub explosion_atlas: Handle<Atlas>,
+    pub explosion_lifetime: f32,
+    pub explosion_frames: u32,
+    pub explosion_fps: f32,
+    pub explosion_volume: f64,
+    pub explosion_sound: Handle<AudioSource>,
+    pub damage_region_size: Vec2,
+    pub damage_region_lifetime: f32,
 }
 
 impl FlappyJellyfishMeta {
@@ -69,10 +77,80 @@ pub fn spawn(
     .system()
 }
 
-pub fn kill(flappy: Entity) -> StaticSystem<(), ()> {
-    (move |mut entities: ResMut<Entities>| {
+pub fn kill(jellyfish: Entity, flappy: Entity) -> StaticSystem<(), ()> {
+    (move |mut entities: ResMut<Entities>,
+           element_handles: Comp<ElementHandle>,
+           assets: Res<AssetServer>,
+           mut transforms: CompMut<Transform>,
+           mut audio_events: ResMut<AudioEvents>,
+           mut trauma_events: ResMut<CameraTraumaEvents>,
+           mut sprites: CompMut<AtlasSprite>,
+           mut animated_sprites: CompMut<AnimatedSprite>,
+           mut damage_regions: CompMut<DamageRegion>,
+           mut lifetimes: CompMut<Lifetime>| {
+        let Some(jellyfish_h) = element_handles.get(jellyfish) else {
+            warn!("failed to get jellyfish element handle");
+            return;
+        };
+        let jellyfish_meta = assets.get(jellyfish_h.0);
+        let asset = assets.get(jellyfish_meta.data);
+        let Ok(JellyfishMeta { flappy_meta, .. }) = asset.try_cast_ref() else {
+            warn!("failed to cast element data to jellyfish meta");
+            return;
+        };
+        let flappy_meta = assets.get(*flappy_meta);
+
+        let Some(mut explosion_transform) = transforms.get(flappy).copied() else {
+            warn!("failed to get flappy jellyfish transform");
+            return;
+        };
+        explosion_transform.translation.z = -10.0;
+
         entities.kill(flappy);
         debug!("FLAPPY JELLYFISH | despawned");
+
+        audio_events.play(flappy_meta.explosion_sound, flappy_meta.explosion_volume);
+
+        trauma_events.send(5.0);
+
+        // Explosion
+        {
+            let explosion_ent = entities.create();
+            transforms.insert(explosion_ent, explosion_transform);
+            sprites.insert(
+                explosion_ent,
+                AtlasSprite {
+                    atlas: flappy_meta.explosion_atlas,
+                    ..default()
+                },
+            );
+            animated_sprites.insert(
+                explosion_ent,
+                AnimatedSprite {
+                    frames: (0..flappy_meta.explosion_frames).collect(),
+                    fps: flappy_meta.explosion_fps,
+                    repeat: false,
+                    ..default()
+                },
+            );
+            lifetimes.insert(explosion_ent, Lifetime::new(flappy_meta.explosion_lifetime));
+        }
+
+        // Damage region
+        {
+            let damage_ent = entities.create();
+            transforms.insert(damage_ent, explosion_transform);
+            damage_regions.insert(
+                damage_ent,
+                DamageRegion {
+                    size: flappy_meta.damage_region_size,
+                },
+            );
+            lifetimes.insert(
+                damage_ent,
+                Lifetime::new(flappy_meta.damage_region_lifetime),
+            );
+        }
     })
     .system()
 }

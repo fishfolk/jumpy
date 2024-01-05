@@ -311,11 +311,11 @@ layers:
     - 3
     idx: 21
     collision: Solid
-  # - pos:
-  #   - 22
-  #   - 3
-  #   idx: 21
-  #   collision: Solid
+  - pos:
+    - 22
+    - 3
+    idx: 21
+    collision: Solid
   - pos:
     - 25
     - 3
@@ -331,11 +331,11 @@ layers:
     - 4
     idx: 21
     collision: Solid
-  # - pos:
-  #   - 22
-  #   - 4
-  #   idx: 21
-  #   collision: Solid
+  - pos:
+    - 22
+    - 4
+    idx: 21
+    collision: Solid
   - pos:
     - 25
     - 4
@@ -614,18 +614,18 @@ layers:
   - pos:
     - 1
     - 19
-    idx: 4
+    idx: 21
     collision: Solid
   - pos:
     - 25
     - 19
     idx: 21
     collision: Solid
-  # - pos:
-  #   - 1
-  #   - 20
-  #   idx: 4
-  #   collision: Solid
+  - pos:
+    - 1
+    - 20
+    idx: 4
+    collision: Solid
   - pos:
     - 25
     - 20
@@ -1056,10 +1056,10 @@ layers:
     - 208.0
     - 106.0
     element: core:/elements/environment/sproinger/sproinger.element.yaml
-  # - pos:
-  #   - 656.0
-  #   - 106.0
-  #   element: core:/elements/environment/sproinger/sproinger.element.yaml
+  - pos:
+    - 656.0
+    - 106.0
+    element: core:/elements/environment/sproinger/sproinger.element.yaml
   - pos:
     - 96.0
     - 121.5
@@ -1201,10 +1201,6 @@ layers:
   tilemap: null
   tiles: []
   elements:
-  - pos:
-    - 656.0
-    - 106.0
-    element: core:/elements/item/grenade/grenade.element.yaml
   - pos:
     - 384.0
     - 118.5

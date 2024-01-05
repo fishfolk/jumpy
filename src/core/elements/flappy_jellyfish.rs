@@ -5,9 +5,11 @@ use crate::prelude::*;
 #[repr(C)]
 pub struct FlappyJellyfishMeta {
     pub atlas: Handle<Atlas>,
+    pub body_size: Vec2,
     pub start_frame: u32,
     pub end_frame: u32,
     pub fps: f32,
+    pub spawn_offset: Vec2,
     pub explosion_atlas: Handle<Atlas>,
     pub explosion_lifetime: f32,
     pub explosion_frames: u32,
@@ -42,6 +44,7 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
            element_handles: Comp<ElementHandle>,
            mut driving_jellyfishes: CompMut<DrivingJellyfish>,
            mut flappy_jellyfishes: CompMut<FlappyJellyfish>,
+           mut bodies: CompMut<KinematicBody>,
            mut fall_velocities: CompMut<FallVelocity>,
            assets: Res<AssetServer>,
            mut atlas_sprites: CompMut<AtlasSprite>,
@@ -72,6 +75,16 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
                 jellyfish: jellyfish_ent,
             },
         );
+        bodies.insert(
+            flappy_ent,
+            KinematicBody {
+                shape: ColliderShape::Rectangle {
+                    size: flappy_meta.body_size,
+                },
+                is_deactivated: true,
+                ..default()
+            },
+        );
         fall_velocities.insert(flappy_ent, FallVelocity::default());
         atlas_sprites.insert(flappy_ent, AtlasSprite::new(flappy_meta.atlas));
         animated_sprites.insert(
@@ -84,7 +97,7 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
             },
         );
         let mut transf = *transforms.get(owner).unwrap();
-        transf.translation.y += 75.0;
+        transf.translation += flappy_meta.spawn_offset.extend(0.0);
         transforms.insert(flappy_ent, transf);
         debug!("FLAPPY JELLYFISH | spawned");
     })
@@ -196,6 +209,8 @@ pub fn move_flappy_jellyfish(
     flappy_jellyfishes: Comp<FlappyJellyfish>,
     player_indexes: Comp<PlayerIdx>,
     player_inputs: Res<MatchInputs>,
+    bodies: Comp<KinematicBody>,
+    invincibles: Comp<Invincibility>,
     time: Res<Time>,
     mut fall_velocities: CompMut<FallVelocity>,
     mut transforms: CompMut<Transform>,
@@ -204,8 +219,23 @@ pub fn move_flappy_jellyfish(
 ) {
     let t = time.delta_seconds();
 
-    for (flappy_ent, (&FlappyJellyfish { owner, .. }, fall_velocity, transform)) in
-        entities.iter_with((&flappy_jellyfishes, &mut fall_velocities, &mut transforms))
+    let mut player_hitboxes = SmallVec::<[Rect; 8]>::with_capacity(8);
+    for (player_ent, (_index, transform, body)) in
+        entities.iter_with((&player_indexes, &transforms, &bodies))
+    {
+        if invincibles.contains(player_ent) {
+            continue;
+        }
+        player_hitboxes.push(body.bounding_box(*transform));
+    }
+
+    for (flappy_ent, (&FlappyJellyfish { owner, .. }, body, fall_velocity, transform)) in entities
+        .iter_with((
+            &flappy_jellyfishes,
+            &bodies,
+            &mut fall_velocities,
+            &mut transforms,
+        ))
     {
         let Some(owner_idx) = player_indexes.get(owner).cloned() else {
             continue;
@@ -232,6 +262,11 @@ pub fn move_flappy_jellyfish(
         transform.translation += delta_pos.extend(0.0);
 
         if map.is_out_of_bounds(&transform.translation) {
+            kill_flappies.insert(flappy_ent, KillFlappyJellyfish);
+        }
+
+        let flappy_hitbox = body.bounding_box(*transform);
+        if player_hitboxes.iter().any(|b| b.overlaps(&flappy_hitbox)) {
             kill_flappies.insert(flappy_ent, KillFlappyJellyfish);
         }
     }

@@ -1,7 +1,10 @@
 atlas: ./flappy_jellyfish.atlas.yaml
+body_size: [34, 46]
 start_frame: 0
 end_frame: 2
 fps: 2
+
+spawn_offset: [64, 64]
 
 explosion_atlas: ./explosion.atlas.yaml
 explosion_lifetime: 1.0

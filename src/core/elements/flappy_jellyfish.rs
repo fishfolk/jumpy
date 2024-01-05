@@ -30,7 +30,7 @@ pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PostUpdate, move_flappy_jellyfish)
-        .add_system_to_stage(CoreStage::PostUpdate, kill_flappy_jellyfishes);
+        .add_system_to_stage(CoreStage::PostUpdate, explode_flappy_jellyfish);
 }
 
 #[derive(Clone, Copy, Debug, Default, HasSchema)]
@@ -99,17 +99,17 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
         let mut transf = *transforms.get(owner).unwrap();
         transf.translation += flappy_meta.spawn_offset.extend(0.0);
         transforms.insert(flappy_ent, transf);
-        debug!("FLAPPY JELLYFISH | spawned");
     })
     .system()
 }
 
+/// A marker component for flappy jellyfish to indicate that it should explode.
 #[derive(Clone, Copy, Debug, Default, HasSchema)]
-pub struct KillFlappyJellyfish;
+pub struct ExplodeFlappyJellyfish;
 
-fn kill_flappy_jellyfishes(
+fn explode_flappy_jellyfish(
     mut entities: ResMut<Entities>,
-    kill_flappies: Comp<KillFlappyJellyfish>,
+    explode_flappies: Comp<ExplodeFlappyJellyfish>,
     flappy_jellyfishes: Comp<FlappyJellyfish>,
     mut driving_jellyfishes: CompMut<DrivingJellyfish>,
     element_handles: Comp<ElementHandle>,
@@ -122,16 +122,20 @@ fn kill_flappy_jellyfishes(
     mut damage_regions: CompMut<DamageRegion>,
     mut lifetimes: CompMut<Lifetime>,
 ) {
-    let kill_flappy_entities = entities
-        .iter_with_bitset(kill_flappies.bitset())
+    let explode_flappy_entities = entities
+        .iter_with_bitset(explode_flappies.bitset())
         .collect::<Vec<_>>();
 
-    for flappy in kill_flappy_entities {
+    for flappy in explode_flappy_entities {
         let Some(jellyfish) = flappy_jellyfishes.get(flappy).map(|f| f.jellyfish) else {
             continue;
         };
 
+        // Stop the jellyfish from driving
+
         driving_jellyfishes.remove(jellyfish);
+
+        // Get data for the explosion
 
         let Some(flappy_meta) = element_handles
             .get(jellyfish)
@@ -148,14 +152,17 @@ fn kill_flappy_jellyfishes(
         };
         explosion_transform.translation.z = -10.0;
 
+        // Despawn the flappy
+
         entities.kill(flappy);
-        debug!("FLAPPY JELLYFISH | despawned");
+
+        // Setup the explosion
 
         audio_events.play(flappy_meta.explosion_sound, flappy_meta.explosion_volume);
 
         trauma_events.send(5.0);
 
-        // Explosion
+        // Explosion animation entity
         {
             let explosion_ent = entities.create();
             transforms.insert(explosion_ent, explosion_transform);
@@ -178,7 +185,7 @@ fn kill_flappy_jellyfishes(
             lifetimes.insert(explosion_ent, Lifetime::new(flappy_meta.explosion_lifetime));
         }
 
-        // Damage region
+        // Damage region entity
         {
             let damage_ent = entities.create();
             transforms.insert(damage_ent, explosion_transform);
@@ -197,14 +204,15 @@ fn kill_flappy_jellyfishes(
 }
 
 #[derive(Clone, Copy, Default, Deref, DerefMut, HasSchema)]
-pub struct FallVelocity(f32);
+struct FallVelocity(f32);
 
 const SPEED_X: f32 = 200.0;
 const SPEED_JUMP: f32 = 500.0;
 const GRAVITY: f32 = -700.0;
-const MAX_SPEED_Y_ABS: f32 = 300.0;
+const MAX_SPEED_Y: f32 = 300.0;
+const MIN_SPEED_Y: f32 = -MAX_SPEED_Y;
 
-pub fn move_flappy_jellyfish(
+fn move_flappy_jellyfish(
     entities: Res<Entities>,
     flappy_jellyfishes: Comp<FlappyJellyfish>,
     player_indexes: Comp<PlayerIdx>,
@@ -214,20 +222,19 @@ pub fn move_flappy_jellyfish(
     time: Res<Time>,
     mut fall_velocities: CompMut<FallVelocity>,
     mut transforms: CompMut<Transform>,
-    mut kill_flappies: CompMut<KillFlappyJellyfish>,
+    mut explode_flappies: CompMut<ExplodeFlappyJellyfish>,
     map: Res<LoadedMap>,
 ) {
     let t = time.delta_seconds();
 
+    // Collect the hitboxes of all players
     let mut player_hitboxes = SmallVec::<[Rect; 8]>::with_capacity(8);
-    for (player_ent, (_index, transform, body)) in
-        entities.iter_with((&player_indexes, &transforms, &bodies))
-    {
-        if invincibles.contains(player_ent) {
-            continue;
-        }
-        player_hitboxes.push(body.bounding_box(*transform));
-    }
+    player_hitboxes.extend(
+        entities
+            .iter_with((&player_indexes, &transforms, &bodies))
+            .filter(|(player_ent, _)| !invincibles.contains(*player_ent))
+            .map(|(_, (_, transform, body))| body.bounding_box(*transform)),
+    );
 
     for (flappy_ent, (&FlappyJellyfish { owner, .. }, body, fall_velocity, transform)) in entities
         .iter_with((
@@ -254,7 +261,7 @@ pub fn move_flappy_jellyfish(
         }
 
         // Velocity formula: `vₜ = vᵢ + tg`
-        **fall_velocity = (**fall_velocity + t * GRAVITY).clamp(-MAX_SPEED_Y_ABS, MAX_SPEED_Y_ABS);
+        **fall_velocity = (**fall_velocity + t * GRAVITY).clamp(MIN_SPEED_Y, MAX_SPEED_Y);
 
         // Displacement formula: `y = gt²/2 + tvₜ`
         delta_pos.y += GRAVITY * t.powi(2) / 2.0 + **fall_velocity * t;
@@ -262,12 +269,13 @@ pub fn move_flappy_jellyfish(
         transform.translation += delta_pos.extend(0.0);
 
         if map.is_out_of_bounds(&transform.translation) {
-            kill_flappies.insert(flappy_ent, KillFlappyJellyfish);
+            explode_flappies.insert(flappy_ent, ExplodeFlappyJellyfish);
         }
 
+        // Explode the flappy if collided with any player
         let flappy_hitbox = body.bounding_box(*transform);
         if player_hitboxes.iter().any(|b| b.overlaps(&flappy_hitbox)) {
-            kill_flappies.insert(flappy_ent, KillFlappyJellyfish);
+            explode_flappies.insert(flappy_ent, ExplodeFlappyJellyfish);
         }
     }
 }

@@ -2,22 +2,32 @@ use bones_framework::asset::dashmap::mapref::one::MappedRef;
 
 use crate::{core::player::idle, prelude::*};
 
-use super::flappy_jellyfish::{self, FlappyJellyfishMeta, KillFlappyJellyfish};
+use super::flappy_jellyfish::{self, ExplodeFlappyJellyfish, FlappyJellyfishMeta};
 
 #[derive(HasSchema, Default, Debug, Clone)]
 #[type_data(metadata_asset("jellyfish"))]
 #[repr(C)]
 pub struct JellyfishMeta {
+    /// The atlas for the item image.
     pub atlas: Handle<Atlas>,
+    /// The size of the item.
     pub body_size: Vec2,
+    /// The velocity of the item when thrown.
     pub throw_velocity: f32,
+    /// The angular velocity of the item when thrown.
     pub angular_velocity: f32,
+    /// The animation frame a player's fin should use when holding the item.
     pub fin_anim: Ustr,
+    /// The offset relative to the center of the player that is holding the
+    /// item.
     pub grab_offset: Vec2,
+    /// The metadata of a flappy jellyfish.
     pub flappy_meta: Handle<FlappyJellyfishMeta>,
 }
 
 impl JellyfishMeta {
+    /// Try to cast the `asset` to a `JellyfishMeta` and get the
+    /// `FlappyJellyfishMeta` from it.
     pub fn get_flappy_meta_from_asset(
         asset: MappedRef<'_, Cid, LoadedAsset, SchemaBox>,
     ) -> Option<Handle<FlappyJellyfishMeta>> {
@@ -38,14 +48,17 @@ pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
-        .add_system_to_stage(CoreStage::PostUpdate, update_unused_jellyfishes)
-        .add_system_to_stage(CoreStage::PostUpdate, update_driving_jellyfishes);
+        .add_system_to_stage(CoreStage::PostUpdate, update_unused_jellyfish)
+        .add_system_to_stage(CoreStage::PostUpdate, update_driving_jellyfish);
     flappy_jellyfish::session_plugin(session);
 }
 
+/// A jellyfish item.
 #[derive(Clone, Debug, Default, HasSchema)]
 pub struct Jellyfish;
 
+/// A marker component for jellyfish items to indicate that it is being driven
+/// by a player.
 #[derive(Clone, Copy, Debug, Default, HasSchema)]
 pub struct DrivingJellyfish {
     pub owner: Entity,
@@ -128,7 +141,7 @@ fn hydrate(
     }
 }
 
-fn update_unused_jellyfishes(
+fn update_unused_jellyfish(
     entities: Res<Entities>,
     jellyfishes: Comp<Jellyfish>,
     driving_jellyfishes: Comp<DrivingJellyfish>,
@@ -142,39 +155,35 @@ fn update_unused_jellyfishes(
             continue;
         }
 
-        if items_used.contains(jellyfish_ent) {
-            items_used.remove(jellyfish_ent);
-
-            let Some(inventory) = player_inventories
+        if items_used.remove(jellyfish_ent).is_some() {
+            // Get the owner of the jellyfish, if any
+            let Some(owner) = player_inventories
                 .iter()
                 .find_map(|inv| inv.filter(|i| i.inventory == jellyfish_ent))
+                .map(|inv| inv.player)
             else {
                 continue;
             };
-            let owner = inventory.player;
 
+            // Prevent the jellyfish from being used if the owner isn't idle
             if player_states.get(owner).map(|s| s.current) != Some(*idle::ID) {
                 continue;
             }
 
-            debug!("JELLYFISH | mount");
             commands.add(flappy_jellyfish::spawn(owner, jellyfish_ent));
         }
     }
 }
 
-fn update_driving_jellyfishes(
+fn update_driving_jellyfish(
     entities: Res<Entities>,
     driving_jellyfishes: Comp<DrivingJellyfish>,
     mut items_used: CompMut<ItemUsed>,
-    mut kill_flappy: CompMut<KillFlappyJellyfish>,
+    mut explode_flappies: CompMut<ExplodeFlappyJellyfish>,
 ) {
     for (jellyfish_ent, driving_jellyfish) in entities.iter_with(&driving_jellyfishes) {
-        if items_used.contains(jellyfish_ent) {
-            items_used.remove(jellyfish_ent);
-
-            debug!("JELLYFISH | boom");
-            kill_flappy.insert(driving_jellyfish.flappy, KillFlappyJellyfish);
+        if items_used.remove(jellyfish_ent).is_some() {
+            explode_flappies.insert(driving_jellyfish.flappy, ExplodeFlappyJellyfish);
         }
     }
 }

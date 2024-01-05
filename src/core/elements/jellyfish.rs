@@ -2,7 +2,7 @@ use bones_framework::asset::dashmap::mapref::one::MappedRef;
 
 use crate::prelude::*;
 
-use super::flappy_jellyfish::{self, FlappyJellyfishMeta};
+use super::flappy_jellyfish::{self, FlappyJellyfishMeta, KillFlappyJellyfish};
 
 #[derive(HasSchema, Default, Debug, Clone)]
 #[type_data(metadata_asset("jellyfish"))]
@@ -162,20 +162,14 @@ fn update_driving_jellyfishes(
     entities: Res<Entities>,
     driving_jellyfishes: Comp<DrivingJellyfish>,
     mut items_used: CompMut<ItemUsed>,
-    mut commands: Commands,
+    mut kill_flappy: CompMut<KillFlappyJellyfish>,
 ) {
     for (jellyfish_ent, driving_jellyfish) in entities.iter_with(&driving_jellyfishes) {
         if items_used.contains(jellyfish_ent) {
             items_used.remove(jellyfish_ent);
 
             debug!("JELLYFISH | boom");
-            commands.add(flappy_jellyfish::kill(
-                jellyfish_ent,
-                driving_jellyfish.flappy,
-            ));
-            commands.add(move |mut driving_jellyfishes: CompMut<DrivingJellyfish>| {
-                driving_jellyfishes.remove(jellyfish_ent);
-            });
+            kill_flappy.insert(driving_jellyfish.flappy, KillFlappyJellyfish);
         }
     }
 }

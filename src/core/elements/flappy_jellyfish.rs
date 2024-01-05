@@ -27,12 +27,14 @@ impl FlappyJellyfishMeta {
 pub fn session_plugin(session: &mut Session) {
     session
         .stages
-        .add_system_to_stage(CoreStage::PostUpdate, move_flappy_jellyfish);
+        .add_system_to_stage(CoreStage::PostUpdate, move_flappy_jellyfish)
+        .add_system_to_stage(CoreStage::PostUpdate, kill_flappy_jellyfishes);
 }
 
-#[derive(Clone, Copy, Debug, HasSchema, Default)]
+#[derive(Clone, Copy, Debug, Default, HasSchema)]
 pub struct FlappyJellyfish {
     pub owner: Entity,
+    pub jellyfish: Entity,
 }
 
 pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
@@ -63,7 +65,13 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
                 flappy: flappy_ent,
             },
         );
-        flappy_jellyfishes.insert(flappy_ent, FlappyJellyfish { owner });
+        flappy_jellyfishes.insert(
+            flappy_ent,
+            FlappyJellyfish {
+                owner,
+                jellyfish: jellyfish_ent,
+            },
+        );
         fall_velocities.insert(flappy_ent, FallVelocity::default());
         atlas_sprites.insert(flappy_ent, AtlasSprite::new(flappy_meta.atlas));
         animated_sprites.insert(
@@ -83,17 +91,35 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
     .system()
 }
 
-pub fn kill(jellyfish: Entity, flappy: Entity) -> StaticSystem<(), ()> {
-    (move |mut entities: ResMut<Entities>,
-           element_handles: Comp<ElementHandle>,
-           assets: Res<AssetServer>,
-           mut transforms: CompMut<Transform>,
-           mut audio_events: ResMut<AudioEvents>,
-           mut trauma_events: ResMut<CameraTraumaEvents>,
-           mut sprites: CompMut<AtlasSprite>,
-           mut animated_sprites: CompMut<AnimatedSprite>,
-           mut damage_regions: CompMut<DamageRegion>,
-           mut lifetimes: CompMut<Lifetime>| {
+#[derive(Clone, Copy, Debug, Default, HasSchema)]
+pub struct KillFlappyJellyfish;
+
+fn kill_flappy_jellyfishes(
+    mut entities: ResMut<Entities>,
+    kill_flappies: Comp<KillFlappyJellyfish>,
+    flappy_jellyfishes: Comp<FlappyJellyfish>,
+    mut driving_jellyfishes: CompMut<DrivingJellyfish>,
+    element_handles: Comp<ElementHandle>,
+    assets: Res<AssetServer>,
+    mut transforms: CompMut<Transform>,
+    mut audio_events: ResMut<AudioEvents>,
+    mut trauma_events: ResMut<CameraTraumaEvents>,
+    mut sprites: CompMut<AtlasSprite>,
+    mut animated_sprites: CompMut<AnimatedSprite>,
+    mut damage_regions: CompMut<DamageRegion>,
+    mut lifetimes: CompMut<Lifetime>,
+) {
+    let kill_flappy_entities = entities
+        .iter_with_bitset(kill_flappies.bitset())
+        .collect::<Vec<_>>();
+
+    for flappy in kill_flappy_entities {
+        let Some(jellyfish) = flappy_jellyfishes.get(flappy).map(|f| f.jellyfish) else {
+            continue;
+        };
+
+        driving_jellyfishes.remove(jellyfish);
+
         let Some(flappy_meta) = element_handles
             .get(jellyfish)
             .map(|element_h| assets.get(element_h.0))
@@ -154,8 +180,7 @@ pub fn kill(jellyfish: Entity, flappy: Entity) -> StaticSystem<(), ()> {
                 Lifetime::new(flappy_meta.damage_region_lifetime),
             );
         }
-    })
-    .system()
+    }
 }
 
 #[derive(Clone, Copy, Default, Deref, DerefMut, HasSchema)]
@@ -177,7 +202,7 @@ pub fn move_flappy_jellyfish(
 ) {
     let t = time.delta_seconds();
 
-    for (_e, (&FlappyJellyfish { owner }, fall_velocity, transform)) in
+    for (_e, (&FlappyJellyfish { owner, .. }, fall_velocity, transform)) in
         entities.iter_with((&flappy_jellyfishes, &mut fall_velocities, &mut transforms))
     {
         let Some(owner_idx) = player_indexes.get(owner).cloned() else {

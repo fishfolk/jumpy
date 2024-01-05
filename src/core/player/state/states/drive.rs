@@ -12,6 +12,7 @@ pub fn player_state_transition(
     jellyfishes: Comp<Jellyfish>,
     driving_jellyfishes: Comp<DrivingJellyfish>,
     mut player_states: CompMut<PlayerState>,
+    killed_players: Comp<PlayerKilled>,
     player_inventories: PlayerInventories,
 ) {
     for (jellyfish_ent, _) in entities.iter_with(&jellyfishes) {
@@ -19,6 +20,9 @@ pub fn player_state_transition(
             let Some(player_state) = player_states.get_mut(driving.owner) else {
                 continue;
             };
+            if killed_players.contains(driving.owner) {
+                continue;
+            }
             if player_state.current != *ID {
                 player_state.current = *ID;
             }

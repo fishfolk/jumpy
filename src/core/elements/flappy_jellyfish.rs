@@ -107,9 +107,12 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
 #[derive(Clone, Copy, Debug, Default, HasSchema)]
 pub struct ExplodeFlappyJellyfish;
 
+/// Explode flappy jellyfish that either have the `KillFlappyJellyfish` marker
+/// or that have a dead owner.
 fn explode_flappy_jellyfish(
     mut entities: ResMut<Entities>,
     explode_flappies: Comp<ExplodeFlappyJellyfish>,
+    killed_players: Comp<PlayerKilled>,
     flappy_jellyfishes: Comp<FlappyJellyfish>,
     mut driving_jellyfishes: CompMut<DrivingJellyfish>,
     element_handles: Comp<ElementHandle>,
@@ -122,9 +125,24 @@ fn explode_flappy_jellyfish(
     mut damage_regions: CompMut<DamageRegion>,
     mut lifetimes: CompMut<Lifetime>,
 ) {
-    let explode_flappy_entities = entities
-        .iter_with_bitset(explode_flappies.bitset())
-        .collect::<Vec<_>>();
+    let mut explode_flappy_entities = Vec::with_capacity(flappy_jellyfishes.bitset().bit_count());
+
+    explode_flappy_entities.extend(entities.iter_with_bitset(explode_flappies.bitset()));
+
+    explode_flappy_entities.extend(
+        entities
+            .iter_with(&flappy_jellyfishes)
+            .filter(|&(flappy_ent, flappy)| {
+                !explode_flappies.contains(flappy_ent) && killed_players.contains(flappy.owner)
+            })
+            .map(|(e, _)| e),
+    );
+
+    for (flappy_ent, flappy_jellyfish) in entities.iter_with(&flappy_jellyfishes) {
+        if killed_players.contains(flappy_jellyfish.owner) {
+            explode_flappy_entities.push(flappy_ent);
+        }
+    }
 
     for flappy in explode_flappy_entities {
         let Some(jellyfish) = flappy_jellyfishes.get(flappy).map(|f| f.jellyfish) else {

@@ -309,7 +309,7 @@ core:
     - /elements/environment/slippery_seaweed/slippery_seaweed.element.yaml
     - /elements/item/crate/crate.element.yaml
     - /elements/item/grenade/grenade.element.yaml
-    - core:/elements/item/jellyfish/jellyfish.element.yaml
+    - /elements/item/jellyfish/jellyfish.element.yaml
     - /elements/item/kick_bomb/kick_bomb.element.yaml
     - /elements/item/mine/mine.element.yaml
     - /elements/item/musket/musket.element.yaml

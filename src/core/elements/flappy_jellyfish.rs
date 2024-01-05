@@ -199,10 +199,12 @@ pub fn move_flappy_jellyfish(
     time: Res<Time>,
     mut fall_velocities: CompMut<FallVelocity>,
     mut transforms: CompMut<Transform>,
+    mut kill_flappies: CompMut<KillFlappyJellyfish>,
+    map: Res<LoadedMap>,
 ) {
     let t = time.delta_seconds();
 
-    for (_e, (&FlappyJellyfish { owner, .. }, fall_velocity, transform)) in
+    for (flappy_ent, (&FlappyJellyfish { owner, .. }, fall_velocity, transform)) in
         entities.iter_with((&flappy_jellyfishes, &mut fall_velocities, &mut transforms))
     {
         let Some(owner_idx) = player_indexes.get(owner).cloned() else {
@@ -228,5 +230,9 @@ pub fn move_flappy_jellyfish(
         delta_pos.y += GRAVITY * t.powi(2) / 2.0 + **fall_velocity * t;
 
         transform.translation += delta_pos.extend(0.0);
+
+        if map.is_out_of_bounds(&transform.translation) {
+            kill_flappies.insert(flappy_ent, KillFlappyJellyfish);
+        }
     }
 }

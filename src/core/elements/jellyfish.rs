@@ -21,6 +21,8 @@ pub struct JellyfishMeta {
     /// The offset relative to the center of the player that is holding the
     /// item.
     pub grab_offset: Vec2,
+    /// The maximum amount of uses of the item. Resets when dropped.
+    pub max_ammo: u32,
     /// The metadata of a flappy jellyfish.
     pub flappy_meta: Handle<FlappyJellyfishMeta>,
 }
@@ -55,7 +57,9 @@ pub fn session_plugin(session: &mut Session) {
 
 /// A jellyfish item.
 #[derive(Clone, Debug, Default, HasSchema)]
-pub struct Jellyfish;
+pub struct Jellyfish {
+    pub ammo: u32,
+}
 
 /// A marker component for jellyfish items to indicate that it is being driven
 /// by a player.
@@ -101,6 +105,7 @@ fn hydrate(
             angular_velocity,
             fin_anim,
             grab_offset,
+            max_ammo,
             ..
         }) = assets.get(element_meta.data).try_cast_ref()
         {
@@ -108,7 +113,7 @@ fn hydrate(
 
             let entity = entities.create();
             hydrated.insert(entity, MapElementHydrated);
-            jellyfishes.insert(entity, Jellyfish);
+            jellyfishes.insert(entity, Jellyfish { ammo: *max_ammo });
             items.insert(entity, Item);
             item_grabs.insert(
                 entity,
@@ -120,7 +125,9 @@ fn hydrate(
             );
             item_throws.insert(
                 entity,
-                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+                ItemThrow::strength(*throw_velocity)
+                    .with_spin(*angular_velocity)
+                    .with_system(on_jellyfish_drop(entity, *max_ammo)),
             );
             element_handles.insert(entity, element_handle);
             atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
@@ -141,21 +148,31 @@ fn hydrate(
     }
 }
 
+fn on_jellyfish_drop(entity: Entity, max_ammo: u32) -> StaticSystem<(), ()> {
+    (move |mut jellyfishes: CompMut<Jellyfish>| {
+        // Reload
+        jellyfishes.get_mut(entity).unwrap().ammo = max_ammo;
+    })
+    .system()
+}
+
 fn update_unused_jellyfish(
     entities: Res<Entities>,
-    jellyfishes: Comp<Jellyfish>,
+    mut jellyfishes: CompMut<Jellyfish>,
     driving_jellyfishes: Comp<DrivingJellyfish>,
     mut items_used: CompMut<ItemUsed>,
     player_inventories: PlayerInventories,
     player_states: Comp<PlayerState>,
     mut commands: Commands,
 ) {
-    for (jellyfish_ent, _jellyfish) in entities.iter_with(&jellyfishes) {
+    for (jellyfish_ent, jellyfish) in entities.iter_with(&mut jellyfishes) {
         if driving_jellyfishes.contains(jellyfish_ent) {
             continue;
         }
 
-        if items_used.remove(jellyfish_ent).is_some() {
+        if items_used.remove(jellyfish_ent).is_some() && jellyfish.ammo > 0 {
+            jellyfish.ammo -= 1;
+
             // Get the owner of the jellyfish, if any
             let Some(owner) = player_inventories
                 .iter()

@@ -5,4 +5,6 @@ angular_velocity: 0.1
 fin_anim: grab_2
 grab_offset: [0, 0]
 
+max_ammo: 1
+
 flappy_meta: ./flappy_jellyfish/flappy_jellyfish.yaml

@@ -26,6 +26,20 @@ impl FlappyJellyfishMeta {
     }
 }
 
+pub trait AssetGetFlappyJellyfishMeta {
+    /// Try to cast the `asset` to a `JellyfishMeta` and get the
+    /// `FlappyJellyfishMeta` from it.
+    fn try_get_flappy_meta(&self) -> Option<Handle<FlappyJellyfishMeta>>;
+}
+
+impl AssetGetFlappyJellyfishMeta for SchemaBox {
+    fn try_get_flappy_meta(&self) -> Option<Handle<FlappyJellyfishMeta>> {
+        self.try_cast_ref::<JellyfishMeta>()
+            .ok()
+            .map(|m| m.flappy_meta)
+    }
+}
+
 pub fn session_plugin(session: &mut Session) {
     session
         .stages
@@ -54,7 +68,8 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
             .get(jellyfish_ent)
             .map(|element_h| assets.get(element_h.0))
             .map(|element_meta| assets.get(element_meta.data))
-            .and_then(JellyfishMeta::get_flappy_meta_from_asset)
+            .as_deref()
+            .and_then(SchemaBox::try_get_flappy_meta)
             .map(|flappy_h| assets.get(flappy_h))
         else {
             return;
@@ -159,7 +174,8 @@ fn explode_flappy_jellyfish(
             .get(jellyfish)
             .map(|element_h| assets.get(element_h.0))
             .map(|element_meta| assets.get(element_meta.data))
-            .and_then(JellyfishMeta::get_flappy_meta_from_asset)
+            .as_deref()
+            .and_then(SchemaBox::try_get_flappy_meta)
             .map(|flappy_h| assets.get(flappy_h))
         else {
             return;

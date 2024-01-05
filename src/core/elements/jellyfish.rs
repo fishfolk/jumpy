@@ -1,5 +1,3 @@
-use bones_framework::asset::dashmap::mapref::one::MappedRef;
-
 use crate::{core::player::idle, prelude::*};
 
 use super::flappy_jellyfish::{self, ExplodeFlappyJellyfish, FlappyJellyfishMeta};
@@ -25,19 +23,6 @@ pub struct JellyfishMeta {
     pub max_ammo: u32,
     /// The metadata of a flappy jellyfish.
     pub flappy_meta: Handle<FlappyJellyfishMeta>,
-}
-
-impl JellyfishMeta {
-    /// Try to cast the `asset` to a `JellyfishMeta` and get the
-    /// `FlappyJellyfishMeta` from it.
-    pub fn get_flappy_meta_from_asset(
-        asset: MappedRef<'_, Cid, LoadedAsset, SchemaBox>,
-    ) -> Option<Handle<FlappyJellyfishMeta>> {
-        asset
-            .try_cast_ref::<JellyfishMeta>()
-            .ok()
-            .map(|m| m.flappy_meta)
-    }
 }
 
 pub fn game_plugin(game: &mut Game) {

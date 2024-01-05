@@ -49,7 +49,7 @@ pub fn plugin(session: &mut Session) {
     crouch::install(session);
     dead::install(session);
     default::install(session);
-    drive::install(session);
+    drive_jellyfish::install(session);
     idle::install(session);
     incapacitated::install(session);
     midair::install(session);

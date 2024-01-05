@@ -3,7 +3,7 @@ use super::*;
 pub use stage::*;
 mod stage;
 
-use states::*;
+pub use states::*;
 mod states;
 
 /// The state of the player controller.

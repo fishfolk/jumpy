@@ -1,6 +1,6 @@
 use bones_framework::asset::dashmap::mapref::one::MappedRef;
 
-use crate::prelude::*;
+use crate::{core::player::idle, prelude::*};
 
 use super::flappy_jellyfish::{self, FlappyJellyfishMeta, KillFlappyJellyfish};
 
@@ -134,6 +134,7 @@ fn update_unused_jellyfishes(
     driving_jellyfishes: Comp<DrivingJellyfish>,
     mut items_used: CompMut<ItemUsed>,
     player_inventories: PlayerInventories,
+    player_states: Comp<PlayerState>,
     mut commands: Commands,
 ) {
     for (jellyfish_ent, _jellyfish) in entities.iter_with(&jellyfishes) {
@@ -151,6 +152,10 @@ fn update_unused_jellyfishes(
                 continue;
             };
             let owner = inventory.player;
+
+            if player_states.get(owner).map(|s| s.current) != Some(*idle::ID) {
+                continue;
+            }
 
             debug!("JELLYFISH | mount");
             commands.add(flappy_jellyfish::spawn(owner, jellyfish_ent));

@@ -251,6 +251,7 @@ fn move_flappy_jellyfish(
     flappy_jellyfishes: Comp<FlappyJellyfish>,
     player_indexes: Comp<PlayerIdx>,
     player_inputs: Res<MatchInputs>,
+    mut commands: Commands,
     bodies: Comp<KinematicBody>,
     invincibles: Comp<Invincibility>,
     time: Res<Time>,
@@ -270,8 +271,8 @@ fn move_flappy_jellyfish(
             .map(|(_, (_, transform, body))| body.bounding_box(*transform)),
     );
 
-    for (flappy_ent, (&FlappyJellyfish { owner, .. }, body, fall_velocity, transform)) in entities
-        .iter_with((
+    for (flappy_ent, (&FlappyJellyfish { owner, jellyfish }, body, fall_velocity, transform)) in
+        entities.iter_with((
             &flappy_jellyfishes,
             &bodies,
             &mut fall_velocities,
@@ -282,6 +283,21 @@ fn move_flappy_jellyfish(
             continue;
         };
         let owner_control = player_inputs.players[owner_idx.0 as usize].control;
+
+        if owner_control.grab_just_pressed {
+            commands.add(
+                move |mut entities: ResMut<Entities>,
+                      mut driving_jellyfishes: CompMut<DrivingJellyfish>,
+                      mut jellyfishes: CompMut<Jellyfish>| {
+                    driving_jellyfishes.remove(jellyfish);
+                    entities.kill(flappy_ent);
+                    if let Some(jellyfish) = jellyfishes.get_mut(jellyfish) {
+                        jellyfish.ammo += 1;
+                    }
+                },
+            );
+            continue;
+        }
 
         let mut delta_pos = Vec2::ZERO;
 

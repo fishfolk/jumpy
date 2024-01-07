@@ -62,7 +62,7 @@ fn hydrate(
     mut atlas_sprites: CompMut<AtlasSprite>,
     assets: Res<AssetServer>,
     mut hydrated: CompMut<MapElementHydrated>,
-    element_handles: Comp<ElementHandle>,
+    mut element_handles: CompMut<ElementHandle>,
     mut animated_sprites: CompMut<AnimatedSprite>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
     mut spawner_manager: SpawnerManager,
@@ -95,6 +95,8 @@ fn hydrate(
             hydrated.insert(spawner_ent, MapElementHydrated);
 
             let entity = entities.create();
+            hydrated.insert(entity, MapElementHydrated);
+            element_handles.insert(entity, element_handle);
             items.insert(entity, Item);
             item_throws.insert(
                 entity,

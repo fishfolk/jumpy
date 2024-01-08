@@ -63,7 +63,8 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
            assets: Res<AssetServer>,
            mut atlas_sprites: CompMut<AtlasSprite>,
            mut animated_sprites: CompMut<AnimatedSprite>,
-           mut transforms: CompMut<Transform>| {
+           mut transforms: CompMut<Transform>,
+           mut camera_subjects: CompMut<CameraSubject>| {
         let Some(flappy_meta) = element_handles
             .get(jellyfish_ent)
             .map(|element_h| assets.get(element_h.0))
@@ -114,6 +115,7 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
         let mut transf = *transforms.get(owner).unwrap();
         transf.translation += flappy_meta.spawn_offset.extend(0.0);
         transforms.insert(flappy_ent, transf);
+        camera_subjects.insert(flappy_ent, default());
     })
     .system()
 }

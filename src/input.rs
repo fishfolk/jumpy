@@ -3,6 +3,9 @@ use crate::{
     settings::{InputKind, PlayerControlMapping, PlayerControlSetting, Settings},
 };
 
+#[cfg(not(target_arch = "wasm32"))]
+use bones_framework::networking::{input::NetworkPlayerControl, proto::DenseMoveDirection};
+
 pub fn game_plugin(game: &mut Game) {
     game.systems.add_startup_system(load_controler_mapping);
     game.insert_shared_resource(EguiInputHook::new(handle_egui_input));
@@ -28,8 +31,15 @@ fn collect_player_controls(game: &mut Game) {
         };
         let keyboard = game.shared_resource::<KeyboardInputs>().unwrap();
         let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
-        collector.update(&mapping, &keyboard, &gamepad);
-        GlobalPlayerControls(collector.get().clone().into_iter().collect())
+        collector.apply_inputs(&mapping, &keyboard, &gamepad);
+        collector.update_just_pressed();
+        GlobalPlayerControls(
+            collector
+                .get_current_controls()
+                .clone()
+                .into_iter()
+                .collect(),
+        )
     };
     game.insert_shared_resource(controls);
 }
@@ -169,6 +179,12 @@ pub struct PlayerInputCollector {
     last_controls: HashMap<ControlSource, PlayerControl>,
 }
 
+impl PlayerInputCollector {
+    pub fn get_current_controls(&self) -> &HashMap<ControlSource, PlayerControl> {
+        &self.current_controls
+    }
+}
+
 impl Default for PlayerInputCollector {
     fn default() -> Self {
         let def_controls = || {
@@ -188,10 +204,75 @@ impl Default for PlayerInputCollector {
     }
 }
 
-impl PlayerInputCollector {
+impl<'a>
+    bones_framework::input::InputCollector<'a, PlayerControlMapping, ControlSource, PlayerControl>
+    for PlayerInputCollector
+{
+    fn update_just_pressed(&mut self) {
+        self.current_controls
+            .iter_mut()
+            .for_each(|(source, current)| {
+                let last = self.last_controls.entry(*source).or_default();
+
+                current.move_direction =
+                    vec2(current.right - current.left, current.up - current.down);
+                current.moving = current.move_direction.length_squared() > 0.01;
+
+                for (just_pressed, current_pressed, last_pressed) in [
+                    (
+                        &mut current.pause_just_pressed,
+                        current.pause_pressed,
+                        last.pause_pressed,
+                    ),
+                    (
+                        &mut current.jump_just_pressed,
+                        current.jump_pressed,
+                        last.jump_pressed,
+                    ),
+                    (
+                        &mut current.shoot_just_pressed,
+                        current.shoot_pressed,
+                        last.shoot_pressed,
+                    ),
+                    (
+                        &mut current.grab_just_pressed,
+                        current.grab_pressed,
+                        last.grab_pressed,
+                    ),
+                    (
+                        &mut current.slide_just_pressed,
+                        current.slide_pressed,
+                        last.slide_pressed,
+                    ),
+                    (
+                        &mut current.menu_back_just_pressed,
+                        current.menu_back_pressed,
+                        last.menu_back_pressed,
+                    ),
+                    (
+                        &mut current.menu_confirm_just_pressed,
+                        current.menu_confirm_pressed,
+                        last.menu_confirm_pressed,
+                    ),
+                    (
+                        &mut current.menu_start_just_pressed,
+                        current.menu_start_pressed,
+                        last.menu_start_pressed,
+                    ),
+                    (&mut current.just_moved, current.moving, last.moving),
+                ] {
+                    *just_pressed = current_pressed && !last_pressed;
+                }
+            });
+    }
+
+    fn advance_frame(&mut self) {
+        self.last_controls = self.current_controls.clone();
+    }
+
     /// Update the internal state with new inputs. This must be called every render frame with the
     /// input events.
-    pub fn update(
+    fn apply_inputs(
         &mut self,
         mapping: &crate::settings::PlayerControlMapping,
         keyboard: &KeyboardInputs,
@@ -302,69 +383,77 @@ impl PlayerInputCollector {
         }
     }
 
-    /// Get the player inputs for the next game simulation frame.
-    ///
-    /// This should only be called once per game simulation frame, because calling it will reset
-    /// the `just_pressed` flags.
-    pub fn get(&mut self) -> &HashMap<ControlSource, PlayerControl> {
-        self.current_controls
-            .iter_mut()
-            .for_each(|(source, current)| {
-                let last = self.last_controls.entry(*source).or_default();
-
-                current.move_direction =
-                    vec2(current.right - current.left, current.up - current.down);
-                current.moving = current.move_direction.length_squared() > 0.01;
-
-                for (just_pressed, current_pressed, last_pressed) in [
-                    (
-                        &mut current.pause_just_pressed,
-                        current.pause_pressed,
-                        last.pause_pressed,
-                    ),
-                    (
-                        &mut current.jump_just_pressed,
-                        current.jump_pressed,
-                        last.jump_pressed,
-                    ),
-                    (
-                        &mut current.shoot_just_pressed,
-                        current.shoot_pressed,
-                        last.shoot_pressed,
-                    ),
-                    (
-                        &mut current.grab_just_pressed,
-                        current.grab_pressed,
-                        last.grab_pressed,
-                    ),
-                    (
-                        &mut current.slide_just_pressed,
-                        current.slide_pressed,
-                        last.slide_pressed,
-                    ),
-                    (
-                        &mut current.menu_back_just_pressed,
-                        current.menu_back_pressed,
-                        last.menu_back_pressed,
-                    ),
-                    (
-                        &mut current.menu_confirm_just_pressed,
-                        current.menu_confirm_pressed,
-                        last.menu_confirm_pressed,
-                    ),
-                    (
-                        &mut current.menu_start_just_pressed,
-                        current.menu_start_pressed,
-                        last.menu_start_pressed,
-                    ),
-                    (&mut current.just_moved, current.moving, last.moving),
-                ] {
-                    *just_pressed = current_pressed && !last_pressed;
-                }
-            });
-
-        self.last_controls = self.current_controls.clone();
-
-        &self.current_controls
+    // TODO: Fix bones Trait definition, player_idx not relevant
+    fn get_control(&self, _player_idx: usize, control_source: ControlSource) -> &PlayerControl {
+        self.current_controls.get(&control_source).unwrap()
     }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl NetworkPlayerControl<DensePlayerControl> for PlayerControl {
+    fn get_dense_input(&self) -> DensePlayerControl {
+        let mut dense_control = DensePlayerControl::default();
+        dense_control.set_jump_pressed(self.jump_just_pressed);
+        dense_control.set_grab_pressed(self.grab_pressed);
+        dense_control.set_slide_pressed(self.slide_pressed);
+        dense_control.set_shoot_pressed(self.shoot_pressed);
+        dense_control.set_move_direction(proto::DenseMoveDirection(self.move_direction));
+        dense_control
+    }
+
+    fn update_from_dense(&mut self, new_control: &DensePlayerControl) {
+        let jump_pressed = new_control.jump_pressed();
+        self.jump_just_pressed = jump_pressed && !self.jump_pressed;
+        self.jump_pressed = jump_pressed;
+
+        let grab_pressed = new_control.grab_pressed();
+        self.grab_just_pressed = grab_pressed && !self.grab_pressed;
+        self.grab_pressed = grab_pressed;
+
+        let shoot_pressed = new_control.shoot_pressed();
+        self.shoot_just_pressed = shoot_pressed && !self.shoot_pressed;
+        self.shoot_pressed = shoot_pressed;
+
+        let was_moving = self.move_direction.length_squared() > f32::MIN_POSITIVE;
+        self.move_direction = new_control.move_direction().0;
+        let is_moving = self.move_direction.length_squared() > f32::MIN_POSITIVE;
+        self.just_moved = !was_moving && is_moving;
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+bitfield::bitfield! {
+    /// A player's controller inputs densely packed into a single u16.
+    ///
+    /// This is used when sending player inputs across the network.
+    #[derive(bytemuck::Pod, bytemuck::Zeroable, Copy, Clone, PartialEq, Eq)]//, Reflect)]
+    #[repr(transparent)]
+    pub struct DensePlayerControl(u16);
+    impl Debug;
+    pub jump_pressed, set_jump_pressed: 0;
+    pub shoot_pressed, set_shoot_pressed: 1;
+    pub grab_pressed, set_grab_pressed: 2;
+    pub slide_pressed, set_slide_pressed: 3;
+    pub from into DenseMoveDirection, move_direction, set_move_direction: 15, 4;
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl Default for DensePlayerControl {
+    fn default() -> Self {
+        let mut control = Self(0);
+        control.set_move_direction(default());
+        control
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+/// Used to implement input type config for bones networking.
+pub struct NetworkInputConfig;
+
+#[cfg(not(target_arch = "wasm32"))]
+impl<'a> bones_framework::networking::input::NetworkInputConfig<'a> for NetworkInputConfig {
+    type Dense = DensePlayerControl;
+    type Control = PlayerControl;
+    type PlayerControls = MatchInputs;
+    type InputCollector = PlayerInputCollector;
 }

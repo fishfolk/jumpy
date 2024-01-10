@@ -109,7 +109,7 @@ impl SessionRunner for JumpyDefaultMatchRunner {
         {
             let keyboard = world.resource::<KeyboardInputs>();
             let gamepad = world.resource::<GamepadInputs>();
-            self.input_collector.update(
+            self.input_collector.apply_inputs(
                 &world.resource::<PlayerControlMapping>(),
                 &keyboard,
                 &gamepad,
@@ -122,7 +122,8 @@ impl SessionRunner for JumpyDefaultMatchRunner {
                 .resource_mut::<Time>()
                 .advance_exact(Duration::from_secs_f64(STEP));
 
-            let input = self.input_collector.get();
+            self.input_collector.update_just_pressed();
+            let input = self.input_collector.get_current_controls();
             {
                 let mut player_inputs = world.resource_mut::<MatchInputs>();
                 (0..MAX_PLAYERS).for_each(|i| {

@@ -11,6 +11,9 @@ use shadow_rs::shadow;
 // Generate build info.
 shadow!(build_info);
 
+#[cfg(not(target_arch = "wasm32"))]
+mod network_game;
+
 #[derive(HasSchema, Debug, Default, Clone)]
 #[repr(C)]
 pub struct MainMenuMeta {
@@ -110,7 +113,11 @@ fn main_menu_system(world: &World) {
             MenuPage::PlayerSelect => world.run_system(player_select::widget, ui),
             MenuPage::MapSelect { .. } => world.run_system(map_select::widget, ui),
             MenuPage::Credits => world.run_system(credits::widget, ui),
-            MenuPage::NetworkGame => todo!(),
+            MenuPage::NetworkGame =>
+            {
+                #[cfg(not(target_arch = "wasm32"))]
+                world.run_system(network_game::widget, ui)
+            }
         });
 
     egui::CentralPanel::default()
@@ -167,16 +174,18 @@ fn home_menu(
                     ui.ctx().set_state(MenuPage::PlayerSelect);
                 }
 
-                // // Online game
-                // #[cfg(not(target_arch = "wasm32"))]
-                // if BorderedButton::themed(
-                //     &meta.theme.buttons.normal,
-                //     localization.get("online-game"),
-                // )
-                // .min_size(vec2(ui.available_width(), 0.0))
-                // .show(ui)
-                // .clicked()
-                // {}
+                // Online game
+                #[cfg(not(target_arch = "wasm32"))]
+                if BorderedButton::themed(
+                    &meta.theme.buttons.normal,
+                    localization.get("online-game"),
+                )
+                .min_size(vec2(ui.available_width(), 0.0))
+                .show(ui)
+                .clicked()
+                {
+                    ui.ctx().set_state(MenuPage::NetworkGame);
+                }
 
                 // Settings
                 if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("settings"))

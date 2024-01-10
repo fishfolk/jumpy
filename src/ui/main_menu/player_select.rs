@@ -24,11 +24,12 @@ pub struct PlayerSlot {
     pub selected_player: Handle<PlayerMeta>,
     pub selected_hat: Option<Handle<HatMeta>>,
     pub control_source: Option<ControlSource>,
+    pub is_ai: bool,
 }
 
 impl PlayerSlot {
     pub fn is_ai(&self) -> bool {
-        self.control_source.is_none()
+        self.is_ai
     }
 }
 
@@ -514,7 +515,7 @@ fn player_select_panel(
 
                     ui.label(normal_font.rich(localization.get("pick-a-fish")));
 
-                    if !slot.confirmed {
+                    if !slot.confirmed && slot.control_source.is_some() {
                         ui.label(normal_font.rich(localization.get_with(
                             "press-button-to-lock-in",
                             &fluent_args! {
@@ -535,7 +536,7 @@ fn player_select_panel(
                     ui.vertical_centered(|ui| {
                         ui.set_height(heading_font.size * 1.5);
 
-                        if slot.confirmed && !slot.is_ai() {
+                        if slot.confirmed && !slot.is_ai() && slot.control_source.is_some() {
                             ui.label(
                                 heading_font
                                     .with_color(meta.theme.colors.positive)
@@ -549,7 +550,7 @@ fn player_select_panel(
                                 },
                             )));
                         }
-                        if slot.is_ai() {
+                        if !is_network && *slot_id != 0 && slot.is_ai() {
                             ui.label(
                                 heading_font
                                     .with_color(meta.theme.colors.positive)
@@ -566,6 +567,7 @@ fn player_select_panel(
                                 slot.confirmed = false;
                                 slot.active = false;
                                 slot.control_source = None;
+                                slot.is_ai = false;
                             }
                         }
                     });
@@ -616,6 +618,7 @@ fn player_select_panel(
                         .show(ui)
                         .clicked()
                         {
+                            slot.is_ai = true;
                             slot.confirmed = true;
                             slot.active = true;
                             let rand_idx = THREAD_RNG.with(|rng| rng.usize(0..state.players.len()));

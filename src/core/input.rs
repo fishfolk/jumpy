@@ -65,8 +65,11 @@ pub struct PlayerInput {
     pub control: PlayerControl,
     /// The editor inputs the player is making, if any.
     pub editor_input: Option<EditorInput>,
-    /// If this is [`None`] it means the player is an AI.
+    /// If this is [`None`] it means the player is an AI, or remote player in networked game.
     pub control_source: Option<ControlSource>,
+
+    /// Whether or not this is an AI player.
+    pub is_ai: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

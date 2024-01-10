@@ -31,8 +31,8 @@ use crate::{prelude::*, settings::PlayerControlMapping};
 pub mod prelude {
     pub use super::{
         attachment::*, audio::*, bullet::*, camera::*, damage::*, debug::*, editor::*, editor::*,
-        elements::prelude::*, elements::prelude::*, globals::*, input::*, item::*, lifetime::*,
-        map::*, map_constructor::*, metadata::*, physics::*, player::*, random::*, utils::*, FPS,
+        elements::prelude::*, globals::*, input::*, item::*, lifetime::*, map::*,
+        map_constructor::*, metadata::*, physics::*, player::*, random::*, utils::*, FPS,
         MAX_PLAYERS,
     };
 }

@@ -1239,9 +1239,8 @@ layers:
     element: core:/elements/item/sword/sword.element.yaml
   - pos:
     - 300.0
-    - 700.0
-    element: core:/elements/item/sword/sword.element.yaml
-    element: /items/blunderbass/element.yaml
+    - 710.0
+    element: core:/elements/item/jellyfish/jellyfish.element.yaml
   - pos:
     - 480.0
     - 118.5

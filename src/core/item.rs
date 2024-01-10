@@ -297,11 +297,7 @@ pub fn throw_dropped_items(
             };
 
             let throw_velocity = item_throw.velocity_from_control(
-                &player_inputs
-                    .players
-                    .get(player_indexes.get(player).unwrap().0 as usize)
-                    .unwrap()
-                    .control,
+                &player_inputs.players[player_indexes.get(player).unwrap().0 as usize].control,
             );
 
             // Use the item's spawner depth as the drop depth

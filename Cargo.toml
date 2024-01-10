@@ -36,9 +36,12 @@ thiserror           = "1.0.48"
 peg                 = "0.8.1"
 egui_extras         = { version = "0.23.0", default-features = false }
 shadow-rs           = { version = "0.25.0", default-features = false }
+postcard               = { version = "1.0", default-features = false, features = ["alloc"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 bevy_dylib = "0.11"
+bitfield               = "0.14"
+bytemuck               = "1.12"
 
 # anyhow              = "1.0"
 # async-channel       = "1.7"

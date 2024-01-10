@@ -180,17 +180,9 @@ fn update(
         musket.cooldown.tick(time.delta());
 
         // If the item is being held
-        if let Some(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
-            let player = inventory.player;
-
+        if let Some(Inv { player, .. }) = player_inventories.find_item(entity) {
             // If the item is being used
-            let item_used = items_used.get(entity).is_some();
-            if item_used {
-                items_used.remove(entity);
-            }
+            let item_used = items_used.remove(entity).is_some();
             if item_used && musket.cooldown.finished() {
                 // Empty
                 if musket.ammo.eq(&0) {

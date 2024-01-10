@@ -154,12 +154,8 @@ fn update_idle_crates(
 
         let break_timeout = *break_timeout;
 
-        if let Some(Inv { player, .. }) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
-            if items_used.get(entity).is_some() {
-                items_used.remove(entity);
+        if let Some(Inv { player, .. }) = player_inventories.find_item(entity) {
+            if items_used.remove(entity).is_some() {
                 commands.add(PlayerCommand::set_inventory(player, None));
                 commands.add(
                     move |mut idle: CompMut<IdleCrate>, mut thrown: CompMut<ThrownCrate>| {

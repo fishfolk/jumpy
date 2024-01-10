@@ -159,20 +159,16 @@ fn update_unused_jellyfish(
             jellyfish.ammo -= 1;
 
             // Get the owner of the jellyfish, if any
-            let Some(owner) = player_inventories
-                .iter()
-                .find_map(|inv| inv.filter(|i| i.inventory == jellyfish_ent))
-                .map(|inv| inv.player)
-            else {
+            let Some(Inv { player, .. }) = player_inventories.find_item(jellyfish_ent) else {
                 continue;
             };
 
             // Prevent the jellyfish from being used if the owner isn't idle
-            if player_states.get(owner).map(|s| s.current) != Some(*idle::ID) {
+            if player_states.get(player).map(|s| s.current) != Some(*idle::ID) {
                 continue;
             }
 
-            commands.add(flappy_jellyfish::spawn(owner, jellyfish_ent));
+            commands.add(flappy_jellyfish::spawn(player, jellyfish_ent));
         }
     }
 }

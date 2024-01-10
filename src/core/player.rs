@@ -955,27 +955,23 @@ fn equip_hats(
 ) {
     for (hat_ent, hat) in entities.iter_with(&hats) {
         // If the hat is being held
-        if let Some(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == hat_ent))
-        {
-            if items_used.contains(hat_ent) {
-                items_used.remove(hat_ent).unwrap();
-                inventories.get_mut(inventory.player).unwrap().0 = None;
+        if let Some(Inv { player, .. }) = player_inventories.find_item(hat_ent) {
+            if items_used.remove(hat_ent).is_some() {
+                inventories.get_mut(player).unwrap().0 = None;
 
                 let hat_meta = assets.get(hat.0);
                 kinematic_bodies.get_mut(hat_ent).unwrap().is_deactivated = true;
                 player_body_attachments.insert(
                     hat_ent,
                     PlayerBodyAttachment {
-                        player: inventory.player,
+                        player,
                         offset: hat_meta.offset.extend(PlayerLayers::HAT_Z_OFFSET),
                         head: true,
                         sync_animation: false,
                         sync_color: true,
                     },
                 );
-                player_layers.get_mut(inventory.player).unwrap().hat_ent = Some(hat_ent);
+                player_layers.get_mut(player).unwrap().hat_ent = Some(hat_ent);
             }
         }
     }

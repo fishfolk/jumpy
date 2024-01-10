@@ -198,11 +198,7 @@ fn update(
         };
 
         // If the item is being held
-        if let Some(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
-            let player = inventory.player;
+        if let Some(Inv { player, .. }) = player_inventories.find_item(entity) {
             let sprite = sprites.get_mut(entity).unwrap();
             let player_translation = transforms.get(player).unwrap().translation;
             let flip = sprite.flip_x;
@@ -289,14 +285,11 @@ fn update(
             }
 
             // If the item is being used
-            let item_used = items_used.get(entity).is_some();
-            if item_used {
-                items_used.remove(entity);
-                if matches!(sword.state, SwordState::Idle) {
-                    sprite.index = 8;
-                    sword.state = SwordState::Swinging { frame: 0 };
-                    audio_events.play(*sound, *sound_volume);
-                }
+            let item_used = items_used.remove(entity).is_some();
+            if item_used && matches!(sword.state, SwordState::Idle) {
+                sprite.index = 8;
+                sword.state = SwordState::Swinging { frame: 0 };
+                audio_events.play(*sound, *sound_volume);
             }
         } else {
             let body = bodies.get(entity).unwrap();

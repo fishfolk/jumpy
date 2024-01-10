@@ -59,7 +59,6 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
            mut driving_jellyfishes: CompMut<DrivingJellyfish>,
            mut flappy_jellyfishes: CompMut<FlappyJellyfish>,
            mut bodies: CompMut<KinematicBody>,
-           mut fall_velocities: CompMut<FallVelocity>,
            assets: Res<AssetServer>,
            mut atlas_sprites: CompMut<AtlasSprite>,
            mut animated_sprites: CompMut<AnimatedSprite>,
@@ -97,11 +96,13 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
                 shape: ColliderShape::Rectangle {
                     size: flappy_meta.body_size,
                 },
-                is_deactivated: true,
+                has_mass: true,
+                gravity: GRAVITY,
+                fall_through: true,
+                is_controlled: true,
                 ..default()
             },
         );
-        fall_velocities.insert(flappy_ent, FallVelocity::default());
         atlas_sprites.insert(flappy_ent, AtlasSprite::new(flappy_meta.atlas));
         animated_sprites.insert(
             flappy_ent,
@@ -131,6 +132,10 @@ fn explode_flappy_jellyfish(
     explode_flappies: Comp<ExplodeFlappyJellyfish>,
     killed_players: Comp<PlayerKilled>,
     flappy_jellyfishes: Comp<FlappyJellyfish>,
+    player_indexes: Comp<PlayerIdx>,
+    invincibles: Comp<Invincibility>,
+    bodies: Comp<KinematicBody>,
+    map: Res<LoadedMap>,
     mut driving_jellyfishes: CompMut<DrivingJellyfish>,
     element_handles: Comp<ElementHandle>,
     assets: Res<AssetServer>,
@@ -142,22 +147,40 @@ fn explode_flappy_jellyfish(
     mut damage_regions: CompMut<DamageRegion>,
     mut lifetimes: CompMut<Lifetime>,
 ) {
-    let mut explode_flappy_entities = Vec::with_capacity(flappy_jellyfishes.bitset().bit_count());
-
-    explode_flappy_entities.extend(entities.iter_with_bitset(explode_flappies.bitset()));
-
-    explode_flappy_entities.extend(
+    // Collect the hitboxes of all players
+    let mut player_hitboxes = SmallVec::<[Rect; 8]>::with_capacity(8);
+    player_hitboxes.extend(
         entities
-            .iter_with(&flappy_jellyfishes)
-            .filter(|&(flappy_ent, flappy)| {
-                !explode_flappies.contains(flappy_ent) && killed_players.contains(flappy.owner)
-            })
-            .map(|(e, _)| e),
+            .iter_with((&player_indexes, &transforms, &bodies))
+            .filter(|(player_ent, _)| !invincibles.contains(*player_ent))
+            .map(|(_, (_, transform, body))| body.bounding_box(*transform)),
     );
 
-    for (flappy_ent, flappy_jellyfish) in entities.iter_with(&flappy_jellyfishes) {
+    let mut explode_flappy_entities = Vec::with_capacity(flappy_jellyfishes.bitset().bit_count());
+
+    for (flappy_ent, (flappy_jellyfish, transform, body)) in
+        entities.iter_with((&flappy_jellyfishes, &transforms, &bodies))
+    {
+        // If flappy has the explode marker
+        if explode_flappies.contains(flappy_ent) {
+            explode_flappy_entities.push(flappy_ent);
+            continue;
+        }
+        // If the owner is dead
         if killed_players.contains(flappy_jellyfish.owner) {
             explode_flappy_entities.push(flappy_ent);
+            continue;
+        }
+        // If the flappy collides with any player
+        let flappy_hitbox = body.bounding_box(*transform);
+        if player_hitboxes.iter().any(|b| b.overlaps(&flappy_hitbox)) {
+            explode_flappy_entities.push(flappy_ent);
+            continue;
+        }
+        // If the flappy is out of bounds
+        if map.is_out_of_bounds(&transform.translation) {
+            explode_flappy_entities.push(flappy_ent);
+            continue;
         }
     }
 
@@ -239,14 +262,11 @@ fn explode_flappy_jellyfish(
     }
 }
 
-#[derive(Clone, Copy, Default, Deref, DerefMut, HasSchema)]
-struct FallVelocity(f32);
-
-const SPEED_X: f32 = 200.0;
-const SPEED_JUMP: f32 = 500.0;
-const GRAVITY: f32 = -700.0;
-const MAX_SPEED_Y: f32 = 300.0;
-const MIN_SPEED_Y: f32 = -MAX_SPEED_Y;
+const SPEED_X: f32 = 324.0;
+const SPEED_JUMP: f32 = 3.5;
+const GRAVITY: f32 = 0.1;
+const MIN_SPEED: Vec2 = vec2(-SPEED_X, -4.0);
+const MAX_SPEED: Vec2 = vec2(SPEED_X, 4.0);
 
 fn move_flappy_jellyfish(
     entities: Res<Entities>,
@@ -254,37 +274,20 @@ fn move_flappy_jellyfish(
     player_indexes: Comp<PlayerIdx>,
     player_inputs: Res<MatchInputs>,
     mut commands: Commands,
-    bodies: Comp<KinematicBody>,
-    invincibles: Comp<Invincibility>,
+    mut bodies: CompMut<KinematicBody>,
     time: Res<Time>,
-    mut fall_velocities: CompMut<FallVelocity>,
-    mut transforms: CompMut<Transform>,
-    mut explode_flappies: CompMut<ExplodeFlappyJellyfish>,
-    map: Res<LoadedMap>,
 ) {
     let t = time.delta_seconds();
 
-    // Collect the hitboxes of all players
-    let mut player_hitboxes = SmallVec::<[Rect; 8]>::with_capacity(8);
-    player_hitboxes.extend(
-        entities
-            .iter_with((&player_indexes, &transforms, &bodies))
-            .filter(|(player_ent, _)| !invincibles.contains(*player_ent))
-            .map(|(_, (_, transform, body))| body.bounding_box(*transform)),
-    );
-
-    for (flappy_ent, (&FlappyJellyfish { owner, jellyfish }, body, fall_velocity, transform)) in
-        entities.iter_with((
-            &flappy_jellyfishes,
-            &bodies,
-            &mut fall_velocities,
-            &mut transforms,
-        ))
+    for (flappy_ent, (&FlappyJellyfish { owner, jellyfish }, body)) in
+        entities.iter_with((&flappy_jellyfishes, &mut bodies))
     {
-        let Some(owner_idx) = player_indexes.get(owner).cloned() else {
+        let Some(owner_control) = player_indexes
+            .get(owner)
+            .map(|idx| player_inputs.players[idx.0 as usize].control)
+        else {
             continue;
         };
-        let owner_control = player_inputs.players[owner_idx.0 as usize].control;
 
         if owner_control.grab_just_pressed {
             commands.add(
@@ -301,33 +304,18 @@ fn move_flappy_jellyfish(
             continue;
         }
 
-        let mut delta_pos = Vec2::ZERO;
-
-        if owner_control.left != owner_control.right {
-            delta_pos.x -= owner_control.left * SPEED_X * t;
-            delta_pos.x += owner_control.right * SPEED_X * t;
+        if owner_control.left == owner_control.right {
+            body.velocity.x = 0.0;
+        } else if owner_control.left > f32::EPSILON {
+            body.velocity.x = -owner_control.left * SPEED_X * t;
+        } else if owner_control.right > f32::EPSILON {
+            body.velocity.x = owner_control.right * SPEED_X * t;
         }
 
         if owner_control.jump_just_pressed {
-            **fall_velocity += SPEED_JUMP;
+            body.velocity.y += SPEED_JUMP;
         }
 
-        // Velocity formula: `vₜ = vᵢ + tg`
-        **fall_velocity = (**fall_velocity + t * GRAVITY).clamp(MIN_SPEED_Y, MAX_SPEED_Y);
-
-        // Displacement formula: `y = gt²/2 + tvₜ`
-        delta_pos.y += GRAVITY * t.powi(2) / 2.0 + **fall_velocity * t;
-
-        transform.translation += delta_pos.extend(0.0);
-
-        if map.is_out_of_bounds(&transform.translation) {
-            explode_flappies.insert(flappy_ent, ExplodeFlappyJellyfish);
-        }
-
-        // Explode the flappy if collided with any player
-        let flappy_hitbox = body.bounding_box(*transform);
-        if player_hitboxes.iter().any(|b| b.overlaps(&flappy_hitbox)) {
-            explode_flappies.insert(flappy_ent, ExplodeFlappyJellyfish);
-        }
+        body.velocity = body.velocity.clamp(MIN_SPEED, MAX_SPEED);
     }
 }

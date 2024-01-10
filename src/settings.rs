@@ -51,6 +51,16 @@ pub struct PlayerControlMapping {
     pub keyboard2: PlayerControlSetting,
 }
 
+impl PlayerControlMapping {
+    pub fn map_control_source(&self, source: ControlSource) -> &PlayerControlSetting {
+        match source {
+            ControlSource::Keyboard1 => &self.keyboard1,
+            ControlSource::Keyboard2 => &self.keyboard2,
+            ControlSource::Gamepad(_) => &self.gamepad,
+        }
+    }
+}
+
 /// Binds inputs to player actions
 #[derive(HasSchema, Clone, Debug, Default)]
 #[repr(C)]

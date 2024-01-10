@@ -4,7 +4,7 @@ use super::ImageMeta;
 
 mod credits;
 mod map_select;
-mod player_select;
+pub mod player_select;
 mod settings;
 use shadow_rs::shadow;
 

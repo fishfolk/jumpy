@@ -1,6 +1,6 @@
 use crate::{core::player::idle, prelude::*};
 
-use super::flappy_jellyfish::{self, ExplodeFlappyJellyfish, FlappyJellyfishMeta};
+use super::flappy_jellyfish::{self, FlappyJellyfishMeta};
 
 #[derive(HasSchema, Default, Debug, Clone)]
 #[type_data(metadata_asset("jellyfish"))]
@@ -35,8 +35,7 @@ pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
-        .add_system_to_stage(CoreStage::PostUpdate, update_unused_jellyfish)
-        .add_system_to_stage(CoreStage::PostUpdate, update_driving_jellyfish);
+        .add_system_to_stage(CoreStage::PostUpdate, update_jellyfish_driving);
     flappy_jellyfish::session_plugin(session);
 }
 
@@ -44,13 +43,17 @@ pub fn session_plugin(session: &mut Session) {
 #[derive(Clone, Debug, Default, HasSchema)]
 pub struct Jellyfish {
     pub ammo: u32,
+    pub flappy: Option<Entity>,
 }
 
-/// A marker component for jellyfish items to indicate that it is being driven
-/// by a player.
-#[derive(Clone, Copy, Debug, Default, HasSchema)]
-pub struct DrivingJellyfish {
-    pub owner: Entity,
+impl Jellyfish {
+    pub fn new(ammo: u32) -> Self {
+        Self { ammo, flappy: None }
+    }
+}
+
+#[derive(Clone, Debug, Default, HasSchema)]
+pub struct PlayerDrivingJellyfish {
     pub flappy: Entity,
 }
 
@@ -98,7 +101,7 @@ fn hydrate(
 
             let entity = entities.create();
             hydrated.insert(entity, MapElementHydrated);
-            jellyfishes.insert(entity, Jellyfish { ammo: *max_ammo });
+            jellyfishes.insert(entity, Jellyfish::new(*max_ammo));
             items.insert(entity, Item);
             item_grabs.insert(
                 entity,
@@ -141,47 +144,39 @@ fn on_jellyfish_drop(entity: Entity, max_ammo: u32) -> StaticSystem<(), ()> {
     .system()
 }
 
-fn update_unused_jellyfish(
+fn update_jellyfish_driving(
     entities: Res<Entities>,
-    mut jellyfishes: CompMut<Jellyfish>,
-    driving_jellyfishes: Comp<DrivingJellyfish>,
-    mut items_used: CompMut<ItemUsed>,
-    player_inventories: PlayerInventories,
+    player_indexes: Comp<PlayerIdx>,
+    player_inventories: Comp<Inventory>,
     player_states: Comp<PlayerState>,
+    mut jellyfishes: CompMut<Jellyfish>,
+    player_inputs: Res<MatchInputs>,
+    mut player_driving: CompMut<PlayerDrivingJellyfish>,
     mut commands: Commands,
 ) {
-    for (jellyfish_ent, jellyfish) in entities.iter_with(&mut jellyfishes) {
-        if driving_jellyfishes.contains(jellyfish_ent) {
+    for (player_ent, (player_idx, player_inv, player_state)) in
+        entities.iter_with((&player_indexes, &player_inventories, &player_states))
+    {
+        let Some(jellyfish_ent) = player_inv.0 else {
             continue;
-        }
+        };
+        let Some(jellyfish) = jellyfishes.get_mut(jellyfish_ent) else {
+            continue;
+        };
 
-        if items_used.remove(jellyfish_ent).is_some() && jellyfish.ammo > 0 {
-            jellyfish.ammo -= 1;
+        let player_control = player_inputs.players[player_idx.0 as usize].control;
 
-            // Get the owner of the jellyfish, if any
-            let Some(Inv { player, .. }) = player_inventories.find_item(jellyfish_ent) else {
-                continue;
-            };
-
-            // Prevent the jellyfish from being used if the owner isn't idle
-            if player_states.get(player).map(|s| s.current) != Some(*idle::ID) {
+        if player_control.shoot_pressed {
+            if player_state.current != *idle::ID || player_driving.contains(player_ent) {
                 continue;
             }
-
-            commands.add(flappy_jellyfish::spawn(player, jellyfish_ent));
-        }
-    }
-}
-
-fn update_driving_jellyfish(
-    entities: Res<Entities>,
-    driving_jellyfishes: Comp<DrivingJellyfish>,
-    mut items_used: CompMut<ItemUsed>,
-    mut explode_flappies: CompMut<ExplodeFlappyJellyfish>,
-) {
-    for (jellyfish_ent, driving_jellyfish) in entities.iter_with(&driving_jellyfishes) {
-        if items_used.remove(jellyfish_ent).is_some() {
-            explode_flappies.insert(driving_jellyfish.flappy, ExplodeFlappyJellyfish);
+            commands.add(flappy_jellyfish::spawn_or_take_control(
+                player_ent,
+                jellyfish_ent,
+                jellyfish.flappy,
+            ));
+        } else {
+            player_driving.remove(player_ent);
         }
     }
 }

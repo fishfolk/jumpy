@@ -225,12 +225,13 @@
 <a href="#130" id="130">130</a>
 <a href="#131" id="131">131</a>
 <a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub use </span>stage::<span class="kw-2">*</span>;
 <span class="kw">mod </span>stage;
 
-<span class="kw">use </span>states::<span class="kw-2">*</span>;
+<span class="kw">pub use </span>states::<span class="kw-2">*</span>;
 <span class="kw">mod </span>states;
 
 <span class="doccomment">/// The state of the player controller.
@@ -273,13 +274,14 @@
         .stages
         .add_system_to_stage(CoreStage::Last, update_player_state_age);
 
-    default::install(session);
-    idle::install(session);
     crouch::install(session);
+    dead::install(session);
+    default::install(session);
+    drive_jellyfish::install(session);
+    idle::install(session);
+    incapacitated::install(session);
     midair::install(session);
     walk::install(session);
-    dead::install(session);
-    incapacitated::install(session);
 }
 
 <span class="kw">fn </span>update_player_state_age(entities: Res&lt;Entities&gt;, <span class="kw-2">mut </span>player_states: CompMut&lt;PlayerState&gt;) {

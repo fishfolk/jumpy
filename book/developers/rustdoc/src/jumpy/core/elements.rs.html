@@ -421,6 +421,9 @@
 <a href="#326" id="326">326</a>
 <a href="#327" id="327">327</a>
 <a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Map element implementations.
 //!
 //! A map element is anything that can be placed on the map in the editor.
@@ -433,7 +436,9 @@
 <span class="kw">pub mod </span>crate_item;
 <span class="kw">pub mod </span>decoration;
 <span class="kw">pub mod </span>fish_school;
+<span class="kw">pub mod </span>flappy_jellyfish;
 <span class="kw">pub mod </span>grenade;
+<span class="kw">pub mod </span>jellyfish;
 <span class="kw">pub mod </span>kick_bomb;
 <span class="kw">pub mod </span>mine;
 <span class="kw">pub mod </span>musket;
@@ -449,9 +454,9 @@
 
 <span class="kw">pub mod </span>prelude {
     <span class="kw">pub use super</span>::{
-        crab::<span class="kw-2">*</span>, crate_item::<span class="kw-2">*</span>, decoration::<span class="kw-2">*</span>, fish_school::<span class="kw-2">*</span>, grenade::<span class="kw-2">*</span>, kick_bomb::<span class="kw-2">*</span>, mine::<span class="kw-2">*</span>,
-        musket::<span class="kw-2">*</span>, player_spawner::<span class="kw-2">*</span>, slippery::<span class="kw-2">*</span>, slippery_seaweed::<span class="kw-2">*</span>, snail::<span class="kw-2">*</span>, spike::<span class="kw-2">*</span>,
-        sproinger::<span class="kw-2">*</span>, stomp_boots::<span class="kw-2">*</span>, sword::<span class="kw-2">*</span>, urchin::<span class="kw-2">*</span>, <span class="kw-2">*</span>,
+        crab::<span class="kw-2">*</span>, crate_item::<span class="kw-2">*</span>, decoration::<span class="kw-2">*</span>, fish_school::<span class="kw-2">*</span>, grenade::<span class="kw-2">*</span>, jellyfish::<span class="kw-2">*</span>,
+        kick_bomb::<span class="kw-2">*</span>, mine::<span class="kw-2">*</span>, musket::<span class="kw-2">*</span>, player_spawner::<span class="kw-2">*</span>, slippery::<span class="kw-2">*</span>, slippery_seaweed::<span class="kw-2">*</span>,
+        snail::<span class="kw-2">*</span>, spike::<span class="kw-2">*</span>, sproinger::<span class="kw-2">*</span>, stomp_boots::<span class="kw-2">*</span>, sword::<span class="kw-2">*</span>, urchin::<span class="kw-2">*</span>, <span class="kw-2">*</span>,
     };
 }
 
@@ -713,23 +718,24 @@
 }
 
 <span class="macro">install_plugins!</span>(
-    decoration,
-    urchin,
-    player_spawner,
-    sproinger,
-    sword,
-    grenade,
     crab,
-    snail,
+    crate_item,
+    decoration,
     fish_school,
+    grenade,
+    jellyfish,
     kick_bomb,
     mine,
     musket,
-    stomp_boots,
-    crate_item,
+    player_spawner,
     slippery_seaweed,
     slippery,
+    snail,
     spike,
+    sproinger,
+    stomp_boots,
+    sword,
+    urchin,
 );
 
 <span class="kw">fn </span>handle_out_of_bounds_items(

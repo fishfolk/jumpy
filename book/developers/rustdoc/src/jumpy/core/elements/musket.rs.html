@@ -379,14 +379,6 @@
 <a href="#284" id="284">284</a>
 <a href="#285" id="285">285</a>
 <a href="#286" id="286">286</a>
-<a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Default, Debug, Clone)]
@@ -569,17 +561,9 @@
         musket.cooldown.tick(time.delta());
 
         <span class="comment">// If the item is being held
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
-            <span class="kw">let </span>player = inventory.player;
-
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Inv { player, .. }) = player_inventories.find_item(entity) {
             <span class="comment">// If the item is being used
-            </span><span class="kw">let </span>item_used = items_used.get(entity).is_some();
-            <span class="kw">if </span>item_used {
-                items_used.remove(entity);
-            }
+            </span><span class="kw">let </span>item_used = items_used.remove(entity).is_some();
             <span class="kw">if </span>item_used &amp;&amp; musket.cooldown.finished() {
                 <span class="comment">// Empty
                 </span><span class="kw">if </span>musket.ammo.eq(<span class="kw-2">&amp;</span><span class="number">0</span>) {

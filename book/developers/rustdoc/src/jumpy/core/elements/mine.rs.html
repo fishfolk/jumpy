@@ -403,10 +403,6 @@
 <a href="#308" id="308">308</a>
 <a href="#309" id="309">309</a>
 <a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
-<a href="#312" id="312">312</a>
-<a href="#313" id="313">313</a>
-<a href="#314" id="314">314</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// The mine item
@@ -556,12 +552,8 @@
         };
         <span class="kw">let </span>arm_delay = <span class="kw-2">*</span>arm_delay;
 
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(Inv { player, .. }) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
-            <span class="kw">if </span>items_used.get(entity).is_some() {
-                items_used.remove(entity);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(Inv { player, .. }) = player_inventories.find_item(entity) {
+            <span class="kw">if </span>items_used.remove(entity).is_some() {
                 commands.add(PlayerCommand::set_inventory(player, <span class="prelude-val">None</span>));
                 commands.add(
                     <span class="kw">move </span>|<span class="kw-2">mut </span>idle: CompMut&lt;IdleMine&gt;, <span class="kw-2">mut </span>thrown: CompMut&lt;ThrownMine&gt;| {

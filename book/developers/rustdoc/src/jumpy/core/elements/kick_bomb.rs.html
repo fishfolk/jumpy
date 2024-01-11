@@ -445,11 +445,6 @@
 <a href="#350" id="350">350</a>
 <a href="#351" id="351">351</a>
 <a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
-<a href="#355" id="355">355</a>
-<a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Default, Debug, Clone)]
@@ -616,9 +611,8 @@
         <span class="kw">let </span>arm_delay = <span class="kw-2">*</span>arm_delay;
         <span class="kw">let </span>fuse_time = <span class="kw-2">*</span>fuse_time;
 
-        <span class="kw">if </span>items_used.get(entity).is_some() {
+        <span class="kw">if </span>items_used.remove(entity).is_some() {
             audio_events.play(<span class="kw-2">*</span>fuse_sound, <span class="kw-2">*</span>fuse_sound_volume);
-            items_used.remove(entity);
             <span class="kw">let </span>animated_sprite = animated_sprites.get_mut(entity).unwrap();
             animated_sprite.frames = [<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>].into_iter().collect();
             animated_sprite.repeat = <span class="bool-val">true</span>;
@@ -689,11 +683,7 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>should_explode = <span class="bool-val">false</span>;
         <span class="comment">// If the item is being held
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
-            <span class="kw">let </span>player = inventory.player;
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Inv { player, .. }) = player_inventories.find_item(entity) {
             <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
             player_layers.get_mut(player).unwrap().fin_anim = <span class="kw-2">*</span>fin_anim;
 

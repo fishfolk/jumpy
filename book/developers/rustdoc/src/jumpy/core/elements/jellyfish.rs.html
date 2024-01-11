@@ -280,10 +280,6 @@
 <a href="#185" id="185">185</a>
 <a href="#186" id="186">186</a>
 <a href="#187" id="187">187</a>
-<a href="#188" id="188">188</a>
-<a href="#189" id="189">189</a>
-<a href="#190" id="190">190</a>
-<a href="#191" id="191">191</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{core::player::idle, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">use </span><span class="kw">super</span>::flappy_jellyfish::{<span class="self">self</span>, ExplodeFlappyJellyfish, FlappyJellyfishMeta};
@@ -445,20 +441,16 @@
             jellyfish.ammo -= <span class="number">1</span>;
 
             <span class="comment">// Get the owner of the jellyfish, if any
-            </span><span class="kw">let </span><span class="prelude-val">Some</span>(owner) = player_inventories
-                .iter()
-                .find_map(|inv| inv.filter(|i| i.inventory == jellyfish_ent))
-                .map(|inv| inv.player)
-            <span class="kw">else </span>{
+            </span><span class="kw">let </span><span class="prelude-val">Some</span>(Inv { player, .. }) = player_inventories.find_item(jellyfish_ent) <span class="kw">else </span>{
                 <span class="kw">continue</span>;
             };
 
             <span class="comment">// Prevent the jellyfish from being used if the owner isn&#39;t idle
-            </span><span class="kw">if </span>player_states.get(owner).map(|s| s.current) != <span class="prelude-val">Some</span>(<span class="kw-2">*</span>idle::ID) {
+            </span><span class="kw">if </span>player_states.get(player).map(|s| s.current) != <span class="prelude-val">Some</span>(<span class="kw-2">*</span>idle::ID) {
                 <span class="kw">continue</span>;
             }
 
-            commands.add(flappy_jellyfish::spawn(owner, jellyfish_ent));
+            commands.add(flappy_jellyfish::spawn(player, jellyfish_ent));
         }
     }
 }

@@ -422,13 +422,6 @@
 <a href="#327" id="327">327</a>
 <a href="#328" id="328">328</a>
 <a href="#329" id="329">329</a>
-<a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
-<a href="#332" id="332">332</a>
-<a href="#333" id="333">333</a>
-<a href="#334" id="334">334</a>
-<a href="#335" id="335">335</a>
-<a href="#336" id="336">336</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// This is a sword
@@ -629,11 +622,7 @@
         };
 
         <span class="comment">// If the item is being held
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
-            <span class="kw">let </span>player = inventory.player;
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Inv { player, .. }) = player_inventories.find_item(entity) {
             <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
             <span class="kw">let </span>player_translation = transforms.get(player).unwrap().translation;
             <span class="kw">let </span>flip = sprite.flip_x;
@@ -720,14 +709,11 @@
             }
 
             <span class="comment">// If the item is being used
-            </span><span class="kw">let </span>item_used = items_used.get(entity).is_some();
-            <span class="kw">if </span>item_used {
-                items_used.remove(entity);
-                <span class="kw">if </span><span class="macro">matches!</span>(sword.state, SwordState::Idle) {
-                    sprite.index = <span class="number">8</span>;
-                    sword.state = SwordState::Swinging { frame: <span class="number">0 </span>};
-                    audio_events.play(<span class="kw-2">*</span>sound, <span class="kw-2">*</span>sound_volume);
-                }
+            </span><span class="kw">let </span>item_used = items_used.remove(entity).is_some();
+            <span class="kw">if </span>item_used &amp;&amp; <span class="macro">matches!</span>(sword.state, SwordState::Idle) {
+                sprite.index = <span class="number">8</span>;
+                sword.state = SwordState::Swinging { frame: <span class="number">0 </span>};
+                audio_events.play(<span class="kw-2">*</span>sound, <span class="kw-2">*</span>sound_volume);
             }
         } <span class="kw">else </span>{
             <span class="kw">let </span>body = bodies.get(entity).unwrap();

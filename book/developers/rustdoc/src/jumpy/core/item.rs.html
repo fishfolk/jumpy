@@ -418,6 +418,11 @@
 <a href="#323" id="323">323</a>
 <a href="#324" id="324">324</a>
 <a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Common item code.
 //!
 //! An item is anything in the game that can be picked up by the player.
@@ -465,6 +470,14 @@
 <span class="doccomment">/// System param that can be used to conveniently get the inventory of each player.
 </span><span class="attr">#[derive(Deref, DerefMut, Debug)]
 </span><span class="kw">pub struct </span>PlayerInventories&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[<span class="prelude-ty">Option</span>&lt;Inv&gt;; MAX_PLAYERS]);
+
+<span class="kw">impl </span>PlayerInventories&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">pub fn </span>find_item(<span class="kw-2">&amp;</span><span class="self">self</span>, item: Entity) -&gt; <span class="prelude-ty">Option</span>&lt;Inv&gt; {
+        <span class="self">self</span>.<span class="number">0
+            </span>.iter()
+            .find_map(|i| i.filter(|inv| inv.inventory == item))
+    }
+}
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; SystemParam <span class="kw">for </span>PlayerInventories&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="kw">type </span>State = [<span class="prelude-ty">Option</span>&lt;Inv&gt;; MAX_PLAYERS];
@@ -537,8 +550,7 @@
     player_inventories: PlayerInventories,
 ) {
     <span class="kw">for </span>Inv { player, inventory } <span class="kw">in </span>player_inventories.iter().flatten() {
-        <span class="kw">if </span>drop_items.contains(<span class="kw-2">*</span>inventory) {
-            drop_items.remove(<span class="kw-2">*</span>inventory);
+        <span class="kw">if </span>drop_items.remove(<span class="kw-2">*</span>inventory).is_some() {
             commands.add(PlayerCommand::set_inventory(<span class="kw-2">*</span>player, <span class="prelude-val">None</span>));
         }
     }
@@ -561,8 +573,6 @@
         } = <span class="kw-2">*</span>item_grab;
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(ItemGrabbed { player }) = items_grabbed.remove(entity) {
-            items_grabbed.remove(entity);
-
             player_layers.get_mut(player).unwrap().fin_anim = fin_anim;
 
             <span class="kw">if let </span><span class="prelude-val">Some</span>(body) = bodies.get_mut(entity) {

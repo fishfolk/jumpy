@@ -1071,10 +1071,6 @@
 <a href="#976" id="976">976</a>
 <a href="#977" id="977">977</a>
 <a href="#978" id="978">978</a>
-<a href="#979" id="979">979</a>
-<a href="#980" id="980">980</a>
-<a href="#981" id="981">981</a>
-<a href="#982" id="982">982</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Player controller, states, and animation implementation.
 
 </span><span class="kw">use </span>std::collections::VecDeque;
@@ -2032,27 +2028,23 @@
 ) {
     <span class="kw">for </span>(hat_ent, hat) <span class="kw">in </span>entities.iter_with(<span class="kw-2">&amp;</span>hats) {
         <span class="comment">// If the hat is being held
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == hat_ent))
-        {
-            <span class="kw">if </span>items_used.contains(hat_ent) {
-                items_used.remove(hat_ent).unwrap();
-                inventories.get_mut(inventory.player).unwrap().<span class="number">0 </span>= <span class="prelude-val">None</span>;
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Inv { player, .. }) = player_inventories.find_item(hat_ent) {
+            <span class="kw">if </span>items_used.remove(hat_ent).is_some() {
+                inventories.get_mut(player).unwrap().<span class="number">0 </span>= <span class="prelude-val">None</span>;
 
                 <span class="kw">let </span>hat_meta = assets.get(hat.<span class="number">0</span>);
                 kinematic_bodies.get_mut(hat_ent).unwrap().is_deactivated = <span class="bool-val">true</span>;
                 player_body_attachments.insert(
                     hat_ent,
                     PlayerBodyAttachment {
-                        player: inventory.player,
+                        player,
                         offset: hat_meta.offset.extend(PlayerLayers::HAT_Z_OFFSET),
                         head: <span class="bool-val">true</span>,
                         sync_animation: <span class="bool-val">false</span>,
                         sync_color: <span class="bool-val">true</span>,
                     },
                 );
-                player_layers.get_mut(inventory.player).unwrap().hat_ent = <span class="prelude-val">Some</span>(hat_ent);
+                player_layers.get_mut(player).unwrap().hat_ent = <span class="prelude-val">Some</span>(hat_ent);
             }
         }
     }

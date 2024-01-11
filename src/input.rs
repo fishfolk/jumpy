@@ -33,6 +33,7 @@ fn collect_player_controls(game: &mut Game) {
         let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
         collector.apply_inputs(&mapping, &keyboard, &gamepad);
         collector.update_just_pressed();
+        collector.advance_frame();
         GlobalPlayerControls(
             collector
                 .get_current_controls()

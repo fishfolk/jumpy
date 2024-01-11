@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{core::JumpyDefaultMatchRunner, prelude::*};
 
 pub struct SessionNames;
 impl SessionNames {
@@ -43,6 +43,7 @@ impl SessionExt for Sessions {
                     map,
                     player_info,
                     plugins,
+                    session_runner: Box::<JumpyDefaultMatchRunner>::default(),
                 });
         } else {
             panic!("Cannot restart game when game is not running");

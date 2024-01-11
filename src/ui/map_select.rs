@@ -1,11 +1,19 @@
 use crate::{prelude::*, PackMeta};
 
+use super::main_menu::MenuPage;
+
 #[derive(Clone, Debug, Default)]
 pub enum MapSelectAction {
     #[default]
     None,
-    SelectMap(MapMeta),
+    SelectMap(Handle<MapMeta>),
     GoBack,
+}
+
+/// Network message that may be sent when selecting a map.
+#[derive(Serialize, Deserialize)]
+pub enum MapSelectMessage {
+    SelectMap(NetworkHandle<MapMeta>),
 }
 
 pub fn map_select_menu(
@@ -45,48 +53,71 @@ pub fn map_select_menu(
 
                     ui.add_space(meta.theme.font_styles.normal.size);
 
-                    egui::ScrollArea::vertical()
-                        .show(ui, |ui| {
-                            ui.vertical_centered_justified(|ui| {
-                                for (i, handle) in meta.core.stable_maps.iter().enumerate() {
-                                    let map_meta = asset_server.get(*handle);
+                    let menu_page_state = ui.ctx().get_state::<MenuPage>();
+                    let is_waiting = match menu_page_state {
+                        MenuPage::MapSelect { is_waiting } => is_waiting,
+                        _ => {
+                            warn!(
+                                "On map select page, but MenuPage state is not MenuPage::MapSelect.
+                                   Client may be stuck waiting for map select erroneously. "
+                            );
+                            true
+                        }
+                    };
+                    if is_waiting {
+                        ui.label(
+                            meta.theme
+                                .font_styles
+                                .bigger
+                                .rich(localization.get("waiting-for-map")),
+                        );
 
-                                    let mut button = BorderedButton::themed(
-                                        &meta.theme.buttons.small,
-                                        map_meta.name.to_string(),
-                                    )
-                                    .show(ui);
+                        MapSelectAction::None
+                    } else {
+                        egui::ScrollArea::vertical()
+                            .show(ui, |ui| {
+                                ui.vertical_centered_justified(|ui| {
+                                    for (i, handle) in meta.core.stable_maps.iter().enumerate() {
+                                        let map_meta = asset_server.get(*handle);
 
-                                    if i == 0 {
-                                        button = button.focus_by_default(ui);
-                                    }
-
-                                    if button.clicked() {
-                                        return MapSelectAction::SelectMap(map_meta.clone());
-                                    }
-                                }
-
-                                for pack in asset_server.packs() {
-                                    let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
-                                    for map in pack_meta.maps.iter() {
-                                        let map_meta = asset_server.get(*map);
-                                        let button = BorderedButton::themed(
+                                        let mut button = BorderedButton::themed(
                                             &meta.theme.buttons.small,
                                             map_meta.name.to_string(),
                                         )
                                         .show(ui);
 
+                                        if i == 0 {
+                                            button = button.focus_by_default(ui);
+                                        }
+
                                         if button.clicked() {
-                                            return MapSelectAction::SelectMap(map_meta.clone());
+                                            return MapSelectAction::SelectMap(*handle);
                                         }
                                     }
-                                }
 
-                                MapSelectAction::None
+                                    for pack in asset_server.packs() {
+                                        let pack_meta =
+                                            asset_server.get(pack.root.typed::<PackMeta>());
+                                        for map in pack_meta.maps.iter() {
+                                            let map_meta = asset_server.get(*map);
+                                            let button = BorderedButton::themed(
+                                                &meta.theme.buttons.small,
+                                                map_meta.name.to_string(),
+                                            )
+                                            .show(ui);
+
+                                            if button.clicked() {
+                                                return MapSelectAction::SelectMap(*map);
+                                            }
+                                        }
+                                    }
+
+                                    MapSelectAction::None
+                                })
+                                .inner
                             })
                             .inner
-                        })
-                        .inner
+                    }
                 })
                 .inner
         })

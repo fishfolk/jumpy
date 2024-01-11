@@ -52,6 +52,8 @@ pub struct MatchPlugin {
     pub player_info: [PlayerInput; MAX_PLAYERS],
     /// The lua plugins to enable for this match.
     pub plugins: Arc<Vec<Handle<LuaPlugin>>>,
+
+    pub session_runner: Box<dyn SessionRunner>,
 }
 
 pub struct MatchPlayerInfo {
@@ -87,7 +89,7 @@ impl SessionPlugin for MatchPlugin {
         session.world.insert_resource(MatchInputs {
             players: self.player_info,
         });
-        session.runner = Box::<JumpyDefaultMatchRunner>::default();
+        session.runner = self.session_runner;
     }
 }
 

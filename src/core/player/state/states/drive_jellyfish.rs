@@ -18,11 +18,9 @@ pub fn player_state_transition(
                 continue;
             }
             if player_state.current != *ID {
-                debug!("set player state driving");
                 player_state.current = *ID;
             }
         } else if player_state.current == *ID {
-            debug!("set player state idle");
             player_state.current = *idle::ID;
         }
     }

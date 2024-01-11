@@ -36,7 +36,7 @@ pub fn session_plugin(session: &mut Session) {
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
         .add_system_to_stage(CoreStage::PreUpdate, dehydrate)
-        .add_system_to_stage(CoreStage::PostUpdate, update_jellyfish_driving);
+        .add_system_to_stage(CoreStage::PostUpdate, update_player_driving);
     flappy_jellyfish::session_plugin(session);
 }
 
@@ -53,6 +53,8 @@ impl Jellyfish {
     }
 }
 
+/// A marker component for players to indicate that they are driving a flappy
+/// jellyfish.
 #[derive(Clone, Debug, Default, HasSchema)]
 pub struct PlayerDrivingJellyfish {
     pub flappy: Entity,
@@ -172,7 +174,7 @@ fn on_jellyfish_drop(entity: Entity, max_ammo: u32) -> StaticSystem<(), ()> {
     .system()
 }
 
-fn update_jellyfish_driving(
+fn update_player_driving(
     entities: Res<Entities>,
     player_indexes: Comp<PlayerIdx>,
     player_inventories: Comp<Inventory>,

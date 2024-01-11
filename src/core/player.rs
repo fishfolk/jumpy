@@ -564,7 +564,6 @@ fn hydrate_players(
                 ..default()
             },
         );
-        // debug!(?player_entity, "spawn player");
         camera_subjects.insert(player_entity, default());
 
         // Spawn the player's fin and face

@@ -43,7 +43,7 @@ impl AssetGetFlappyJellyfishMeta for SchemaBox {
 pub fn session_plugin(session: &mut Session) {
     session
         .stages
-        .add_system_to_stage(CoreStage::PostUpdate, move_flappy_jellyfish)
+        .add_system_to_stage(CoreStage::PostUpdate, control_flappy_jellyfish)
         .add_system_to_stage(CoreStage::PostUpdate, explode_flappy_jellyfish);
 }
 
@@ -53,6 +53,8 @@ pub struct FlappyJellyfish {
     pub jellyfish: Entity,
 }
 
+/// A player with a jellyfish is holding shoot. Take control of the flappy if
+/// one exists or spawn one.
 pub fn spawn_or_take_control(
     owner: Entity,
     jellyfish_ent: Entity,
@@ -78,6 +80,7 @@ pub fn spawn_or_take_control(
     .system()
 }
 
+/// Take control of the flappy associated with a jellyfish for a player.
 fn take_control(owner: Entity, flappy_ent: Entity) -> StaticSystem<(), ()> {
     (move |mut player_driving: CompMut<PlayerDrivingJellyfish>| {
         player_driving.insert(owner, PlayerDrivingJellyfish { flappy: flappy_ent });
@@ -85,6 +88,7 @@ fn take_control(owner: Entity, flappy_ent: Entity) -> StaticSystem<(), ()> {
     .system()
 }
 
+/// Spawn a flappy jellyfish.
 fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
     (move |mut entities: ResMut<Entities>,
            element_handles: Comp<ElementHandle>,
@@ -153,6 +157,53 @@ fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
     .system()
 }
 
+const SPEED_X: f32 = 324.0;
+const SPEED_JUMP: f32 = 3.5;
+const GRAVITY: f32 = 0.1;
+const MIN_SPEED: Vec2 = vec2(-SPEED_X, -4.0);
+const MAX_SPEED: Vec2 = vec2(SPEED_X, 4.0);
+
+fn control_flappy_jellyfish(
+    time: Res<Time>,
+    entities: Res<Entities>,
+    player_driving: Comp<PlayerDrivingJellyfish>,
+    player_indexes: Comp<PlayerIdx>,
+    player_inputs: Res<MatchInputs>,
+    mut explode_flappies: CompMut<ExplodeFlappyJellyfish>,
+    mut bodies: CompMut<KinematicBody>,
+) {
+    let t = time.delta_seconds();
+
+    for (_player_ent, (driving, player_idx)) in
+        entities.iter_with((&player_driving, &player_indexes))
+    {
+        let owner_control = player_inputs.players[player_idx.0 as usize].control;
+
+        if owner_control.grab_just_pressed {
+            explode_flappies.insert(driving.flappy, ExplodeFlappyJellyfish);
+            continue;
+        }
+
+        let Some(body) = bodies.get_mut(driving.flappy) else {
+            continue;
+        };
+
+        if owner_control.left == owner_control.right {
+            body.velocity.x = 0.0;
+        } else if owner_control.left > f32::EPSILON {
+            body.velocity.x = -owner_control.left * SPEED_X * t;
+        } else if owner_control.right > f32::EPSILON {
+            body.velocity.x = owner_control.right * SPEED_X * t;
+        }
+
+        if owner_control.jump_just_pressed {
+            body.velocity.y += SPEED_JUMP;
+        }
+
+        body.velocity = body.velocity.clamp(MIN_SPEED, MAX_SPEED);
+    }
+}
+
 /// A marker component for flappy jellyfish to indicate that it should explode.
 #[derive(Clone, Copy, Debug, Default, HasSchema)]
 pub struct ExplodeFlappyJellyfish;
@@ -168,8 +219,6 @@ fn explode_flappy_jellyfish(
     invincibles: Comp<Invincibility>,
     bodies: Comp<KinematicBody>,
     map: Res<LoadedMap>,
-    player_driving: Comp<PlayerDrivingJellyfish>,
-    player_inputs: Res<MatchInputs>,
     element_handles: Comp<ElementHandle>,
     assets: Res<AssetServer>,
     mut transforms: CompMut<Transform>,
@@ -214,16 +263,6 @@ fn explode_flappy_jellyfish(
         }
     }
 
-    for (_player_ent, (driving, player_idx)) in
-        entities.iter_with((&player_driving, &player_indexes))
-    {
-        let owner_control = player_inputs.players[player_idx.0 as usize].control;
-        if owner_control.grab_just_pressed {
-            explode_flappy_entities.push(driving.flappy);
-            continue;
-        }
-    }
-
     for flappy_ent in explode_flappy_entities {
         let Some(flappy) = flappy_jellyfishes.get(flappy_ent) else {
             continue;
@@ -233,7 +272,9 @@ fn explode_flappy_jellyfish(
         };
         jellyfish.flappy.take();
 
-        // Get data for the explosion
+        /*
+         * Get explosion data
+         */
 
         let Some(flappy_meta) = element_handles
             .get(flappy.jellyfish)
@@ -251,11 +292,11 @@ fn explode_flappy_jellyfish(
         };
         explosion_transform.translation.z = -10.0;
 
-        // Despawn the flappy
+        /*
+         * Setup the explosion
+         */
 
         entities.kill(flappy_ent);
-
-        // Setup the explosion
 
         audio_events.play(flappy_meta.explosion_sound, flappy_meta.explosion_volume);
 
@@ -300,7 +341,9 @@ fn explode_flappy_jellyfish(
             );
         }
 
-        // Despawn the jellyfish if out of ammo
+        /*
+         * Despawn the jellyfish if out of ammo
+         */
 
         if jellyfish.ammo == 0 {
             dehydrate_jellyfish.insert(
@@ -310,46 +353,5 @@ fn explode_flappy_jellyfish(
                 },
             );
         }
-    }
-}
-
-const SPEED_X: f32 = 324.0;
-const SPEED_JUMP: f32 = 3.5;
-const GRAVITY: f32 = 0.1;
-const MIN_SPEED: Vec2 = vec2(-SPEED_X, -4.0);
-const MAX_SPEED: Vec2 = vec2(SPEED_X, 4.0);
-
-fn move_flappy_jellyfish(
-    time: Res<Time>,
-    entities: Res<Entities>,
-    player_driving: Comp<PlayerDrivingJellyfish>,
-    player_indexes: Comp<PlayerIdx>,
-    player_inputs: Res<MatchInputs>,
-    mut bodies: CompMut<KinematicBody>,
-) {
-    let t = time.delta_seconds();
-
-    for (_player_ent, (driving, player_idx)) in
-        entities.iter_with((&player_driving, &player_indexes))
-    {
-        let owner_control = player_inputs.players[player_idx.0 as usize].control;
-
-        let Some(body) = bodies.get_mut(driving.flappy) else {
-            continue;
-        };
-
-        if owner_control.left == owner_control.right {
-            body.velocity.x = 0.0;
-        } else if owner_control.left > f32::EPSILON {
-            body.velocity.x = -owner_control.left * SPEED_X * t;
-        } else if owner_control.right > f32::EPSILON {
-            body.velocity.x = owner_control.right * SPEED_X * t;
-        }
-
-        if owner_control.jump_just_pressed {
-            body.velocity.y += SPEED_JUMP;
-        }
-
-        body.velocity = body.velocity.clamp(MIN_SPEED, MAX_SPEED);
     }
 }

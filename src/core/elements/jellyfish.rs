@@ -35,6 +35,7 @@ pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
+        .add_system_to_stage(CoreStage::PreUpdate, dehydrate)
         .add_system_to_stage(CoreStage::PostUpdate, update_jellyfish_driving);
     flappy_jellyfish::session_plugin(session);
 }
@@ -65,7 +66,7 @@ fn hydrate(
     assets: Res<AssetServer>,
     mut jellyfishes: CompMut<Jellyfish>,
     mut atlas_sprites: CompMut<AtlasSprite>,
-    mut respawn_points: CompMut<DehydrateOutOfBounds>,
+    mut spawners: CompMut<DehydrateOutOfBounds>,
     mut items: CompMut<Item>,
     mut item_grabs: CompMut<ItemGrab>,
     mut item_throws: CompMut<ItemThrow>,
@@ -100,6 +101,7 @@ fn hydrate(
             hydrated.insert(spawner_ent, MapElementHydrated);
 
             let entity = entities.create();
+            spawners.insert(entity, DehydrateOutOfBounds(spawner_ent));
             hydrated.insert(entity, MapElementHydrated);
             jellyfishes.insert(entity, Jellyfish::new(*max_ammo));
             items.insert(entity, Item);
@@ -119,7 +121,6 @@ fn hydrate(
             );
             element_handles.insert(entity, element_handle);
             atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
-            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             bodies.insert(
                 entity,
@@ -133,6 +134,33 @@ fn hydrate(
             );
             spawner_manager.create_spawner(spawner_ent, vec![entity]);
         }
+    }
+}
+
+/// A marker component for jellyfish items to indicate that it has been used and
+/// should dehydrate. This will also remove and despawn the jellyfish from the
+/// player's inventory.
+#[derive(Clone, Debug, Default, HasSchema)]
+pub struct DehydrateJellyfish {
+    pub owner: Entity,
+}
+
+fn dehydrate(
+    entities: Res<Entities>,
+    dehydrate_jellyfish: Comp<DehydrateJellyfish>,
+    spawners: Comp<DehydrateOutOfBounds>,
+    mut player_driving: CompMut<PlayerDrivingJellyfish>,
+    mut player_inventories: CompMut<Inventory>,
+    mut commands: Commands,
+    mut hydrated: CompMut<MapElementHydrated>,
+) {
+    for (jellyfish_ent, (dehydrate, spawner)) in
+        entities.iter_with((&dehydrate_jellyfish, &spawners))
+    {
+        player_driving.remove(dehydrate.owner);
+        player_inventories.insert(dehydrate.owner, Inventory(None));
+        commands.add(move |mut entities: ResMut<Entities>| entities.kill(jellyfish_ent));
+        hydrated.remove(**spawner);
     }
 }
 

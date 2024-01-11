@@ -179,6 +179,7 @@ fn explode_flappy_jellyfish(
     mut animated_sprites: CompMut<AnimatedSprite>,
     mut damage_regions: CompMut<DamageRegion>,
     mut lifetimes: CompMut<Lifetime>,
+    mut dehydrate_jellyfish: CompMut<DehydrateJellyfish>,
 ) {
     // Collect the hitboxes of all players
     let mut player_hitboxes = SmallVec::<[Rect; MAX_PLAYERS]>::with_capacity(MAX_PLAYERS);
@@ -223,18 +224,19 @@ fn explode_flappy_jellyfish(
         }
     }
 
-    for flappy in explode_flappy_entities {
-        let Some(jellyfish_ent) = flappy_jellyfishes.get(flappy).map(|f| f.jellyfish) else {
+    for flappy_ent in explode_flappy_entities {
+        let Some(flappy) = flappy_jellyfishes.get(flappy_ent) else {
             continue;
         };
-        if let Some(jellyfish) = jellyfishes.get_mut(jellyfish_ent) {
-            jellyfish.flappy.take();
+        let Some(jellyfish) = jellyfishes.get_mut(flappy.jellyfish) else {
+            continue;
         };
+        jellyfish.flappy.take();
 
         // Get data for the explosion
 
         let Some(flappy_meta) = element_handles
-            .get(jellyfish_ent)
+            .get(flappy.jellyfish)
             .map(|element_h| assets.get(element_h.0))
             .map(|element_meta| assets.get(element_meta.data))
             .as_deref()
@@ -244,14 +246,14 @@ fn explode_flappy_jellyfish(
             return;
         };
 
-        let Some(mut explosion_transform) = transforms.get(flappy).copied() else {
+        let Some(mut explosion_transform) = transforms.get(flappy_ent).copied() else {
             return;
         };
         explosion_transform.translation.z = -10.0;
 
         // Despawn the flappy
 
-        entities.kill(flappy);
+        entities.kill(flappy_ent);
 
         // Setup the explosion
 
@@ -295,6 +297,17 @@ fn explode_flappy_jellyfish(
             lifetimes.insert(
                 damage_ent,
                 Lifetime::new(flappy_meta.damage_region_lifetime),
+            );
+        }
+
+        // Despawn the jellyfish if out of ammo
+
+        if jellyfish.ammo == 0 {
+            dehydrate_jellyfish.insert(
+                flappy.jellyfish,
+                DehydrateJellyfish {
+                    owner: flappy.owner,
+                },
             );
         }
     }

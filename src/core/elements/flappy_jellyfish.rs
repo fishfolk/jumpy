@@ -162,7 +162,6 @@ pub struct ExplodeFlappyJellyfish;
 fn explode_flappy_jellyfish(
     mut entities: ResMut<Entities>,
     explode_flappies: Comp<ExplodeFlappyJellyfish>,
-    killed_players: Comp<PlayerKilled>,
     flappy_jellyfishes: Comp<FlappyJellyfish>,
     mut jellyfishes: CompMut<Jellyfish>,
     player_indexes: Comp<PlayerIdx>,
@@ -193,16 +192,11 @@ fn explode_flappy_jellyfish(
     let mut explode_flappy_entities =
         SmallVec::<[Entity; 8]>::with_capacity(flappy_jellyfishes.bitset().bit_count());
 
-    for (flappy_ent, (flappy_jellyfish, transform, body)) in
+    for (flappy_ent, (_flappy_jellyfish, transform, body)) in
         entities.iter_with((&flappy_jellyfishes, &transforms, &bodies))
     {
         // If flappy has the explode marker
         if explode_flappies.contains(flappy_ent) {
-            explode_flappy_entities.push(flappy_ent);
-            continue;
-        }
-        // If the owner is dead
-        if killed_players.contains(flappy_jellyfish.owner) {
             explode_flappy_entities.push(flappy_ent);
             continue;
         }

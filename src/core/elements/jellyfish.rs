@@ -117,9 +117,7 @@ fn hydrate(
             );
             item_throws.insert(
                 entity,
-                ItemThrow::strength(*throw_velocity)
-                    .with_spin(*angular_velocity)
-                    .with_system(on_jellyfish_drop(entity, *max_ammo)),
+                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
             );
             element_handles.insert(entity, element_handle);
             atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
@@ -164,14 +162,6 @@ fn dehydrate(
         commands.add(move |mut entities: ResMut<Entities>| entities.kill(jellyfish_ent));
         hydrated.remove(**spawner);
     }
-}
-
-fn on_jellyfish_drop(entity: Entity, max_ammo: u32) -> StaticSystem<(), ()> {
-    (move |mut jellyfishes: CompMut<Jellyfish>| {
-        // Reload
-        jellyfishes.get_mut(entity).unwrap().ammo = max_ammo;
-    })
-    .system()
 }
 
 fn update_player_driving(

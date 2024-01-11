@@ -157,8 +157,15 @@ fn dehydrate(
     for (jellyfish_ent, (dehydrate, spawner)) in
         entities.iter_with((&dehydrate_jellyfish, &spawners))
     {
-        player_driving.remove(dehydrate.owner);
-        player_inventories.insert(dehydrate.owner, Inventory(None));
+        if player_inventories
+            .get(dehydrate.owner)
+            .and_then(|inv| inv.0)
+            .filter(|item| *item == jellyfish_ent)
+            .is_some()
+        {
+            player_driving.remove(dehydrate.owner);
+            player_inventories.insert(dehydrate.owner, Inventory(None));
+        }
         commands.add(move |mut entities: ResMut<Entities>| entities.kill(jellyfish_ent));
         hydrated.remove(**spawner);
     }

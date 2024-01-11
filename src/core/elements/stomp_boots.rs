@@ -128,10 +128,7 @@ fn update(
         };
 
         // If the item is being held
-        if let Some(Inv { player, .. }) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
+        if let Some(Inv { player, .. }) = player_inventories.find_item(entity) {
             // If the item is being used
             let is_item_used = items_used.get(entity).is_some();
             let player_decoration = *player_decoration;

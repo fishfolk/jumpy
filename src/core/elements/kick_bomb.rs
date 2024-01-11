@@ -164,9 +164,8 @@ fn update_idle_kick_bombs(
         let arm_delay = *arm_delay;
         let fuse_time = *fuse_time;
 
-        if items_used.get(entity).is_some() {
+        if items_used.remove(entity).is_some() {
             audio_events.play(*fuse_sound, *fuse_sound_volume);
-            items_used.remove(entity);
             let animated_sprite = animated_sprites.get_mut(entity).unwrap();
             animated_sprite.frames = [3, 4, 5].into_iter().collect();
             animated_sprite.repeat = true;
@@ -237,11 +236,7 @@ fn update_lit_kick_bombs(
 
         let mut should_explode = false;
         // If the item is being held
-        if let Some(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
-            let player = inventory.player;
+        if let Some(Inv { player, .. }) = player_inventories.find_item(entity) {
             let body = bodies.get_mut(entity).unwrap();
             player_layers.get_mut(player).unwrap().fin_anim = *fin_anim;
 

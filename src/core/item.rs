@@ -46,6 +46,14 @@ pub struct Inv {
 #[derive(Deref, DerefMut, Debug)]
 pub struct PlayerInventories<'a>(&'a [Option<Inv>; MAX_PLAYERS]);
 
+impl PlayerInventories<'_> {
+    pub fn find_item(&self, item: Entity) -> Option<Inv> {
+        self.0
+            .iter()
+            .find_map(|i| i.filter(|inv| inv.inventory == item))
+    }
+}
+
 impl<'a> SystemParam for PlayerInventories<'a> {
     type State = [Option<Inv>; MAX_PLAYERS];
     type Param<'s> = PlayerInventories<'s>;
@@ -117,8 +125,7 @@ pub fn drop_items(
     player_inventories: PlayerInventories,
 ) {
     for Inv { player, inventory } in player_inventories.iter().flatten() {
-        if drop_items.contains(*inventory) {
-            drop_items.remove(*inventory);
+        if drop_items.remove(*inventory).is_some() {
             commands.add(PlayerCommand::set_inventory(*player, None));
         }
     }
@@ -141,8 +148,6 @@ pub fn grab_items(
         } = *item_grab;
 
         if let Some(ItemGrabbed { player }) = items_grabbed.remove(entity) {
-            items_grabbed.remove(entity);
-
             player_layers.get_mut(player).unwrap().fin_anim = fin_anim;
 
             if let Some(body) = bodies.get_mut(entity) {

@@ -252,10 +252,7 @@ fn update_lit_grenades(
         let emote_region = emote_regions.get_mut(entity).unwrap();
 
         // If the item is being held
-        if let Some(inventory) = player_inventories
-            .iter()
-            .find_map(|x| x.filter(|x| x.inventory == entity))
-        {
+        if let Some(inventory) = player_inventories.find_item(entity) {
             let player = inventory.player;
             let layers = player_layers.get_mut(player).unwrap();
             layers.fin_anim = *fin_anim;

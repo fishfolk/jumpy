@@ -28,8 +28,7 @@ pub fn player_state_transition(
             }
         } else {
             let Some(player_state) = player_inventories
-                .iter()
-                .find_map(|inv| inv.filter(|i| i.inventory == jellyfish_ent))
+                .find_item(jellyfish_ent)
                 .and_then(|inventory| player_states.get_mut(inventory.player))
             else {
                 continue;

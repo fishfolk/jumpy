@@ -6,7 +6,7 @@ use bones_framework::{
     prelude::bindings::EcsRef,
     scripting::lua::{
         bindings::SchemaLuaEcsRefMetatable,
-        piccolo::{self as lua, AnyCallback},
+        piccolo::{self as lua, Callback},
     },
 };
 pub use turborand::prelude::*;
@@ -33,7 +33,7 @@ fn lua_metatable(ctx: lua::Context) -> lua::Table {
 
     let f32_fn = ctx.registry().stash(
         &ctx,
-        AnyCallback::from_fn(&ctx, |ctx, _fuel, mut stack| {
+        Callback::from_fn(&ctx, |ctx, _fuel, mut stack| {
             let this: &EcsRef = stack.consume(ctx)?;
             let mut b = this.borrow_mut();
             let global_rng = b.schema_ref_mut()?.cast_into_mut::<GlobalRng>();
@@ -46,7 +46,7 @@ fn lua_metatable(ctx: lua::Context) -> lua::Table {
         .set(
             ctx,
             "__index",
-            AnyCallback::from_fn(&ctx, move |ctx, _fuel, mut stack| {
+            Callback::from_fn(&ctx, move |ctx, _fuel, mut stack| {
                 let (_this, key): (lua::Value, lua::String) = stack.consume(ctx)?;
 
                 #[allow(clippy::single_match)]

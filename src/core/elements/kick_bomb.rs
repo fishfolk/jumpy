@@ -199,8 +199,6 @@ fn update_lit_kick_bombs(
     mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
     mut hydrated: CompMut<MapElementHydrated>,
-    mut attachments: CompMut<PlayerBodyAttachment>,
-    mut player_layers: CompMut<PlayerLayers>,
     player_inventories: PlayerInventories,
     mut transforms: CompMut<Transform>,
     mut commands: Commands,
@@ -214,7 +212,6 @@ fn update_lit_kick_bombs(
         let element_meta = assets.get(element_handle.0);
         let asset = assets.get(element_meta.data);
         let Ok(KickBombMeta {
-            grab_offset,
             explosion_sound,
             explosion_volume,
             kick_velocity,
@@ -224,7 +221,6 @@ fn update_lit_kick_bombs(
             explosion_atlas,
             explosion_fps,
             explosion_frames,
-            fin_anim,
             ..
         }) = asset.try_cast_ref()
         else {
@@ -236,24 +232,8 @@ fn update_lit_kick_bombs(
 
         let mut should_explode = false;
         // If the item is being held
-        if let Some(Inv { player, .. }) = player_inventories.find_item(entity) {
-            let body = bodies.get_mut(entity).unwrap();
-            player_layers.get_mut(player).unwrap().fin_anim = *fin_anim;
-
-            // Deactivate held items
-            body.is_deactivated = true;
-
-            // Attach to the player
-            attachments.insert(
-                entity,
-                PlayerBodyAttachment {
-                    player,
-                    sync_color: false,
-                    sync_animation: false,
-                    head: false,
-                    offset: grab_offset.extend(1.0),
-                },
-            );
+        if player_inventories.find_item(entity).is_some() {
+            // Do nothing
         }
         // The item is on the ground
         else if let Some(player_entity) = collision_world

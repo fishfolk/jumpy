@@ -171,6 +171,7 @@ fn control_flappy_jellyfish(
     player_inputs: Res<MatchInputs>,
     mut explode_flappies: CompMut<ExplodeFlappyJellyfish>,
     mut bodies: CompMut<KinematicBody>,
+    flappy_jellyfishes: Comp<FlappyJellyfish>,
 ) {
     let t = time.delta_seconds();
 
@@ -199,7 +200,9 @@ fn control_flappy_jellyfish(
         if owner_control.jump_just_pressed {
             body.velocity.y += SPEED_JUMP;
         }
+    }
 
+    for (_, (_, body)) in entities.iter_with((&flappy_jellyfishes, &mut bodies)) {
         body.velocity = body.velocity.clamp(MIN_SPEED, MAX_SPEED);
     }
 }

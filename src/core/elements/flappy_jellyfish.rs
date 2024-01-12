@@ -26,13 +26,13 @@ impl FlappyJellyfishMeta {
     }
 }
 
-pub trait AssetGetFlappyJellyfishMeta {
+pub trait FlappyJellyfishMetaSchemaExts {
     /// Try to cast the `asset` to a `JellyfishMeta` and get the
     /// `FlappyJellyfishMeta` from it.
     fn try_get_flappy_meta(&self) -> Option<Handle<FlappyJellyfishMeta>>;
 }
 
-impl AssetGetFlappyJellyfishMeta for SchemaBox {
+impl FlappyJellyfishMetaSchemaExts for SchemaBox {
     fn try_get_flappy_meta(&self) -> Option<Handle<FlappyJellyfishMeta>> {
         self.try_cast_ref::<JellyfishMeta>()
             .ok()

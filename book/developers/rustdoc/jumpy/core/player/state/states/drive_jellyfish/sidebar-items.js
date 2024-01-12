@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["handle_player_state","install","player_state_transition"],"static":["ID"]};
+window.SIDEBAR_ITEMS = {"fn":["install","player_state_transition"],"static":["ID"]};

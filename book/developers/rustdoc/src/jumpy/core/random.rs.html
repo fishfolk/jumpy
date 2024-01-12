@@ -166,7 +166,7 @@
     prelude::bindings::EcsRef,
     scripting::lua::{
         bindings::SchemaLuaEcsRefMetatable,
-        piccolo::{<span class="self">self </span><span class="kw">as </span>lua, AnyCallback},
+        piccolo::{<span class="self">self </span><span class="kw">as </span>lua, Callback},
     },
 };
 <span class="kw">pub use </span>turborand::prelude::<span class="kw-2">*</span>;
@@ -193,7 +193,7 @@
 
     <span class="kw">let </span>f32_fn = ctx.registry().stash(
         <span class="kw-2">&amp;</span>ctx,
-        AnyCallback::from_fn(<span class="kw-2">&amp;</span>ctx, |ctx, _fuel, <span class="kw-2">mut </span>stack| {
+        Callback::from_fn(<span class="kw-2">&amp;</span>ctx, |ctx, _fuel, <span class="kw-2">mut </span>stack| {
             <span class="kw">let </span>this: <span class="kw-2">&amp;</span>EcsRef = stack.consume(ctx)<span class="question-mark">?</span>;
             <span class="kw">let </span><span class="kw-2">mut </span>b = this.borrow_mut();
             <span class="kw">let </span>global_rng = b.schema_ref_mut()<span class="question-mark">?</span>.cast_into_mut::&lt;GlobalRng&gt;();
@@ -206,7 +206,7 @@
         .set(
             ctx,
             <span class="string">&quot;__index&quot;</span>,
-            AnyCallback::from_fn(<span class="kw-2">&amp;</span>ctx, <span class="kw">move </span>|ctx, _fuel, <span class="kw-2">mut </span>stack| {
+            Callback::from_fn(<span class="kw-2">&amp;</span>ctx, <span class="kw">move </span>|ctx, _fuel, <span class="kw-2">mut </span>stack| {
                 <span class="kw">let </span>(_this, key): (lua::Value, lua::String) = stack.consume(ctx)<span class="question-mark">?</span>;
 
                 <span class="attr">#[allow(clippy::single_match)]

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["AnyUserData","BadUserDataType"]};
+window.SIDEBAR_ITEMS = {"struct":["BadUserDataType","UserData","UserDataMeta"],"type":["UserDataInner","UserDataMetaState"]};

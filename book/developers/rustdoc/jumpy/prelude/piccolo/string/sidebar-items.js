@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["StringError"],"struct":["InternedStringSet","String"]};
+window.SIDEBAR_ITEMS = {"struct":["BadConcatType","InternedStringSet","String","StringInner"]};

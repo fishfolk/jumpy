@@ -326,17 +326,24 @@
     </span><span class="kw">pub </span>meta: ParallaxLayerMeta,
 }
 
+<span class="doccomment">/// A subject of the camera.
+///
+/// The camera will move and zoom to ensure that all subjects remain visible. Entities must also
+/// have a `Transform` component and a `KinematicBody` component for this to work properly.
+</span><span class="attr">#[derive(Clone, Copy, Debug, Default, HasSchema)]
+</span><span class="kw">pub struct </span>CameraSubject {
+    <span class="doccomment">/// A rectangle around the subject that is larger than the subject, and will always move to
+    /// contain it. The camera will seek to contain this rectangle, instead of the subject itself.
+    ///
+    /// The advantage of this processing method is that the larger rect doesn&#39;t move as much as the
+    /// subject, because, for instance, a player jumping up and down in place will still be inside
+    /// of their camera rect, so the camera will not move around annoyingly.
+    </span>rect: Rect,
+}
+
 <span class="doccomment">/// The state of the camera.
 </span><span class="attr">#[derive(Clone, Debug, HasSchema, Default)]
 </span><span class="kw">pub struct </span>CameraState {
-    <span class="doccomment">/// A rectangle around the player that is larger than the player, and will always move to
-    /// contain the player. The camra will seek to contain this rectangle, instead of the player
-    /// itself.
-    ///
-    /// The advantage of this processing method is that the larger rect doesn&#39;t move as much as the
-    /// player, because, for instance, while jumping up and down in place, the player will still be
-    /// inside of their camera rect, so the camera will not move around annoyingly.
-    </span><span class="kw">pub </span>player_camera_rects: [Rect; MAX_PLAYERS],
     <span class="doccomment">/// Disables the default camera controller. Useful, for example, when taking over the camera
     /// from the editor.
     </span><span class="kw">pub </span>disable_controller: bool,
@@ -349,16 +356,16 @@
     map: Res&lt;LoadedMap&gt;,
     <span class="kw-2">mut </span>cameras: CompMut&lt;Camera&gt;,
     <span class="kw-2">mut </span>camera_shakes: CompMut&lt;CameraShake&gt;,
-    <span class="kw-2">mut </span>camera_states: CompMut&lt;CameraState&gt;,
+    camera_states: Comp&lt;CameraState&gt;,
+    <span class="kw-2">mut </span>camera_subjects: CompMut&lt;CameraSubject&gt;,
     transforms: Comp&lt;Transform&gt;,
-    player_indexes: Comp&lt;PlayerIdx&gt;,
     bodies: Comp&lt;KinematicBody&gt;,
     window: Res&lt;Window&gt;,
 ) {
     <span class="kw">let </span>meta = <span class="kw-2">&amp;</span>meta.core.camera;
 
     <span class="kw">let </span><span class="prelude-val">Some</span>((_ent, (camera, camera_shake, camera_state))) = entities
-        .iter_with((<span class="kw-2">&amp;mut </span>cameras, <span class="kw-2">&amp;mut </span>camera_shakes, <span class="kw-2">&amp;mut </span>camera_states))
+        .iter_with((<span class="kw-2">&amp;mut </span>cameras, <span class="kw-2">&amp;mut </span>camera_shakes, <span class="kw-2">&amp;</span>camera_states))
         .next()
     <span class="kw">else </span>{
         <span class="kw">return</span>;
@@ -368,13 +375,13 @@
     }
 
     <span class="comment">// Update player camera rects
-    </span><span class="kw">for </span>(_ent, (transform, player_idx, body)) <span class="kw">in
-        </span>entities.iter_with((<span class="kw-2">&amp;</span>transforms, <span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>bodies))
+    </span><span class="kw">for </span>(_ent, (camera_subj, transform, body)) <span class="kw">in
+        </span>entities.iter_with((<span class="kw-2">&amp;mut </span>camera_subjects, <span class="kw-2">&amp;</span>transforms, <span class="kw-2">&amp;</span>bodies))
     {
         <span class="kw">let </span>camera_box_size = meta.player_camera_box_size;
 
         <span class="comment">// Get the player&#39;s camera box
-        </span><span class="kw">let </span>camera_box = <span class="kw-2">&amp;mut </span>camera_state.player_camera_rects[player_idx.<span class="number">0 </span><span class="kw">as </span>usize];
+        </span><span class="kw">let </span>camera_box = <span class="kw-2">&amp;mut </span>camera_subj.rect;
 
         <span class="comment">// If it&#39;s not be initialized.
         </span><span class="kw">if </span>camera_box.min == Vec2::ZERO &amp;&amp; camera_box.max == Vec2::ZERO {
@@ -416,27 +423,19 @@
         .unwrap_or(window.size);
     <span class="kw">let </span>viewport_aspect = viewport_size.x / viewport_size.y;
     <span class="kw">let </span>default_height = meta.default_height;
-    <span class="kw">let </span>camera_height = <span class="kw">if let </span>CameraSize::FixedHeight(height) = <span class="kw-2">&amp;</span>camera.size {
-        <span class="kw-2">*</span>height
+    <span class="kw">let </span>default_width = viewport_aspect * default_height;
+    <span class="kw">let </span>camera_height = <span class="kw">if let </span>CameraSize::FixedHeight(height) = camera.size {
+        height
     } <span class="kw">else </span>{
         <span class="number">400.0
     </span>};
     <span class="kw">let </span><span class="kw-2">mut </span>scale = camera_height / default_height;
-    <span class="kw">let </span>default_width = viewport_aspect * default_height;
     <span class="kw">let </span>map_size = map.grid_size.as_vec2() * map.tile_size;
 
-    <span class="kw">let </span><span class="kw-2">mut </span>min = Vec2::new(f32::MAX, f32::MAX);
-    <span class="kw">let </span><span class="kw-2">mut </span>max = Vec2::new(f32::MIN, f32::MIN);
+    <span class="kw">let </span><span class="kw-2">mut </span>min = Vec2::MAX;
+    <span class="kw">let </span><span class="kw-2">mut </span>max = Vec2::MIN;
 
-    <span class="kw">let </span>players: Vec&lt;u32&gt; = entities
-        .iter_with(<span class="kw-2">&amp;</span>player_indexes)
-        .map(|x| x.<span class="number">1 </span>.<span class="number">0</span>)
-        .collect();
-    <span class="kw">let </span>player_count = players.len();
-
-    <span class="kw">for </span>player_idx <span class="kw">in </span>players {
-        <span class="kw">let </span>rect = camera_state.player_camera_rects[player_idx <span class="kw">as </span>usize];
-
+    <span class="kw">for </span>CameraSubject { rect } <span class="kw">in </span>camera_subjects.iter_mut() {
         min = (rect.min - vec2(meta.border_left, meta.border_bottom))
             .min(min)
             .max(Vec2::ZERO);
@@ -446,7 +445,8 @@
 
     <span class="kw">let </span>camera_pos = <span class="kw-2">&amp;mut </span>camera_shake.center;
 
-    <span class="kw">let </span><span class="kw-2">mut </span>middle_point = <span class="kw">if </span>player_count == <span class="number">0 </span>{
+    <span class="kw">let </span>subject_count = camera_subjects.iter().count();
+    <span class="kw">let </span><span class="kw-2">mut </span>middle_point = <span class="kw">if </span>subject_count == <span class="number">0 </span>{
         camera_pos.truncate()
     } <span class="kw">else </span>{
         Rect { min, max }.center()

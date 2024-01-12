@@ -424,6 +424,35 @@
 <a href="#329" id="329">329</a>
 <a href="#330" id="330">330</a>
 <a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Default, Debug, Clone)]
@@ -452,13 +481,13 @@
     }
 }
 
-<span class="kw">pub trait </span>AssetGetFlappyJellyfishMeta {
+<span class="kw">pub trait </span>FlappyJellyfishMetaSchemaExts {
     <span class="doccomment">/// Try to cast the `asset` to a `JellyfishMeta` and get the
     /// `FlappyJellyfishMeta` from it.
     </span><span class="kw">fn </span>try_get_flappy_meta(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Handle&lt;FlappyJellyfishMeta&gt;&gt;;
 }
 
-<span class="kw">impl </span>AssetGetFlappyJellyfishMeta <span class="kw">for </span>SchemaBox {
+<span class="kw">impl </span>FlappyJellyfishMetaSchemaExts <span class="kw">for </span>SchemaBox {
     <span class="kw">fn </span>try_get_flappy_meta(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Handle&lt;FlappyJellyfishMeta&gt;&gt; {
         <span class="self">self</span>.try_cast_ref::&lt;JellyfishMeta&gt;()
             .ok()
@@ -469,7 +498,7 @@
 <span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>Session) {
     session
         .stages
-        .add_system_to_stage(CoreStage::PostUpdate, move_flappy_jellyfish)
+        .add_system_to_stage(CoreStage::PostUpdate, control_flappy_jellyfish)
         .add_system_to_stage(CoreStage::PostUpdate, explode_flappy_jellyfish);
 }
 
@@ -479,17 +508,54 @@
     <span class="kw">pub </span>jellyfish: Entity,
 }
 
-<span class="kw">pub fn </span>spawn(owner: Entity, jellyfish_ent: Entity) -&gt; StaticSystem&lt;(), ()&gt; {
+<span class="doccomment">/// A player with a jellyfish is holding shoot. Take control of the flappy if
+/// one exists or spawn one.
+</span><span class="kw">pub fn </span>spawn_or_take_control(
+    owner: Entity,
+    jellyfish_ent: Entity,
+    flappy_ent: <span class="prelude-ty">Option</span>&lt;Entity&gt;,
+) -&gt; StaticSystem&lt;(), ()&gt; {
+    (<span class="kw">move </span>|world: <span class="kw-2">&amp;</span>World| {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(flappy_ent) = flappy_ent {
+            take_control(owner, flappy_ent).run(world, ());
+        } <span class="kw">else </span>{
+            {
+                <span class="kw">let </span><span class="kw-2">mut </span>jellyfishes = world.components.get::&lt;Jellyfish&gt;().borrow_mut();
+                <span class="kw">let </span><span class="prelude-val">Some</span>(jellyfish) = jellyfishes.get_mut(jellyfish_ent) <span class="kw">else </span>{
+                    <span class="kw">return</span>;
+                };
+                <span class="kw">if </span>jellyfish.ammo == <span class="number">0 </span>{
+                    <span class="kw">return</span>;
+                }
+                jellyfish.ammo -= <span class="number">1</span>;
+            }
+            spawn(owner, jellyfish_ent).run(world, ());
+        }
+    })
+    .system()
+}
+
+<span class="doccomment">/// Take control of the flappy associated with a jellyfish for a player.
+</span><span class="kw">fn </span>take_control(owner: Entity, flappy_ent: Entity) -&gt; StaticSystem&lt;(), ()&gt; {
+    (<span class="kw">move </span>|<span class="kw-2">mut </span>player_driving: CompMut&lt;PlayerDrivingJellyfish&gt;| {
+        player_driving.insert(owner, PlayerDrivingJellyfish { flappy: flappy_ent });
+    })
+    .system()
+}
+
+<span class="doccomment">/// Spawn a flappy jellyfish.
+</span><span class="kw">fn </span>spawn(owner: Entity, jellyfish_ent: Entity) -&gt; StaticSystem&lt;(), ()&gt; {
     (<span class="kw">move </span>|<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
            element_handles: Comp&lt;ElementHandle&gt;,
-           <span class="kw-2">mut </span>driving_jellyfishes: CompMut&lt;DrivingJellyfish&gt;,
+           <span class="kw-2">mut </span>player_driving: CompMut&lt;PlayerDrivingJellyfish&gt;,
+           <span class="kw-2">mut </span>jellyfishes: CompMut&lt;Jellyfish&gt;,
            <span class="kw-2">mut </span>flappy_jellyfishes: CompMut&lt;FlappyJellyfish&gt;,
            <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
-           <span class="kw-2">mut </span>fall_velocities: CompMut&lt;FallVelocity&gt;,
            assets: Res&lt;AssetServer&gt;,
            <span class="kw-2">mut </span>atlas_sprites: CompMut&lt;AtlasSprite&gt;,
            <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
-           <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;| {
+           <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
+           <span class="kw-2">mut </span>camera_subjects: CompMut&lt;CameraSubject&gt;| {
         <span class="kw">let </span><span class="prelude-val">Some</span>(flappy_meta) = element_handles
             .get(jellyfish_ent)
             .map(|element_h| assets.get(element_h.<span class="number">0</span>))
@@ -502,13 +568,12 @@
         };
 
         <span class="kw">let </span>flappy_ent = entities.create();
-        driving_jellyfishes.insert(
-            jellyfish_ent,
-            DrivingJellyfish {
-                owner,
-                flappy: flappy_ent,
-            },
-        );
+
+        player_driving.insert(owner, PlayerDrivingJellyfish { flappy: flappy_ent });
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(jellyfish) = jellyfishes.get_mut(jellyfish_ent) {
+            jellyfish.flappy = <span class="prelude-val">Some</span>(flappy_ent);
+        }
+
         flappy_jellyfishes.insert(
             flappy_ent,
             FlappyJellyfish {
@@ -522,11 +587,13 @@
                 shape: ColliderShape::Rectangle {
                     size: flappy_meta.body_size,
                 },
-                is_deactivated: <span class="bool-val">true</span>,
+                has_mass: <span class="bool-val">true</span>,
+                gravity: GRAVITY,
+                fall_through: <span class="bool-val">true</span>,
+                is_controlled: <span class="bool-val">true</span>,
                 ..default()
             },
         );
-        fall_velocities.insert(flappy_ent, FallVelocity::default());
         atlas_sprites.insert(flappy_ent, AtlasSprite::new(flappy_meta.atlas));
         animated_sprites.insert(
             flappy_ent,
@@ -540,8 +607,59 @@
         <span class="kw">let </span><span class="kw-2">mut </span>transf = <span class="kw-2">*</span>transforms.get(owner).unwrap();
         transf.translation += flappy_meta.spawn_offset.extend(<span class="number">0.0</span>);
         transforms.insert(flappy_ent, transf);
+        camera_subjects.insert(flappy_ent, default());
     })
     .system()
+}
+
+<span class="kw">const </span>SPEED_X: f32 = <span class="number">324.0</span>;
+<span class="kw">const </span>SPEED_JUMP: f32 = <span class="number">3.5</span>;
+<span class="kw">const </span>GRAVITY: f32 = <span class="number">0.1</span>;
+<span class="kw">const </span>MIN_SPEED: Vec2 = vec2(-SPEED_X, -<span class="number">4.0</span>);
+<span class="kw">const </span>MAX_SPEED: Vec2 = vec2(SPEED_X, <span class="number">4.0</span>);
+
+<span class="kw">fn </span>control_flappy_jellyfish(
+    time: Res&lt;Time&gt;,
+    entities: Res&lt;Entities&gt;,
+    player_driving: Comp&lt;PlayerDrivingJellyfish&gt;,
+    player_indexes: Comp&lt;PlayerIdx&gt;,
+    player_inputs: Res&lt;MatchInputs&gt;,
+    <span class="kw-2">mut </span>explode_flappies: CompMut&lt;ExplodeFlappyJellyfish&gt;,
+    <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
+    flappy_jellyfishes: Comp&lt;FlappyJellyfish&gt;,
+) {
+    <span class="kw">let </span>t = time.delta_seconds();
+
+    <span class="kw">for </span>(_player_ent, (driving, player_idx)) <span class="kw">in
+        </span>entities.iter_with((<span class="kw-2">&amp;</span>player_driving, <span class="kw-2">&amp;</span>player_indexes))
+    {
+        <span class="kw">let </span>owner_control = player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize].control;
+
+        <span class="kw">if </span>owner_control.grab_just_pressed {
+            explode_flappies.insert(driving.flappy, ExplodeFlappyJellyfish);
+            <span class="kw">continue</span>;
+        }
+
+        <span class="kw">let </span><span class="prelude-val">Some</span>(body) = bodies.get_mut(driving.flappy) <span class="kw">else </span>{
+            <span class="kw">continue</span>;
+        };
+
+        <span class="kw">if </span>owner_control.left == owner_control.right {
+            body.velocity.x = <span class="number">0.0</span>;
+        } <span class="kw">else if </span>owner_control.left &gt; f32::EPSILON {
+            body.velocity.x = -owner_control.left * SPEED_X * t;
+        } <span class="kw">else if </span>owner_control.right &gt; f32::EPSILON {
+            body.velocity.x = owner_control.right * SPEED_X * t;
+        }
+
+        <span class="kw">if </span>owner_control.jump_just_pressed {
+            body.velocity.y += SPEED_JUMP;
+        }
+    }
+
+    <span class="kw">for </span>(<span class="kw">_</span>, (<span class="kw">_</span>, body)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;</span>flappy_jellyfishes, <span class="kw-2">&amp;mut </span>bodies)) {
+        body.velocity = body.velocity.clamp(MIN_SPEED, MAX_SPEED);
+    }
 }
 
 <span class="doccomment">/// A marker component for flappy jellyfish to indicate that it should explode.
@@ -553,9 +671,12 @@
 </span><span class="kw">fn </span>explode_flappy_jellyfish(
     <span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
     explode_flappies: Comp&lt;ExplodeFlappyJellyfish&gt;,
-    killed_players: Comp&lt;PlayerKilled&gt;,
     flappy_jellyfishes: Comp&lt;FlappyJellyfish&gt;,
-    <span class="kw-2">mut </span>driving_jellyfishes: CompMut&lt;DrivingJellyfish&gt;,
+    <span class="kw-2">mut </span>jellyfishes: CompMut&lt;Jellyfish&gt;,
+    player_indexes: Comp&lt;PlayerIdx&gt;,
+    invincibles: Comp&lt;Invincibility&gt;,
+    bodies: Comp&lt;KinematicBody&gt;,
+    map: Res&lt;LoadedMap&gt;,
     element_handles: Comp&lt;ElementHandle&gt;,
     assets: Res&lt;AssetServer&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
@@ -565,39 +686,56 @@
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
     <span class="kw-2">mut </span>damage_regions: CompMut&lt;DamageRegion&gt;,
     <span class="kw-2">mut </span>lifetimes: CompMut&lt;Lifetime&gt;,
+    <span class="kw-2">mut </span>dehydrate_jellyfish: CompMut&lt;DehydrateJellyfish&gt;,
 ) {
-    <span class="kw">let </span><span class="kw-2">mut </span>explode_flappy_entities = Vec::with_capacity(flappy_jellyfishes.bitset().bit_count());
-
-    explode_flappy_entities.extend(entities.iter_with_bitset(explode_flappies.bitset()));
-
-    explode_flappy_entities.extend(
+    <span class="comment">// Collect the hitboxes of all players
+    </span><span class="kw">let </span><span class="kw-2">mut </span>player_hitboxes = SmallVec::&lt;[Rect; MAX_PLAYERS]&gt;::with_capacity(MAX_PLAYERS);
+    player_hitboxes.extend(
         entities
-            .iter_with(<span class="kw-2">&amp;</span>flappy_jellyfishes)
-            .filter(|<span class="kw-2">&amp;</span>(flappy_ent, flappy)| {
-                !explode_flappies.contains(flappy_ent) &amp;&amp; killed_players.contains(flappy.owner)
-            })
-            .map(|(e, <span class="kw">_</span>)| e),
+            .iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>transforms, <span class="kw-2">&amp;</span>bodies))
+            .filter(|(player_ent, <span class="kw">_</span>)| !invincibles.contains(<span class="kw-2">*</span>player_ent))
+            .map(|(<span class="kw">_</span>, (<span class="kw">_</span>, transform, body))| body.bounding_box(<span class="kw-2">*</span>transform)),
     );
 
-    <span class="kw">for </span>(flappy_ent, flappy_jellyfish) <span class="kw">in </span>entities.iter_with(<span class="kw-2">&amp;</span>flappy_jellyfishes) {
-        <span class="kw">if </span>killed_players.contains(flappy_jellyfish.owner) {
+    <span class="kw">let </span><span class="kw-2">mut </span>explode_flappy_entities =
+        SmallVec::&lt;[Entity; <span class="number">8</span>]&gt;::with_capacity(flappy_jellyfishes.bitset().bit_count());
+
+    <span class="kw">for </span>(flappy_ent, (_flappy_jellyfish, transform, body)) <span class="kw">in
+        </span>entities.iter_with((<span class="kw-2">&amp;</span>flappy_jellyfishes, <span class="kw-2">&amp;</span>transforms, <span class="kw-2">&amp;</span>bodies))
+    {
+        <span class="comment">// If flappy has the explode marker
+        </span><span class="kw">if </span>explode_flappies.contains(flappy_ent) {
             explode_flappy_entities.push(flappy_ent);
+            <span class="kw">continue</span>;
+        }
+        <span class="comment">// If the flappy collides with any player
+        </span><span class="kw">let </span>flappy_hitbox = body.bounding_box(<span class="kw-2">*</span>transform);
+        <span class="kw">if </span>player_hitboxes.iter().any(|b| b.overlaps(<span class="kw-2">&amp;</span>flappy_hitbox)) {
+            explode_flappy_entities.push(flappy_ent);
+            <span class="kw">continue</span>;
+        }
+        <span class="comment">// If the flappy is out of bounds
+        </span><span class="kw">if </span>map.is_out_of_bounds(<span class="kw-2">&amp;</span>transform.translation) {
+            explode_flappy_entities.push(flappy_ent);
+            <span class="kw">continue</span>;
         }
     }
 
-    <span class="kw">for </span>flappy <span class="kw">in </span>explode_flappy_entities {
-        <span class="kw">let </span><span class="prelude-val">Some</span>(jellyfish) = flappy_jellyfishes.get(flappy).map(|f| f.jellyfish) <span class="kw">else </span>{
+    <span class="kw">for </span>flappy_ent <span class="kw">in </span>explode_flappy_entities {
+        <span class="kw">let </span><span class="prelude-val">Some</span>(flappy) = flappy_jellyfishes.get(flappy_ent) <span class="kw">else </span>{
             <span class="kw">continue</span>;
         };
+        <span class="kw">let </span><span class="prelude-val">Some</span>(jellyfish) = jellyfishes.get_mut(flappy.jellyfish) <span class="kw">else </span>{
+            <span class="kw">continue</span>;
+        };
+        jellyfish.flappy.take();
 
-        <span class="comment">// Stop the jellyfish from driving
-
-        </span>driving_jellyfishes.remove(jellyfish);
-
-        <span class="comment">// Get data for the explosion
+        <span class="comment">/*
+         * Get explosion data
+         */
 
         </span><span class="kw">let </span><span class="prelude-val">Some</span>(flappy_meta) = element_handles
-            .get(jellyfish)
+            .get(flappy.jellyfish)
             .map(|element_h| assets.get(element_h.<span class="number">0</span>))
             .map(|element_meta| assets.get(element_meta.data))
             .as_deref()
@@ -607,18 +745,18 @@
             <span class="kw">return</span>;
         };
 
-        <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>explosion_transform) = transforms.get(flappy).copied() <span class="kw">else </span>{
+        <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>explosion_transform) = transforms.get(flappy_ent).copied() <span class="kw">else </span>{
             <span class="kw">return</span>;
         };
         explosion_transform.translation.z = -<span class="number">10.0</span>;
 
-        <span class="comment">// Despawn the flappy
+        <span class="comment">/*
+         * Setup the explosion
+         */
 
-        </span>entities.kill(flappy);
+        </span>entities.kill(flappy_ent);
 
-        <span class="comment">// Setup the explosion
-
-        </span>audio_events.play(flappy_meta.explosion_sound, flappy_meta.explosion_volume);
+        audio_events.play(flappy_meta.explosion_sound, flappy_meta.explosion_volume);
 
         trauma_events.send(<span class="number">5.0</span>);
 
@@ -660,98 +798,18 @@
                 Lifetime::new(flappy_meta.damage_region_lifetime),
             );
         }
-    }
-}
 
-<span class="attr">#[derive(Clone, Copy, Default, Deref, DerefMut, HasSchema)]
-</span><span class="kw">struct </span>FallVelocity(f32);
+        <span class="comment">/*
+         * Despawn the jellyfish if out of ammo
+         */
 
-<span class="kw">const </span>SPEED_X: f32 = <span class="number">200.0</span>;
-<span class="kw">const </span>SPEED_JUMP: f32 = <span class="number">500.0</span>;
-<span class="kw">const </span>GRAVITY: f32 = -<span class="number">700.0</span>;
-<span class="kw">const </span>MAX_SPEED_Y: f32 = <span class="number">300.0</span>;
-<span class="kw">const </span>MIN_SPEED_Y: f32 = -MAX_SPEED_Y;
-
-<span class="kw">fn </span>move_flappy_jellyfish(
-    entities: Res&lt;Entities&gt;,
-    flappy_jellyfishes: Comp&lt;FlappyJellyfish&gt;,
-    player_indexes: Comp&lt;PlayerIdx&gt;,
-    player_inputs: Res&lt;MatchInputs&gt;,
-    <span class="kw-2">mut </span>commands: Commands,
-    bodies: Comp&lt;KinematicBody&gt;,
-    invincibles: Comp&lt;Invincibility&gt;,
-    time: Res&lt;Time&gt;,
-    <span class="kw-2">mut </span>fall_velocities: CompMut&lt;FallVelocity&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
-    <span class="kw-2">mut </span>explode_flappies: CompMut&lt;ExplodeFlappyJellyfish&gt;,
-    map: Res&lt;LoadedMap&gt;,
-) {
-    <span class="kw">let </span>t = time.delta_seconds();
-
-    <span class="comment">// Collect the hitboxes of all players
-    </span><span class="kw">let </span><span class="kw-2">mut </span>player_hitboxes = SmallVec::&lt;[Rect; <span class="number">8</span>]&gt;::with_capacity(<span class="number">8</span>);
-    player_hitboxes.extend(
-        entities
-            .iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>transforms, <span class="kw-2">&amp;</span>bodies))
-            .filter(|(player_ent, <span class="kw">_</span>)| !invincibles.contains(<span class="kw-2">*</span>player_ent))
-            .map(|(<span class="kw">_</span>, (<span class="kw">_</span>, transform, body))| body.bounding_box(<span class="kw-2">*</span>transform)),
-    );
-
-    <span class="kw">for </span>(flappy_ent, (<span class="kw-2">&amp;</span>FlappyJellyfish { owner, jellyfish }, body, fall_velocity, transform)) <span class="kw">in
-        </span>entities.iter_with((
-            <span class="kw-2">&amp;</span>flappy_jellyfishes,
-            <span class="kw-2">&amp;</span>bodies,
-            <span class="kw-2">&amp;mut </span>fall_velocities,
-            <span class="kw-2">&amp;mut </span>transforms,
-        ))
-    {
-        <span class="kw">let </span><span class="prelude-val">Some</span>(owner_idx) = player_indexes.get(owner).cloned() <span class="kw">else </span>{
-            <span class="kw">continue</span>;
-        };
-        <span class="kw">let </span>owner_control = player_inputs.players[owner_idx.<span class="number">0 </span><span class="kw">as </span>usize].control;
-
-        <span class="kw">if </span>owner_control.grab_just_pressed {
-            commands.add(
-                <span class="kw">move </span>|<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
-                      <span class="kw-2">mut </span>driving_jellyfishes: CompMut&lt;DrivingJellyfish&gt;,
-                      <span class="kw-2">mut </span>jellyfishes: CompMut&lt;Jellyfish&gt;| {
-                    driving_jellyfishes.remove(jellyfish);
-                    entities.kill(flappy_ent);
-                    <span class="kw">if let </span><span class="prelude-val">Some</span>(jellyfish) = jellyfishes.get_mut(jellyfish) {
-                        jellyfish.ammo += <span class="number">1</span>;
-                    }
+        </span><span class="kw">if </span>jellyfish.ammo == <span class="number">0 </span>{
+            dehydrate_jellyfish.insert(
+                flappy.jellyfish,
+                DehydrateJellyfish {
+                    owner: flappy.owner,
                 },
             );
-            <span class="kw">continue</span>;
-        }
-
-        <span class="kw">let </span><span class="kw-2">mut </span>delta_pos = Vec2::ZERO;
-
-        <span class="kw">if </span>owner_control.left != owner_control.right {
-            delta_pos.x -= owner_control.left * SPEED_X * t;
-            delta_pos.x += owner_control.right * SPEED_X * t;
-        }
-
-        <span class="kw">if </span>owner_control.jump_just_pressed {
-            <span class="kw-2">**</span>fall_velocity += SPEED_JUMP;
-        }
-
-        <span class="comment">// Velocity formula: `vₜ = vᵢ + tg`
-        </span><span class="kw-2">**</span>fall_velocity = (<span class="kw-2">**</span>fall_velocity + t * GRAVITY).clamp(MIN_SPEED_Y, MAX_SPEED_Y);
-
-        <span class="comment">// Displacement formula: `y = gt²/2 + tvₜ`
-        </span>delta_pos.y += GRAVITY * t.powi(<span class="number">2</span>) / <span class="number">2.0 </span>+ <span class="kw-2">**</span>fall_velocity * t;
-
-        transform.translation += delta_pos.extend(<span class="number">0.0</span>);
-
-        <span class="kw">if </span>map.is_out_of_bounds(<span class="kw-2">&amp;</span>transform.translation) {
-            explode_flappies.insert(flappy_ent, ExplodeFlappyJellyfish);
-        }
-
-        <span class="comment">// Explode the flappy if collided with any player
-        </span><span class="kw">let </span>flappy_hitbox = body.bounding_box(<span class="kw-2">*</span>transform);
-        <span class="kw">if </span>player_hitboxes.iter().any(|b| b.overlaps(<span class="kw-2">&amp;</span>flappy_hitbox)) {
-            explode_flappies.insert(flappy_ent, ExplodeFlappyJellyfish);
         }
     }
 }

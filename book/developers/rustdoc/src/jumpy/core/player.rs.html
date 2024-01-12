@@ -1071,6 +1071,8 @@
 <a href="#976" id="976">976</a>
 <a href="#977" id="977">977</a>
 <a href="#978" id="978">978</a>
+<a href="#979" id="979">979</a>
+<a href="#980" id="980">980</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Player controller, states, and animation implementation.
 
 </span><span class="kw">use </span>std::collections::VecDeque;
@@ -1560,6 +1562,7 @@
     <span class="kw-2">mut </span>animation_bank_sprites: CompMut&lt;AnimationBankSprite&gt;,
     <span class="kw-2">mut </span>atlas_sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>kinematic_bodies: CompMut&lt;KinematicBody&gt;,
+    <span class="kw-2">mut </span>camera_subjects: CompMut&lt;CameraSubject&gt;,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
     <span class="kw-2">mut </span>player_body_attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
@@ -1636,6 +1639,7 @@
                 ..default()
             },
         );
+        camera_subjects.insert(player_entity, default());
 
         <span class="comment">// Spawn the player&#39;s fin and face
         </span><span class="kw">let </span>fin_entity = new_entities.next().unwrap();

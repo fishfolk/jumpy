@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Finalizers"],"trait":["Finalize","FinalizeWrite"]};
+window.SIDEBAR_ITEMS = {"struct":["Finalizers"]};

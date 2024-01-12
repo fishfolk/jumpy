@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["InvalidTableKey","NextValue"],"mod":["raw","table"],"struct":["Table"]};
+window.SIDEBAR_ITEMS = {"enum":["InvalidTableKey","NextValue"],"struct":["RawTable","Table","TableState"],"type":["TableInner"]};

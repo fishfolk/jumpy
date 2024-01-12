@@ -26,13 +26,13 @@ impl FlappyJellyfishMeta {
     }
 }
 
-pub trait AssetGetFlappyJellyfishMeta {
+pub trait FlappyJellyfishMetaSchemaExts {
     /// Try to cast the `asset` to a `JellyfishMeta` and get the
     /// `FlappyJellyfishMeta` from it.
     fn try_get_flappy_meta(&self) -> Option<Handle<FlappyJellyfishMeta>>;
 }
 
-impl AssetGetFlappyJellyfishMeta for SchemaBox {
+impl FlappyJellyfishMetaSchemaExts for SchemaBox {
     fn try_get_flappy_meta(&self) -> Option<Handle<FlappyJellyfishMeta>> {
         self.try_cast_ref::<JellyfishMeta>()
             .ok()
@@ -43,7 +43,7 @@ impl AssetGetFlappyJellyfishMeta for SchemaBox {
 pub fn session_plugin(session: &mut Session) {
     session
         .stages
-        .add_system_to_stage(CoreStage::PostUpdate, move_flappy_jellyfish)
+        .add_system_to_stage(CoreStage::PostUpdate, control_flappy_jellyfish)
         .add_system_to_stage(CoreStage::PostUpdate, explode_flappy_jellyfish);
 }
 
@@ -53,17 +53,54 @@ pub struct FlappyJellyfish {
     pub jellyfish: Entity,
 }
 
-pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
+/// A player with a jellyfish is holding shoot. Take control of the flappy if
+/// one exists or spawn one.
+pub fn spawn_or_take_control(
+    owner: Entity,
+    jellyfish_ent: Entity,
+    flappy_ent: Option<Entity>,
+) -> StaticSystem<(), ()> {
+    (move |world: &World| {
+        if let Some(flappy_ent) = flappy_ent {
+            take_control(owner, flappy_ent).run(world, ());
+        } else {
+            {
+                let mut jellyfishes = world.components.get::<Jellyfish>().borrow_mut();
+                let Some(jellyfish) = jellyfishes.get_mut(jellyfish_ent) else {
+                    return;
+                };
+                if jellyfish.ammo == 0 {
+                    return;
+                }
+                jellyfish.ammo -= 1;
+            }
+            spawn(owner, jellyfish_ent).run(world, ());
+        }
+    })
+    .system()
+}
+
+/// Take control of the flappy associated with a jellyfish for a player.
+fn take_control(owner: Entity, flappy_ent: Entity) -> StaticSystem<(), ()> {
+    (move |mut player_driving: CompMut<PlayerDrivingJellyfish>| {
+        player_driving.insert(owner, PlayerDrivingJellyfish { flappy: flappy_ent });
+    })
+    .system()
+}
+
+/// Spawn a flappy jellyfish.
+fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
     (move |mut entities: ResMut<Entities>,
            element_handles: Comp<ElementHandle>,
-           mut driving_jellyfishes: CompMut<DrivingJellyfish>,
+           mut player_driving: CompMut<PlayerDrivingJellyfish>,
+           mut jellyfishes: CompMut<Jellyfish>,
            mut flappy_jellyfishes: CompMut<FlappyJellyfish>,
            mut bodies: CompMut<KinematicBody>,
-           mut fall_velocities: CompMut<FallVelocity>,
            assets: Res<AssetServer>,
            mut atlas_sprites: CompMut<AtlasSprite>,
            mut animated_sprites: CompMut<AnimatedSprite>,
-           mut transforms: CompMut<Transform>| {
+           mut transforms: CompMut<Transform>,
+           mut camera_subjects: CompMut<CameraSubject>| {
         let Some(flappy_meta) = element_handles
             .get(jellyfish_ent)
             .map(|element_h| assets.get(element_h.0))
@@ -76,13 +113,12 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
         };
 
         let flappy_ent = entities.create();
-        driving_jellyfishes.insert(
-            jellyfish_ent,
-            DrivingJellyfish {
-                owner,
-                flappy: flappy_ent,
-            },
-        );
+
+        player_driving.insert(owner, PlayerDrivingJellyfish { flappy: flappy_ent });
+        if let Some(jellyfish) = jellyfishes.get_mut(jellyfish_ent) {
+            jellyfish.flappy = Some(flappy_ent);
+        }
+
         flappy_jellyfishes.insert(
             flappy_ent,
             FlappyJellyfish {
@@ -96,11 +132,13 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
                 shape: ColliderShape::Rectangle {
                     size: flappy_meta.body_size,
                 },
-                is_deactivated: true,
+                has_mass: true,
+                gravity: GRAVITY,
+                fall_through: true,
+                is_controlled: true,
                 ..default()
             },
         );
-        fall_velocities.insert(flappy_ent, FallVelocity::default());
         atlas_sprites.insert(flappy_ent, AtlasSprite::new(flappy_meta.atlas));
         animated_sprites.insert(
             flappy_ent,
@@ -114,8 +152,59 @@ pub fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
         let mut transf = *transforms.get(owner).unwrap();
         transf.translation += flappy_meta.spawn_offset.extend(0.0);
         transforms.insert(flappy_ent, transf);
+        camera_subjects.insert(flappy_ent, default());
     })
     .system()
+}
+
+const SPEED_X: f32 = 324.0;
+const SPEED_JUMP: f32 = 3.5;
+const GRAVITY: f32 = 0.1;
+const MIN_SPEED: Vec2 = vec2(-SPEED_X, -4.0);
+const MAX_SPEED: Vec2 = vec2(SPEED_X, 4.0);
+
+fn control_flappy_jellyfish(
+    time: Res<Time>,
+    entities: Res<Entities>,
+    player_driving: Comp<PlayerDrivingJellyfish>,
+    player_indexes: Comp<PlayerIdx>,
+    player_inputs: Res<MatchInputs>,
+    mut explode_flappies: CompMut<ExplodeFlappyJellyfish>,
+    mut bodies: CompMut<KinematicBody>,
+    flappy_jellyfishes: Comp<FlappyJellyfish>,
+) {
+    let t = time.delta_seconds();
+
+    for (_player_ent, (driving, player_idx)) in
+        entities.iter_with((&player_driving, &player_indexes))
+    {
+        let owner_control = player_inputs.players[player_idx.0 as usize].control;
+
+        if owner_control.grab_just_pressed {
+            explode_flappies.insert(driving.flappy, ExplodeFlappyJellyfish);
+            continue;
+        }
+
+        let Some(body) = bodies.get_mut(driving.flappy) else {
+            continue;
+        };
+
+        if owner_control.left == owner_control.right {
+            body.velocity.x = 0.0;
+        } else if owner_control.left > f32::EPSILON {
+            body.velocity.x = -owner_control.left * SPEED_X * t;
+        } else if owner_control.right > f32::EPSILON {
+            body.velocity.x = owner_control.right * SPEED_X * t;
+        }
+
+        if owner_control.jump_just_pressed {
+            body.velocity.y += SPEED_JUMP;
+        }
+    }
+
+    for (_, (_, body)) in entities.iter_with((&flappy_jellyfishes, &mut bodies)) {
+        body.velocity = body.velocity.clamp(MIN_SPEED, MAX_SPEED);
+    }
 }
 
 /// A marker component for flappy jellyfish to indicate that it should explode.
@@ -127,9 +216,12 @@ pub struct ExplodeFlappyJellyfish;
 fn explode_flappy_jellyfish(
     mut entities: ResMut<Entities>,
     explode_flappies: Comp<ExplodeFlappyJellyfish>,
-    killed_players: Comp<PlayerKilled>,
     flappy_jellyfishes: Comp<FlappyJellyfish>,
-    mut driving_jellyfishes: CompMut<DrivingJellyfish>,
+    mut jellyfishes: CompMut<Jellyfish>,
+    player_indexes: Comp<PlayerIdx>,
+    invincibles: Comp<Invincibility>,
+    bodies: Comp<KinematicBody>,
+    map: Res<LoadedMap>,
     element_handles: Comp<ElementHandle>,
     assets: Res<AssetServer>,
     mut transforms: CompMut<Transform>,
@@ -139,39 +231,56 @@ fn explode_flappy_jellyfish(
     mut animated_sprites: CompMut<AnimatedSprite>,
     mut damage_regions: CompMut<DamageRegion>,
     mut lifetimes: CompMut<Lifetime>,
+    mut dehydrate_jellyfish: CompMut<DehydrateJellyfish>,
 ) {
-    let mut explode_flappy_entities = Vec::with_capacity(flappy_jellyfishes.bitset().bit_count());
-
-    explode_flappy_entities.extend(entities.iter_with_bitset(explode_flappies.bitset()));
-
-    explode_flappy_entities.extend(
+    // Collect the hitboxes of all players
+    let mut player_hitboxes = SmallVec::<[Rect; MAX_PLAYERS]>::with_capacity(MAX_PLAYERS);
+    player_hitboxes.extend(
         entities
-            .iter_with(&flappy_jellyfishes)
-            .filter(|&(flappy_ent, flappy)| {
-                !explode_flappies.contains(flappy_ent) && killed_players.contains(flappy.owner)
-            })
-            .map(|(e, _)| e),
+            .iter_with((&player_indexes, &transforms, &bodies))
+            .filter(|(player_ent, _)| !invincibles.contains(*player_ent))
+            .map(|(_, (_, transform, body))| body.bounding_box(*transform)),
     );
 
-    for (flappy_ent, flappy_jellyfish) in entities.iter_with(&flappy_jellyfishes) {
-        if killed_players.contains(flappy_jellyfish.owner) {
+    let mut explode_flappy_entities =
+        SmallVec::<[Entity; 8]>::with_capacity(flappy_jellyfishes.bitset().bit_count());
+
+    for (flappy_ent, (_flappy_jellyfish, transform, body)) in
+        entities.iter_with((&flappy_jellyfishes, &transforms, &bodies))
+    {
+        // If flappy has the explode marker
+        if explode_flappies.contains(flappy_ent) {
             explode_flappy_entities.push(flappy_ent);
+            continue;
+        }
+        // If the flappy collides with any player
+        let flappy_hitbox = body.bounding_box(*transform);
+        if player_hitboxes.iter().any(|b| b.overlaps(&flappy_hitbox)) {
+            explode_flappy_entities.push(flappy_ent);
+            continue;
+        }
+        // If the flappy is out of bounds
+        if map.is_out_of_bounds(&transform.translation) {
+            explode_flappy_entities.push(flappy_ent);
+            continue;
         }
     }
 
-    for flappy in explode_flappy_entities {
-        let Some(jellyfish) = flappy_jellyfishes.get(flappy).map(|f| f.jellyfish) else {
+    for flappy_ent in explode_flappy_entities {
+        let Some(flappy) = flappy_jellyfishes.get(flappy_ent) else {
             continue;
         };
+        let Some(jellyfish) = jellyfishes.get_mut(flappy.jellyfish) else {
+            continue;
+        };
+        jellyfish.flappy.take();
 
-        // Stop the jellyfish from driving
-
-        driving_jellyfishes.remove(jellyfish);
-
-        // Get data for the explosion
+        /*
+         * Get explosion data
+         */
 
         let Some(flappy_meta) = element_handles
-            .get(jellyfish)
+            .get(flappy.jellyfish)
             .map(|element_h| assets.get(element_h.0))
             .map(|element_meta| assets.get(element_meta.data))
             .as_deref()
@@ -181,16 +290,16 @@ fn explode_flappy_jellyfish(
             return;
         };
 
-        let Some(mut explosion_transform) = transforms.get(flappy).copied() else {
+        let Some(mut explosion_transform) = transforms.get(flappy_ent).copied() else {
             return;
         };
         explosion_transform.translation.z = -10.0;
 
-        // Despawn the flappy
+        /*
+         * Setup the explosion
+         */
 
-        entities.kill(flappy);
-
-        // Setup the explosion
+        entities.kill(flappy_ent);
 
         audio_events.play(flappy_meta.explosion_sound, flappy_meta.explosion_volume);
 
@@ -234,98 +343,18 @@ fn explode_flappy_jellyfish(
                 Lifetime::new(flappy_meta.damage_region_lifetime),
             );
         }
-    }
-}
 
-#[derive(Clone, Copy, Default, Deref, DerefMut, HasSchema)]
-struct FallVelocity(f32);
+        /*
+         * Despawn the jellyfish if out of ammo
+         */
 
-const SPEED_X: f32 = 200.0;
-const SPEED_JUMP: f32 = 500.0;
-const GRAVITY: f32 = -700.0;
-const MAX_SPEED_Y: f32 = 300.0;
-const MIN_SPEED_Y: f32 = -MAX_SPEED_Y;
-
-fn move_flappy_jellyfish(
-    entities: Res<Entities>,
-    flappy_jellyfishes: Comp<FlappyJellyfish>,
-    player_indexes: Comp<PlayerIdx>,
-    player_inputs: Res<MatchInputs>,
-    mut commands: Commands,
-    bodies: Comp<KinematicBody>,
-    invincibles: Comp<Invincibility>,
-    time: Res<Time>,
-    mut fall_velocities: CompMut<FallVelocity>,
-    mut transforms: CompMut<Transform>,
-    mut explode_flappies: CompMut<ExplodeFlappyJellyfish>,
-    map: Res<LoadedMap>,
-) {
-    let t = time.delta_seconds();
-
-    // Collect the hitboxes of all players
-    let mut player_hitboxes = SmallVec::<[Rect; 8]>::with_capacity(8);
-    player_hitboxes.extend(
-        entities
-            .iter_with((&player_indexes, &transforms, &bodies))
-            .filter(|(player_ent, _)| !invincibles.contains(*player_ent))
-            .map(|(_, (_, transform, body))| body.bounding_box(*transform)),
-    );
-
-    for (flappy_ent, (&FlappyJellyfish { owner, jellyfish }, body, fall_velocity, transform)) in
-        entities.iter_with((
-            &flappy_jellyfishes,
-            &bodies,
-            &mut fall_velocities,
-            &mut transforms,
-        ))
-    {
-        let Some(owner_idx) = player_indexes.get(owner).cloned() else {
-            continue;
-        };
-        let owner_control = player_inputs.players[owner_idx.0 as usize].control;
-
-        if owner_control.grab_just_pressed {
-            commands.add(
-                move |mut entities: ResMut<Entities>,
-                      mut driving_jellyfishes: CompMut<DrivingJellyfish>,
-                      mut jellyfishes: CompMut<Jellyfish>| {
-                    driving_jellyfishes.remove(jellyfish);
-                    entities.kill(flappy_ent);
-                    if let Some(jellyfish) = jellyfishes.get_mut(jellyfish) {
-                        jellyfish.ammo += 1;
-                    }
+        if jellyfish.ammo == 0 {
+            dehydrate_jellyfish.insert(
+                flappy.jellyfish,
+                DehydrateJellyfish {
+                    owner: flappy.owner,
                 },
             );
-            continue;
-        }
-
-        let mut delta_pos = Vec2::ZERO;
-
-        if owner_control.left != owner_control.right {
-            delta_pos.x -= owner_control.left * SPEED_X * t;
-            delta_pos.x += owner_control.right * SPEED_X * t;
-        }
-
-        if owner_control.jump_just_pressed {
-            **fall_velocity += SPEED_JUMP;
-        }
-
-        // Velocity formula: `vₜ = vᵢ + tg`
-        **fall_velocity = (**fall_velocity + t * GRAVITY).clamp(MIN_SPEED_Y, MAX_SPEED_Y);
-
-        // Displacement formula: `y = gt²/2 + tvₜ`
-        delta_pos.y += GRAVITY * t.powi(2) / 2.0 + **fall_velocity * t;
-
-        transform.translation += delta_pos.extend(0.0);
-
-        if map.is_out_of_bounds(&transform.translation) {
-            explode_flappies.insert(flappy_ent, ExplodeFlappyJellyfish);
-        }
-
-        // Explode the flappy if collided with any player
-        let flappy_hitbox = body.bounding_box(*transform);
-        if player_hitboxes.iter().any(|b| b.overlaps(&flappy_hitbox)) {
-            explode_flappies.insert(flappy_ent, ExplodeFlappyJellyfish);
         }
     }
 }

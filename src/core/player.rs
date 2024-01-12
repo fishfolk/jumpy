@@ -487,6 +487,7 @@ fn hydrate_players(
     mut animation_bank_sprites: CompMut<AnimationBankSprite>,
     mut atlas_sprites: CompMut<AtlasSprite>,
     mut kinematic_bodies: CompMut<KinematicBody>,
+    mut camera_subjects: CompMut<CameraSubject>,
     mut player_layers: CompMut<PlayerLayers>,
     mut player_body_attachments: CompMut<PlayerBodyAttachment>,
     mut transforms: CompMut<Transform>,
@@ -563,6 +564,7 @@ fn hydrate_players(
                 ..default()
             },
         );
+        camera_subjects.insert(player_entity, default());
 
         // Spawn the player's fin and face
         let fin_entity = new_entities.next().unwrap();

@@ -22,17 +22,24 @@ pub struct ParallaxBackgroundSprite {
     pub meta: ParallaxLayerMeta,
 }
 
+/// A subject of the camera.
+///
+/// The camera will move and zoom to ensure that all subjects remain visible. Entities must also
+/// have a `Transform` component and a `KinematicBody` component for this to work properly.
+#[derive(Clone, Copy, Debug, Default, HasSchema)]
+pub struct CameraSubject {
+    /// A rectangle around the subject that is larger than the subject, and will always move to
+    /// contain it. The camera will seek to contain this rectangle, instead of the subject itself.
+    ///
+    /// The advantage of this processing method is that the larger rect doesn't move as much as the
+    /// subject, because, for instance, a player jumping up and down in place will still be inside
+    /// of their camera rect, so the camera will not move around annoyingly.
+    rect: Rect,
+}
+
 /// The state of the camera.
 #[derive(Clone, Debug, HasSchema, Default)]
 pub struct CameraState {
-    /// A rectangle around the player that is larger than the player, and will always move to
-    /// contain the player. The camra will seek to contain this rectangle, instead of the player
-    /// itself.
-    ///
-    /// The advantage of this processing method is that the larger rect doesn't move as much as the
-    /// player, because, for instance, while jumping up and down in place, the player will still be
-    /// inside of their camera rect, so the camera will not move around annoyingly.
-    pub player_camera_rects: [Rect; MAX_PLAYERS],
     /// Disables the default camera controller. Useful, for example, when taking over the camera
     /// from the editor.
     pub disable_controller: bool,
@@ -45,16 +52,16 @@ fn camera_controller(
     map: Res<LoadedMap>,
     mut cameras: CompMut<Camera>,
     mut camera_shakes: CompMut<CameraShake>,
-    mut camera_states: CompMut<CameraState>,
+    camera_states: Comp<CameraState>,
+    mut camera_subjects: CompMut<CameraSubject>,
     transforms: Comp<Transform>,
-    player_indexes: Comp<PlayerIdx>,
     bodies: Comp<KinematicBody>,
     window: Res<Window>,
 ) {
     let meta = &meta.core.camera;
 
     let Some((_ent, (camera, camera_shake, camera_state))) = entities
-        .iter_with((&mut cameras, &mut camera_shakes, &mut camera_states))
+        .iter_with((&mut cameras, &mut camera_shakes, &camera_states))
         .next()
     else {
         return;
@@ -64,13 +71,13 @@ fn camera_controller(
     }
 
     // Update player camera rects
-    for (_ent, (transform, player_idx, body)) in
-        entities.iter_with((&transforms, &player_indexes, &bodies))
+    for (_ent, (camera_subj, transform, body)) in
+        entities.iter_with((&mut camera_subjects, &transforms, &bodies))
     {
         let camera_box_size = meta.player_camera_box_size;
 
         // Get the player's camera box
-        let camera_box = &mut camera_state.player_camera_rects[player_idx.0 as usize];
+        let camera_box = &mut camera_subj.rect;
 
         // If it's not be initialized.
         if camera_box.min == Vec2::ZERO && camera_box.max == Vec2::ZERO {
@@ -112,27 +119,19 @@ fn camera_controller(
         .unwrap_or(window.size);
     let viewport_aspect = viewport_size.x / viewport_size.y;
     let default_height = meta.default_height;
-    let camera_height = if let CameraSize::FixedHeight(height) = &camera.size {
-        *height
+    let default_width = viewport_aspect * default_height;
+    let camera_height = if let CameraSize::FixedHeight(height) = camera.size {
+        height
     } else {
         400.0
     };
     let mut scale = camera_height / default_height;
-    let default_width = viewport_aspect * default_height;
     let map_size = map.grid_size.as_vec2() * map.tile_size;
 
-    let mut min = Vec2::new(f32::MAX, f32::MAX);
-    let mut max = Vec2::new(f32::MIN, f32::MIN);
+    let mut min = Vec2::MAX;
+    let mut max = Vec2::MIN;
 
-    let players: Vec<u32> = entities
-        .iter_with(&player_indexes)
-        .map(|x| x.1 .0)
-        .collect();
-    let player_count = players.len();
-
-    for player_idx in players {
-        let rect = camera_state.player_camera_rects[player_idx as usize];
-
+    for CameraSubject { rect } in camera_subjects.iter_mut() {
         min = (rect.min - vec2(meta.border_left, meta.border_bottom))
             .min(min)
             .max(Vec2::ZERO);
@@ -142,7 +141,8 @@ fn camera_controller(
 
     let camera_pos = &mut camera_shake.center;
 
-    let mut middle_point = if player_count == 0 {
+    let subject_count = camera_subjects.iter().count();
+    let mut middle_point = if subject_count == 0 {
         camera_pos.truncate()
     } else {
         Rect { min, max }.center()

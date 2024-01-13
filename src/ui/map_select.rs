@@ -56,13 +56,9 @@ pub fn map_select_menu(
                     let menu_page_state = ui.ctx().get_state::<MenuPage>();
                     let is_waiting = match menu_page_state {
                         MenuPage::MapSelect { is_waiting } => is_waiting,
-                        _ => {
-                            warn!(
-                                "On map select page, but MenuPage state is not MenuPage::MapSelect.
-                                   Client may be stuck waiting for map select erroneously. "
-                            );
-                            true
-                        }
+                        // If we are not on the map select menu page it means we are selecting
+                        // a map from the pause menu.
+                        _ => false,
                     };
                     if is_waiting {
                         ui.label(

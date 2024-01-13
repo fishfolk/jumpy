@@ -137,6 +137,9 @@ impl SessionRunner for JumpyDefaultMatchRunner {
                 });
             }
 
+            // Mark inputs as consumed for this frame
+            self.input_collector.advance_frame();
+
             // Advance the simulation
             stages.run(world);
         };

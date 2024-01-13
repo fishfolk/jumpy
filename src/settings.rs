@@ -1,3 +1,5 @@
+use strum::IntoEnumIterator;
+
 use crate::prelude::*;
 
 /// Settings plugin
@@ -58,6 +60,11 @@ impl PlayerControlMapping {
             ControlSource::Keyboard2 => &self.keyboard2,
             ControlSource::Gamepad(_) => &self.gamepad,
         }
+    }
+
+    /// Return an iterator for PlayerControlSetting for all control sources.
+    pub fn all_settings(&self) -> impl Iterator<Item = &PlayerControlSetting> {
+        ControlSource::iter().map(|s| self.map_control_source(s))
     }
 }
 

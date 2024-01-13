@@ -5,6 +5,7 @@ use crate::{
 
 #[cfg(not(target_arch = "wasm32"))]
 use bones_framework::networking::{input::NetworkPlayerControl, proto::DenseMoveDirection};
+use strum::EnumIter;
 
 pub fn game_plugin(game: &mut Game) {
     game.systems.add_startup_system(load_controler_mapping);
@@ -127,7 +128,7 @@ impl GlobalPlayerControls {
 }
 
 /// The source of player control inputs
-#[derive(Debug, Clone, Copy, Default, HasSchema, Hash, Eq, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, HasSchema, Hash, Eq, PartialEq, EnumIter)]
 #[repr(C, u8)]
 pub enum ControlSource {
     #[default]

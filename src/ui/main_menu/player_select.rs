@@ -259,6 +259,9 @@ fn player_select_panel(
     }
 
     #[cfg(target_arch = "wasm32")]
+    let network_local_player_slot: Option<usize> = None;
+
+    #[cfg(target_arch = "wasm32")]
     let is_network = false;
     #[cfg(not(target_arch = "wasm32"))]
     let is_network = network_socket.is_some();
@@ -280,10 +283,13 @@ fn player_select_panel(
         .any(|(i, slot)| (!slot.active && i == *slot_id));
 
     #[cfg(not(target_arch = "wasm32"))]
+    let mut network_local_player_slot: Option<usize> = None;
+
+    #[cfg(not(target_arch = "wasm32"))]
     let slot_allows_new_player = if is_network {
         {
-            let player_idx = network_socket.as_ref().unwrap().player_idx();
-            *slot_id == player_idx
+            network_local_player_slot = Some(network_socket.as_ref().unwrap().player_idx());
+            *slot_id == network_local_player_slot.unwrap()
         }
     } else {
         is_next_open_slot
@@ -348,7 +354,7 @@ fn player_select_panel(
         .map(|s| *controls.get(s).unwrap())
         .unwrap_or_default();
 
-    if player_control.menu_confirm_just_pressed && new_player_join.is_none() {
+    if player_control.menu_confirm_just_pressed {
         slot.confirmed = true;
 
         #[cfg(not(target_arch = "wasm32"))]
@@ -477,12 +483,23 @@ fn player_select_panel(
             ui.add_space(normal_font.size);
 
             if slot.active {
-                let confirm_binding = slot
-                    .control_source
-                    .map(|s| mapping.map_control_source(s).menu_confirm.to_string());
-                let back_binding = slot
-                    .control_source
-                    .map(|s| mapping.map_control_source(s).menu_back.to_string());
+                let confirm_binding = match slot.control_source {
+                    Some(source) => mapping.map_control_source(source).menu_confirm.to_string(),
+                    None => available_input_sources
+                        .iter()
+                        .map(|s| mapping.map_control_source(*s).menu_confirm.to_string())
+                        .collect::<SmallVec<[_; 3]>>()
+                        .join("/"),
+                };
+
+                let back_binding = match slot.control_source {
+                    Some(source) => mapping.map_control_source(source).menu_back.to_string(),
+                    None => available_input_sources
+                        .iter()
+                        .map(|s| mapping.map_control_source(*s).menu_back.to_string())
+                        .collect::<SmallVec<[_; 3]>>()
+                        .join("/"),
+                };
                 ui.vertical_centered(|ui| {
                     let player_meta = asset_server.get(slot.selected_player);
                     let hat_meta = slot
@@ -492,11 +509,11 @@ fn player_select_panel(
 
                     ui.label(normal_font.rich(localization.get("pick-a-fish")));
 
-                    if !slot.confirmed && slot.control_source.is_some() {
+                    if !slot.confirmed && network_local_player_slot.is_some_and(|s| s == *slot_id) {
                         ui.label(normal_font.rich(localization.get_with(
                             "press-button-to-lock-in",
                             &fluent_args! {
-                                "button" => confirm_binding.as_ref().unwrap().as_str()
+                                "button" => confirm_binding.as_str()
                             },
                         )));
 
@@ -504,7 +521,7 @@ fn player_select_panel(
                             ui.label(normal_font.rich(localization.get_with(
                                 "press-button-to-remove",
                                 &fluent_args! {
-                                    "button" => back_binding.as_ref().unwrap().as_str()
+                                    "button" => back_binding.as_str()
                                 },
                             )));
                         }
@@ -525,7 +542,7 @@ fn player_select_panel(
                             ui.label(normal_font.rich(localization.get_with(
                                 "player-select-unready",
                                 &fluent_args! {
-                                    "button" => back_binding.as_ref().unwrap().as_str()
+                                    "button" => back_binding.as_str()
                                 },
                             )));
                         }
@@ -572,19 +589,16 @@ fn player_select_panel(
             // If this slot is empty
             } else {
                 let bindings = available_input_sources
-                    .into_iter()
-                    .map(|x| match x {
-                        ControlSource::Keyboard1 => mapping.keyboard1.menu_confirm.to_string(),
-                        ControlSource::Keyboard2 => mapping.keyboard2.menu_confirm.to_string(),
-                        ControlSource::Gamepad(_) => mapping.gamepad.menu_confirm.to_string(),
-                    })
-                    .collect::<SmallVec<[_; 3]>>();
+                    .iter()
+                    .map(|s| mapping.map_control_source(*s).menu_confirm.to_string())
+                    .collect::<SmallVec<[_; 3]>>()
+                    .join("/");
 
                 ui.vertical_centered(|ui| {
                     ui.label(normal_font.rich(localization.get_with(
                         "press-button-to-join",
                         &fluent_args! {
-                            "button" => bindings.join(" / ")
+                            "button" => bindings
                         },
                     )));
 

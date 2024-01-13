@@ -394,7 +394,7 @@ impl<'a>
 impl NetworkPlayerControl<DensePlayerControl> for PlayerControl {
     fn get_dense_input(&self) -> DensePlayerControl {
         let mut dense_control = DensePlayerControl::default();
-        dense_control.set_jump_pressed(self.jump_just_pressed);
+        dense_control.set_jump_pressed(self.jump_pressed);
         dense_control.set_grab_pressed(self.grab_pressed);
         dense_control.set_slide_pressed(self.slide_pressed);
         dense_control.set_shoot_pressed(self.shoot_pressed);

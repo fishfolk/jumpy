@@ -178,6 +178,17 @@ fn deserialize_body_animations<'de, D: Deserializer<'de>>(
     Ok(BodyAnimationsMeta { offsets, frames })
 }
 
+/// Metadata for a player emote.
+#[derive(HasSchema, Clone, Debug, Default)]
+#[type_data(metadata_asset("emote"))]
+#[repr(C)]
+pub struct EmoteMeta {
+    pub name: Ustr,
+    pub atlas: Handle<Atlas>,
+    pub offset: Vec2,
+    pub animation: AnimatedSprite,
+}
+
 /// Metadata for a player hat.
 #[derive(HasSchema, Clone, Debug, Default)]
 #[type_data(metadata_asset("hat"))]

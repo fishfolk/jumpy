@@ -48,6 +48,8 @@ pub struct IdleKickBomb;
 pub struct LitKickBomb {
     arm_delay: Timer,
     fuse_time: Timer,
+    kicking: bool,
+    kicks: u32,
 }
 
 fn hydrate(
@@ -178,6 +180,8 @@ fn update_idle_kick_bombs(
                         LitKickBomb {
                             arm_delay: Timer::new(arm_delay, TimerMode::Once),
                             fuse_time: Timer::new(fuse_time, TimerMode::Once),
+                            kicking: false,
+                            kicks: 0,
                         },
                     );
                 },
@@ -230,43 +234,65 @@ fn update_lit_kick_bombs(
         kick_bomb.fuse_time.tick(time.delta());
         kick_bomb.arm_delay.tick(time.delta());
 
-        let mut should_explode = false;
-        // If the item is being held
-        if player_inventories.find_item(entity).is_some() {
-            // Do nothing
-        }
-        // The item is on the ground
-        else if let Some(player_entity) = collision_world
-            .actor_collisions_filtered(entity, |e| invincibles.get(e).is_none())
-            .into_iter()
-            .find(|&x| player_indexes.contains(x))
-        {
-            let body = bodies.get_mut(entity).unwrap();
-            let translation = transforms.get_mut(entity).unwrap().translation;
-
-            let player_sprite = sprites.get_mut(player_entity).unwrap();
-            let player_translation = transforms.get(player_entity).unwrap().translation;
-
-            let player_standing_left = player_translation.x <= translation.x;
-
-            if body.velocity.x == 0.0 {
-                body.velocity = *kick_velocity;
-                if player_sprite.flip_x {
-                    body.velocity.x *= -1.0;
-                }
-            } else if player_standing_left && !player_sprite.flip_x {
-                body.velocity.x = kick_velocity.x;
-                body.velocity.y = kick_velocity.y;
-            } else if !player_standing_left && player_sprite.flip_x {
-                body.velocity.x = -kick_velocity.x;
-                body.velocity.y = kick_velocity.y;
-            } else if kick_bomb.arm_delay.finished() {
-                should_explode = true;
+        let should_explode = 'should_explode: {
+            if kick_bomb.fuse_time.finished() {
+                break 'should_explode true;
             }
-        }
+
+            // If the item is being held
+            if player_inventories.find_item(entity).is_some() {
+                kick_bomb.kicking = false;
+                break 'should_explode false;
+            }
+
+            // If the item is colliding with a non-invincible player
+            if let Some(player_entity) = collision_world
+                .actor_collisions_filtered(entity, |e| !invincibles.contains(e))
+                .into_iter()
+                .find(|&x| player_indexes.contains(x))
+            {
+                if !std::mem::replace(&mut kick_bomb.kicking, true) {
+                    kick_bomb.kicks += 1;
+                }
+
+                // Explode on the 3rd kick.
+                // Dropping the bomb is detected as a kick so we explode when
+                // the counter reaches 4.
+                if kick_bomb.kicks > 3 {
+                    break 'should_explode true;
+                }
+
+                let body = bodies.get_mut(entity).unwrap();
+                let translation = transforms.get_mut(entity).unwrap().translation;
+
+                let player_sprite = sprites.get_mut(player_entity).unwrap();
+                let player_translation = transforms.get(player_entity).unwrap().translation;
+
+                let player_standing_left = player_translation.x <= translation.x;
+
+                if body.velocity.x == 0.0 {
+                    body.velocity = *kick_velocity;
+                    if player_sprite.flip_x {
+                        body.velocity.x *= -1.0;
+                    }
+                } else if player_standing_left && !player_sprite.flip_x {
+                    body.velocity.x = kick_velocity.x;
+                    body.velocity.y = kick_velocity.y;
+                } else if !player_standing_left && player_sprite.flip_x {
+                    body.velocity.x = -kick_velocity.x;
+                    body.velocity.y = kick_velocity.y;
+                } else if kick_bomb.arm_delay.finished() {
+                    break 'should_explode true;
+                }
+            } else {
+                kick_bomb.kicking = false;
+            }
+
+            false
+        };
 
         // If it's time to explode
-        if kick_bomb.fuse_time.finished() || should_explode {
+        if should_explode {
             audio_events.play(*explosion_sound, *explosion_volume);
 
             trauma_events.send(7.5);

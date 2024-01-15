@@ -37,6 +37,7 @@ pub struct CoreMeta {
     pub config: CoreConfigMeta,
     pub map_tilesets: SVec<Handle<Atlas>>,
     pub players: SVec<Handle<PlayerMeta>>,
+    pub player_emotes: SMap<Ustr, Handle<EmoteMeta>>,
     pub player_hats: SVec<Handle<HatMeta>>,
     pub stable_maps: SVec<Handle<MapMeta>>,
     pub map_elements: SVec<Handle<ElementMeta>>,

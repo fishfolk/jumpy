@@ -58,7 +58,7 @@ enum EmoteState {
     #[default]
     Neutral,
     /// The player is emoting.
-    Emoting(Emote),
+    Emoting((Emote, Entity)),
 }
 
 /// A component representing a region in which a player should emote in some way.
@@ -115,10 +115,85 @@ pub enum Emote {
 }
 
 impl Emote {
-    pub fn animation_key(&self) -> &str {
+    pub fn face_animation_key(&self) -> Ustr {
         match self {
-            Emote::Alarm => "emote_alarm",
+            Emote::Alarm => ustr("emote_alarm"),
         }
+    }
+
+    pub fn emote_animation_key(&self) -> Ustr {
+        match self {
+            Emote::Alarm => ustr("alarm"),
+        }
+    }
+}
+
+impl Emote {
+    pub fn start_animation(player_ent: Entity, emote: Self) -> StaticSystem<(), ()> {
+        (move |meta: Root<GameMeta>,
+               assets: ResMut<AssetServer>,
+               mut emote_states: CompMut<EmoteState>,
+               mut entities: ResMut<Entities>,
+               mut transforms: CompMut<Transform>,
+               mut attachments: CompMut<PlayerBodyAttachment>,
+               mut sprites: CompMut<AtlasSprite>,
+               mut animated_sprites: CompMut<AnimatedSprite>| {
+            let emote_key = emote.emote_animation_key();
+            let Some(emote_meta) = meta
+                .core
+                .player_emotes
+                .iter()
+                .find(|(key, _)| **key == emote_key)
+                .map(|(_, handle)| assets.get(*handle))
+            else {
+                return;
+            };
+
+            let ent = entities.create();
+
+            let emote_state = emote_states.get_mut(player_ent).unwrap();
+            *emote_state = EmoteState::Emoting((emote, ent));
+
+            let transform = *transforms.get(player_ent).unwrap();
+            transforms.insert(ent, transform);
+            attachments.insert(
+                ent,
+                PlayerBodyAttachment {
+                    player: player_ent,
+                    offset: emote_meta.offset.extend(PlayerLayers::FACE_Z_OFFSET),
+                    head: true,
+                    ..default()
+                },
+            );
+            sprites.insert(
+                ent,
+                AtlasSprite {
+                    atlas: emote_meta.atlas,
+                    ..default()
+                },
+            );
+            animated_sprites.insert(
+                ent,
+                AnimatedSprite {
+                    frames: emote_meta.animation.frames.clone(),
+                    fps: emote_meta.animation.fps,
+                    repeat: true,
+                    ..default()
+                },
+            );
+        })
+        .system()
+    }
+
+    pub fn stop_animation(player_ent: Entity) -> StaticSystem<(), ()> {
+        (move |mut emote_states: CompMut<EmoteState>, mut entities: ResMut<Entities>| {
+            let emote_state = emote_states.get_mut(player_ent).unwrap();
+            if let EmoteState::Emoting((_, emote_ent)) = *emote_state {
+                entities.kill(emote_ent);
+            }
+            *emote_state = EmoteState::Neutral;
+        })
+        .system()
     }
 }
 
@@ -842,6 +917,7 @@ fn player_facial_animations(
     transforms: Comp<Transform>,
     atlas_sprites: Comp<AtlasSprite>,
     mut emote_states: CompMut<EmoteState>,
+    mut commands: Commands,
     players_killed: Comp<PlayerKilled>,
     animation_bank_sprites: CompMut<AnimationBankSprite>,
 ) {
@@ -899,17 +975,18 @@ fn player_facial_animations(
 
         if let Some(new_emote) = triggered_emote {
             if let EmoteState::Emoting(already_emote) = emote_state {
-                if new_emote != *already_emote {
-                    player_layer.face_anim = new_emote.animation_key().into();
-                    *emote_state = EmoteState::Emoting(new_emote);
+                if new_emote != already_emote.0 {
+                    player_layer.face_anim = new_emote.face_animation_key();
+                    commands.add(Emote::stop_animation(player_ent));
+                    commands.add(Emote::start_animation(player_ent, new_emote));
                 }
             } else {
-                player_layer.face_anim = new_emote.animation_key().into();
-                *emote_state = EmoteState::Emoting(new_emote);
+                player_layer.face_anim = new_emote.face_animation_key();
+                commands.add(Emote::start_animation(player_ent, new_emote));
             }
         } else {
-            *emote_state = EmoteState::Neutral;
             player_layer.face_anim = animation_bank.current;
+            commands.add(Emote::stop_animation(player_ent));
         }
     }
 }

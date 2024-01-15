@@ -1,0 +1,10 @@
+name: Alarm
+atlas: ./alarm.atlas.yaml
+
+offset: [11, 15]
+animation:
+  # Matches player face FPS
+  fps: 9
+  frames:
+    - 1
+    - 0

@@ -267,6 +267,9 @@ core:
     - ./player/skins/sharky/sharky.player.yaml
     - ./player/skins/orcy/orcy.player.yaml
 
+  player_emotes:
+    alarm: /player/emotes/alarm.emote.yaml
+
   player_hats:
     - /player/hats/pirate.hat.yaml
     - /player/hats/straw.hat.yaml
@@ -319,4 +322,3 @@ core:
     - /elements/environment/coral_spikes/coral_spikes.element.yaml
 
   experimental_maps: []
-

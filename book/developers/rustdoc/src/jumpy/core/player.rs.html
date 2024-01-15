@@ -1073,6 +1073,83 @@
 <a href="#978" id="978">978</a>
 <a href="#979" id="979">979</a>
 <a href="#980" id="980">980</a>
+<a href="#981" id="981">981</a>
+<a href="#982" id="982">982</a>
+<a href="#983" id="983">983</a>
+<a href="#984" id="984">984</a>
+<a href="#985" id="985">985</a>
+<a href="#986" id="986">986</a>
+<a href="#987" id="987">987</a>
+<a href="#988" id="988">988</a>
+<a href="#989" id="989">989</a>
+<a href="#990" id="990">990</a>
+<a href="#991" id="991">991</a>
+<a href="#992" id="992">992</a>
+<a href="#993" id="993">993</a>
+<a href="#994" id="994">994</a>
+<a href="#995" id="995">995</a>
+<a href="#996" id="996">996</a>
+<a href="#997" id="997">997</a>
+<a href="#998" id="998">998</a>
+<a href="#999" id="999">999</a>
+<a href="#1000" id="1000">1000</a>
+<a href="#1001" id="1001">1001</a>
+<a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
+<a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
+<a href="#1007" id="1007">1007</a>
+<a href="#1008" id="1008">1008</a>
+<a href="#1009" id="1009">1009</a>
+<a href="#1010" id="1010">1010</a>
+<a href="#1011" id="1011">1011</a>
+<a href="#1012" id="1012">1012</a>
+<a href="#1013" id="1013">1013</a>
+<a href="#1014" id="1014">1014</a>
+<a href="#1015" id="1015">1015</a>
+<a href="#1016" id="1016">1016</a>
+<a href="#1017" id="1017">1017</a>
+<a href="#1018" id="1018">1018</a>
+<a href="#1019" id="1019">1019</a>
+<a href="#1020" id="1020">1020</a>
+<a href="#1021" id="1021">1021</a>
+<a href="#1022" id="1022">1022</a>
+<a href="#1023" id="1023">1023</a>
+<a href="#1024" id="1024">1024</a>
+<a href="#1025" id="1025">1025</a>
+<a href="#1026" id="1026">1026</a>
+<a href="#1027" id="1027">1027</a>
+<a href="#1028" id="1028">1028</a>
+<a href="#1029" id="1029">1029</a>
+<a href="#1030" id="1030">1030</a>
+<a href="#1031" id="1031">1031</a>
+<a href="#1032" id="1032">1032</a>
+<a href="#1033" id="1033">1033</a>
+<a href="#1034" id="1034">1034</a>
+<a href="#1035" id="1035">1035</a>
+<a href="#1036" id="1036">1036</a>
+<a href="#1037" id="1037">1037</a>
+<a href="#1038" id="1038">1038</a>
+<a href="#1039" id="1039">1039</a>
+<a href="#1040" id="1040">1040</a>
+<a href="#1041" id="1041">1041</a>
+<a href="#1042" id="1042">1042</a>
+<a href="#1043" id="1043">1043</a>
+<a href="#1044" id="1044">1044</a>
+<a href="#1045" id="1045">1045</a>
+<a href="#1046" id="1046">1046</a>
+<a href="#1047" id="1047">1047</a>
+<a href="#1048" id="1048">1048</a>
+<a href="#1049" id="1049">1049</a>
+<a href="#1050" id="1050">1050</a>
+<a href="#1051" id="1051">1051</a>
+<a href="#1052" id="1052">1052</a>
+<a href="#1053" id="1053">1053</a>
+<a href="#1054" id="1054">1054</a>
+<a href="#1055" id="1055">1055</a>
+<a href="#1056" id="1056">1056</a>
+<a href="#1057" id="1057">1057</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Player controller, states, and animation implementation.
 
 </span><span class="kw">use </span>std::collections::VecDeque;
@@ -1133,7 +1210,7 @@
     </span><span class="attr">#[default]
     </span>Neutral,
     <span class="doccomment">/// The player is emoting.
-    </span>Emoting(Emote),
+    </span>Emoting((Emote, Entity)),
 }
 
 <span class="doccomment">/// A component representing a region in which a player should emote in some way.
@@ -1190,10 +1267,85 @@
 }
 
 <span class="kw">impl </span>Emote {
-    <span class="kw">pub fn </span>animation_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+    <span class="kw">pub fn </span>face_animation_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ustr {
         <span class="kw">match </span><span class="self">self </span>{
-            Emote::Alarm =&gt; <span class="string">&quot;emote_alarm&quot;</span>,
+            Emote::Alarm =&gt; ustr(<span class="string">&quot;emote_alarm&quot;</span>),
         }
+    }
+
+    <span class="kw">pub fn </span>emote_animation_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ustr {
+        <span class="kw">match </span><span class="self">self </span>{
+            Emote::Alarm =&gt; ustr(<span class="string">&quot;alarm&quot;</span>),
+        }
+    }
+}
+
+<span class="kw">impl </span>Emote {
+    <span class="kw">pub fn </span>start_animation(player_ent: Entity, emote: <span class="self">Self</span>) -&gt; StaticSystem&lt;(), ()&gt; {
+        (<span class="kw">move </span>|meta: Root&lt;GameMeta&gt;,
+               assets: ResMut&lt;AssetServer&gt;,
+               <span class="kw-2">mut </span>emote_states: CompMut&lt;EmoteState&gt;,
+               <span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
+               <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
+               <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
+               <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
+               <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;| {
+            <span class="kw">let </span>emote_key = emote.emote_animation_key();
+            <span class="kw">let </span><span class="prelude-val">Some</span>(emote_meta) = meta
+                .core
+                .player_emotes
+                .iter()
+                .find(|(key, <span class="kw">_</span>)| <span class="kw-2">**</span>key == emote_key)
+                .map(|(<span class="kw">_</span>, handle)| assets.get(<span class="kw-2">*</span>handle))
+            <span class="kw">else </span>{
+                <span class="kw">return</span>;
+            };
+
+            <span class="kw">let </span>ent = entities.create();
+
+            <span class="kw">let </span>emote_state = emote_states.get_mut(player_ent).unwrap();
+            <span class="kw-2">*</span>emote_state = EmoteState::Emoting((emote, ent));
+
+            <span class="kw">let </span>transform = <span class="kw-2">*</span>transforms.get(player_ent).unwrap();
+            transforms.insert(ent, transform);
+            attachments.insert(
+                ent,
+                PlayerBodyAttachment {
+                    player: player_ent,
+                    offset: emote_meta.offset.extend(PlayerLayers::FACE_Z_OFFSET),
+                    head: <span class="bool-val">true</span>,
+                    ..default()
+                },
+            );
+            sprites.insert(
+                ent,
+                AtlasSprite {
+                    atlas: emote_meta.atlas,
+                    ..default()
+                },
+            );
+            animated_sprites.insert(
+                ent,
+                AnimatedSprite {
+                    frames: emote_meta.animation.frames.clone(),
+                    fps: emote_meta.animation.fps,
+                    repeat: <span class="bool-val">true</span>,
+                    ..default()
+                },
+            );
+        })
+        .system()
+    }
+
+    <span class="kw">pub fn </span>stop_animation(player_ent: Entity) -&gt; StaticSystem&lt;(), ()&gt; {
+        (<span class="kw">move </span>|<span class="kw-2">mut </span>emote_states: CompMut&lt;EmoteState&gt;, <span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;| {
+            <span class="kw">let </span>emote_state = emote_states.get_mut(player_ent).unwrap();
+            <span class="kw">if let </span>EmoteState::Emoting((<span class="kw">_</span>, emote_ent)) = <span class="kw-2">*</span>emote_state {
+                entities.kill(emote_ent);
+            }
+            <span class="kw-2">*</span>emote_state = EmoteState::Neutral;
+        })
+        .system()
     }
 }
 
@@ -1917,6 +2069,7 @@
     transforms: Comp&lt;Transform&gt;,
     atlas_sprites: Comp&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>emote_states: CompMut&lt;EmoteState&gt;,
+    <span class="kw-2">mut </span>commands: Commands,
     players_killed: Comp&lt;PlayerKilled&gt;,
     animation_bank_sprites: CompMut&lt;AnimationBankSprite&gt;,
 ) {
@@ -1974,17 +2127,18 @@
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(new_emote) = triggered_emote {
             <span class="kw">if let </span>EmoteState::Emoting(already_emote) = emote_state {
-                <span class="kw">if </span>new_emote != <span class="kw-2">*</span>already_emote {
-                    player_layer.face_anim = new_emote.animation_key().into();
-                    <span class="kw-2">*</span>emote_state = EmoteState::Emoting(new_emote);
+                <span class="kw">if </span>new_emote != already_emote.<span class="number">0 </span>{
+                    player_layer.face_anim = new_emote.face_animation_key();
+                    commands.add(Emote::stop_animation(player_ent));
+                    commands.add(Emote::start_animation(player_ent, new_emote));
                 }
             } <span class="kw">else </span>{
-                player_layer.face_anim = new_emote.animation_key().into();
-                <span class="kw-2">*</span>emote_state = EmoteState::Emoting(new_emote);
+                player_layer.face_anim = new_emote.face_animation_key();
+                commands.add(Emote::start_animation(player_ent, new_emote));
             }
         } <span class="kw">else </span>{
-            <span class="kw-2">*</span>emote_state = EmoteState::Neutral;
             player_layer.face_anim = animation_bank.current;
+            commands.add(Emote::stop_animation(player_ent));
         }
     }
 }

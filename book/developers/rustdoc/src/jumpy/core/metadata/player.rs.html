@@ -283,6 +283,17 @@
 <a href="#188" id="188">188</a>
 <a href="#189" id="189">189</a>
 <a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Clone, Debug, Default)]
@@ -461,6 +472,17 @@
         .collect();
 
     <span class="prelude-val">Ok</span>(BodyAnimationsMeta { offsets, frames })
+}
+
+<span class="doccomment">/// Metadata for a player emote.
+</span><span class="attr">#[derive(HasSchema, Clone, Debug, Default)]
+#[type_data(metadata_asset(<span class="string">&quot;emote&quot;</span>))]
+#[repr(C)]
+</span><span class="kw">pub struct </span>EmoteMeta {
+    <span class="kw">pub </span>name: Ustr,
+    <span class="kw">pub </span>atlas: Handle&lt;Atlas&gt;,
+    <span class="kw">pub </span>offset: Vec2,
+    <span class="kw">pub </span>animation: AnimatedSprite,
 }
 
 <span class="doccomment">/// Metadata for a player hat.

@@ -172,15 +172,14 @@ impl_system_param! {
         actors: CompMut<'a, Actor>,
         /// Solids are things like walls and platforms, that aren't tiles, that have solid
         /// collisions.
-        ///
-        /// > **⚠️ Warning:** Solids have not been fully implemented yet and may not work. They were
-        /// > from the old physics system and haven't been fully ported.
         solids: CompMut<'a, Solid>,
         /// A collider is anything that can detect collisions in the world other than tiles, and
-        /// must either be an [`Actor`] or `Solid`] to participate in collision detection.
+        /// must either be an [`Actor`] or [`Solid`] to participate in collision detection.
         colliders: CompMut<'a, Collider>,
         /// Contains the rapier collider handles for each map tile.
         tile_rapier_handles: CompMut<'a, TileRapierHandle>,
+        /// Contains the rapier collider handles for each map solid.
+        solid_rapier_handles: CompMut<'a, SolidRapierHandle>,
 
         tile_layers: Comp<'a, TileLayer>,
         tile_collision_kinds: Comp<'a, TileCollisionKind>,
@@ -196,7 +195,10 @@ pub struct Actor;
 /// A solid in the physics simulation.
 #[derive(Default, Clone, Copy, Debug, HasSchema)]
 #[repr(C)]
-pub struct Solid;
+pub struct Solid {
+    pub pos: Vec2,
+    pub size: Vec2,
+}
 
 /// A collider body in the physics simulation.
 ///
@@ -228,6 +230,10 @@ pub struct Collider {
 /// Component added to tiles that have been given corresponding rapier colliders.
 #[derive(Default, Clone, Debug, HasSchema, Deref, DerefMut)]
 pub struct TileRapierHandle(pub rapier::RigidBodyHandle);
+
+/// Component added to solids that have been given corresponding rapier colliders.
+#[derive(Default, Clone, Debug, HasSchema, Deref, DerefMut)]
+pub struct SolidRapierHandle(pub rapier::RigidBodyHandle);
 
 /// Namespace struct for converting rapier collider user data to/from [`Entity`].
 pub struct RapierUserData;
@@ -430,11 +436,9 @@ impl<'a> CollisionWorld<'a> {
             .entities
             .iter_with((&self.tile_layers, &self.spawned_map_layer_metas))
         {
-            let bones_shape = ColliderShape::Rectangle {
+            let tile_shared_shape = collider_shape_cache.shared_shape(ColliderShape::Rectangle {
                 size: layer.tile_size,
-            };
-            let shared_shape = collider_shape_cache.shared_shape(bones_shape);
-
+            });
             for x in 0..layer.grid_size.x {
                 for y in 0..layer.grid_size.y {
                     let pos = uvec2(x, y);
@@ -459,7 +463,7 @@ impl<'a> CollisionWorld<'a> {
                                     .user_data(RapierUserData::from(tile_ent)),
                             );
                             collider_set.insert_with_parent(
-                                rapier::ColliderBuilder::new(shared_shape.clone())
+                                rapier::ColliderBuilder::new(tile_shared_shape.clone())
                                     .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
                                     .active_collision_types(rapier::ActiveCollisionTypes::all())
                                     .user_data(RapierUserData::from(tile_ent)),
@@ -475,6 +479,38 @@ impl<'a> CollisionWorld<'a> {
                     // Update the collider position
                     tile_body.set_translation(rapier::Vector::new(collider_x, collider_y), false);
                 }
+            }
+
+            for (solid_ent, solid) in self.entities.iter_with(&self.solids) {
+                let bones_shape = ColliderShape::Rectangle { size: solid.size };
+                let shared_shape = collider_shape_cache.shared_shape(bones_shape);
+
+                // Get or create a collider for the solid
+                let handle = self
+                    .solid_rapier_handles
+                    .get(solid_ent)
+                    .map(|x| **x)
+                    .unwrap_or_else(|| {
+                        let body_handle = rigid_body_set.insert(
+                            rapier::RigidBodyBuilder::fixed()
+                                .user_data(RapierUserData::from(solid_ent)),
+                        );
+                        collider_set.insert_with_parent(
+                            rapier::ColliderBuilder::new(shared_shape.clone())
+                                .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
+                                .active_collision_types(rapier::ActiveCollisionTypes::all())
+                                .user_data(RapierUserData::from(solid_ent)),
+                            body_handle,
+                            rigid_body_set,
+                        );
+                        self.solid_rapier_handles
+                            .insert(solid_ent, SolidRapierHandle(body_handle));
+                        body_handle
+                    });
+                let solid_body = rigid_body_set.get_mut(handle).unwrap();
+
+                // Update the solid position
+                solid_body.set_translation(rapier::Vector::new(solid.pos.x, solid.pos.y), false);
             }
         }
     }
@@ -594,6 +630,11 @@ impl<'a> CollisionWorld<'a> {
                 rapier::QueryFilter::new().predicate(&|_handle, rapier_collider| {
                     let ent = RapierUserData::entity(rapier_collider.user_data);
 
+                    if self.solids.contains(ent) {
+                        // Include all solid collisions
+                        return true;
+                    }
+
                     let Some(tile_kind) = self.tile_collision_kinds.get(ent) else {
                         // Ignore non-tile collisions
                         return false;
@@ -614,6 +655,10 @@ impl<'a> CollisionWorld<'a> {
 
                 // Subtract from the remaining attempted movement
                 dy -= diff;
+
+                if self.solids.contains(ent) {
+                    break true;
+                }
 
                 let tile_kind = *self.tile_collision_kinds.get(ent).unwrap();
 
@@ -725,6 +770,11 @@ impl<'a> CollisionWorld<'a> {
                     rapier::QueryFilter::new().predicate(&|_handle, rapier_collider| {
                         let ent = RapierUserData::entity(rapier_collider.user_data);
 
+                        if self.solids.contains(ent) {
+                            // Include all solid collisions
+                            return true;
+                        }
+
                         let Some(tile_kind) = self.tile_collision_kinds.get(ent) else {
                             // Ignore non-tile collisions
                             return false;
@@ -746,6 +796,10 @@ impl<'a> CollisionWorld<'a> {
 
                 // Subtract from the remaining attempted movement
                 dx -= diff;
+
+                if self.solids.contains(ent) {
+                    break true;
+                }
 
                 let tile_kind = *self.tile_collision_kinds.get(ent).unwrap();
 
@@ -810,7 +864,21 @@ impl<'a> CollisionWorld<'a> {
     /// > perfectly lined up along the edge of a tile, but `tile_collision_point` won't.
     #[allow(unused)]
     pub fn solid_at(&self, pos: Vec2) -> bool {
-        self.tile_collision_point(pos) == TileCollisionKind::Solid
+        self.solid_collision_point(pos)
+            || self.tile_collision_point(pos) == TileCollisionKind::Solid
+    }
+
+    pub fn solid_collision_point(&self, pos: Vec2) -> bool {
+        for (_, (solid, collider)) in self.entities.iter_with((&self.solids, &self.colliders)) {
+            let bbox = collider
+                .shape
+                .bounding_box(Transform::from_translation(solid.pos.extend(0.0)));
+            if bbox.contains(pos) {
+                return true;
+            }
+        }
+
+        false
     }
 
     /// Returns the tile collision at the given point.
@@ -865,11 +933,17 @@ impl<'a> CollisionWorld<'a> {
                 &*shape.shared_shape(),
                 rapier::QueryFilter::new().predicate(&|_handle, collider| {
                     let ent = RapierUserData::entity(collider.user_data);
-                    self.tile_collision_kinds.contains(ent) && filter(ent)
+                    (self.solids.contains(ent) || self.tile_collision_kinds.contains(ent))
+                        && filter(ent)
                 }),
             )
             .map(|x| RapierUserData::entity(self.ctx.collider_set.get(x).unwrap().user_data))
-            .and_then(|e| self.tile_collision_kinds.get(e).copied())
+            .and_then(|ent| {
+                if self.solids.contains(ent) {
+                    return Some(TileCollisionKind::Solid);
+                }
+                self.tile_collision_kinds.get(ent).copied()
+            })
             .unwrap_or_default()
     }
 

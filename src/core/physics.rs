@@ -3,7 +3,7 @@
 use crate::prelude::*;
 
 pub use collisions::{
-    Actor, Collider, ColliderShape, CollisionWorld, RapierContext, RapierUserData,
+    Actor, Collider, ColliderShape, CollisionWorld, RapierContext, RapierUserData, Solid,
     TileCollisionKind,
 };
 

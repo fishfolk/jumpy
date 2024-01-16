@@ -162,6 +162,7 @@ fn spawn_map(
     mut camera_states: CompMut<CameraState>,
     mut spawned_map_layer_metas: CompMut<SpawnedMapLayerMeta>,
     mut spawned_map_meta: ResMutInit<SpawnedMapMeta>,
+    mut solids: CompMut<Solid>,
 ) {
     if map_spawned.0 {
         return;
@@ -255,6 +256,17 @@ fn spawn_map(
             transforms.insert(
                 layer_ent,
                 Transform::from_translation(Vec3::new(0.0, 0.0, layer_z)),
+            );
+        }
+
+        for solid_meta in &layer.solids {
+            let solid_ent = entities.create();
+            solids.insert(
+                solid_ent,
+                Solid {
+                    pos: solid_meta.pos,
+                    size: solid_meta.size,
+                },
             );
         }
 

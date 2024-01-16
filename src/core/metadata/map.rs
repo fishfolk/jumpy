@@ -40,7 +40,15 @@ pub struct MapLayerMeta {
     pub id: Ustr,
     pub tilemap: Maybe<Handle<Atlas>>,
     pub tiles: SVec<MapTileMeta>,
+    pub solids: SVec<MapSolidMeta>,
     pub elements: SVec<ElementSpawn>,
+}
+
+#[derive(HasSchema, Clone, Debug, Default)]
+#[repr(C)]
+pub struct MapSolidMeta {
+    pub pos: Vec2,
+    pub size: Vec2,
 }
 
 #[derive(HasSchema, Clone, Debug, Default)]

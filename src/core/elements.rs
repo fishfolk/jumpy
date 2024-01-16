@@ -45,6 +45,15 @@ pub struct ElementMeta {
     pub plugin: Handle<LuaPlugin>,
 }
 
+#[derive(HasSchema, Default, Clone, Debug)]
+#[type_data(metadata_asset("solid"))]
+#[repr(C)]
+pub struct ElementSolidMeta {
+    pub enabled: bool,
+    pub pos: Vec2,
+    pub size: Vec2,
+}
+
 #[derive(HasSchema, Deserialize, Clone, Debug)]
 #[repr(C)]
 pub struct ElementEditorMeta {

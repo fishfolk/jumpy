@@ -259,17 +259,6 @@ fn spawn_map(
             );
         }
 
-        for solid_meta in &layer.solids {
-            let solid_ent = entities.create();
-            solids.insert(
-                solid_ent,
-                Solid {
-                    pos: solid_meta.pos,
-                    size: solid_meta.size,
-                },
-            );
-        }
-
         // Spawn the elements
         for element_meta in &layer.elements {
             let element_ent = entities.create();
@@ -280,6 +269,17 @@ fn spawn_map(
                 Transform::from_translation(element_meta.pos.extend(layer_z)),
             );
             element_handles.insert(element_ent, ElementHandle(element_meta.element));
+
+            if element_meta.solid.enabled {
+                let solid_ent = entities.create();
+                solids.insert(
+                    solid_ent,
+                    Solid {
+                        pos: element_meta.solid.pos,
+                        size: element_meta.solid.size,
+                    },
+                );
+            }
         }
     }
 

@@ -162,7 +162,9 @@ fn spawn_map(
     mut camera_states: CompMut<CameraState>,
     mut spawned_map_layer_metas: CompMut<SpawnedMapLayerMeta>,
     mut spawned_map_meta: ResMutInit<SpawnedMapMeta>,
+    mut element_solids: CompMut<ElementSolid>,
     mut solids: CompMut<Solid>,
+    mut colliders: CompMut<Collider>,
 ) {
     if map_spawned.0 {
         return;
@@ -272,11 +274,21 @@ fn spawn_map(
 
             if element_meta.solid.enabled {
                 let solid_ent = entities.create();
+                element_solids.insert(element_ent, ElementSolid(solid_ent));
                 solids.insert(
                     solid_ent,
                     Solid {
                         pos: element_meta.solid.pos,
                         size: element_meta.solid.size,
+                    },
+                );
+                colliders.insert(
+                    solid_ent,
+                    Collider {
+                        shape: ColliderShape::Rectangle {
+                            size: element_meta.solid.size,
+                        },
+                        ..default()
                     },
                 );
             }

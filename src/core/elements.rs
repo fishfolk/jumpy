@@ -94,6 +94,10 @@ pub struct DehydrateOutOfBounds(pub Entity);
 #[repr(C)]
 pub struct ElementHandle(pub Handle<ElementMeta>);
 
+#[derive(Clone, HasSchema, Default, Deref, DerefMut)]
+#[repr(C)]
+pub struct ElementSolid(pub Entity);
+
 #[derive(Clone, HasSchema)]
 #[schema(no_default)]
 pub struct ElementKillCallback {

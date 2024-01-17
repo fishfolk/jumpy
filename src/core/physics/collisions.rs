@@ -178,8 +178,6 @@ impl_system_param! {
         colliders: CompMut<'a, Collider>,
         /// Contains the rapier collider handles for each map tile.
         tile_rapier_handles: CompMut<'a, TileRapierHandle>,
-        /// Contains the rapier collider handles for each map solid.
-        solid_rapier_handles: CompMut<'a, SolidRapierHandle>,
 
         tile_layers: Comp<'a, TileLayer>,
         tile_collision_kinds: Comp<'a, TileCollisionKind>,
@@ -230,10 +228,6 @@ pub struct Collider {
 /// Component added to tiles that have been given corresponding rapier colliders.
 #[derive(Default, Clone, Debug, HasSchema, Deref, DerefMut)]
 pub struct TileRapierHandle(pub rapier::RigidBodyHandle);
-
-/// Component added to solids that have been given corresponding rapier colliders.
-#[derive(Default, Clone, Debug, HasSchema, Deref, DerefMut)]
-pub struct SolidRapierHandle(pub rapier::RigidBodyHandle);
 
 /// Namespace struct for converting rapier collider user data to/from [`Entity`].
 pub struct RapierUserData;
@@ -404,6 +398,37 @@ impl<'a> CollisionWorld<'a> {
             rapier_collider.set_enabled(!collider.disabled);
             rapier_collider.set_position_wrt_parent(rapier::Isometry::new(default(), 0.0));
         }
+
+        for (solid_ent, (solid, collider)) in
+            self.entities.iter_with((&self.solids, &mut self.colliders))
+        {
+            let bones_shape = ColliderShape::Rectangle { size: solid.size };
+            let shared_shape = collider_shape_cache.shared_shape(bones_shape);
+
+            // Get or create a collider for the solid
+            let handle = collider.rapier_handle.get_or_insert_with(|| {
+                let body_handle = rigid_body_set.insert(
+                    rapier::RigidBodyBuilder::fixed().user_data(RapierUserData::from(solid_ent)),
+                );
+                collider_set.insert_with_parent(
+                    rapier::ColliderBuilder::new(shared_shape.clone())
+                        .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
+                        .active_collision_types(rapier::ActiveCollisionTypes::all())
+                        .user_data(RapierUserData::from(solid_ent)),
+                    body_handle,
+                    rigid_body_set,
+                );
+                body_handle
+            });
+            let solid_body = rigid_body_set.get_mut(*handle).unwrap();
+
+            // Update the solid position
+            solid_body.set_translation(rapier::Vector::new(solid.pos.x, solid.pos.y), false);
+
+            let rapier_collider = collider_set.get_mut(solid_body.colliders()[0]).unwrap();
+            rapier_collider.set_enabled(!collider.disabled);
+            rapier_collider.set_position_wrt_parent(rapier::Isometry::new(default(), 0.0));
+        }
     }
 
     /// Update all of the map tile collisions.
@@ -479,38 +504,6 @@ impl<'a> CollisionWorld<'a> {
                     // Update the collider position
                     tile_body.set_translation(rapier::Vector::new(collider_x, collider_y), false);
                 }
-            }
-
-            for (solid_ent, solid) in self.entities.iter_with(&self.solids) {
-                let bones_shape = ColliderShape::Rectangle { size: solid.size };
-                let shared_shape = collider_shape_cache.shared_shape(bones_shape);
-
-                // Get or create a collider for the solid
-                let handle = self
-                    .solid_rapier_handles
-                    .get(solid_ent)
-                    .map(|x| **x)
-                    .unwrap_or_else(|| {
-                        let body_handle = rigid_body_set.insert(
-                            rapier::RigidBodyBuilder::fixed()
-                                .user_data(RapierUserData::from(solid_ent)),
-                        );
-                        collider_set.insert_with_parent(
-                            rapier::ColliderBuilder::new(shared_shape.clone())
-                                .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
-                                .active_collision_types(rapier::ActiveCollisionTypes::all())
-                                .user_data(RapierUserData::from(solid_ent)),
-                            body_handle,
-                            rigid_body_set,
-                        );
-                        self.solid_rapier_handles
-                            .insert(solid_ent, SolidRapierHandle(body_handle));
-                        body_handle
-                    });
-                let solid_body = rigid_body_set.get_mut(handle).unwrap();
-
-                // Update the solid position
-                solid_body.set_translation(rapier::Vector::new(solid.pos.x, solid.pos.y), false);
             }
         }
     }

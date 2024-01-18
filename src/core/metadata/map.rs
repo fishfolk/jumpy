@@ -48,7 +48,6 @@ pub struct MapLayerMeta {
 pub struct ElementSpawn {
     pub pos: Vec2,
     pub element: Handle<ElementMeta>,
-    pub solid: ElementSolidMeta,
 }
 
 #[derive(HasSchema, Clone, Debug, Default)]

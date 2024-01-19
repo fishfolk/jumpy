@@ -684,7 +684,7 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78286a81fead796dc4b45ab14f4f02fe29a94423d3587bcfef872b2a8e0a474b"
 dependencies = [
- "glam",
+ "glam 0.24.2",
  "serde",
 ]
 
@@ -694,7 +694,7 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6cfc2a21ea47970a9b1f0f4735af3256a8f204815bd756110051d10f9d909497"
 dependencies = [
- "glam",
+ "glam 0.24.2",
 ]
 
 [[package]]
@@ -750,7 +750,7 @@ dependencies = [
  "bevy_utils",
  "downcast-rs",
  "erased-serde",
- "glam",
+ "glam 0.24.2",
  "once_cell",
  "parking_lot 0.12.1",
  "serde",
@@ -1000,9 +1000,9 @@ dependencies = [
 
 [[package]]
 name = "bindgen"
-version = "0.69.1"
+version = "0.69.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ffcebc3849946a7170a05992aac39da343a90676ab392c51a4280981d6379c2"
+checksum = "a4c69fae65a523209d34240b60abe0c42d33d1045d445c0839d8a4894a736e2d"
 dependencies = [
  "bitflags 2.4.1",
  "cexpr",
@@ -1032,6 +1032,12 @@ name = "bit-vec"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
+
+[[package]]
+name = "bitfield"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d7e60934ceec538daadb9d8432424ed043a904d8e0243f3c6446bce549a46ac"
 
 [[package]]
 name = "bitfield-rle"
@@ -1113,7 +1119,7 @@ dependencies = [
 [[package]]
 name = "bones_asset"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "anyhow",
  "append-only-vec",
@@ -1144,7 +1150,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_renderer"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "anyhow",
  "bevy",
@@ -1152,7 +1158,7 @@ dependencies = [
  "bevy_prototype_lyon",
  "bones_framework",
  "directories",
- "glam",
+ "glam 0.24.2",
  "serde",
  "serde_yaml",
  "web-sys",
@@ -1161,14 +1167,14 @@ dependencies = [
 [[package]]
 name = "bones_ecs"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "anyhow",
  "atomicell",
  "bitset-core",
  "bones_schema",
  "bones_utils",
- "glam",
+ "glam 0.24.2",
  "once_map",
  "paste",
  "thiserror",
@@ -1177,7 +1183,7 @@ dependencies = [
 [[package]]
 name = "bones_framework"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -1196,7 +1202,7 @@ dependencies = [
  "fluent-langneg",
  "futures-lite 1.13.0",
  "ggrs",
- "glam",
+ "glam 0.24.2",
  "hex",
  "image",
  "instant",
@@ -1225,7 +1231,7 @@ dependencies = [
 [[package]]
 name = "bones_lib"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "bones_ecs",
  "instant",
@@ -1234,7 +1240,7 @@ dependencies = [
 [[package]]
 name = "bones_matchmaker_proto"
 version = "0.2.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "serde",
 ]
@@ -1242,13 +1248,13 @@ dependencies = [
 [[package]]
 name = "bones_schema"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "append-only-vec",
  "bones_schema_macros",
  "bones_utils",
  "erased-serde",
- "glam",
+ "glam 0.24.2",
  "humantime",
  "paste",
  "serde",
@@ -1260,7 +1266,7 @@ dependencies = [
 [[package]]
 name = "bones_schema_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1270,7 +1276,7 @@ dependencies = [
 [[package]]
 name = "bones_scripting"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "async-channel",
  "bevy_tasks",
@@ -1287,7 +1293,7 @@ dependencies = [
 [[package]]
 name = "bones_utils"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "bones_utils_macros",
  "branches",
@@ -1308,7 +1314,7 @@ dependencies = [
 [[package]]
 name = "bones_utils_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "quote",
  "venial",
@@ -1910,7 +1916,7 @@ checksum = "8fce2eeef77fd4a293a54b62aa00ac9daebfbcda4bf8998c5a815635b004aa1c"
 dependencies = [
  "const_panic",
  "encase_derive",
- "glam",
+ "glam 0.24.2",
  "thiserror",
 ]
 
@@ -2521,8 +2527,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5418c17512bdf42730f9032c74e1ae39afc408745ebb2acf72fbc4691c17945"
 dependencies = [
  "bytemuck",
- "mint",
  "serde",
+]
+
+[[package]]
+name = "glam"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "151665d9be52f9bb40fc7966565d39666f2d1e69233571b71b87791c7e0528b3"
+dependencies = [
+ "mint",
 ]
 
 [[package]]
@@ -2661,6 +2675,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "heck"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
+
+[[package]]
 name = "hermit-abi"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2679,7 +2699,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7cb3df16a7bcb1b5bc092abd55e14f77ca70aea14445026e264586fc62889a10"
 dependencies = [
  "constgebra",
- "glam",
+ "glam 0.24.2",
 ]
 
 [[package]]
@@ -2758,14 +2778,13 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.24.7"
+version = "0.24.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f3dfdbdd72063086ff443e297b61695500514b1e41095b6fb9a5ab48a70a711"
+checksum = "034bbe799d1909622a74d1193aa50147769440040ff36cb2baa947609b0a4e23"
 dependencies = [
  "bytemuck",
  "byteorder",
  "color_quant",
- "num-rational",
  "num-traits",
  "png",
  "tiff",
@@ -2957,15 +2976,15 @@ dependencies = [
 
 [[package]]
 name = "jpeg-decoder"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc0000e42512c92e31c2252315bda326620a4e034105e900c98ec492fa077b3e"
+checksum = "f5d4a7da358eff58addd2877a45865158f0d78c911d43a5784ceb7bbf52833b0"
 
 [[package]]
 name = "js-sys"
-version = "0.3.66"
+version = "0.3.67"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cee9c64da59eae3b50095c18d3e74f8b73c0b86d2792824ff01bbce68ba229ca"
+checksum = "9a1d36f1235bc969acba30b7f5990b864423a6068a10f7c90ae8f0112e3a59d1"
 dependencies = [
  "wasm-bindgen",
 ]
@@ -2977,8 +2996,10 @@ dependencies = [
  "async-channel",
  "bevy_dylib",
  "bevy_tasks",
+ "bitfield",
  "bones_bevy_renderer",
  "bones_framework",
+ "bytemuck",
  "egui_extras",
  "humantime-serde",
  "indexmap 2.1.0",
@@ -2987,12 +3008,14 @@ dependencies = [
  "ordered-float",
  "peg",
  "petgraph",
+ "postcard",
  "puffin",
  "rapier2d",
  "serde",
  "serde_yaml",
  "shadow-rs",
  "shiftnanigans",
+ "strum",
  "thiserror",
  "tracing",
  "turborand",
@@ -3011,12 +3034,13 @@ dependencies = [
 
 [[package]]
 name = "kira"
-version = "0.8.5"
-source = "git+https://github.com/zicklag/kira.git?branch=feat/sync#ff184e31263652e21d94445b9087dfee04c2ea2b"
+version = "0.8.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ebf1a7c2430fc76940b1443d7d2f91d92238ec56a053f706357f9f3f09c70ff3"
 dependencies = [
  "atomic-arena",
  "cpal",
- "glam",
+ "glam 0.25.0",
  "mint",
  "ringbuf",
  "send_wrapper",
@@ -3379,7 +3403,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "307ed9b18cc2423f29e83f84fd23a8e73628727990181f18641a8b5dc2ab1caa"
 dependencies = [
  "approx",
- "glam",
+ "glam 0.24.2",
  "matrixmultiply",
  "nalgebra-macros",
  "num-complex",
@@ -4064,9 +4088,9 @@ checksum = "69d3587f8a9e599cc7ec2c00e331f71c4e69a5f9a4b8a6efd5b07466b9736f9a"
 
 [[package]]
 name = "png"
-version = "0.17.10"
+version = "0.17.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd75bf2d8dd3702b9707cdbc56a5b9ef42cec752eb8b3bafc01234558442aa64"
+checksum = "1f6c3c3e617595665b8ea2ff95a86066be38fb121ff920a9c0eb282abcd1da5a"
 dependencies = [
  "bitflags 1.3.2",
  "crc32fast",
@@ -4213,7 +4237,7 @@ dependencies = [
 [[package]]
 name = "quinn_runtime_bevy"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#e59db7c7887a1a3832aaa4ea6a89bd4b5e194c5a"
+source = "git+https://github.com/fishfolk/bones#3ee624a9ae156e1e7468a0d94e6cda4978612b94"
 dependencies = [
  "async-executor",
  "async-io",
@@ -4605,6 +4629,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustversion"
+version = "1.0.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
+
+[[package]]
 name = "ryu"
 version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4946,6 +4976,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e08d8363704e6c71fc928674353e6b7c23dcea9d82d7012c8faf2a3a025f8d0"
 
 [[package]]
+name = "strum"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "290d54ea6f91c969195bdbcd7442c8c2a2ba87da8bf60a7ee86a235d4bc1e125"
+dependencies = [
+ "strum_macros",
+]
+
+[[package]]
+name = "strum_macros"
+version = "0.25.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23dc1fa9ac9c169a78ba62f0b841814b7abae11bdd047b9c58f893439e309ea0"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
+ "rustversion",
+ "syn 2.0.48",
+]
+
+[[package]]
 name = "svg_fmt"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5147,9 +5199,9 @@ dependencies = [
 
 [[package]]
 name = "tiff"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d172b0f4d3fba17ba89811858b9d3d97f928aece846475bbda076ca46736211"
+checksum = "ba1310fcea54c6a9a4fd1aad794ecc02c31682f6bfbecdf460bf19533eed1e3e"
 dependencies = [
  "flate2",
  "jpeg-decoder",
@@ -5592,9 +5644,9 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.89"
+version = "0.2.90"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ed0d4f68a3015cc185aff4db9506a015f4b96f95303897bfa23f846db54064e"
+checksum = "b1223296a201415c7fad14792dbefaace9bd52b62d33453ade1c5b5f07555406"
 dependencies = [
  "cfg-if",
  "wasm-bindgen-macro",
@@ -5602,9 +5654,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-backend"
-version = "0.2.89"
+version = "0.2.90"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b56f625e64f3a1084ded111c4d5f477df9f8c92df113852fa5a374dbda78826"
+checksum = "fcdc935b63408d58a32f8cc9738a0bffd8f05cc7c002086c6ef20b7312ad9dcd"
 dependencies = [
  "bumpalo",
  "log",
@@ -5617,9 +5669,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-futures"
-version = "0.4.39"
+version = "0.4.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac36a15a220124ac510204aec1c3e5db8a22ab06fd6706d881dc6149f8ed9a12"
+checksum = "bde2032aeb86bdfaecc8b261eef3cba735cc426c1f3a3416d1e0791be95fc461"
 dependencies = [
  "cfg-if",
  "js-sys",
@@ -5629,9 +5681,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.89"
+version = "0.2.90"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0162dbf37223cd2afce98f3d0785506dcb8d266223983e4b5b525859e6e182b2"
+checksum = "3e4c238561b2d428924c49815533a8b9121c664599558a5d9ec51f8a1740a999"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -5639,9 +5691,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.89"
+version = "0.2.90"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0eb82fcb7930ae6219a7ecfd55b217f5f0893484b7a13022ebb2b2bf20b5283"
+checksum = "bae1abb6806dc1ad9e560ed242107c0f6c84335f1749dd4e8ddb012ebd5e25a7"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5652,9 +5704,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.89"
+version = "0.2.90"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ab9b36309365056cd639da3134bf87fa8f3d86008abf99e612384a6eecd459f"
+checksum = "4d91413b1c31d7539ba5ef2451af3f0b833a005eb27a631cec32bc0635a8602b"
 
 [[package]]
 name = "wayland-scanner"
@@ -5669,9 +5721,9 @@ dependencies = [
 
 [[package]]
 name = "web-sys"
-version = "0.3.66"
+version = "0.3.67"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50c24a44ec86bb68fbecd1b3efed7e85ea5621b39b35ef2766b66cd984f8010f"
+checksum = "58cd2333b6e0be7a39605f0e255892fd7418a682d8da8fe042fe25128794d2ed"
 dependencies = [
  "js-sys",
  "wasm-bindgen",

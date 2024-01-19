@@ -52,6 +52,8 @@ pub struct MatchPlugin {
     pub player_info: [PlayerInput; MAX_PLAYERS],
     /// The lua plugins to enable for this match.
     pub plugins: Arc<Vec<Handle<LuaPlugin>>>,
+
+    pub session_runner: Box<dyn SessionRunner>,
 }
 
 pub struct MatchPlayerInfo {
@@ -87,7 +89,7 @@ impl SessionPlugin for MatchPlugin {
         session.world.insert_resource(MatchInputs {
             players: self.player_info,
         });
-        session.runner = Box::<JumpyDefaultMatchRunner>::default();
+        session.runner = self.session_runner;
     }
 }
 
@@ -109,7 +111,7 @@ impl SessionRunner for JumpyDefaultMatchRunner {
         {
             let keyboard = world.resource::<KeyboardInputs>();
             let gamepad = world.resource::<GamepadInputs>();
-            self.input_collector.update(
+            self.input_collector.apply_inputs(
                 &world.resource::<PlayerControlMapping>(),
                 &keyboard,
                 &gamepad,
@@ -122,7 +124,8 @@ impl SessionRunner for JumpyDefaultMatchRunner {
                 .resource_mut::<Time>()
                 .advance_exact(Duration::from_secs_f64(STEP));
 
-            let input = self.input_collector.get();
+            self.input_collector.update_just_pressed();
+            let input = self.input_collector.get_current_controls();
             {
                 let mut player_inputs = world.resource_mut::<MatchInputs>();
                 (0..MAX_PLAYERS).for_each(|i| {
@@ -133,6 +136,9 @@ impl SessionRunner for JumpyDefaultMatchRunner {
                     player_input.control = *input.get(source).unwrap();
                 });
             }
+
+            // Mark inputs as consumed for this frame
+            self.input_collector.advance_frame();
 
             // Advance the simulation
             stages.run(world);

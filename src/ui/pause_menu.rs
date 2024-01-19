@@ -1,6 +1,9 @@
 use std::ops::Deref;
 
-use crate::prelude::*;
+#[cfg(not(target_arch = "wasm32"))]
+use bones_framework::networking::NetworkMatchSocket;
+
+use crate::{core::JumpyDefaultMatchRunner, prelude::*};
 
 #[derive(Clone, Debug, Copy, Default)]
 enum PauseMenuPage {
@@ -20,7 +23,15 @@ fn pause_menu_system(
     controls: Res<GlobalPlayerControls>,
     world: &World,
     assets: Res<AssetServer>,
+
+    #[cfg(not(target_arch = "wasm32"))] socket: Option<Res<NetworkMatchSocket>>,
 ) {
+    // TODO allow pause menu in online game
+    #[cfg(not(target_arch = "wasm32"))]
+    if socket.is_some() {
+        return;
+    }
+
     let mut back_to_menu = false;
     let mut restart_game = false;
     let mut select_map = None;
@@ -82,7 +93,9 @@ fn pause_menu_system(
         sessions.start_menu();
     } else if restart_game {
         sessions.restart_game();
-    } else if let Some(map) = select_map {
+    } else if let Some(map_handle) = select_map {
+        let map = assets.get(map_handle).clone();
+
         let match_info = sessions
             .get(SessionNames::GAME)
             .unwrap()
@@ -99,6 +112,7 @@ fn pause_menu_system(
                 ..match_info.players[i]
             }),
             plugins: meta.get_plugins(&assets),
+            session_runner: Box::<JumpyDefaultMatchRunner>::default(),
         })
     }
 }
@@ -108,8 +122,15 @@ fn main_pause_menu(
     meta: Root<GameMeta>,
     localization: Localization<GameMeta>,
     controls: Res<GlobalPlayerControls>,
+
+    #[cfg(not(target_arch = "wasm32"))] socket: Option<Res<NetworkMatchSocket>>,
 ) {
     let (ui, session, restart_game, back_to_menu) = &mut *param;
+
+    #[cfg(not(target_arch = "wasm32"))]
+    let is_online = socket.is_some();
+    #[cfg(target_arch = "wasm32")]
+    let is_online = false;
 
     // Unpause the game
     if controls.values().any(|x| x.pause_just_pressed) {
@@ -152,7 +173,6 @@ fn main_pause_menu(
 
         // Local game buttons
         ui.scope(|ui| {
-            let is_online = false;
             ui.set_enabled(!is_online);
 
             // Map select button

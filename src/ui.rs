@@ -4,6 +4,9 @@ pub mod main_menu;
 pub mod map_select;
 pub mod pause_menu;
 
+#[cfg(not(target_arch = "wasm32"))]
+pub mod network_game;
+
 #[derive(HasSchema, Clone, Debug)]
 #[repr(C)]
 pub struct UiTheme {

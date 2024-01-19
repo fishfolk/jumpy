@@ -2,6 +2,8 @@
 
 use std::array;
 
+use bones_framework::input::PlayerControls;
+
 use crate::{prelude::*, MAX_PLAYERS};
 
 pub fn install(session: &mut Session) {
@@ -22,6 +24,33 @@ impl Default for MatchInputs {
     }
 }
 
+impl PlayerControls<'_, PlayerControl> for MatchInputs {
+    type ControlSource = ControlSource;
+    type ControlMapping = PlayerControlMapping;
+    type InputCollector = PlayerInputCollector;
+
+    fn update_controls(&mut self, collector: &mut PlayerInputCollector) {
+        (0..MAX_PLAYERS).for_each(|i| {
+            let player_input = &mut self.players[i];
+            if let Some(source) = &player_input.control_source {
+                player_input.control = *collector.get_control(i, *source);
+            }
+        });
+    }
+
+    fn get_control_source(&self, player_idx: usize) -> Option<ControlSource> {
+        self.players.get(player_idx).unwrap().control_source
+    }
+
+    fn get_control(&self, player_idx: usize) -> &PlayerControl {
+        &self.players.get(player_idx).unwrap().control
+    }
+
+    fn get_control_mut(&mut self, player_idx: usize) -> &mut PlayerControl {
+        &mut self.players.get_mut(player_idx).unwrap().control
+    }
+}
+
 /// Player input, not just controls, but also other status that comes from the player, such as the
 /// selected player and whether the player is actually active.
 #[derive(Default, Clone, Debug, HasSchema)]
@@ -36,8 +65,11 @@ pub struct PlayerInput {
     pub control: PlayerControl,
     /// The editor inputs the player is making, if any.
     pub editor_input: Option<EditorInput>,
-    /// If this is [`None`] it means the player is an AI.
+    /// If this is [`None`] it means the player is an AI, or remote player in networked game.
     pub control_source: Option<ControlSource>,
+
+    /// Whether or not this is an AI player.
+    pub is_ai: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

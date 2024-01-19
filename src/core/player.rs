@@ -594,9 +594,7 @@ fn hydrate_players(
         let player_has_spawned = &mut players_have_spawned.players[player_idx.0 as usize];
         let player_handle = player_inputs.players[player_idx.0 as usize].selected_player;
         let player_hat = &player_inputs.players[player_idx.0 as usize].selected_hat;
-        let is_ai = player_inputs.players[player_idx.0 as usize]
-            .control_source
-            .is_none();
+        let is_ai = player_inputs.players[player_idx.0 as usize].is_ai;
 
         let meta = assets.get(player_handle);
 

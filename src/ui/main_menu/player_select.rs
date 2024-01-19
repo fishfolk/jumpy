@@ -354,103 +354,105 @@ fn player_select_panel(
         .map(|s| *controls.get(s).unwrap())
         .unwrap_or_default();
 
-    if player_control.menu_confirm_just_pressed {
-        slot.confirmed = true;
+    if new_player_join.is_none() {
+        if player_control.menu_confirm_just_pressed {
+            slot.confirmed = true;
 
-        #[cfg(not(target_arch = "wasm32"))]
-        if let Some(socket) = network_socket.as_ref() {
-            socket.send_reliable(
-                SocketTarget::All,
-                &postcard::to_allocvec(&PlayerSelectMessage::ConfirmSelection(slot.confirmed))
-                    .unwrap(),
-            );
-        }
-    } else if player_control.menu_back_just_pressed {
-        if !is_network {
-            if slot.confirmed {
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(socket) = network_socket.as_ref() {
+                socket.send_reliable(
+                    SocketTarget::All,
+                    &postcard::to_allocvec(&PlayerSelectMessage::ConfirmSelection(slot.confirmed))
+                        .unwrap(),
+                );
+            }
+        } else if player_control.menu_back_just_pressed {
+            if !is_network {
+                if slot.confirmed {
+                    slot.confirmed = false;
+                } else if slot.active {
+                    slot.active = false;
+                    slot.control_source = None;
+                }
+            } else {
                 slot.confirmed = false;
-            } else if slot.active {
-                slot.active = false;
-                slot.control_source = None;
             }
-        } else {
-            slot.confirmed = false;
-        }
-
-        #[cfg(not(target_arch = "wasm32"))]
-        if let Some(socket) = network_socket.as_ref() {
-            socket.send_reliable(
-                SocketTarget::All,
-                &postcard::to_allocvec(&PlayerSelectMessage::ConfirmSelection(slot.confirmed))
-                    .unwrap(),
-            );
-        }
-    } else if player_control.just_moved {
-        let direction = player_control.move_direction;
-
-        // Select a hat if the player has been confirmed
-        if slot.confirmed {
-            let current_hat_handle_idx = state
-                .hats
-                .iter()
-                .enumerate()
-                .find(|(_, handle)| **handle == slot.selected_hat)
-                .map(|(i, _)| i)
-                .unwrap_or(0);
-
-            let next_idx = if direction.x > 0.0 {
-                (current_hat_handle_idx + 1) % state.hats.len()
-            } else {
-                let idx = current_hat_handle_idx as i32 - 1;
-                if idx == -1 {
-                    state.hats.len() - 1
-                } else {
-                    idx as usize
-                }
-            };
-            slot.selected_hat = state.hats[next_idx];
 
             #[cfg(not(target_arch = "wasm32"))]
             if let Some(socket) = network_socket.as_ref() {
                 socket.send_reliable(
                     SocketTarget::All,
-                    &postcard::to_allocvec(&PlayerSelectMessage::SelectHat(
-                        slot.selected_hat.map(|x| x.network_handle(&asset_server)),
-                    ))
-                    .unwrap(),
+                    &postcard::to_allocvec(&PlayerSelectMessage::ConfirmSelection(slot.confirmed))
+                        .unwrap(),
                 );
             }
+        } else if player_control.just_moved {
+            let direction = player_control.move_direction;
 
-            // Select player skin if the player has not be confirmed
-        } else {
-            let current_player_handle_idx = state
-                .players
-                .iter()
-                .enumerate()
-                .find(|(_, handle)| *handle == player_handle)
-                .map(|(i, _)| i)
-                .unwrap_or(0);
-            let next_idx = if direction.x > 0.0 {
-                (current_player_handle_idx + 1) % state.players.len()
-            } else {
-                let idx = current_player_handle_idx as i32 - 1;
-                if idx == -1 {
-                    state.players.len() - 1
+            // Select a hat if the player has been confirmed
+            if slot.confirmed {
+                let current_hat_handle_idx = state
+                    .hats
+                    .iter()
+                    .enumerate()
+                    .find(|(_, handle)| **handle == slot.selected_hat)
+                    .map(|(i, _)| i)
+                    .unwrap_or(0);
+
+                let next_idx = if direction.x > 0.0 {
+                    (current_hat_handle_idx + 1) % state.hats.len()
                 } else {
-                    idx as usize
-                }
-            };
-            *player_handle = state.players[next_idx];
+                    let idx = current_hat_handle_idx as i32 - 1;
+                    if idx == -1 {
+                        state.hats.len() - 1
+                    } else {
+                        idx as usize
+                    }
+                };
+                slot.selected_hat = state.hats[next_idx];
 
-            #[cfg(not(target_arch = "wasm32"))]
-            if let Some(socket) = network_socket.as_ref() {
-                socket.send_reliable(
-                    SocketTarget::All,
-                    &postcard::to_allocvec(&PlayerSelectMessage::SelectPlayer(
-                        player_handle.network_handle(&asset_server),
-                    ))
-                    .unwrap(),
-                );
+                #[cfg(not(target_arch = "wasm32"))]
+                if let Some(socket) = network_socket.as_ref() {
+                    socket.send_reliable(
+                        SocketTarget::All,
+                        &postcard::to_allocvec(&PlayerSelectMessage::SelectHat(
+                            slot.selected_hat.map(|x| x.network_handle(&asset_server)),
+                        ))
+                        .unwrap(),
+                    );
+                }
+
+                // Select player skin if the player has not be confirmed
+            } else {
+                let current_player_handle_idx = state
+                    .players
+                    .iter()
+                    .enumerate()
+                    .find(|(_, handle)| *handle == player_handle)
+                    .map(|(i, _)| i)
+                    .unwrap_or(0);
+                let next_idx = if direction.x > 0.0 {
+                    (current_player_handle_idx + 1) % state.players.len()
+                } else {
+                    let idx = current_player_handle_idx as i32 - 1;
+                    if idx == -1 {
+                        state.players.len() - 1
+                    } else {
+                        idx as usize
+                    }
+                };
+                *player_handle = state.players[next_idx];
+
+                #[cfg(not(target_arch = "wasm32"))]
+                if let Some(socket) = network_socket.as_ref() {
+                    socket.send_reliable(
+                        SocketTarget::All,
+                        &postcard::to_allocvec(&PlayerSelectMessage::SelectPlayer(
+                            player_handle.network_handle(&asset_server),
+                        ))
+                        .unwrap(),
+                    );
+                }
             }
         }
     }
@@ -507,15 +509,19 @@ fn player_select_panel(
                         .as_ref()
                         .map(|handle| asset_server.get(*handle));
 
-                    ui.label(normal_font.rich(localization.get("pick-a-fish")));
+                    if !slot.confirmed {
+                        if slot.control_source.is_some() {
+                            ui.label(normal_font.rich(localization.get("pick-a-fish")));
+                        }
 
-                    if !slot.confirmed && network_local_player_slot.is_some_and(|s| s == *slot_id) {
-                        ui.label(normal_font.rich(localization.get_with(
-                            "press-button-to-lock-in",
-                            &fluent_args! {
-                                "button" => confirm_binding.as_str()
-                            },
-                        )));
+                        if network_local_player_slot.is_some_and(|s| s == *slot_id) || !is_network {
+                            ui.label(normal_font.rich(localization.get_with(
+                                "press-button-to-lock-in",
+                                &fluent_args! {
+                                    "button" => confirm_binding.as_str()
+                                },
+                            )));
+                        }
 
                         if !is_network {
                             ui.label(normal_font.rich(localization.get_with(

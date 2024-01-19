@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["main_menu","map_select","pause_menu"],"struct":["ImageMeta","UiTheme","UiThemeButtons","UiThemeColors","UiThemeEditor","UiThemeEditorIcons","UiThemeFontStyles","UiThemePanel","UiThemeWidgetColors","UiThemeWidgets"]};
+window.SIDEBAR_ITEMS = {"mod":["main_menu","map_select","network_game","pause_menu"],"struct":["ImageMeta","UiTheme","UiThemeButtons","UiThemeColors","UiThemeEditor","UiThemeEditorIcons","UiThemeFontStyles","UiThemePanel","UiThemeWidgetColors","UiThemeWidgets"]};

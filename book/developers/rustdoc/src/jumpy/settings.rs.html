@@ -192,7 +192,26 @@
 <a href="#97" id="97">97</a>
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>strum::IntoEnumIterator;
+
+<span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Settings plugin
 </span><span class="kw">pub fn </span>game_plugin(game: <span class="kw-2">&amp;mut </span>Game) {
@@ -243,6 +262,21 @@
     </span><span class="kw">pub </span>keyboard1: PlayerControlSetting,
     <span class="doccomment">/// Controls for keyboard player 2
     </span><span class="kw">pub </span>keyboard2: PlayerControlSetting,
+}
+
+<span class="kw">impl </span>PlayerControlMapping {
+    <span class="kw">pub fn </span>map_control_source(<span class="kw-2">&amp;</span><span class="self">self</span>, source: ControlSource) -&gt; <span class="kw-2">&amp;</span>PlayerControlSetting {
+        <span class="kw">match </span>source {
+            ControlSource::Keyboard1 =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.keyboard1,
+            ControlSource::Keyboard2 =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.keyboard2,
+            ControlSource::Gamepad(<span class="kw">_</span>) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.gamepad,
+        }
+    }
+
+    <span class="doccomment">/// Return an iterator for PlayerControlSetting for all control sources.
+    </span><span class="kw">pub fn </span>all_settings(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>PlayerControlSetting&gt; {
+        ControlSource::iter().map(|s| <span class="self">self</span>.map_control_source(s))
+    }
 }
 
 <span class="doccomment">/// Binds inputs to player actions

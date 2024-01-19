@@ -294,9 +294,32 @@
 <a href="#199" id="199">199</a>
 <a href="#200" id="200">200</a>
 <a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
 
-<span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</span><span class="kw">use </span>bones_framework::networking::NetworkMatchSocket;
+
+<span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>};
 
 <span class="attr">#[derive(Clone, Debug, Copy, Default)]
 </span><span class="kw">enum </span>PauseMenuPage {
@@ -316,7 +339,15 @@
     controls: Res&lt;GlobalPlayerControls&gt;,
     world: <span class="kw-2">&amp;</span>World,
     assets: Res&lt;AssetServer&gt;,
+
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
 ) {
+    <span class="comment">// TODO allow pause menu in online game
+    </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span><span class="kw">if </span>socket.is_some() {
+        <span class="kw">return</span>;
+    }
+
     <span class="kw">let </span><span class="kw-2">mut </span>back_to_menu = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>restart_game = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>select_map = <span class="prelude-val">None</span>;
@@ -378,7 +409,9 @@
         sessions.start_menu();
     } <span class="kw">else if </span>restart_game {
         sessions.restart_game();
-    } <span class="kw">else if let </span><span class="prelude-val">Some</span>(map) = select_map {
+    } <span class="kw">else if let </span><span class="prelude-val">Some</span>(map_handle) = select_map {
+        <span class="kw">let </span>map = assets.get(map_handle).clone();
+
         <span class="kw">let </span>match_info = sessions
             .get(SessionNames::GAME)
             .unwrap()
@@ -395,6 +428,7 @@
                 ..match_info.players[i]
             }),
             plugins: meta.get_plugins(<span class="kw-2">&amp;</span>assets),
+            session_runner: Box::&lt;JumpyDefaultMatchRunner&gt;::default(),
         })
     }
 }
@@ -404,8 +438,15 @@
     meta: Root&lt;GameMeta&gt;,
     localization: Localization&lt;GameMeta&gt;,
     controls: Res&lt;GlobalPlayerControls&gt;,
+
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
 ) {
     <span class="kw">let </span>(ui, session, restart_game, back_to_menu) = <span class="kw-2">&amp;mut *</span>param;
+
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span><span class="kw">let </span>is_online = socket.is_some();
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+    </span><span class="kw">let </span>is_online = <span class="bool-val">false</span>;
 
     <span class="comment">// Unpause the game
     </span><span class="kw">if </span>controls.values().any(|x| x.pause_just_pressed) {
@@ -448,7 +489,6 @@
 
         <span class="comment">// Local game buttons
         </span>ui.scope(|ui| {
-            <span class="kw">let </span>is_online = <span class="bool-val">false</span>;
             ui.set_enabled(!is_online);
 
             <span class="comment">// Map select button

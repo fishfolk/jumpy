@@ -149,7 +149,8 @@
 <a href="#54" id="54">54</a>
 <a href="#55" id="55">55</a>
 <a href="#56" id="56">56</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<a href="#57" id="57">57</a>
+</pre></div><pre class="rust"><code><span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub struct </span>SessionNames;
 <span class="kw">impl </span>SessionNames {
@@ -194,6 +195,7 @@
                     map,
                     player_info,
                     plugins,
+                    session_runner: Box::&lt;JumpyDefaultMatchRunner&gt;::default(),
                 });
         } <span class="kw">else </span>{
             <span class="macro">panic!</span>(<span class="string">&quot;Cannot restart game when game is not running&quot;</span>);

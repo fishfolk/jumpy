@@ -306,18 +306,30 @@
 <a href="#211" id="211">211</a>
 <a href="#212" id="212">212</a>
 <a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">use </span><span class="kw">super</span>::ImageMeta;
 
 <span class="kw">mod </span>credits;
 <span class="kw">mod </span>map_select;
-<span class="kw">mod </span>player_select;
+<span class="kw">pub mod </span>player_select;
 <span class="kw">mod </span>settings;
 <span class="kw">use </span>shadow_rs::shadow;
 
 <span class="comment">// Generate build info.
 </span><span class="macro">shadow!</span>(build_info);
+
+<span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</span><span class="kw">mod </span>network_game;
 
 <span class="attr">#[derive(HasSchema, Debug, Default, Clone)]
 #[repr(C)]
@@ -418,7 +430,11 @@
             MenuPage::PlayerSelect =&gt; world.run_system(player_select::widget, ui),
             MenuPage::MapSelect { .. } =&gt; world.run_system(map_select::widget, ui),
             MenuPage::Credits =&gt; world.run_system(credits::widget, ui),
-            MenuPage::NetworkGame =&gt; <span class="macro">todo!</span>(),
+            MenuPage::NetworkGame =&gt;
+            {
+                <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                </span>world.run_system(network_game::widget, ui)
+            }
         });
 
     egui::CentralPanel::default()
@@ -475,18 +491,20 @@
                     ui.ctx().set_state(MenuPage::PlayerSelect);
                 }
 
-                <span class="comment">// // Online game
-                // #[cfg(not(target_arch = &quot;wasm32&quot;))]
-                // if BorderedButton::themed(
-                //     &amp;meta.theme.buttons.normal,
-                //     localization.get(&quot;online-game&quot;),
-                // )
-                // .min_size(vec2(ui.available_width(), 0.0))
-                // .show(ui)
-                // .clicked()
-                // {}
+                <span class="comment">// Online game
+                </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                </span><span class="kw">if </span>BorderedButton::themed(
+                    <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
+                    localization.get(<span class="string">&quot;online-game&quot;</span>),
+                )
+                .min_size(vec2(ui.available_width(), <span class="number">0.0</span>))
+                .show(ui)
+                .clicked()
+                {
+                    ui.ctx().set_state(MenuPage::NetworkGame);
+                }
 
-                // Settings
+                <span class="comment">// Settings
                 </span><span class="kw">if </span>BorderedButton::themed(<span class="kw-2">&amp;</span>meta.theme.buttons.normal, localization.get(<span class="string">&quot;settings&quot;</span>))
                     .min_size(vec2(ui.available_width(), <span class="number">0.0</span>))
                     .show(ui)

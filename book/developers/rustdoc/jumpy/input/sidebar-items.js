@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ControlSource"],"fn":["collect_player_controls","game_plugin","handle_egui_input","load_controler_mapping"],"struct":["EguiInputSettings","GlobalPlayerControls","PlayerControl","PlayerInputCollector"]};
+window.SIDEBAR_ITEMS = {"enum":["ControlSource"],"fn":["collect_player_controls","game_plugin","handle_egui_input","load_controler_mapping"],"struct":["ControlSourceIter","DensePlayerControl","EguiInputSettings","GlobalPlayerControls","NetworkInputConfig","PlayerControl","PlayerInputCollector"]};

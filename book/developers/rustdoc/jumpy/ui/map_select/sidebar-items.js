@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["MapSelectAction"],"fn":["map_select_menu"]};
+window.SIDEBAR_ITEMS = {"enum":["MapSelectAction","MapSelectMessage"],"fn":["map_select_menu"]};

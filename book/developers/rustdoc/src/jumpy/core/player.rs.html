@@ -1148,8 +1148,6 @@
 <a href="#1053" id="1053">1053</a>
 <a href="#1054" id="1054">1054</a>
 <a href="#1055" id="1055">1055</a>
-<a href="#1056" id="1056">1056</a>
-<a href="#1057" id="1057">1057</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Player controller, states, and animation implementation.
 
 </span><span class="kw">use </span>std::collections::VecDeque;
@@ -1746,9 +1744,7 @@
         <span class="kw">let </span>player_has_spawned = <span class="kw-2">&amp;mut </span>players_have_spawned.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize];
         <span class="kw">let </span>player_handle = player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize].selected_player;
         <span class="kw">let </span>player_hat = <span class="kw-2">&amp;</span>player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize].selected_hat;
-        <span class="kw">let </span>is_ai = player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize]
-            .control_source
-            .is_none();
+        <span class="kw">let </span>is_ai = player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize].is_ai;
 
         <span class="kw">let </span>meta = assets.get(player_handle);
 

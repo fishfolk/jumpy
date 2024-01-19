@@ -839,21 +839,17 @@
 <a href="#744" id="744">744</a>
 <a href="#745" id="745">745</a>
 <a href="#746" id="746">746</a>
-<a href="#747" id="747">747</a>
-<a href="#748" id="748">748</a>
-<a href="#749" id="749">749</a>
-<a href="#750" id="750">750</a>
-</pre></div><pre class="rust"><code><span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
-// use crate::networking::{NetworkMatchSocket, SocketTarget};
+</pre></div><pre class="rust"><code><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</span><span class="kw">use </span>bones_framework::networking::{NetworkMatchSocket, SocketTarget};
 
-</span><span class="kw">use </span><span class="kw">crate</span>::PackMeta;
+<span class="kw">use </span><span class="kw">crate</span>::PackMeta;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="comment">// const GAMEPAD_ACTION_IDX: usize = 0;
 // const KEYPAD_ACTION_IDX: usize = 1;
 
-</span><span class="attr">#[derive(Default, Clone, Debug)]
+</span><span class="attr">#[derive(Default, Clone, Debug, HasSchema)]
 </span><span class="kw">pub struct </span>PlayerSelectState {
     <span class="kw">pub </span>slots: [PlayerSlot; MAX_PLAYERS],
     <span class="doccomment">/// Cache of available players from the game and packs.
@@ -869,40 +865,45 @@
     <span class="kw">pub </span>selected_player: Handle&lt;PlayerMeta&gt;,
     <span class="kw">pub </span>selected_hat: <span class="prelude-ty">Option</span>&lt;Handle&lt;HatMeta&gt;&gt;,
     <span class="kw">pub </span>control_source: <span class="prelude-ty">Option</span>&lt;ControlSource&gt;,
+    <span class="kw">pub </span>is_ai: bool,
 }
 
 <span class="kw">impl </span>PlayerSlot {
     <span class="kw">pub fn </span>is_ai(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.control_source.is_none()
+        <span class="self">self</span>.is_ai
     }
 }
 
-<span class="comment">// /// Network message that may be sent during player selection.
-// #[derive(Serialize, Deserialize)]
-// pub enum PlayerSelectMessage {
-//     SelectPlayer(Handle&lt;PlayerMeta&gt;),
-//     SelectHat(Option&lt;Handle&lt;HatMeta&gt;&gt;),
-//     ConfirmSelection(bool),
-// }
+<span class="doccomment">/// Network message that may be sent during player selection.
+</span><span class="attr">#[derive(Serialize, Deserialize)]
+</span><span class="kw">pub enum </span>PlayerSelectMessage {
+    SelectPlayer(NetworkHandle&lt;PlayerMeta&gt;),
+    SelectHat(<span class="prelude-ty">Option</span>&lt;NetworkHandle&lt;HatMeta&gt;&gt;),
+    ConfirmSelection(bool),
+}
 
-</span><span class="kw">pub fn </span>widget(
+<span class="kw">pub fn </span>widget(
     <span class="kw-2">mut </span>ui: In&lt;<span class="kw-2">&amp;mut </span>egui::Ui&gt;,
     meta: Root&lt;GameMeta&gt;,
     localization: Localization&lt;GameMeta&gt;,
     controls: Res&lt;GlobalPlayerControls&gt;,
     world: <span class="kw-2">&amp;</span>World,
+
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>asset_server: Res&lt;AssetServer&gt;,
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>network_socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
 ) {
-    <span class="kw">let </span>is_online = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>state = ui.ctx().get_state::&lt;PlayerSelectState&gt;();
     ui.ctx().set_state(EguiInputSettings {
         disable_keyboard_input: <span class="bool-val">true</span>,
         disable_gamepad_input: <span class="bool-val">true</span>,
     });
 
-    <span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
-    // handle_match_setup_messages(&amp;mut params);
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
+        handle_match_setup_messages(socket, <span class="kw-2">&amp;mut </span>state, <span class="kw-2">&amp;</span>asset_server);
+    }
 
-    // Whether or not the continue button should be enabled
+    <span class="comment">// Whether or not the continue button should be enabled
     </span><span class="kw">let </span><span class="kw-2">mut </span>ready_players = <span class="number">0</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>unconfirmed_players = <span class="number">0</span>;
 
@@ -915,17 +916,17 @@
     }
     <span class="kw">let </span>may_continue = ready_players &gt;= <span class="number">1 </span>&amp;&amp; unconfirmed_players == <span class="number">0</span>;
 
-    <span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
-    // if let Some(socket) = &amp;params.network_socket {
-    //     if may_continue {
-    //         // The first player picks the map
-    //         let is_waiting = socket.player_idx() != 0;
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
+        <span class="kw">if </span>may_continue {
+            <span class="comment">// The first player picks the map
+            </span><span class="kw">let </span>is_waiting = socket.player_idx() != <span class="number">0</span>;
 
-    //         *params.menu_page = MenuPage::MapSelect { is_waiting };
-    //     }
-    // }
+            ui.ctx().set_state(MenuPage::MapSelect { is_waiting });
+        }
+    }
 
-    </span><span class="kw">let </span>bigger_text_style = <span class="kw-2">&amp;</span>meta
+    <span class="kw">let </span>bigger_text_style = <span class="kw-2">&amp;</span>meta
         .theme
         .font_styles
         .bigger
@@ -940,8 +941,13 @@
     ui.vertical_centered(|ui| {
         ui.add_space(heading_text_style.size / <span class="number">4.0</span>);
 
+        <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+        </span><span class="kw">let </span>is_network = <span class="bool-val">false</span>;
+        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+        </span><span class="kw">let </span>is_network = network_socket.is_some();
+
         <span class="comment">// Title
-        </span><span class="kw">if </span>is_online {
+        </span><span class="kw">if </span>is_network {
             ui.label(heading_text_style.rich(localization.get(<span class="string">&quot;online-game&quot;</span>)));
         } <span class="kw">else </span>{
             ui.label(heading_text_style.rich(localization.get(<span class="string">&quot;local-game&quot;</span>)));
@@ -977,11 +983,11 @@
                     ui.ctx().set_state(EguiInputSettings::default());
                     ui.ctx().set_state(PlayerSelectState::default());
 
-                    <span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
-                    // if let Some(socket) = params.network_socket {
-                    //     socket.close();
-                    // }
-                </span>}
+                    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket {
+                        socket.close();
+                    }
+                }
 
                 ui.add_space(button_spacing);
 
@@ -1024,31 +1030,37 @@
     ui.ctx().set_state(state);
 }
 
-<span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
-// fn handle_match_setup_messages(params: &amp;mut PlayerSelectMenu) {
-//     if let Some(socket) = &amp;params.network_socket {
-//         let datas: Vec&lt;(usize, Vec&lt;u8&gt;)&gt; = socket.recv_reliable();
+<span class="comment">// }
 
-//         for (player, data) in datas {
-//             match postcard::from_bytes::&lt;PlayerSelectMessage&gt;(&amp;data) {
-//                 Ok(message) =&gt; match message {
-//                     PlayerSelectMessage::SelectPlayer(player_handle) =&gt; {
-//                         params.player_select_state.slots[player].selected_player = player_handle;
-//                     }
-//                     PlayerSelectMessage::ConfirmSelection(confirmed) =&gt; {
-//                         params.player_select_state.slots[player].confirmed = confirmed;
-//                     }
-//                     PlayerSelectMessage::SelectHat(hat) =&gt; {
-//                         params.player_select_state.slots[player].selected_hat = hat;
-//                     }
-//                 },
-//                 Err(e) =&gt; warn!(&quot;Ignoring network message that was not understood: {e}&quot;),
-//             }
-//         }
-//     }
-// }
+</span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</span><span class="kw">fn </span>handle_match_setup_messages(
+    network_socket: <span class="kw-2">&amp;</span>NetworkMatchSocket,
+    player_select_state: <span class="kw-2">&amp;mut </span>PlayerSelectState,
+    asset_server: <span class="kw-2">&amp;</span>AssetServer,
+) {
+    <span class="kw">let </span>datas: Vec&lt;(usize, Vec&lt;u8&gt;)&gt; = network_socket.recv_reliable();
 
-</span><span class="kw">fn </span>player_select_panel(
+    <span class="kw">for </span>(player, data) <span class="kw">in </span>datas {
+        <span class="kw">match </span>postcard::from_bytes::&lt;PlayerSelectMessage&gt;(<span class="kw-2">&amp;</span>data) {
+            <span class="prelude-val">Ok</span>(message) =&gt; <span class="kw">match </span>message {
+                PlayerSelectMessage::SelectPlayer(player_handle) =&gt; {
+                    <span class="kw">let </span>player_handle = player_handle.into_handle(asset_server);
+                    player_select_state.slots[player].selected_player = player_handle;
+                }
+                PlayerSelectMessage::ConfirmSelection(confirmed) =&gt; {
+                    player_select_state.slots[player].confirmed = confirmed;
+                }
+                PlayerSelectMessage::SelectHat(hat) =&gt; {
+                    <span class="kw">let </span>hat = hat.map(|hat| hat.into_handle(asset_server));
+                    player_select_state.slots[player].selected_hat = hat;
+                }
+            },
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(<span class="string">&quot;Ignoring network message that was not understood: {e}&quot;</span>),
+        }
+    }
+}
+
+<span class="kw">fn </span>player_select_panel(
     <span class="kw-2">mut </span>params: In&lt;(<span class="kw-2">&amp;mut </span>egui::Ui, usize, <span class="kw-2">&amp;mut </span>PlayerSelectState)&gt;,
     meta: Root&lt;GameMeta&gt;,
     controls: Res&lt;GlobalPlayerControls&gt;,
@@ -1056,6 +1068,7 @@
     localization: Localization&lt;GameMeta&gt;,
     mapping: Res&lt;PlayerControlMapping&gt;,
     world: <span class="kw-2">&amp;</span>World,
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>network_socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
 ) {
     <span class="kw">let </span>(ui, slot_id, state) = <span class="kw-2">&amp;mut *</span>params;
 
@@ -1086,76 +1099,51 @@
         }
     }
 
-    <span class="kw">let </span>is_network = <span class="bool-val">false</span>;
-    <span class="comment">// #[cfg(target_arch = &quot;wasm32&quot;)]
-    // let is_network = false;
-    // #[cfg(not(target_arch = &quot;wasm32&quot;))]
-    // let is_network = params.network_socket.is_some();
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+    </span><span class="kw">let </span>network_local_player_slot: <span class="prelude-ty">Option</span>&lt;usize&gt; = <span class="prelude-val">None</span>;
 
-    // let player_map = params
-    //     .players
-    //     .iter()
-    //     .find(|(player_idx, _, _)| player_idx.0 == player_id)
-    //     .unwrap()
-    //     .2;
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+    </span><span class="kw">let </span>is_network = <span class="bool-val">false</span>;
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span><span class="kw">let </span>is_network = network_socket.is_some();
 
-    // #[cfg(not(target_arch = &quot;wasm32&quot;))]
-    // let dummy_actions = default();
-    // let (player_actions, player_action_map) = if is_network {
-    //     // #[cfg(not(target_arch = &quot;wasm32&quot;))]
-    //     // if let Some(socket) = &amp;params.network_socket {
-    //     //     let actions = if player_id == socket.player_idx() {
-    //     //         params
-    //     //             .players
-    //     //             .iter()
-    //     //             .find(|(player_idx, _, _)| player_idx.0 == 0)
-    //     //             .unwrap()
-    //     //             .1
-    //     //     } else {
-    //     //         &amp;dummy_actions
-    //     //     };
-    //     //     let map = None;
-    //     //     (actions, map)
-    //     // } else {
-    //     //     unreachable!();
-    //     // }
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
+        <span class="comment">// Don&#39;t show panels for non-connected players.
+        </span><span class="kw">if </span><span class="kw-2">*</span>slot_id + <span class="number">1 </span>&gt; socket.player_count() {
+            <span class="kw">return</span>;
+        } <span class="kw">else </span>{
+            state.slots[<span class="kw-2">*</span>slot_id].active = <span class="bool-val">true</span>;
+        }
+    }
 
-    //     // #[cfg(target_arch = &quot;wasm32&quot;)]
-    //     // unreachable!()
-    // } else {
-    //     let actions = players
-    //         .iter()
-    //         .find(|(player_idx, _, _)| player_idx.0 == player_id)
-    //         .unwrap()
-    //         .1;
-    //     let map = Some(get_player_actions(player_id, player_map));
-    //     (actions, map)
-    // };
-
-    // #[cfg(not(target_arch = &quot;wasm32&quot;))]
-    // if let Some(socket) = &amp;params.network_socket {
-    //     // Don&#39;t show panels for non-connected players.
-    //     if player_id + 1 &gt; socket.player_count() {
-    //         return;
-    //     } else {
-    //         slot.active = true;
-    //     }
-    // }
-
-    // Get the ID of the first un-occupied slot
-    </span><span class="kw">let </span>next_open_slot = state
+    <span class="kw">let </span>is_next_open_slot = state
         .slots
         .iter()
         .enumerate()
-        .find_map(|(i, slot)| (!slot.active).then_some(i));
+        .any(|(i, slot)| (!slot.active &amp;&amp; i == <span class="kw-2">*</span>slot_id));
+
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span><span class="kw">let </span><span class="kw-2">mut </span>network_local_player_slot: <span class="prelude-ty">Option</span>&lt;usize&gt; = <span class="prelude-val">None</span>;
+
+    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span><span class="kw">let </span>slot_allows_new_player = <span class="kw">if </span>is_network {
+        {
+            network_local_player_slot = <span class="prelude-val">Some</span>(network_socket.as_ref().unwrap().player_idx());
+            <span class="kw-2">*</span>slot_id == network_local_player_slot.unwrap()
+        }
+    } <span class="kw">else </span>{
+        is_next_open_slot
+    };
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+    </span><span class="kw">let </span>slot_allows_new_player = is_next_open_slot;
 
     <span class="comment">// Check if a new player is trying to join
     </span><span class="kw">let </span>new_player_join = controls.iter().find_map(|(source, control)| {
         (
             <span class="comment">// If this control input is pressing the join button
             </span>control.menu_confirm_just_pressed &amp;&amp;
-            <span class="comment">// And this is the next open slot
-            </span>next_open_slot == <span class="prelude-val">Some</span>(<span class="kw-2">*</span>slot_id) &amp;&amp;
+            slot_allows_new_player &amp;&amp;
             <span class="comment">// And this control source is not bound to a player slot already
             </span>!state
             .slots
@@ -1207,18 +1195,18 @@
         .map(|s| <span class="kw-2">*</span>controls.get(s).unwrap())
         .unwrap_or_default();
 
-    <span class="kw">if </span>player_control.menu_confirm_just_pressed &amp;&amp; new_player_join.is_none() {
+    <span class="kw">if </span>player_control.menu_confirm_just_pressed {
         slot.confirmed = <span class="bool-val">true</span>;
 
-        <span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
-        // if let Some(socket) = &amp;params.network_socket {
-        //     socket.send_reliable(
-        //         SocketTarget::All,
-        //         &amp;postcard::to_allocvec(&amp;PlayerSelectMessage::ConfirmSelection(slot.confirmed))
-        //             .unwrap(),
-        //     );
-        // }
-    </span>} <span class="kw">else if </span>player_control.menu_back_just_pressed {
+        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
+            socket.send_reliable(
+                SocketTarget::All,
+                <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::ConfirmSelection(slot.confirmed))
+                    .unwrap(),
+            );
+        }
+    } <span class="kw">else if </span>player_control.menu_back_just_pressed {
         <span class="kw">if </span>!is_network {
             <span class="kw">if </span>slot.confirmed {
                 slot.confirmed = <span class="bool-val">false</span>;
@@ -1230,15 +1218,15 @@
             slot.confirmed = <span class="bool-val">false</span>;
         }
 
-        <span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
-        // if let Some(socket) = &amp;params.network_socket {
-        //     socket.send_reliable(
-        //         SocketTarget::All,
-        //         &amp;postcard::to_allocvec(&amp;PlayerSelectMessage::ConfirmSelection(slot.confirmed))
-        //             .unwrap(),
-        //     );
-        // }
-    </span>} <span class="kw">else if </span>player_control.just_moved {
+        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
+            socket.send_reliable(
+                SocketTarget::All,
+                <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::ConfirmSelection(slot.confirmed))
+                    .unwrap(),
+            );
+        }
+    } <span class="kw">else if </span>player_control.just_moved {
         <span class="kw">let </span>direction = player_control.move_direction;
 
         <span class="comment">// Select a hat if the player has been confirmed
@@ -1263,16 +1251,18 @@
             };
             slot.selected_hat = state.hats[next_idx];
 
-            <span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
-            // if let Some(socket) = &amp;params.network_socket {
-            //     socket.send_reliable(
-            //         SocketTarget::All,
-            //         &amp;postcard::to_allocvec(&amp;PlayerSelectMessage::SelectHat(player_hat.clone()))
-            //             .unwrap(),
-            //     );
-            // }
+            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
+                socket.send_reliable(
+                    SocketTarget::All,
+                    <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::SelectHat(
+                        slot.selected_hat.map(|x| x.network_handle(<span class="kw-2">&amp;</span>asset_server)),
+                    ))
+                    .unwrap(),
+                );
+            }
 
-            // Select player skin if the player has not be confirmed
+            <span class="comment">// Select player skin if the player has not be confirmed
         </span>} <span class="kw">else </span>{
             <span class="kw">let </span>current_player_handle_idx = state
                 .players
@@ -1291,19 +1281,19 @@
                     idx <span class="kw">as </span>usize
                 }
             };
-            slot.selected_player = state.players[next_idx];
+            <span class="kw-2">*</span>player_handle = state.players[next_idx];
 
-            <span class="comment">// #[cfg(not(target_arch = &quot;wasm32&quot;))]
-            // if let Some(socket) = &amp;params.network_socket {
-            //     socket.send_reliable(
-            //         SocketTarget::All,
-            //         &amp;postcard::to_allocvec(&amp;PlayerSelectMessage::SelectPlayer(
-            //             player_handle.clone(),
-            //         ))
-            //         .unwrap(),
-            //     );
-            // }
-        </span>}
+            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
+                socket.send_reliable(
+                    SocketTarget::All,
+                    <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::SelectPlayer(
+                        player_handle.network_handle(<span class="kw-2">&amp;</span>asset_server),
+                    ))
+                    .unwrap(),
+                );
+            }
+        }
     }
 
     <span class="kw">let </span>panel = <span class="kw-2">&amp;</span>meta.theme.panel;
@@ -1318,38 +1308,39 @@
             <span class="kw">let </span>heading_font = <span class="kw-2">&amp;</span>meta.theme.font_styles.heading.with_color(panel.font_color);
 
             <span class="comment">// Marker for current player in online matches
-            // #[cfg(not(target_arch = &quot;wasm32&quot;))]
-            // if let Some(socket) = &amp;params.network_socket {
-            //     if socket.player_idx() == player_id {
-            //         ui.vertical_centered(|ui| {
-            //             ui.themed_label(normal_font, &amp;params.localization.get(&quot;you-marker&quot;));
-            //         });
-            //     } else {
-            //         ui.add_space(normal_font.size);
-            //     }
-            // } else {
-            //     ui.add_space(normal_font.size);
-            // }
+            </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket {
+                <span class="kw">if </span>socket.player_idx() == <span class="kw-2">*</span>slot_id {
+                    ui.vertical_centered(|ui| {
+                        ui.label(normal_font.rich(localization.get(<span class="string">&quot;you-marker&quot;</span>)));
+                    });
+                } <span class="kw">else </span>{
+                    ui.add_space(normal_font.size);
+                }
+            } <span class="kw">else </span>{
+                ui.add_space(normal_font.size);
+            }
 
-            </span>ui.add_space(normal_font.size);
+            ui.add_space(normal_font.size);
 
             <span class="kw">if </span>slot.active {
-                <span class="kw">let </span>confirm_binding = slot.control_source.map(|s| {
-                    <span class="kw">match </span>s {
-                        ControlSource::Keyboard1 =&gt; <span class="kw-2">&amp;</span>mapping.keyboard1.menu_confirm,
-                        ControlSource::Keyboard2 =&gt; <span class="kw-2">&amp;</span>mapping.keyboard2.menu_confirm,
-                        ControlSource::Gamepad(<span class="kw">_</span>) =&gt; <span class="kw-2">&amp;</span>mapping.gamepad.menu_confirm,
-                    }
-                    .to_string()
-                });
-                <span class="kw">let </span>back_binding = slot.control_source.map(|s| {
-                    <span class="kw">match </span>s {
-                        ControlSource::Keyboard1 =&gt; <span class="kw-2">&amp;</span>mapping.keyboard1.menu_back,
-                        ControlSource::Keyboard2 =&gt; <span class="kw-2">&amp;</span>mapping.keyboard2.menu_back,
-                        ControlSource::Gamepad(<span class="kw">_</span>) =&gt; <span class="kw-2">&amp;</span>mapping.gamepad.menu_back,
-                    }
-                    .to_string()
-                });
+                <span class="kw">let </span>confirm_binding = <span class="kw">match </span>slot.control_source {
+                    <span class="prelude-val">Some</span>(source) =&gt; mapping.map_control_source(source).menu_confirm.to_string(),
+                    <span class="prelude-val">None </span>=&gt; available_input_sources
+                        .iter()
+                        .map(|s| mapping.map_control_source(<span class="kw-2">*</span>s).menu_confirm.to_string())
+                        .collect::&lt;SmallVec&lt;[<span class="kw">_</span>; <span class="number">3</span>]&gt;&gt;()
+                        .join(<span class="string">&quot;/&quot;</span>),
+                };
+
+                <span class="kw">let </span>back_binding = <span class="kw">match </span>slot.control_source {
+                    <span class="prelude-val">Some</span>(source) =&gt; mapping.map_control_source(source).menu_back.to_string(),
+                    <span class="prelude-val">None </span>=&gt; available_input_sources
+                        .iter()
+                        .map(|s| mapping.map_control_source(<span class="kw-2">*</span>s).menu_back.to_string())
+                        .collect::&lt;SmallVec&lt;[<span class="kw">_</span>; <span class="number">3</span>]&gt;&gt;()
+                        .join(<span class="string">&quot;/&quot;</span>),
+                };
                 ui.vertical_centered(|ui| {
                     <span class="kw">let </span>player_meta = asset_server.get(slot.selected_player);
                     <span class="kw">let </span>hat_meta = slot
@@ -1359,20 +1350,22 @@
 
                     ui.label(normal_font.rich(localization.get(<span class="string">&quot;pick-a-fish&quot;</span>)));
 
-                    <span class="kw">if </span>!slot.confirmed {
+                    <span class="kw">if </span>!slot.confirmed &amp;&amp; network_local_player_slot.is_some_and(|s| s == <span class="kw-2">*</span>slot_id) {
                         ui.label(normal_font.rich(localization.get_with(
                             <span class="string">&quot;press-button-to-lock-in&quot;</span>,
                             <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
-                                <span class="string">&quot;button&quot; </span>=&gt; confirm_binding.as_ref().unwrap().as_str()
+                                <span class="string">&quot;button&quot; </span>=&gt; confirm_binding.as_str()
                             },
                         )));
 
-                        ui.label(normal_font.rich(localization.get_with(
-                            <span class="string">&quot;press-button-to-remove&quot;</span>,
-                            <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
-                                <span class="string">&quot;button&quot; </span>=&gt; back_binding.as_ref().unwrap().as_str()
-                            },
-                        )));
+                        <span class="kw">if </span>!is_network {
+                            ui.label(normal_font.rich(localization.get_with(
+                                <span class="string">&quot;press-button-to-remove&quot;</span>,
+                                <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
+                                    <span class="string">&quot;button&quot; </span>=&gt; back_binding.as_str()
+                                },
+                            )));
+                        }
                     } <span class="kw">else </span>{
                         ui.label(normal_font.rich(localization.get(<span class="string">&quot;waiting&quot;</span>)));
                     }
@@ -1380,7 +1373,7 @@
                     ui.vertical_centered(|ui| {
                         ui.set_height(heading_font.size * <span class="number">1.5</span>);
 
-                        <span class="kw">if </span>slot.confirmed &amp;&amp; !slot.is_ai() {
+                        <span class="kw">if </span>slot.confirmed &amp;&amp; !slot.is_ai() &amp;&amp; slot.control_source.is_some() {
                             ui.label(
                                 heading_font
                                     .with_color(meta.theme.colors.positive)
@@ -1390,11 +1383,11 @@
                             ui.label(normal_font.rich(localization.get_with(
                                 <span class="string">&quot;player-select-unready&quot;</span>,
                                 <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
-                                    <span class="string">&quot;button&quot; </span>=&gt; back_binding.as_ref().unwrap().as_str()
+                                    <span class="string">&quot;button&quot; </span>=&gt; back_binding.as_str()
                                 },
                             )));
                         }
-                        <span class="kw">if </span>slot.is_ai() {
+                        <span class="kw">if </span>!is_network &amp;&amp; <span class="kw-2">*</span>slot_id != <span class="number">0 </span>&amp;&amp; slot.is_ai() {
                             ui.label(
                                 heading_font
                                     .with_color(meta.theme.colors.positive)
@@ -1411,6 +1404,7 @@
                                 slot.confirmed = <span class="bool-val">false</span>;
                                 slot.active = <span class="bool-val">false</span>;
                                 slot.control_source = <span class="prelude-val">None</span>;
+                                slot.is_ai = <span class="bool-val">false</span>;
                             }
                         }
                     });
@@ -1436,19 +1430,16 @@
             <span class="comment">// If this slot is empty
             </span>} <span class="kw">else </span>{
                 <span class="kw">let </span>bindings = available_input_sources
-                    .into_iter()
-                    .map(|x| <span class="kw">match </span>x {
-                        ControlSource::Keyboard1 =&gt; mapping.keyboard1.menu_confirm.to_string(),
-                        ControlSource::Keyboard2 =&gt; mapping.keyboard2.menu_confirm.to_string(),
-                        ControlSource::Gamepad(<span class="kw">_</span>) =&gt; mapping.gamepad.menu_confirm.to_string(),
-                    })
-                    .collect::&lt;SmallVec&lt;[<span class="kw">_</span>; <span class="number">3</span>]&gt;&gt;();
+                    .iter()
+                    .map(|s| mapping.map_control_source(<span class="kw-2">*</span>s).menu_confirm.to_string())
+                    .collect::&lt;SmallVec&lt;[<span class="kw">_</span>; <span class="number">3</span>]&gt;&gt;()
+                    .join(<span class="string">&quot;/&quot;</span>);
 
                 ui.vertical_centered(|ui| {
                     ui.label(normal_font.rich(localization.get_with(
                         <span class="string">&quot;press-button-to-join&quot;</span>,
                         <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
-                            <span class="string">&quot;button&quot; </span>=&gt; bindings.join(<span class="string">&quot; / &quot;</span>)
+                            <span class="string">&quot;button&quot; </span>=&gt; bindings
                         },
                     )));
 
@@ -1461,6 +1452,7 @@
                         .show(ui)
                         .clicked()
                         {
+                            slot.is_ai = <span class="bool-val">true</span>;
                             slot.confirmed = <span class="bool-val">true</span>;
                             slot.active = <span class="bool-val">true</span>;
                             <span class="kw">let </span>rand_idx = THREAD_RNG.with(|rng| rng.usize(<span class="number">0</span>..state.players.len()));

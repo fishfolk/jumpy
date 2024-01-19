@@ -839,6 +839,12 @@
 <a href="#744" id="744">744</a>
 <a href="#745" id="745">745</a>
 <a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a>
 </pre></div><pre class="rust"><code><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 </span><span class="kw">use </span>bones_framework::networking::{NetworkMatchSocket, SocketTarget};
 
@@ -1195,103 +1201,105 @@
         .map(|s| <span class="kw-2">*</span>controls.get(s).unwrap())
         .unwrap_or_default();
 
-    <span class="kw">if </span>player_control.menu_confirm_just_pressed {
-        slot.confirmed = <span class="bool-val">true</span>;
+    <span class="kw">if </span>new_player_join.is_none() {
+        <span class="kw">if </span>player_control.menu_confirm_just_pressed {
+            slot.confirmed = <span class="bool-val">true</span>;
 
-        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
-            socket.send_reliable(
-                SocketTarget::All,
-                <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::ConfirmSelection(slot.confirmed))
-                    .unwrap(),
-            );
-        }
-    } <span class="kw">else if </span>player_control.menu_back_just_pressed {
-        <span class="kw">if </span>!is_network {
-            <span class="kw">if </span>slot.confirmed {
+            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
+                socket.send_reliable(
+                    SocketTarget::All,
+                    <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::ConfirmSelection(slot.confirmed))
+                        .unwrap(),
+                );
+            }
+        } <span class="kw">else if </span>player_control.menu_back_just_pressed {
+            <span class="kw">if </span>!is_network {
+                <span class="kw">if </span>slot.confirmed {
+                    slot.confirmed = <span class="bool-val">false</span>;
+                } <span class="kw">else if </span>slot.active {
+                    slot.active = <span class="bool-val">false</span>;
+                    slot.control_source = <span class="prelude-val">None</span>;
+                }
+            } <span class="kw">else </span>{
                 slot.confirmed = <span class="bool-val">false</span>;
-            } <span class="kw">else if </span>slot.active {
-                slot.active = <span class="bool-val">false</span>;
-                slot.control_source = <span class="prelude-val">None</span>;
             }
-        } <span class="kw">else </span>{
-            slot.confirmed = <span class="bool-val">false</span>;
-        }
-
-        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
-            socket.send_reliable(
-                SocketTarget::All,
-                <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::ConfirmSelection(slot.confirmed))
-                    .unwrap(),
-            );
-        }
-    } <span class="kw">else if </span>player_control.just_moved {
-        <span class="kw">let </span>direction = player_control.move_direction;
-
-        <span class="comment">// Select a hat if the player has been confirmed
-        </span><span class="kw">if </span>slot.confirmed {
-            <span class="kw">let </span>current_hat_handle_idx = state
-                .hats
-                .iter()
-                .enumerate()
-                .find(|(<span class="kw">_</span>, handle)| <span class="kw-2">**</span>handle == slot.selected_hat)
-                .map(|(i, <span class="kw">_</span>)| i)
-                .unwrap_or(<span class="number">0</span>);
-
-            <span class="kw">let </span>next_idx = <span class="kw">if </span>direction.x &gt; <span class="number">0.0 </span>{
-                (current_hat_handle_idx + <span class="number">1</span>) % state.hats.len()
-            } <span class="kw">else </span>{
-                <span class="kw">let </span>idx = current_hat_handle_idx <span class="kw">as </span>i32 - <span class="number">1</span>;
-                <span class="kw">if </span>idx == -<span class="number">1 </span>{
-                    state.hats.len() - <span class="number">1
-                </span>} <span class="kw">else </span>{
-                    idx <span class="kw">as </span>usize
-                }
-            };
-            slot.selected_hat = state.hats[next_idx];
 
             <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
                 socket.send_reliable(
                     SocketTarget::All,
-                    <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::SelectHat(
-                        slot.selected_hat.map(|x| x.network_handle(<span class="kw-2">&amp;</span>asset_server)),
-                    ))
-                    .unwrap(),
+                    <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::ConfirmSelection(slot.confirmed))
+                        .unwrap(),
                 );
             }
+        } <span class="kw">else if </span>player_control.just_moved {
+            <span class="kw">let </span>direction = player_control.move_direction;
 
-            <span class="comment">// Select player skin if the player has not be confirmed
-        </span>} <span class="kw">else </span>{
-            <span class="kw">let </span>current_player_handle_idx = state
-                .players
-                .iter()
-                .enumerate()
-                .find(|(<span class="kw">_</span>, handle)| <span class="kw-2">*</span>handle == player_handle)
-                .map(|(i, <span class="kw">_</span>)| i)
-                .unwrap_or(<span class="number">0</span>);
-            <span class="kw">let </span>next_idx = <span class="kw">if </span>direction.x &gt; <span class="number">0.0 </span>{
-                (current_player_handle_idx + <span class="number">1</span>) % state.players.len()
-            } <span class="kw">else </span>{
-                <span class="kw">let </span>idx = current_player_handle_idx <span class="kw">as </span>i32 - <span class="number">1</span>;
-                <span class="kw">if </span>idx == -<span class="number">1 </span>{
-                    state.players.len() - <span class="number">1
-                </span>} <span class="kw">else </span>{
-                    idx <span class="kw">as </span>usize
+            <span class="comment">// Select a hat if the player has been confirmed
+            </span><span class="kw">if </span>slot.confirmed {
+                <span class="kw">let </span>current_hat_handle_idx = state
+                    .hats
+                    .iter()
+                    .enumerate()
+                    .find(|(<span class="kw">_</span>, handle)| <span class="kw-2">**</span>handle == slot.selected_hat)
+                    .map(|(i, <span class="kw">_</span>)| i)
+                    .unwrap_or(<span class="number">0</span>);
+
+                <span class="kw">let </span>next_idx = <span class="kw">if </span>direction.x &gt; <span class="number">0.0 </span>{
+                    (current_hat_handle_idx + <span class="number">1</span>) % state.hats.len()
+                } <span class="kw">else </span>{
+                    <span class="kw">let </span>idx = current_hat_handle_idx <span class="kw">as </span>i32 - <span class="number">1</span>;
+                    <span class="kw">if </span>idx == -<span class="number">1 </span>{
+                        state.hats.len() - <span class="number">1
+                    </span>} <span class="kw">else </span>{
+                        idx <span class="kw">as </span>usize
+                    }
+                };
+                slot.selected_hat = state.hats[next_idx];
+
+                <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
+                    socket.send_reliable(
+                        SocketTarget::All,
+                        <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::SelectHat(
+                            slot.selected_hat.map(|x| x.network_handle(<span class="kw-2">&amp;</span>asset_server)),
+                        ))
+                        .unwrap(),
+                    );
                 }
-            };
-            <span class="kw-2">*</span>player_handle = state.players[next_idx];
 
-            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
-                socket.send_reliable(
-                    SocketTarget::All,
-                    <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::SelectPlayer(
-                        player_handle.network_handle(<span class="kw-2">&amp;</span>asset_server),
-                    ))
-                    .unwrap(),
-                );
+                <span class="comment">// Select player skin if the player has not be confirmed
+            </span>} <span class="kw">else </span>{
+                <span class="kw">let </span>current_player_handle_idx = state
+                    .players
+                    .iter()
+                    .enumerate()
+                    .find(|(<span class="kw">_</span>, handle)| <span class="kw-2">*</span>handle == player_handle)
+                    .map(|(i, <span class="kw">_</span>)| i)
+                    .unwrap_or(<span class="number">0</span>);
+                <span class="kw">let </span>next_idx = <span class="kw">if </span>direction.x &gt; <span class="number">0.0 </span>{
+                    (current_player_handle_idx + <span class="number">1</span>) % state.players.len()
+                } <span class="kw">else </span>{
+                    <span class="kw">let </span>idx = current_player_handle_idx <span class="kw">as </span>i32 - <span class="number">1</span>;
+                    <span class="kw">if </span>idx == -<span class="number">1 </span>{
+                        state.players.len() - <span class="number">1
+                    </span>} <span class="kw">else </span>{
+                        idx <span class="kw">as </span>usize
+                    }
+                };
+                <span class="kw-2">*</span>player_handle = state.players[next_idx];
+
+                <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
+                    socket.send_reliable(
+                        SocketTarget::All,
+                        <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>PlayerSelectMessage::SelectPlayer(
+                            player_handle.network_handle(<span class="kw-2">&amp;</span>asset_server),
+                        ))
+                        .unwrap(),
+                    );
+                }
             }
         }
     }
@@ -1348,15 +1356,19 @@
                         .as_ref()
                         .map(|handle| asset_server.get(<span class="kw-2">*</span>handle));
 
-                    ui.label(normal_font.rich(localization.get(<span class="string">&quot;pick-a-fish&quot;</span>)));
+                    <span class="kw">if </span>!slot.confirmed {
+                        <span class="kw">if </span>slot.control_source.is_some() {
+                            ui.label(normal_font.rich(localization.get(<span class="string">&quot;pick-a-fish&quot;</span>)));
+                        }
 
-                    <span class="kw">if </span>!slot.confirmed &amp;&amp; network_local_player_slot.is_some_and(|s| s == <span class="kw-2">*</span>slot_id) {
-                        ui.label(normal_font.rich(localization.get_with(
-                            <span class="string">&quot;press-button-to-lock-in&quot;</span>,
-                            <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
-                                <span class="string">&quot;button&quot; </span>=&gt; confirm_binding.as_str()
-                            },
-                        )));
+                        <span class="kw">if </span>network_local_player_slot.is_some_and(|s| s == <span class="kw-2">*</span>slot_id) || !is_network {
+                            ui.label(normal_font.rich(localization.get_with(
+                                <span class="string">&quot;press-button-to-lock-in&quot;</span>,
+                                <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
+                                    <span class="string">&quot;button&quot; </span>=&gt; confirm_binding.as_str()
+                                },
+                            )));
+                        }
 
                         <span class="kw">if </span>!is_network {
                             ui.label(normal_font.rich(localization.get_with(

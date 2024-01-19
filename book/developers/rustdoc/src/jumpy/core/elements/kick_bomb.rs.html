@@ -445,6 +445,12 @@
 <a href="#350" id="350">350</a>
 <a href="#351" id="351">351</a>
 <a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Default, Debug, Clone)]
@@ -495,6 +501,8 @@
 </span><span class="kw">pub struct </span>LitKickBomb {
     arm_delay: Timer,
     fuse_time: Timer,
+    kicking: bool,
+    kicks: u32,
 }
 
 <span class="kw">fn </span>hydrate(
@@ -625,6 +633,8 @@
                         LitKickBomb {
                             arm_delay: Timer::new(arm_delay, TimerMode::Once),
                             fuse_time: Timer::new(fuse_time, TimerMode::Once),
+                            kicking: <span class="bool-val">false</span>,
+                            kicks: <span class="number">0</span>,
                         },
                     );
                 },
@@ -646,8 +656,6 @@
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
-    <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
-    <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>commands: Commands,
@@ -661,7 +669,6 @@
         <span class="kw">let </span>element_meta = assets.get(element_handle.<span class="number">0</span>);
         <span class="kw">let </span>asset = assets.get(element_meta.data);
         <span class="kw">let </span><span class="prelude-val">Ok</span>(KickBombMeta {
-            grab_offset,
             explosion_sound,
             explosion_volume,
             kick_velocity,
@@ -671,7 +678,6 @@
             explosion_atlas,
             explosion_fps,
             explosion_frames,
-            fin_anim,
             ..
         }) = asset.try_cast_ref()
         <span class="kw">else </span>{
@@ -681,59 +687,65 @@
         kick_bomb.fuse_time.tick(time.delta());
         kick_bomb.arm_delay.tick(time.delta());
 
-        <span class="kw">let </span><span class="kw-2">mut </span>should_explode = <span class="bool-val">false</span>;
-        <span class="comment">// If the item is being held
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Inv { player, .. }) = player_inventories.find_item(entity) {
-            <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-            player_layers.get_mut(player).unwrap().fin_anim = <span class="kw-2">*</span>fin_anim;
-
-            <span class="comment">// Deactivate held items
-            </span>body.is_deactivated = <span class="bool-val">true</span>;
-
-            <span class="comment">// Attach to the player
-            </span>attachments.insert(
-                entity,
-                PlayerBodyAttachment {
-                    player,
-                    sync_color: <span class="bool-val">false</span>,
-                    sync_animation: <span class="bool-val">false</span>,
-                    head: <span class="bool-val">false</span>,
-                    offset: grab_offset.extend(<span class="number">1.0</span>),
-                },
-            );
-        }
-        <span class="comment">// The item is on the ground
-        </span><span class="kw">else if let </span><span class="prelude-val">Some</span>(player_entity) = collision_world
-            .actor_collisions_filtered(entity, |e| invincibles.get(e).is_none())
-            .into_iter()
-            .find(|<span class="kw-2">&amp;</span>x| player_indexes.contains(x))
-        {
-            <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-            <span class="kw">let </span>translation = transforms.get_mut(entity).unwrap().translation;
-
-            <span class="kw">let </span>player_sprite = sprites.get_mut(player_entity).unwrap();
-            <span class="kw">let </span>player_translation = transforms.get(player_entity).unwrap().translation;
-
-            <span class="kw">let </span>player_standing_left = player_translation.x &lt;= translation.x;
-
-            <span class="kw">if </span>body.velocity.x == <span class="number">0.0 </span>{
-                body.velocity = <span class="kw-2">*</span>kick_velocity;
-                <span class="kw">if </span>player_sprite.flip_x {
-                    body.velocity.x <span class="kw-2">*</span>= -<span class="number">1.0</span>;
-                }
-            } <span class="kw">else if </span>player_standing_left &amp;&amp; !player_sprite.flip_x {
-                body.velocity.x = kick_velocity.x;
-                body.velocity.y = kick_velocity.y;
-            } <span class="kw">else if </span>!player_standing_left &amp;&amp; player_sprite.flip_x {
-                body.velocity.x = -kick_velocity.x;
-                body.velocity.y = kick_velocity.y;
-            } <span class="kw">else if </span>kick_bomb.arm_delay.finished() {
-                should_explode = <span class="bool-val">true</span>;
+        <span class="kw">let </span>should_explode = <span class="lifetime">&#39;should_explode</span>: {
+            <span class="kw">if </span>kick_bomb.fuse_time.finished() {
+                <span class="kw">break </span><span class="lifetime">&#39;should_explode </span><span class="bool-val">true</span>;
             }
-        }
+
+            <span class="comment">// If the item is being held
+            </span><span class="kw">if </span>player_inventories.find_item(entity).is_some() {
+                kick_bomb.kicking = <span class="bool-val">false</span>;
+                <span class="kw">break </span><span class="lifetime">&#39;should_explode </span><span class="bool-val">false</span>;
+            }
+
+            <span class="comment">// If the item is colliding with a non-invincible player
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(player_entity) = collision_world
+                .actor_collisions_filtered(entity, |e| !invincibles.contains(e))
+                .into_iter()
+                .find(|<span class="kw-2">&amp;</span>x| player_indexes.contains(x))
+            {
+                <span class="kw">if </span>!std::mem::replace(<span class="kw-2">&amp;mut </span>kick_bomb.kicking, <span class="bool-val">true</span>) {
+                    kick_bomb.kicks += <span class="number">1</span>;
+                }
+
+                <span class="comment">// Explode on the 3rd kick.
+                // Dropping the bomb is detected as a kick so we explode when
+                // the counter reaches 4.
+                </span><span class="kw">if </span>kick_bomb.kicks &gt; <span class="number">3 </span>{
+                    <span class="kw">break </span><span class="lifetime">&#39;should_explode </span><span class="bool-val">true</span>;
+                }
+
+                <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
+                <span class="kw">let </span>translation = transforms.get_mut(entity).unwrap().translation;
+
+                <span class="kw">let </span>player_sprite = sprites.get_mut(player_entity).unwrap();
+                <span class="kw">let </span>player_translation = transforms.get(player_entity).unwrap().translation;
+
+                <span class="kw">let </span>player_standing_left = player_translation.x &lt;= translation.x;
+
+                <span class="kw">if </span>body.velocity.x == <span class="number">0.0 </span>{
+                    body.velocity = <span class="kw-2">*</span>kick_velocity;
+                    <span class="kw">if </span>player_sprite.flip_x {
+                        body.velocity.x <span class="kw-2">*</span>= -<span class="number">1.0</span>;
+                    }
+                } <span class="kw">else if </span>player_standing_left &amp;&amp; !player_sprite.flip_x {
+                    body.velocity.x = kick_velocity.x;
+                    body.velocity.y = kick_velocity.y;
+                } <span class="kw">else if </span>!player_standing_left &amp;&amp; player_sprite.flip_x {
+                    body.velocity.x = -kick_velocity.x;
+                    body.velocity.y = kick_velocity.y;
+                } <span class="kw">else if </span>kick_bomb.arm_delay.finished() {
+                    <span class="kw">break </span><span class="lifetime">&#39;should_explode </span><span class="bool-val">true</span>;
+                }
+            } <span class="kw">else </span>{
+                kick_bomb.kicking = <span class="bool-val">false</span>;
+            }
+
+            <span class="bool-val">false
+        </span>};
 
         <span class="comment">// If it&#39;s time to explode
-        </span><span class="kw">if </span>kick_bomb.fuse_time.finished() || should_explode {
+        </span><span class="kw">if </span>should_explode {
             audio_events.play(<span class="kw-2">*</span>explosion_sound, <span class="kw-2">*</span>explosion_volume);
 
             trauma_events.send(<span class="number">7.5</span>);

@@ -1,7 +1,0 @@
-[workspace]
-dependencies_update = true
-git_release_enable = false
-publish = false
-git_tag_enable = true
-pr_labels = ["release"]
-semver_check = false

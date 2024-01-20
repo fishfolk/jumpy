@@ -428,6 +428,7 @@ impl<'a> CollisionWorld<'a> {
             let rapier_collider = collider_set.get_mut(solid_body.colliders()[0]).unwrap();
             rapier_collider.set_enabled(!collider.disabled);
             rapier_collider.set_position_wrt_parent(rapier::Isometry::new(default(), 0.0));
+            rapier_collider.set_shape(shared_shape.clone());
         }
     }
 

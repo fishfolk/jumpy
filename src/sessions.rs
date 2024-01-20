@@ -6,6 +6,7 @@ impl SessionNames {
     pub const DEBUG: &'static str = "debug";
     pub const MAIN_MENU: &'static str = "main_menu";
     pub const PAUSE_MENU: &'static str = "pause_menu";
+    pub const PROFILER: &'static str = "profiler";
     pub const MUSIC_PLAYER: &'static str = "music_player";
 }
 

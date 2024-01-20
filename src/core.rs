@@ -26,7 +26,7 @@ pub const MAX_PLAYERS: usize = 4;
 
 use std::time::Duration;
 
-use crate::{prelude::*, settings::PlayerControlMapping};
+use crate::{prelude::*, profiler, settings::PlayerControlMapping};
 
 pub mod prelude {
     pub use super::{
@@ -84,6 +84,7 @@ impl SessionPlugin for MatchPlugin {
         attachment::install(session);
         bullet::session_plugin(session);
         editor::install(session);
+        profiler::install_frame_marker(session);
 
         session.world.insert_resource(LoadedMap(Arc::new(self.map)));
         session.world.insert_resource(MatchInputs {

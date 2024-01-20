@@ -49,6 +49,7 @@ pub struct ElementMeta {
 #[type_data(metadata_asset("solid"))]
 #[repr(C)]
 pub struct ElementSolidMeta {
+    pub disabled: bool,
     pub offset: Vec2,
     pub size: Vec2,
 }

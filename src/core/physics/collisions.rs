@@ -194,13 +194,16 @@ pub struct Actor;
 #[derive(Default, Clone, Copy, Debug, HasSchema)]
 #[repr(C)]
 pub struct Solid {
+    pub disabled: bool,
     pub pos: Vec2,
     pub size: Vec2,
+    #[schema(opaque)]
+    pub rapier_handle: Option<rapier::RigidBodyHandle>,
 }
 
 /// A collider body in the physics simulation.
 ///
-/// This is used for actors and solids in the simulation, not for tiles.
+/// This is only used for actors in the simulation, not for tiles or solids.
 #[derive(Default, Clone, Debug, HasSchema)]
 #[repr(C)]
 pub struct Collider {
@@ -399,14 +402,12 @@ impl<'a> CollisionWorld<'a> {
             rapier_collider.set_position_wrt_parent(rapier::Isometry::new(default(), 0.0));
         }
 
-        for (solid_ent, (solid, collider)) in
-            self.entities.iter_with((&self.solids, &mut self.colliders))
-        {
+        for (solid_ent, solid) in self.entities.iter_with(&mut self.solids) {
             let bones_shape = ColliderShape::Rectangle { size: solid.size };
             let shared_shape = collider_shape_cache.shared_shape(bones_shape);
 
             // Get or create a collider for the solid
-            let handle = collider.rapier_handle.get_or_insert_with(|| {
+            let handle = solid.rapier_handle.get_or_insert_with(|| {
                 let body_handle = rigid_body_set.insert(
                     rapier::RigidBodyBuilder::fixed().user_data(RapierUserData::from(solid_ent)),
                 );
@@ -426,7 +427,7 @@ impl<'a> CollisionWorld<'a> {
             solid_body.set_translation(rapier::Vector::new(solid.pos.x, solid.pos.y), false);
 
             let rapier_collider = collider_set.get_mut(solid_body.colliders()[0]).unwrap();
-            rapier_collider.set_enabled(!collider.disabled);
+            rapier_collider.set_enabled(!solid.disabled);
             rapier_collider.set_position_wrt_parent(rapier::Isometry::new(default(), 0.0));
             rapier_collider.set_shape(shared_shape.clone());
         }

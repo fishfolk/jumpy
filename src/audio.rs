@@ -25,7 +25,8 @@ pub fn game_plugin(game: &mut Game) {
     session
         .stages
         .add_system_to_stage(First, music_system)
-        .add_system_to_stage(First, process_audio_events);
+        .add_system_to_stage(First, process_audio_events)
+        .add_system_to_stage(Last, kill_finished_audios);
 }
 
 /// A resource that can be used to control game audios.
@@ -185,6 +186,14 @@ fn process_audio_events(
                     }
                 }
             }
+        }
+    }
+}
+
+fn kill_finished_audios(entities: Res<Entities>, audios: Comp<Audio>, mut commands: Commands) {
+    for (audio_ent, audio) in entities.iter_with(&audios) {
+        if audio.handle.state() == PlaybackState::Stopped {
+            commands.add(move |mut entities: ResMut<Entities>| entities.kill(audio_ent));
         }
     }
 }

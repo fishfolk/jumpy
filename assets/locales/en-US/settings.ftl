@@ -22,6 +22,8 @@ matchmaking-server = Matchmaking Server
 # Audio settings
 audio = Audio
 main-volume = Main Volume
+music-volume = Music Volume
+effects-volume = Effects Volume
 
 # Graphics settings
 graphics = Graphics

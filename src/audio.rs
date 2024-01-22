@@ -86,8 +86,12 @@ impl AudioCenter {
 /// An audio event that may be sent to the [`AudioEvents`] resource.
 #[derive(Clone, Debug)]
 pub enum AudioEvent {
-    /// Update the volume of all audios using the new main volume.
-    MainVolumeChange(f64),
+    /// Update the volume of all audios using the new values.
+    VolumeChange {
+        main_volume: f64,
+        music_volume: f64,
+        effects_volume: f64,
+    },
     /// Play some music.
     ///
     /// Any current music is stopped.
@@ -128,17 +132,23 @@ fn process_audio_events(
 
     for event in audio_center.events.drain(..).collect::<Vec<_>>() {
         match event {
-            AudioEvent::MainVolumeChange(main_volume) => {
+            AudioEvent::VolumeChange {
+                main_volume,
+                music_volume,
+                effects_volume,
+            } => {
                 let tween = Tween::default();
                 // Update music volume
                 if let Some(music) = &mut audio_center.music {
-                    if let Err(err) = music.handle.set_volume(main_volume * music.volume, tween) {
+                    let volume = main_volume * music_volume * music.volume;
+                    if let Err(err) = music.handle.set_volume(volume, tween) {
                         warn!("Error setting music volume: {err}");
                     }
                 }
                 // Update sound volumes
                 for audio in audios.iter_mut() {
-                    if let Err(err) = audio.handle.set_volume(main_volume * audio.volume, tween) {
+                    let volume = main_volume * effects_volume * audio.volume;
+                    if let Err(err) = audio.handle.set_volume(volume, tween) {
                         warn!("Error setting audio volume: {err}");
                     }
                 }
@@ -161,7 +171,7 @@ fn process_audio_events(
                     tween::Value::Fixed(vol) => vol.as_amplitude(),
                     _ => MUSIC_VOLUME,
                 };
-                let scaled_volume = settings.main_volume * volume;
+                let scaled_volume = settings.main_volume * settings.music_volume * volume;
                 sound_settings.volume = tween::Value::Fixed(Volume::Amplitude(scaled_volume));
                 // Play the new music
                 let sound_data = assets.get(sound_source).with_settings(*sound_settings);
@@ -174,7 +184,7 @@ fn process_audio_events(
                 sound_source,
                 volume,
             } => {
-                let scaled_volume = settings.main_volume * volume;
+                let scaled_volume = settings.main_volume * settings.effects_volume * volume;
                 let sound_data = assets
                     .get(sound_source)
                     .with_settings(StaticSoundSettings::default().volume(scaled_volume));

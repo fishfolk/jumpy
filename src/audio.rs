@@ -35,7 +35,7 @@ pub struct AudioCenter {
     /// Buffer for audio events that have not yet been processed.
     events: VecDeque<AudioEvent>,
     /// The handle to the current music.
-    music: Option<StaticSoundHandle>,
+    music: Option<Audio>,
 }
 
 impl Default for AudioCenter {
@@ -55,7 +55,7 @@ impl AudioCenter {
 
     /// Get the playback state of the music.
     pub fn music_state(&self) -> Option<PlaybackState> {
-        self.music.as_ref().map(StaticSoundHandle::state)
+        self.music.as_ref().map(|m| m.handle.state())
     }
 
     /// Play a sound. These are usually short audios that indicate something
@@ -129,7 +129,7 @@ fn process_audio_events(
                 let tween = Tween::default();
                 // Update music volume
                 if let Some(music) = &mut audio_center.music {
-                    if let Err(err) = music.set_volume(main_volume * MUSIC_VOLUME, tween) {
+                    if let Err(err) = music.handle.set_volume(main_volume * music.volume, tween) {
                         warn!("Error setting music volume: {err}");
                     }
                 }
@@ -151,7 +151,7 @@ fn process_audio_events(
                         duration: MUSIC_FADE_DURATION,
                         easing: tween::Easing::Linear,
                     };
-                    music.stop(tween).unwrap();
+                    music.handle.stop(tween).unwrap();
                 }
                 // Scale the requested volume by the settings value
                 let settings = storage.get::<Settings>().unwrap();
@@ -164,7 +164,7 @@ fn process_audio_events(
                 let sound_data = assets.get(sound_source).with_settings(*sound_settings);
                 match audio_manager.play(sound_data) {
                     Err(err) => warn!("Error playing music: {err}"),
-                    Ok(handle) => audio_center.music = Some(handle),
+                    Ok(handle) => audio_center.music = Some(Audio { handle, volume }),
                 }
             }
             AudioEvent::PlaySound {

@@ -191,7 +191,7 @@ fn update_thrown_crates(
     players: Comp<PlayerIdx>,
     collision_world: CollisionWorld,
     mut bodies: CompMut<KinematicBody>,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
     transforms: Comp<Transform>,
     spawners: Comp<DehydrateOutOfBounds>,
     invincibles: CompMut<Invincibility>,
@@ -245,7 +245,7 @@ fn update_thrown_crates(
         if colliding_with_tile && !thrown_crate.was_colliding {
             thrown_crate.was_colliding = true;
             thrown_crate.crate_break_state += 1;
-            audio_events.play(*bounce_sound, *bounce_sound_volume);
+            audio_center.play_sound(*bounce_sound, *bounce_sound_volume);
         } else if !colliding_with_tile {
             thrown_crate.was_colliding = false;
         }
@@ -297,7 +297,7 @@ fn update_thrown_crates(
             let breaking_anim_fps = *breaking_anim_fps;
             let atlas = *breaking_atlas;
 
-            audio_events.play(*break_sound, *break_sound_volume);
+            audio_center.play_sound(*break_sound, *break_sound_volume);
 
             commands.add(
                 move |mut entities: ResMutInit<Entities>,

@@ -19,6 +19,10 @@ action = Action
 networking = Networking
 matchmaking-server = Matchmaking Server
 
+# Audio settings
+audio = Audio
+main-volume = Main Volume
+
 # Graphics settings
 graphics = Graphics
 fullscreen = Fullscreen

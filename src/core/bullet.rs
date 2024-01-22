@@ -109,7 +109,7 @@ fn update(
     collision_world: CollisionWorld,
     mut transforms: CompMut<Transform>,
     mut bullets: CompMut<Bullet>,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
     invincibles: CompMut<Invincibility>,
     mut emote_regions: CompMut<EmoteRegion>,
     asset_server: Res<AssetServer>,
@@ -163,7 +163,7 @@ fn update(
 
         // Bullet hit something
         if hit_player || hit_solid {
-            audio_events.play(*explosion_sound, *explosion_volume);
+            audio_center.play_sound(*explosion_sound, *explosion_volume);
 
             let mut explosion_transform = *transforms.get(entity).unwrap();
             explosion_transform.translation.z += 1.0;

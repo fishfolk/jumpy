@@ -5,6 +5,7 @@ use crate::{
 
 use super::MenuPage;
 
+mod audio;
 mod controls;
 mod graphics;
 mod networking;
@@ -23,6 +24,7 @@ enum SettingsTab {
     #[default]
     Controls,
     Networking,
+    Audio,
     Graphics,
 }
 
@@ -30,6 +32,7 @@ impl SettingsTab {
     const TABS: &'static [(Self, &'static str)] = &[
         (Self::Controls, "controls"),
         (Self::Networking, "networking"),
+        (Self::Audio, "audio"),
         (Self::Graphics, "graphics"),
     ];
 }
@@ -132,6 +135,10 @@ pub fn widget(
                             ui.ctx().set_state(MenuPage::Home);
                             // Reset the modified settings to their stored settings.
                             state.modified_settings = storage.get::<Settings>().unwrap().clone();
+                            // Run cancel callbacks
+                            if state.tab == SettingsTab::Audio {
+                                world.run_system(audio::on_cancel, &state);
+                            }
                         }
 
                         ui.add_space(button_spacing);
@@ -173,6 +180,9 @@ pub fn widget(
                         }
                         SettingsTab::Networking => {
                             world.run_system(networking::widget, (ui, &mut state, should_reset))
+                        }
+                        SettingsTab::Audio => {
+                            world.run_system(audio::widget, (ui, &mut state, should_reset))
                         }
                         SettingsTab::Graphics => {
                             world.run_system(graphics::widget, (ui, &mut state, should_reset))

@@ -24,6 +24,8 @@ fn load_settings(game: &mut Game) {
 #[derive(HasSchema, Debug, Clone)]
 #[repr(C)]
 pub struct Settings {
+    /// The main scaling factor for all game audios.
+    pub main_volume: f64,
     /// Whether to display the game fullscreen.
     pub fullscreen: bool,
     /// The player controller bindings
@@ -35,6 +37,7 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            main_volume: 1.0,
             fullscreen: true,
             player_controls: default(),
             matchmaking_server: default(),

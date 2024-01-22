@@ -28,10 +28,13 @@ pub fn game_plugin(game: &mut Game) {
         .add_system_to_stage(First, process_audio_events);
 }
 
+/// A resource that can be used to control game audios.
 #[derive(HasSchema)]
 #[schema(no_clone)]
 pub struct AudioCenter {
+    /// Buffer for audio events that have not yet been processed.
     events: VecDeque<AudioEvent>,
+    /// The handle to the current music.
     music: Option<StaticSoundHandle>,
 }
 
@@ -45,14 +48,18 @@ impl Default for AudioCenter {
 }
 
 impl AudioCenter {
+    /// Push an audio event to the queue for later processing.
     pub fn event(&mut self, event: AudioEvent) {
         self.events.push_back(event);
     }
 
+    /// Get the playback state of the music.
     pub fn music_state(&self) -> Option<PlaybackState> {
         self.music.as_ref().map(StaticSoundHandle::state)
     }
 
+    /// Play a sound. These are usually short audios that indicate something
+    /// happened in game, e.g. a player jump, an explosion, etc.
     pub fn play_sound(&mut self, sound_source: Handle<AudioSource>, volume: f64) {
         self.events.push_back(AudioEvent::PlaySound {
             sound_source,
@@ -60,6 +67,9 @@ impl AudioCenter {
         })
     }
 
+    /// Play some music. These may or may not loop.
+    ///
+    /// Any current music is stopped.
     pub fn play_music(
         &mut self,
         sound_source: Handle<AudioSource>,
@@ -75,9 +85,15 @@ impl AudioCenter {
 /// An audio event that may be sent to the [`AudioEvents`] resource.
 #[derive(Clone, Debug)]
 pub enum AudioEvent {
+    /// Update the volume of all audios using the new main volume.
     MainVolumeChange(f64),
+    /// Play some music.
+    ///
+    /// Any current music is stopped.
     PlayMusic {
+        /// The handle for the music.
         sound_source: Handle<AudioSource>,
+        /// The settings for the music.
         sound_settings: Box<StaticSoundSettings>,
     },
     /// Play a sound.
@@ -93,7 +109,9 @@ pub enum AudioEvent {
 #[schema(no_clone, no_default, opaque)]
 #[repr(C)]
 pub struct Audio {
+    /// The handle for the audio.
     handle: StaticSoundHandle,
+    /// The original volume requested for the audio.
     volume: f64,
 }
 
@@ -109,11 +127,13 @@ fn process_audio_events(
         match event {
             AudioEvent::MainVolumeChange(main_volume) => {
                 let tween = Tween::default();
+                // Update music volume
                 if let Some(music) = &mut audio_center.music {
                     if let Err(err) = music.set_volume(main_volume * MUSIC_VOLUME, tween) {
                         warn!("Error setting music volume: {err}");
                     }
                 }
+                // Update sound volumes
                 for audio in audios.iter_mut() {
                     if let Err(err) = audio.handle.set_volume(main_volume * audio.volume, tween) {
                         warn!("Error setting audio volume: {err}");
@@ -124,6 +144,7 @@ fn process_audio_events(
                 sound_source,
                 mut sound_settings,
             } => {
+                // Stop the current music
                 if let Some(mut music) = audio_center.music.take() {
                     let tween = Tween {
                         start_time: kira::StartTime::Immediate,
@@ -132,12 +153,14 @@ fn process_audio_events(
                     };
                     music.stop(tween).unwrap();
                 }
+                // Scale the requested volume by the settings value
                 let settings = storage.get::<Settings>().unwrap();
                 let volume = match sound_settings.volume {
                     tween::Value::Fixed(vol) => settings.main_volume * vol.as_amplitude(),
                     _ => settings.main_volume * MUSIC_VOLUME,
                 };
                 sound_settings.volume = tween::Value::Fixed(Volume::Amplitude(volume));
+                // Play the new music
                 let sound_data = assets.get(sound_source).with_settings(*sound_settings);
                 match audio_manager.play(sound_data) {
                     Err(err) => warn!("Error playing music: {err}"),

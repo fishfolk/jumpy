@@ -123,6 +123,8 @@ fn process_audio_events(
     mut audios: CompMut<Audio>,
     storage: Res<Storage>,
 ) {
+    let settings = storage.get::<Settings>().unwrap();
+
     for event in audio_center.events.drain(..).collect::<Vec<_>>() {
         match event {
             AudioEvent::MainVolumeChange(main_volume) => {
@@ -154,12 +156,12 @@ fn process_audio_events(
                     music.handle.stop(tween).unwrap();
                 }
                 // Scale the requested volume by the settings value
-                let settings = storage.get::<Settings>().unwrap();
                 let volume = match sound_settings.volume {
-                    tween::Value::Fixed(vol) => settings.main_volume * vol.as_amplitude(),
-                    _ => settings.main_volume * MUSIC_VOLUME,
+                    tween::Value::Fixed(vol) => vol.as_amplitude(),
+                    _ => MUSIC_VOLUME,
                 };
-                sound_settings.volume = tween::Value::Fixed(Volume::Amplitude(volume));
+                let scaled_volume = settings.main_volume * volume;
+                sound_settings.volume = tween::Value::Fixed(Volume::Amplitude(scaled_volume));
                 // Play the new music
                 let sound_data = assets.get(sound_source).with_settings(*sound_settings);
                 match audio_manager.play(sound_data) {
@@ -171,9 +173,10 @@ fn process_audio_events(
                 sound_source,
                 volume,
             } => {
+                let scaled_volume = settings.main_volume * volume;
                 let sound_data = assets
                     .get(sound_source)
-                    .with_settings(StaticSoundSettings::default().volume(volume));
+                    .with_settings(StaticSoundSettings::default().volume(scaled_volume));
                 match audio_manager.play(sound_data) {
                     Err(err) => warn!("Error playing sound: {err}"),
                     Ok(handle) => {

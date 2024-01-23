@@ -83,7 +83,8 @@ impl AudioCenter {
     }
 }
 
-/// An audio event that may be sent to the [`AudioEvents`] resource.
+/// An audio event that may be sent to the [`AudioCenter`] resource for
+/// processing.
 #[derive(Clone, Debug)]
 pub enum AudioEvent {
     /// Update the volume of all audios using the new values.

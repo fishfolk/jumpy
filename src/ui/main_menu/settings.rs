@@ -112,7 +112,7 @@ pub fn widget(
 
                 // Add buttons to the bottom
                 ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                    ui.horizontal(|ui| {
+                    let buttons_response = ui.horizontal(|ui| {
                         // Calculate button size and spacing
                         let width = ui.available_width();
                         let button_width = width / 4.0;
@@ -173,6 +173,9 @@ pub fn widget(
                             ui.ctx().set_state(MenuPage::Home);
                         }
                     });
+
+                    let buttons_rect = buttons_response.response.rect;
+                    ui.add_space(buttons_rect.height() / 2.0);
 
                     ui.vertical(|ui| match state.tab {
                         SettingsTab::Controls => {

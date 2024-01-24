@@ -23,7 +23,8 @@ pub fn player_state_transition(
         &mut bodies,
         &mut transforms,
     )) {
-        let meta_handle = player_inputs.players[player_idx.0 as usize].selected_player;
+        let player_input = &player_inputs.players[player_idx.0 as usize];
+        let meta_handle = player_input.selected_player;
         let meta = assets.get(meta_handle);
 
         // Reset the body size and position if we stop sliding
@@ -33,7 +34,10 @@ pub fn player_state_transition(
                     body.shape = ColliderShape::Rectangle {
                         size: meta.body_size,
                     };
-                    transform.translation += (meta.body_size.y - meta.slide_body_size.y) / 2.0;
+                    let offset = (meta.body_size.y - meta.slide_body_size.y) / 2.0;
+                    let direction = player_input.control.move_direction.x.signum();
+                    transform.translation.x += offset * direction;
+                    transform.translation.y += offset;
                 }
             }
         }
@@ -69,7 +73,8 @@ pub fn handle_player_state(
         if state.current != *ID {
             continue;
         }
-        let meta_handle = player_inputs.players[player_idx.0 as usize].selected_player;
+        let player_input = &player_inputs.players[player_idx.0 as usize];
+        let meta_handle = player_input.selected_player;
         let meta = assets.get(meta_handle);
 
         if body.velocity.x == 0.0 {
@@ -79,7 +84,10 @@ pub fn handle_player_state(
                     body.shape = ColliderShape::Rectangle {
                         size: meta.body_size,
                     };
-                    transform.translation += (meta.body_size.y - meta.slide_body_size.y) / 2.0;
+                    let offset = (meta.body_size.y - meta.slide_body_size.y) / 2.0;
+                    let direction = player_input.control.move_direction.x.signum();
+                    transform.translation.x += offset * direction;
+                    transform.translation.y += offset;
                 }
             }
         } else if let ColliderShape::Rectangle { size } = &body.shape {
@@ -89,7 +97,9 @@ pub fn handle_player_state(
                 body.shape = ColliderShape::Rectangle {
                     size: meta.slide_body_size,
                 };
-                transform.translation -= (meta.body_size.y - meta.slide_body_size.y) / 2.0;
+                let offset = (meta.body_size.y - meta.slide_body_size.y) / 2.0;
+                transform.translation.x -= offset;
+                transform.translation.y -= offset;
             }
         }
 

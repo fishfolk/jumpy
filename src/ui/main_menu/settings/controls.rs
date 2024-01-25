@@ -187,6 +187,8 @@ pub(super) fn widget(
 
                         // Render the button
                         row.col(|ui| {
+                            ui.set_width(ui.available_width() * 0.92);
+
                             let button = BorderedButton::themed(
                                 &meta.theme.buttons.small,
                                 input.to_string(),

@@ -139,7 +139,7 @@ fn update(
     element_handles: Comp<ElementHandle>,
     assets: Res<AssetServer>,
     collision_world: CollisionWorld,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
     mut swords: CompMut<Sword>,
     mut sprites: CompMut<AtlasSprite>,
     bodies: CompMut<KinematicBody>,
@@ -289,7 +289,7 @@ fn update(
             if item_used && matches!(sword.state, SwordState::Idle) {
                 sprite.index = 8;
                 sword.state = SwordState::Swinging { frame: 0 };
-                audio_events.play(*sound, *sound_volume);
+                audio_center.play_sound(*sound, *sound_volume);
             }
         } else {
             let body = bodies.get(entity).unwrap();

@@ -173,7 +173,7 @@ fn update_thrown_mines(
     entities: Res<Entities>,
     element_handles: Comp<ElementHandle>,
     assets: Res<AssetServer>,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
     mut trauma_events: ResMutInit<CameraTraumaEvents>,
     mut thrown_mines: CompMut<ThrownMine>,
     mut animated_sprites: CompMut<AnimatedSprite>,
@@ -221,7 +221,7 @@ fn update_thrown_mines(
         thrown_mine.arm_delay.tick(time.delta());
 
         if thrown_mine.arm_delay.just_finished() {
-            audio_events.play(*arm_sound, *arm_sound_volume);
+            audio_center.play_sound(*arm_sound, *arm_sound_volume);
 
             sprite.frames = (0..*armed_frames).collect();
             sprite.fps = *armed_fps;
@@ -247,7 +247,7 @@ fn update_thrown_mines(
                 ));
             }
 
-            audio_events.play(*explosion_sound, *explosion_volume);
+            audio_center.play_sound(*explosion_sound, *explosion_volume);
 
             hydrated.remove(**spawner);
 

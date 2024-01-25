@@ -12,18 +12,18 @@
 use bones_bevy_renderer::BonesBevyRenderer;
 use bones_framework::prelude::*;
 
+pub mod audio;
 pub mod core;
 pub mod debug;
 pub mod fullscreen;
 pub mod input;
-pub mod music;
 pub mod sessions;
 pub mod settings;
 pub mod ui;
 
 mod prelude {
     pub use crate::{
-        core::prelude::*, impl_system_param, input::*, sessions::*, settings::*, GameMeta,
+        audio::*, core::prelude::*, impl_system_param, input::*, sessions::*, settings::*, GameMeta,
     };
     pub use bones_framework::prelude::*;
     pub use once_cell::sync::Lazy;
@@ -120,7 +120,7 @@ fn main() {
     game
         // Install game plugins
         .install_plugin(DefaultGamePlugin)
-        .install_plugin(music::game_plugin)
+        .install_plugin(audio::game_plugin)
         .install_plugin(settings::game_plugin)
         .install_plugin(fullscreen::game_plugin)
         .install_plugin(input::game_plugin)

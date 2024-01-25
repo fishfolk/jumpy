@@ -145,7 +145,7 @@ fn update(
     mut muskets: CompMut<Musket>,
     transforms: CompMut<Transform>,
     mut sprites: CompMut<AtlasSprite>,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
 
     player_inventories: PlayerInventories,
     mut items_used: CompMut<ItemUsed>,
@@ -186,14 +186,14 @@ fn update(
             if item_used && musket.cooldown.finished() {
                 // Empty
                 if musket.ammo.eq(&0) {
-                    audio_events.play(*empty_shoot_sound, *empty_shoot_sound_volume);
+                    audio_center.play_sound(*empty_shoot_sound, *empty_shoot_sound_volume);
                     continue;
                 }
 
                 // Reset fire cooldown and subtract ammo
                 musket.cooldown = Timer::new(*cooldown, TimerMode::Once);
                 musket.ammo = musket.ammo.saturating_sub(1).clamp(0, musket.ammo);
-                audio_events.play(*shoot_sound, *shoot_sound_volume);
+                audio_center.play_sound(*shoot_sound, *shoot_sound_volume);
 
                 let player_sprite = sprites.get_mut(player).unwrap();
                 let player_flip_x = player_sprite.flip_x;

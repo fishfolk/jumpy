@@ -2,11 +2,11 @@ use crate::{core::JumpyDefaultMatchRunner, prelude::*};
 
 pub struct SessionNames;
 impl SessionNames {
-    pub const GAME: &'static str = "game";
+    pub const AUDIO: &'static str = "audio";
     pub const DEBUG: &'static str = "debug";
+    pub const GAME: &'static str = "game";
     pub const MAIN_MENU: &'static str = "main_menu";
     pub const PAUSE_MENU: &'static str = "pause_menu";
-    pub const MUSIC_PLAYER: &'static str = "music_player";
 }
 
 pub trait SessionExt {

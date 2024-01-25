@@ -225,7 +225,7 @@ fn explode_flappy_jellyfish(
     element_handles: Comp<ElementHandle>,
     assets: Res<AssetServer>,
     mut transforms: CompMut<Transform>,
-    mut audio_events: ResMut<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
     mut trauma_events: ResMut<CameraTraumaEvents>,
     mut sprites: CompMut<AtlasSprite>,
     mut animated_sprites: CompMut<AnimatedSprite>,
@@ -301,7 +301,7 @@ fn explode_flappy_jellyfish(
 
         entities.kill(flappy_ent);
 
-        audio_events.play(flappy_meta.explosion_sound, flappy_meta.explosion_volume);
+        audio_center.play_sound(flappy_meta.explosion_sound, flappy_meta.explosion_volume);
 
         trauma_events.send(5.0);
 

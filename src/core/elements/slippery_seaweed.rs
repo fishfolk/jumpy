@@ -88,7 +88,7 @@ pub fn update(
                 .actor_collisions(p_ent)
                 .contains(&seaweed_ent)
             {
-                state.current = "core::incapacitated".into();
+                state.current = *incapacitated::ID;
                 continue;
             }
         }

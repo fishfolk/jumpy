@@ -279,7 +279,7 @@
                 .actor_collisions(p_ent)
                 .contains(<span class="kw-2">&amp;</span>seaweed_ent)
             {
-                state.current = <span class="string">&quot;core::incapacitated&quot;</span>.into();
+                state.current = <span class="kw-2">*</span>incapacitated::ID;
                 <span class="kw">continue</span>;
             }
         }

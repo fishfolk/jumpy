@@ -195,6 +195,16 @@
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
 <a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub static </span>ID: Lazy&lt;Ustr&gt; = Lazy::new(|| ustr(<span class="string">&quot;core::crouch&quot;</span>));
@@ -220,7 +230,8 @@
         <span class="kw-2">&amp;mut </span>bodies,
         <span class="kw-2">&amp;mut </span>transforms,
     )) {
-        <span class="kw">let </span>meta_handle = player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize].selected_player;
+        <span class="kw">let </span>player_input = <span class="kw-2">&amp;</span>player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize];
+        <span class="kw">let </span>meta_handle = player_input.selected_player;
         <span class="kw">let </span>meta = assets.get(meta_handle);
 
         <span class="comment">// Reset the body size and position if we stop sliding
@@ -230,7 +241,10 @@
                     body.shape = ColliderShape::Rectangle {
                         size: meta.body_size,
                     };
-                    transform.translation += (meta.body_size.y - meta.slide_body_size.y) / <span class="number">2.0</span>;
+                    <span class="kw">let </span>offset = (meta.body_size.y - meta.slide_body_size.y) / <span class="number">2.0</span>;
+                    <span class="kw">let </span>direction = player_input.control.move_direction.x.signum();
+                    transform.translation.x += offset * direction;
+                    transform.translation.y += offset;
                 }
             }
         }
@@ -266,7 +280,8 @@
         <span class="kw">if </span>state.current != <span class="kw-2">*</span>ID {
             <span class="kw">continue</span>;
         }
-        <span class="kw">let </span>meta_handle = player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize].selected_player;
+        <span class="kw">let </span>player_input = <span class="kw-2">&amp;</span>player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize];
+        <span class="kw">let </span>meta_handle = player_input.selected_player;
         <span class="kw">let </span>meta = assets.get(meta_handle);
 
         <span class="kw">if </span>body.velocity.x == <span class="number">0.0 </span>{
@@ -276,7 +291,10 @@
                     body.shape = ColliderShape::Rectangle {
                         size: meta.body_size,
                     };
-                    transform.translation += (meta.body_size.y - meta.slide_body_size.y) / <span class="number">2.0</span>;
+                    <span class="kw">let </span>offset = (meta.body_size.y - meta.slide_body_size.y) / <span class="number">2.0</span>;
+                    <span class="kw">let </span>direction = player_input.control.move_direction.x.signum();
+                    transform.translation.x += offset * direction;
+                    transform.translation.y += offset;
                 }
             }
         } <span class="kw">else if let </span>ColliderShape::Rectangle { size } = <span class="kw-2">&amp;</span>body.shape {
@@ -286,7 +304,9 @@
                 body.shape = ColliderShape::Rectangle {
                     size: meta.slide_body_size,
                 };
-                transform.translation -= (meta.body_size.y - meta.slide_body_size.y) / <span class="number">2.0</span>;
+                <span class="kw">let </span>offset = (meta.body_size.y - meta.slide_body_size.y) / <span class="number">2.0</span>;
+                transform.translation.x -= offset;
+                transform.translation.y -= offset;
             }
         }
 

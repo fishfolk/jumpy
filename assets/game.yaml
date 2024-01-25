@@ -272,8 +272,8 @@ core:
     alarm: /player/emotes/alarm.emote.yaml
 
   player_hats:
-    - /player/hats/pirate.hat.yaml
-    - /player/hats/straw.hat.yaml
+    - /player/hats/pirate/pirate.hat.yaml
+    - /player/hats/straw/straw.hat.yaml
 
   stable_maps:
     - /map/levels/level_1.map.yaml

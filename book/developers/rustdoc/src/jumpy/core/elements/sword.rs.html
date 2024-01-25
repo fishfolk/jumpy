@@ -563,7 +563,7 @@
     element_handles: Comp&lt;ElementHandle&gt;,
     assets: Res&lt;AssetServer&gt;,
     collision_world: CollisionWorld,
-    <span class="kw-2">mut </span>audio_events: ResMutInit&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
     <span class="kw-2">mut </span>swords: CompMut&lt;Sword&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     bodies: CompMut&lt;KinematicBody&gt;,
@@ -713,7 +713,7 @@
             <span class="kw">if </span>item_used &amp;&amp; <span class="macro">matches!</span>(sword.state, SwordState::Idle) {
                 sprite.index = <span class="number">8</span>;
                 sword.state = SwordState::Swinging { frame: <span class="number">0 </span>};
-                audio_events.play(<span class="kw-2">*</span>sound, <span class="kw-2">*</span>sound_volume);
+                audio_center.play_sound(<span class="kw-2">*</span>sound, <span class="kw-2">*</span>sound_volume);
             }
         } <span class="kw">else </span>{
             <span class="kw">let </span>body = bodies.get(entity).unwrap();

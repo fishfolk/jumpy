@@ -680,7 +680,7 @@
     element_handles: Comp&lt;ElementHandle&gt;,
     assets: Res&lt;AssetServer&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
-    <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
     <span class="kw-2">mut </span>trauma_events: ResMut&lt;CameraTraumaEvents&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
@@ -756,7 +756,7 @@
 
         </span>entities.kill(flappy_ent);
 
-        audio_events.play(flappy_meta.explosion_sound, flappy_meta.explosion_volume);
+        audio_center.play_sound(flappy_meta.explosion_sound, flappy_meta.explosion_volume);
 
         trauma_events.send(<span class="number">5.0</span>);
 

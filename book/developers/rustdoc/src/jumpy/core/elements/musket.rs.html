@@ -526,7 +526,7 @@
     <span class="kw-2">mut </span>muskets: CompMut&lt;Musket&gt;,
     transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
-    <span class="kw-2">mut </span>audio_events: ResMutInit&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
 
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
@@ -567,14 +567,14 @@
             <span class="kw">if </span>item_used &amp;&amp; musket.cooldown.finished() {
                 <span class="comment">// Empty
                 </span><span class="kw">if </span>musket.ammo.eq(<span class="kw-2">&amp;</span><span class="number">0</span>) {
-                    audio_events.play(<span class="kw-2">*</span>empty_shoot_sound, <span class="kw-2">*</span>empty_shoot_sound_volume);
+                    audio_center.play_sound(<span class="kw-2">*</span>empty_shoot_sound, <span class="kw-2">*</span>empty_shoot_sound_volume);
                     <span class="kw">continue</span>;
                 }
 
                 <span class="comment">// Reset fire cooldown and subtract ammo
                 </span>musket.cooldown = Timer::new(<span class="kw-2">*</span>cooldown, TimerMode::Once);
                 musket.ammo = musket.ammo.saturating_sub(<span class="number">1</span>).clamp(<span class="number">0</span>, musket.ammo);
-                audio_events.play(<span class="kw-2">*</span>shoot_sound, <span class="kw-2">*</span>shoot_sound_volume);
+                audio_center.play_sound(<span class="kw-2">*</span>shoot_sound, <span class="kw-2">*</span>shoot_sound_volume);
 
                 <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();
                 <span class="kw">let </span>player_flip_x = player_sprite.flip_x;

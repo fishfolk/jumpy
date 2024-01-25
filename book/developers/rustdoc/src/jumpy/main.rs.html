@@ -324,18 +324,18 @@
 </span><span class="kw">use </span>bones_bevy_renderer::BonesBevyRenderer;
 <span class="kw">use </span>bones_framework::prelude::<span class="kw-2">*</span>;
 
+<span class="kw">pub mod </span>audio;
 <span class="kw">pub mod </span>core;
 <span class="kw">pub mod </span>debug;
 <span class="kw">pub mod </span>fullscreen;
 <span class="kw">pub mod </span>input;
-<span class="kw">pub mod </span>music;
 <span class="kw">pub mod </span>sessions;
 <span class="kw">pub mod </span>settings;
 <span class="kw">pub mod </span>ui;
 
 <span class="kw">mod </span>prelude {
     <span class="kw">pub use crate</span>::{
-        core::prelude::<span class="kw-2">*</span>, impl_system_param, input::<span class="kw-2">*</span>, sessions::<span class="kw-2">*</span>, settings::<span class="kw-2">*</span>, GameMeta,
+        audio::<span class="kw-2">*</span>, core::prelude::<span class="kw-2">*</span>, impl_system_param, input::<span class="kw-2">*</span>, sessions::<span class="kw-2">*</span>, settings::<span class="kw-2">*</span>, GameMeta,
     };
     <span class="kw">pub use </span>bones_framework::prelude::<span class="kw-2">*</span>;
     <span class="kw">pub use </span>once_cell::sync::Lazy;
@@ -432,7 +432,7 @@
     game
         <span class="comment">// Install game plugins
         </span>.install_plugin(DefaultGamePlugin)
-        .install_plugin(music::game_plugin)
+        .install_plugin(audio::game_plugin)
         .install_plugin(settings::game_plugin)
         .install_plugin(fullscreen::game_plugin)
         .install_plugin(input::game_plugin)

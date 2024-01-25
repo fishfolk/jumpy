@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["AudioEvent"],"fn":["play_sounds","session_plugin"],"struct":["AudioEvents"]};

@@ -260,10 +260,7 @@
 <a href="#165" id="165">165</a>
 <a href="#166" id="166">166</a>
 <a href="#167" id="167">167</a>
-<a href="#168" id="168">168</a>
-<a href="#169" id="169">169</a>
 </pre></div><pre class="rust"><code><span class="kw">pub mod </span>attachment;
-<span class="kw">pub mod </span>audio;
 <span class="kw">pub mod </span>bullet;
 <span class="kw">pub mod </span>camera;
 <span class="kw">pub mod </span>damage;
@@ -294,7 +291,7 @@
 
 <span class="kw">pub mod </span>prelude {
     <span class="kw">pub use super</span>::{
-        attachment::<span class="kw-2">*</span>, audio::<span class="kw-2">*</span>, bullet::<span class="kw-2">*</span>, camera::<span class="kw-2">*</span>, damage::<span class="kw-2">*</span>, debug::<span class="kw-2">*</span>, editor::<span class="kw-2">*</span>, editor::<span class="kw-2">*</span>,
+        attachment::<span class="kw-2">*</span>, bullet::<span class="kw-2">*</span>, camera::<span class="kw-2">*</span>, damage::<span class="kw-2">*</span>, debug::<span class="kw-2">*</span>, editor::<span class="kw-2">*</span>, editor::<span class="kw-2">*</span>,
         elements::prelude::<span class="kw-2">*</span>, flappy_jellyfish::<span class="kw-2">*</span>, globals::<span class="kw-2">*</span>, input::<span class="kw-2">*</span>, item::<span class="kw-2">*</span>, lifetime::<span class="kw-2">*</span>,
         map::<span class="kw-2">*</span>, map_constructor::<span class="kw-2">*</span>, metadata::<span class="kw-2">*</span>, physics::<span class="kw-2">*</span>, player::<span class="kw-2">*</span>, random::<span class="kw-2">*</span>, utils::<span class="kw-2">*</span>, FPS,
         MAX_PLAYERS,
@@ -331,8 +328,7 @@
     <span class="kw">fn </span>install(<span class="self">self</span>, session: <span class="kw-2">&amp;mut </span>Session) {
         session
             .install_plugin(DefaultSessionPlugin)
-            .install_plugin(LuaPluginLoaderSessionPlugin(<span class="self">self</span>.plugins))
-            .install_plugin(audio::session_plugin);
+            .install_plugin(LuaPluginLoaderSessionPlugin(<span class="self">self</span>.plugins));
 
         physics::install(session);
         input::install(session);

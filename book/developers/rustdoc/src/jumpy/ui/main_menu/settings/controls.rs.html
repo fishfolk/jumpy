@@ -425,6 +425,8 @@
 <a href="#330" id="330">330</a>
 <a href="#331" id="331">331</a>
 <a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>egui_extras::{Column, TableBuilder};
 
 <span class="kw">use </span><span class="kw">crate</span>::settings::InputKind;
@@ -614,6 +616,8 @@
 
                         <span class="comment">// Render the button
                         </span>row.col(|ui| {
+                            ui.set_width(ui.available_width() * <span class="number">0.92</span>);
+
                             <span class="kw">let </span>button = BorderedButton::themed(
                                 <span class="kw-2">&amp;</span>meta.theme.buttons.small,
                                 input.to_string(),

@@ -341,7 +341,7 @@
     <span class="kw-2">mut </span>atlas_sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     collision_world: CollisionWorld,
-    <span class="kw-2">mut </span>audio_events: ResMutInit&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
 ) {
     <span class="kw">for </span>(entity, (sproinger, sprite)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>sproingers, <span class="kw-2">&amp;mut </span>atlas_sprites)) {
         <span class="kw">let </span>element_handle = element_handles.get(entity).unwrap();
@@ -377,7 +377,7 @@
         <span class="kw">for </span>collider_ent <span class="kw">in </span>collision_world.actor_collisions(entity) {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(body) = bodies.get_mut(collider_ent) {
                 <span class="kw">if </span>body.velocity.y &lt; <span class="kw-2">*</span>spring_velocity - body.gravity {
-                    audio_events.play(<span class="kw-2">*</span>sound, <span class="kw-2">*</span>sound_volume);
+                    audio_center.play_sound(<span class="kw-2">*</span>sound, <span class="kw-2">*</span>sound_volume);
                     body.velocity.y = <span class="kw-2">*</span>spring_velocity;
                     sproinger.sproinging = <span class="bool-val">true</span>;
                 }

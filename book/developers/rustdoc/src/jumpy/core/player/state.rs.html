@@ -299,7 +299,7 @@
            items: Comp&lt;Item&gt;,
            collision_world: CollisionWorld,
            <span class="kw-2">mut </span>inventories: CompMut&lt;Inventory&gt;,
-           <span class="kw-2">mut </span>audio_events: ResMutInit&lt;AudioEvents&gt;,
+           <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
            <span class="kw-2">mut </span>commands: Commands| {
         <span class="comment">// Collect a list of items that are being held by players
         </span><span class="kw">let </span>held_items = entities
@@ -338,7 +338,7 @@
                         </span>commands.add(PlayerCommand::set_inventory(player_ent, <span class="prelude-val">Some</span>(<span class="kw-2">*</span>item)));
 
                         <span class="comment">// Play grab sound
-                        </span>audio_events.play(meta.sounds.grab, meta.sounds.grab_volume);
+                        </span>audio_center.play_sound(meta.sounds.grab, meta.sounds.grab_volume);
                     }
 
                 <span class="comment">// If we are already carrying an item
@@ -347,7 +347,7 @@
                     </span>commands.add(PlayerCommand::set_inventory(player_ent, <span class="prelude-val">None</span>));
 
                     <span class="comment">// Play drop sound
-                    </span>audio_events.play(meta.sounds.drop, meta.sounds.drop_volume);
+                    </span>audio_center.play_sound(meta.sounds.drop, meta.sounds.drop_volume);
                 }
             }
 

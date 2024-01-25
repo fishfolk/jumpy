@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MUSIC_FADE_DURATION","MUSIC_VOLUME"],"enum":["MusicState"],"fn":["music_system"],"struct":["ShuffledPlaylist"]};

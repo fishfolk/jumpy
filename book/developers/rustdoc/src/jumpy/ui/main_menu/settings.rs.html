@@ -280,6 +280,19 @@
 <a href="#185" id="185">185</a>
 <a href="#186" id="186">186</a>
 <a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     prelude::<span class="kw-2">*</span>,
     settings::{PlayerControlMapping, Settings},
@@ -287,6 +300,7 @@
 
 <span class="kw">use </span><span class="kw">super</span>::MenuPage;
 
+<span class="kw">mod </span>audio;
 <span class="kw">mod </span>controls;
 <span class="kw">mod </span>graphics;
 <span class="kw">mod </span>networking;
@@ -305,6 +319,7 @@
     <span class="attr">#[default]
     </span>Controls,
     Networking,
+    Audio,
     Graphics,
 }
 
@@ -312,6 +327,7 @@
     <span class="kw">const </span>TABS: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<span class="self">Self</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str)] = <span class="kw-2">&amp;</span>[
         (<span class="self">Self</span>::Controls, <span class="string">&quot;controls&quot;</span>),
         (<span class="self">Self</span>::Networking, <span class="string">&quot;networking&quot;</span>),
+        (<span class="self">Self</span>::Audio, <span class="string">&quot;audio&quot;</span>),
         (<span class="self">Self</span>::Graphics, <span class="string">&quot;graphics&quot;</span>),
     ];
 }
@@ -391,7 +407,7 @@
 
                 <span class="comment">// Add buttons to the bottom
                 </span>ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                    ui.horizontal(|ui| {
+                    <span class="kw">let </span>buttons_response = ui.horizontal(|ui| {
                         <span class="comment">// Calculate button size and spacing
                         </span><span class="kw">let </span>width = ui.available_width();
                         <span class="kw">let </span>button_width = width / <span class="number">4.0</span>;
@@ -414,6 +430,10 @@
                             ui.ctx().set_state(MenuPage::Home);
                             <span class="comment">// Reset the modified settings to their stored settings.
                             </span>state.modified_settings = storage.get::&lt;Settings&gt;().unwrap().clone();
+                            <span class="comment">// Run cancel callbacks
+                            </span><span class="kw">if </span>state.tab == SettingsTab::Audio {
+                                world.run_system(audio::on_cancel, <span class="kw-2">&amp;</span>state);
+                            }
                         }
 
                         ui.add_space(button_spacing);
@@ -449,12 +469,18 @@
                         }
                     });
 
+                    <span class="kw">let </span>buttons_rect = buttons_response.response.rect;
+                    ui.add_space(buttons_rect.height() / <span class="number">2.0</span>);
+
                     ui.vertical(|ui| <span class="kw">match </span>state.tab {
                         SettingsTab::Controls =&gt; {
                             world.run_system(controls::widget, (ui, <span class="kw-2">&amp;mut </span>state, should_reset))
                         }
                         SettingsTab::Networking =&gt; {
                             world.run_system(networking::widget, (ui, <span class="kw-2">&amp;mut </span>state, should_reset))
+                        }
+                        SettingsTab::Audio =&gt; {
+                            world.run_system(audio::widget, (ui, <span class="kw-2">&amp;mut </span>state, should_reset))
                         }
                         SettingsTab::Graphics =&gt; {
                             world.run_system(graphics::widget, (ui, <span class="kw-2">&amp;mut </span>state, should_reset))

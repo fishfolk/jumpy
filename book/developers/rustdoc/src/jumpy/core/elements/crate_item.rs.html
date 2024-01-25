@@ -649,7 +649,7 @@
     players: Comp&lt;PlayerIdx&gt;,
     collision_world: CollisionWorld,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
-    <span class="kw-2">mut </span>audio_events: ResMutInit&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
     transforms: Comp&lt;Transform&gt;,
     spawners: Comp&lt;DehydrateOutOfBounds&gt;,
     invincibles: CompMut&lt;Invincibility&gt;,
@@ -703,7 +703,7 @@
         <span class="kw">if </span>colliding_with_tile &amp;&amp; !thrown_crate.was_colliding {
             thrown_crate.was_colliding = <span class="bool-val">true</span>;
             thrown_crate.crate_break_state += <span class="number">1</span>;
-            audio_events.play(<span class="kw-2">*</span>bounce_sound, <span class="kw-2">*</span>bounce_sound_volume);
+            audio_center.play_sound(<span class="kw-2">*</span>bounce_sound, <span class="kw-2">*</span>bounce_sound_volume);
         } <span class="kw">else if </span>!colliding_with_tile {
             thrown_crate.was_colliding = <span class="bool-val">false</span>;
         }
@@ -755,7 +755,7 @@
             <span class="kw">let </span>breaking_anim_fps = <span class="kw-2">*</span>breaking_anim_fps;
             <span class="kw">let </span>atlas = <span class="kw-2">*</span>breaking_atlas;
 
-            audio_events.play(<span class="kw-2">*</span>break_sound, <span class="kw-2">*</span>break_sound_volume);
+            audio_center.play_sound(<span class="kw-2">*</span>break_sound, <span class="kw-2">*</span>break_sound_volume);
 
             commands.add(
                 <span class="kw">move </span>|<span class="kw-2">mut </span>entities: ResMutInit&lt;Entities&gt;,

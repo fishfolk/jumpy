@@ -593,7 +593,7 @@
     entities: Res&lt;Entities&gt;,
     <span class="kw-2">mut </span>commands: Commands,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
-    <span class="kw-2">mut </span>audio_events: ResMutInit&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
     element_handles: Comp&lt;ElementHandle&gt;,
     <span class="kw-2">mut </span>idle_bombs: CompMut&lt;IdleKickBomb&gt;,
     assets: Res&lt;AssetServer&gt;,
@@ -620,7 +620,7 @@
         <span class="kw">let </span>fuse_time = <span class="kw-2">*</span>fuse_time;
 
         <span class="kw">if </span>items_used.remove(entity).is_some() {
-            audio_events.play(<span class="kw-2">*</span>fuse_sound, <span class="kw-2">*</span>fuse_sound_volume);
+            audio_center.play_sound(<span class="kw-2">*</span>fuse_sound, <span class="kw-2">*</span>fuse_sound_volume);
             <span class="kw">let </span>animated_sprite = animated_sprites.get_mut(entity).unwrap();
             animated_sprite.frames = [<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>].into_iter().collect();
             animated_sprite.repeat = <span class="bool-val">true</span>;
@@ -650,7 +650,7 @@
 
     collision_world: CollisionWorld,
     player_indexes: Comp&lt;PlayerIdx&gt;,
-    <span class="kw-2">mut </span>audio_events: ResMutInit&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
     <span class="kw-2">mut </span>trauma_events: ResMutInit&lt;CameraTraumaEvents&gt;,
     <span class="kw-2">mut </span>lit_grenades: CompMut&lt;LitKickBomb&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
@@ -746,7 +746,7 @@
 
         <span class="comment">// If it&#39;s time to explode
         </span><span class="kw">if </span>should_explode {
-            audio_events.play(<span class="kw-2">*</span>explosion_sound, <span class="kw-2">*</span>explosion_volume);
+            audio_center.play_sound(<span class="kw-2">*</span>explosion_sound, <span class="kw-2">*</span>explosion_volume);
 
             trauma_events.send(<span class="number">7.5</span>);
 

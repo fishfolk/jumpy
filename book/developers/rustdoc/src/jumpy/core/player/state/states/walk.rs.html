@@ -236,7 +236,7 @@
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>animations: CompMut&lt;AnimationBankSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
-    <span class="kw-2">mut </span>audio_events: ResMutInit&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
 ) {
     <span class="kw">let </span>players = entities.iter_with((
         <span class="kw-2">&amp;</span>player_states,
@@ -261,7 +261,7 @@
 
         <span class="comment">// If we are jumping
         </span><span class="kw">if </span>control.jump_just_pressed {
-            audio_events.play(meta.sounds.jump, meta.sounds.jump_volume);
+            audio_center.play_sound(meta.sounds.jump, meta.sounds.jump_volume);
 
             <span class="comment">// Move up
             </span>body.velocity.y = meta.stats.jump_speed;

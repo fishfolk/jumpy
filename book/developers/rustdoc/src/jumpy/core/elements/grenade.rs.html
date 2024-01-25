@@ -568,7 +568,7 @@
     items_used: Comp&lt;ItemUsed&gt;,
     element_handles: Comp&lt;ElementHandle&gt;,
     assets: Res&lt;AssetServer&gt;,
-    <span class="kw-2">mut </span>audio_events: ResMutInit&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
     <span class="kw-2">mut </span>idle_grenades: CompMut&lt;IdleGrenade&gt;,
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
 ) {
@@ -597,7 +597,7 @@
             animated_sprite.fps = <span class="number">8.0</span>;
 
             <span class="comment">// Play that hissss sound
-            </span>audio_events.play(<span class="kw-2">*</span>fuse_sound, <span class="kw-2">*</span>fuse_sound_volume);
+            </span>audio_center.play_sound(<span class="kw-2">*</span>fuse_sound, <span class="kw-2">*</span>fuse_sound_volume);
 
             commands.add(
                 <span class="kw">move </span>|<span class="kw-2">mut </span>lit: CompMut&lt;LitGrenade&gt;,
@@ -630,7 +630,7 @@
     transforms: CompMut&lt;Transform&gt;,
     element_handles: Comp&lt;ElementHandle&gt;,
     spawners: Comp&lt;DehydrateOutOfBounds&gt;,
-    <span class="kw-2">mut </span>audio_events: ResMutInit&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
     <span class="kw-2">mut </span>lit_grenades: CompMut&lt;LitGrenade&gt;,
     player_inventories: PlayerInventories,
     assets: Res&lt;AssetServer&gt;,
@@ -692,7 +692,7 @@
 
         <span class="comment">// If it&#39;s time to explode
         </span><span class="kw">if </span>grenade.fuse_time.finished() {
-            audio_events.play(<span class="kw-2">*</span>explosion_sound, <span class="kw-2">*</span>explosion_volume);
+            audio_center.play_sound(<span class="kw-2">*</span>explosion_sound, <span class="kw-2">*</span>explosion_volume);
 
             trauma_events.send(<span class="number">5.0</span>);
 

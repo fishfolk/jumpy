@@ -578,7 +578,7 @@
     entities: Res&lt;Entities&gt;,
     element_handles: Comp&lt;ElementHandle&gt;,
     assets: Res&lt;AssetServer&gt;,
-    <span class="kw-2">mut </span>audio_events: ResMutInit&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
     <span class="kw-2">mut </span>trauma_events: ResMutInit&lt;CameraTraumaEvents&gt;,
     <span class="kw-2">mut </span>thrown_mines: CompMut&lt;ThrownMine&gt;,
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
@@ -626,7 +626,7 @@
         thrown_mine.arm_delay.tick(time.delta());
 
         <span class="kw">if </span>thrown_mine.arm_delay.just_finished() {
-            audio_events.play(<span class="kw-2">*</span>arm_sound, <span class="kw-2">*</span>arm_sound_volume);
+            audio_center.play_sound(<span class="kw-2">*</span>arm_sound, <span class="kw-2">*</span>arm_sound_volume);
 
             sprite.frames = (<span class="number">0</span>..<span class="kw-2">*</span>armed_frames).collect();
             sprite.fps = <span class="kw-2">*</span>armed_fps;
@@ -652,7 +652,7 @@
                 ));
             }
 
-            audio_events.play(<span class="kw-2">*</span>explosion_sound, <span class="kw-2">*</span>explosion_volume);
+            audio_center.play_sound(<span class="kw-2">*</span>explosion_sound, <span class="kw-2">*</span>explosion_volume);
 
             hydrated.remove(<span class="kw-2">**</span>spawner);
 

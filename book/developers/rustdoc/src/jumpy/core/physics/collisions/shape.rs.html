@@ -216,6 +216,21 @@
 <a href="#121" id="121">121</a>
 <a href="#122" id="122">122</a>
 <a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Resource that maps [`ColliderShape`]s to a rapier [`SharedShape`][rapier::SharedShape].
@@ -253,6 +268,21 @@
                 transform.translation.truncate().to_array().into(),
                 transform.rotation.to_euler(EulerRot::XYZ).<span class="number">2</span>,
             )),
+        }
+    }
+
+    <span class="doccomment">/// Get the shape&#39;s axis-aligned-bounding-box ( AABB ).
+    ///
+    /// An AABB is the smallest non-rotated rectangle that completely contains the the collision
+    /// shape.
+    ///
+    /// By passing in the shape&#39;s global transform you will get the world-space bounding box.
+    </span><span class="kw">pub fn </span>bounding_box(<span class="self">self</span>, transform: Transform) -&gt; Rect {
+        <span class="kw">let </span>aabb = <span class="self">self</span>.compute_aabb(transform);
+
+        Rect {
+            min: vec2(aabb.mins.x, aabb.mins.y),
+            max: vec2(aabb.maxs.x, aabb.maxs.y),
         }
     }
 

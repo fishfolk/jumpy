@@ -38,6 +38,21 @@ impl ColliderShape {
         }
     }
 
+    /// Get the shape's axis-aligned-bounding-box ( AABB ).
+    ///
+    /// An AABB is the smallest non-rotated rectangle that completely contains the the collision
+    /// shape.
+    ///
+    /// By passing in the shape's global transform you will get the world-space bounding box.
+    pub fn bounding_box(self, transform: Transform) -> Rect {
+        let aabb = self.compute_aabb(transform);
+
+        Rect {
+            min: vec2(aabb.mins.x, aabb.mins.y),
+            max: vec2(aabb.maxs.x, aabb.maxs.y),
+        }
+    }
+
     pub fn shared_shape(&self) -> rapier::SharedShape {
         match self {
             ColliderShape::Circle { diameter } => rapier::SharedShape::ball(*diameter / 2.0),

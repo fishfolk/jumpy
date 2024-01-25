@@ -45,6 +45,15 @@ pub struct ElementMeta {
     pub plugin: Handle<LuaPlugin>,
 }
 
+#[derive(HasSchema, Default, Debug, Clone, Copy)]
+#[type_data(metadata_asset("solid"))]
+#[repr(C)]
+pub struct ElementSolidMeta {
+    pub disabled: bool,
+    pub offset: Vec2,
+    pub size: Vec2,
+}
+
 #[derive(HasSchema, Deserialize, Clone, Debug)]
 #[repr(C)]
 pub struct ElementEditorMeta {
@@ -84,6 +93,10 @@ pub struct DehydrateOutOfBounds(pub Entity);
 #[derive(Clone, Copy, HasSchema, Default, Deref, DerefMut)]
 #[repr(C)]
 pub struct ElementHandle(pub Handle<ElementMeta>);
+
+#[derive(Clone, HasSchema, Default, Deref, DerefMut)]
+#[repr(C)]
+pub struct ElementSolid(pub Entity);
 
 #[derive(Clone, HasSchema)]
 #[schema(no_default)]

@@ -1,0 +1,4 @@
+image: ./diving_goggles.png
+tile_size: [36, 23]
+columns: 1
+rows: 1

@@ -272,8 +272,25 @@ core:
     alarm: /player/emotes/alarm.emote.yaml
 
   player_hats:
-    - /player/hats/pirate.hat.yaml
-    - /player/hats/straw.hat.yaml
+    - /player/hats/bonnet/bonnet.hat.yaml
+    - /player/hats/bow/bow.hat.yaml
+    - /player/hats/bucket/bucket.hat.yaml
+    - /player/hats/chef/chef.hat.yaml
+    - /player/hats/chest/chest.hat.yaml
+    - /player/hats/cowboy/cowboy.hat.yaml
+    - /player/hats/crown/crown.hat.yaml
+    - /player/hats/diving_goggles/diving_goggles.hat.yaml
+    - /player/hats/fisherman/fisherman.hat.yaml
+    - /player/hats/pineapple/pineapple.hat.yaml
+    - /player/hats/pirate/pirate.hat.yaml
+    - /player/hats/pot/pot.hat.yaml
+    - /player/hats/pufferfish/pufferfish.hat.yaml
+    - /player/hats/spicy_lobster/spicy_lobster.hat.yaml
+    - /player/hats/straw/straw.hat.yaml
+    - /player/hats/topper/topper.hat.yaml
+    - /player/hats/unicorn/unicorn.hat.yaml
+    - /player/hats/viking/viking.hat.yaml
+    - /player/hats/water_lily/water_lily.hat.yaml
 
   stable_maps:
     - /map/levels/level_1.map.yaml

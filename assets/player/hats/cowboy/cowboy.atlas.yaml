@@ -1,0 +1,4 @@
+image: ./cowboy.png
+tile_size: [49, 25]
+columns: 1
+rows: 1

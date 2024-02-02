@@ -4,19 +4,10 @@ use crate::prelude::*;
 
 /// Installs profiler ui plugins
 pub fn game_plugin(game: &mut Game) {
+    game.systems.add_before_system(mark_new_frame);
     game.sessions
         .create(SessionNames::PROFILER)
         .install_plugin(session_plugin);
-}
-
-/// Designate session that marks profiler's frame boundary.
-///
-/// Installing to game session is recommended, however this will not work if
-/// trying to profile outside of match or while game session is paused.
-pub fn install_frame_marker(session: &mut Session) {
-    session
-        .stages
-        .add_system_to_stage(CoreStage::First, mark_new_frame);
 }
 
 /// Install the profiler UI to profiler session.
@@ -58,6 +49,6 @@ fn profiler(
 }
 
 /// Notify profilers we are at frame boundary
-pub fn mark_new_frame() {
+pub fn mark_new_frame(_game: &mut Game) {
     puffin::GlobalProfiler::lock().new_frame();
 }

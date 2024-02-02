@@ -1,0 +1,4 @@
+image: ./fisherman.png
+tile_size: [37, 28]
+columns: 1
+rows: 1

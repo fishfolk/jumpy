@@ -142,7 +142,7 @@ fn update_idle_grenades(
     items_used: Comp<ItemUsed>,
     element_handles: Comp<ElementHandle>,
     assets: Res<AssetServer>,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
     mut idle_grenades: CompMut<IdleGrenade>,
     mut animated_sprites: CompMut<AnimatedSprite>,
 ) {
@@ -171,7 +171,7 @@ fn update_idle_grenades(
             animated_sprite.fps = 8.0;
 
             // Play that hissss sound
-            audio_events.play(*fuse_sound, *fuse_sound_volume);
+            audio_center.play_sound(*fuse_sound, *fuse_sound_volume);
 
             commands.add(
                 move |mut lit: CompMut<LitGrenade>,
@@ -204,7 +204,7 @@ fn update_lit_grenades(
     transforms: CompMut<Transform>,
     element_handles: Comp<ElementHandle>,
     spawners: Comp<DehydrateOutOfBounds>,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
     mut lit_grenades: CompMut<LitGrenade>,
     player_inventories: PlayerInventories,
     assets: Res<AssetServer>,
@@ -266,7 +266,7 @@ fn update_lit_grenades(
 
         // If it's time to explode
         if grenade.fuse_time.finished() {
-            audio_events.play(*explosion_sound, *explosion_volume);
+            audio_center.play_sound(*explosion_sound, *explosion_volume);
 
             trauma_events.send(5.0);
 

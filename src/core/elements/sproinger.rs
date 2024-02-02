@@ -100,7 +100,7 @@ fn update(
     mut atlas_sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
     collision_world: CollisionWorld,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
 ) {
     for (entity, (sproinger, sprite)) in entities.iter_with((&mut sproingers, &mut atlas_sprites)) {
         let element_handle = element_handles.get(entity).unwrap();
@@ -136,7 +136,7 @@ fn update(
         for collider_ent in collision_world.actor_collisions(entity) {
             if let Some(body) = bodies.get_mut(collider_ent) {
                 if body.velocity.y < *spring_velocity - body.gravity {
-                    audio_events.play(*sound, *sound_volume);
+                    audio_center.play_sound(*sound, *sound_volume);
                     body.velocity.y = *spring_velocity;
                     sproinger.sproinging = true;
                 }

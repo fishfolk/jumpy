@@ -140,7 +140,7 @@ fn update_idle_kick_bombs(
     entities: Res<Entities>,
     mut commands: Commands,
     mut items_used: CompMut<ItemUsed>,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
     element_handles: Comp<ElementHandle>,
     mut idle_bombs: CompMut<IdleKickBomb>,
     assets: Res<AssetServer>,
@@ -167,7 +167,7 @@ fn update_idle_kick_bombs(
         let fuse_time = *fuse_time;
 
         if items_used.remove(entity).is_some() {
-            audio_events.play(*fuse_sound, *fuse_sound_volume);
+            audio_center.play_sound(*fuse_sound, *fuse_sound_volume);
             let animated_sprite = animated_sprites.get_mut(entity).unwrap();
             animated_sprite.frames = [3, 4, 5].into_iter().collect();
             animated_sprite.repeat = true;
@@ -197,7 +197,7 @@ fn update_lit_kick_bombs(
 
     collision_world: CollisionWorld,
     player_indexes: Comp<PlayerIdx>,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
     mut trauma_events: ResMutInit<CameraTraumaEvents>,
     mut lit_grenades: CompMut<LitKickBomb>,
     mut sprites: CompMut<AtlasSprite>,
@@ -293,7 +293,7 @@ fn update_lit_kick_bombs(
 
         // If it's time to explode
         if should_explode {
-            audio_events.play(*explosion_sound, *explosion_volume);
+            audio_center.play_sound(*explosion_sound, *explosion_volume);
 
             trauma_events.send(7.5);
 

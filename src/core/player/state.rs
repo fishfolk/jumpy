@@ -71,7 +71,7 @@ fn use_drop_or_grab_items_system(id: Ustr) -> StaticSystem<(), ()> {
            items: Comp<Item>,
            collision_world: CollisionWorld,
            mut inventories: CompMut<Inventory>,
-           mut audio_events: ResMutInit<AudioEvents>,
+           mut audio_center: ResMut<AudioCenter>,
            mut commands: Commands| {
         // Collect a list of items that are being held by players
         let held_items = entities
@@ -110,7 +110,7 @@ fn use_drop_or_grab_items_system(id: Ustr) -> StaticSystem<(), ()> {
                         commands.add(PlayerCommand::set_inventory(player_ent, Some(*item)));
 
                         // Play grab sound
-                        audio_events.play(meta.sounds.grab, meta.sounds.grab_volume);
+                        audio_center.play_sound(meta.sounds.grab, meta.sounds.grab_volume);
                     }
 
                 // If we are already carrying an item
@@ -119,7 +119,7 @@ fn use_drop_or_grab_items_system(id: Ustr) -> StaticSystem<(), ()> {
                     commands.add(PlayerCommand::set_inventory(player_ent, None));
 
                     // Play drop sound
-                    audio_events.play(meta.sounds.drop, meta.sounds.drop_volume);
+                    audio_center.play_sound(meta.sounds.drop, meta.sounds.drop_volume);
                 }
             }
 

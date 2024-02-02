@@ -42,7 +42,7 @@ pub fn handle_player_state(
     assets: Res<AssetServer>,
     mut sprites: CompMut<AnimationBankSprite>,
     mut bodies: CompMut<KinematicBody>,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
     collision_world: CollisionWorld,
     slippery: CompMut<Slippery>,
 ) {
@@ -65,7 +65,7 @@ pub fn handle_player_state(
         // If we are jumping
         if control.jump_just_pressed {
             // Play jump sound
-            audio_events.play(meta.sounds.jump, meta.sounds.jump_volume);
+            audio_center.play_sound(meta.sounds.jump, meta.sounds.jump_volume);
 
             // Move up
             body.velocity.y = meta.stats.jump_speed;

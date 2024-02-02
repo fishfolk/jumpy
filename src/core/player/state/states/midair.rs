@@ -15,7 +15,7 @@ pub fn player_state_transition(
     assets: Res<AssetServer>,
     mut player_states: CompMut<PlayerState>,
     bodies: Comp<KinematicBody>,
-    mut audio_events: ResMutInit<AudioEvents>,
+    mut audio_center: ResMut<AudioCenter>,
 ) {
     for (_ent, (player_idx, player_state, body)) in
         entities.iter_with((&player_indexes, &mut player_states, &bodies))
@@ -28,7 +28,7 @@ pub fn player_state_transition(
 
         if body.is_on_ground {
             // Play land sound
-            audio_events.play(meta.sounds.land, meta.sounds.land_volume);
+            audio_center.play_sound(meta.sounds.land, meta.sounds.land_volume);
             // Switch to idle state
             player_state.current = *idle::ID;
         }

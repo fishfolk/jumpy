@@ -93,7 +93,7 @@
     }
 </style>
 
-</head><body class="rustdoc constant"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a></nav><nav class="sidebar"><a class="logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><div class="sidebar-elems"><h2><a href="index.html">In jumpy::ui::main_menu::build_info</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Constant <a href="../../../index.html">jumpy</a>::<wbr><a href="../../index.html">ui</a>::<wbr><a href="../index.html">main_menu</a>::<wbr><a href="index.html">build_info</a>::<wbr><a class="constant" href="#">CARGO_TREE</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../../../src/jumpy/home/runner/work/jumpy/jumpy/target/debug/build/jumpy-d3197d9e4eecf7d8/out/shadow.rs.html#74-1394">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub const CARGO_TREE: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.74.1/std/primitive.str.html">str</a> = r#&quot;
+</head><body class="rustdoc constant"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a></nav><nav class="sidebar"><a class="logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><div class="sidebar-elems"><h2><a href="index.html">In jumpy::ui::main_menu::build_info</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Constant <a href="../../../index.html">jumpy</a>::<wbr><a href="../../index.html">ui</a>::<wbr><a href="../index.html">main_menu</a>::<wbr><a href="index.html">build_info</a>::<wbr><a class="constant" href="#">CARGO_TREE</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../../../src/jumpy/home/runner/work/jumpy/jumpy/target/debug/build/jumpy-d3197d9e4eecf7d8/out/shadow.rs.html#74-1414">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub const CARGO_TREE: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.74.1/std/primitive.str.html">str</a> = r#&quot;
 ├── async-channel v1.9.0
 │   ├── concurrent-queue v2.4.0
 │   │   └── crossbeam-utils v0.8.19
@@ -1222,7 +1222,9 @@
 │   │   │   │   ├── libc v0.2.152
 │   │   │   │   ├── num_threads v0.1.6
 │   │   │   │   ├── powerfmt v0.2.0
-│   │   │   │   └── time-core v0.1.2
+│   │   │   │   ├── time-core v0.1.2
+│   │   │   │   └── time-macros v0.2.16 (proc-macro)
+│   │   │   │       └── time-core v0.1.2
 │   │   │   └── yasna v0.5.2
 │   │   │       └── time v0.3.31 (*)
 │   │   ├── rustls v0.21.10 (*)
@@ -1301,12 +1303,24 @@
 │   └── peg-runtime v0.8.2
 ├── petgraph v0.6.4 (*)
 ├── postcard v1.0.8 (*)
-├── puffin v0.16.0
+├── puffin v0.17.0
 │   ├── anyhow v1.0.79
+│   ├── bincode v1.3.3 (*)
 │   ├── byteorder v1.5.0
 │   ├── cfg-if v1.0.0
-│   ├── instant v0.1.12 (*)
-│   └── once_cell v1.19.0
+│   ├── lz4_flex v0.11.2
+│   ├── once_cell v1.19.0
+│   ├── parking_lot v0.12.1 (*)
+│   └── serde v1.0.195 (*)
+├── puffin_egui v0.23.0
+│   ├── egui v0.23.0 (*)
+│   ├── indexmap v1.9.3 (*)
+│   ├── natord v1.0.9
+│   ├── once_cell v1.19.0
+│   ├── puffin v0.17.0 (*)
+│   ├── time v0.3.31 (*)
+│   ├── vec1 v1.10.1
+│   └── web-time v0.2.4
 ├── rapier2d v0.17.2
 │   ├── approx v0.5.1 (*)
 │   ├── arrayvec v0.7.4
@@ -1403,7 +1417,13 @@
     │   ├── log v0.4.20
     │   └── url v2.5.0 (*)
     ├── is_debug v1.0.1
-    ├── time v0.3.31 (*)
+    ├── time v0.3.31
+    │   ├── deranged v0.3.11 (*)
+    │   ├── itoa v1.0.10
+    │   ├── libc v0.2.152
+    │   ├── num_threads v0.1.6
+    │   ├── powerfmt v0.2.0
+    │   └── time-core v0.1.2
     └── tzdb v0.5.10
         ├── iana-time-zone v0.1.59
         ├── tz-rs v0.6.14

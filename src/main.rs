@@ -17,6 +17,7 @@ pub mod core;
 pub mod debug;
 pub mod fullscreen;
 pub mod input;
+pub mod profiler;
 pub mod sessions;
 pub mod settings;
 pub mod ui;
@@ -126,6 +127,7 @@ fn main() {
         .install_plugin(input::game_plugin)
         .install_plugin(core::game_plugin)
         .install_plugin(debug::game_plugin)
+        .install_plugin(profiler::game_plugin)
         // We initialize the asset server and register asset types
         .init_shared_resource::<AssetServer>()
         .register_default_assets();

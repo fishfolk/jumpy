@@ -20,7 +20,7 @@ bones_bevy_renderer = { git = "https://github.com/fishfolk/bones" }
 bevy_tasks          = "0.11"
 turborand           = { version = "0.10.0", features = ["atomic"] }
 tracing             = "0.1.37"
-puffin              = "0.17.0"
+puffin              = { version = "0.17.0", features = ["web"] }
 puffin_egui         = "0.23.0"
 petgraph            = "0.6.4"
 rapier2d            = { version = "0.17.2", features = ["debug-render", "enhanced-determinism"] }

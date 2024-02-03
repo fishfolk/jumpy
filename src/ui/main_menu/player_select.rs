@@ -440,28 +440,6 @@ fn player_select_panel(
                     direction.x > 0.0,
                     &state.hats,
                     &mut slot.selected_hat);
-                    
-                /*
-                let current_hat_handle_idx = state
-                    .hats
-                    .iter()
-                    .enumerate()
-                    .find(|(_, handle)| **handle == slot.selected_hat)
-                    .map(|(i, _)| i)
-                    .unwrap_or(0);
-
-                let next_idx = if direction.x > 0.0 {
-                    (current_hat_handle_idx + 1) % state.hats.len()
-                } else {
-                    let idx = current_hat_handle_idx as i32 - 1;
-                    if idx == -1 {
-                        state.hats.len() - 1
-                    } else {
-                        idx as usize
-                    }
-                };
-                slot.selected_hat = state.hats[next_idx];
-                */
 
                 #[cfg(not(target_arch = "wasm32"))]
                 if let Some(socket) = network_socket.as_ref() {
@@ -481,27 +459,6 @@ fn player_select_panel(
                     direction.x > 0.0,
                     &state.players,
                     player_handle);
-                
-                /*
-                let current_player_handle_idx = state
-                    .players
-                    .iter()
-                    .enumerate()
-                    .find(|(_, handle)| *handle == player_handle)
-                    .map(|(i, _)| i)
-                    .unwrap_or(0);
-                let next_idx = if direction.x > 0.0 {
-                    (current_player_handle_idx + 1) % state.players.len()
-                } else {
-                    let idx = current_player_handle_idx as i32 - 1;
-                    if idx == -1 {
-                        state.players.len() - 1
-                    } else {
-                        idx as usize
-                    }
-                };
-                *player_handle = state.players[next_idx];
-                */
 
                 #[cfg(not(target_arch = "wasm32"))]
                 if let Some(socket) = network_socket.as_ref() {
@@ -637,18 +594,6 @@ fn player_select_panel(
                     ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                         //let name_with_arrows = format!("<  {}  >", player_meta.name);
                         ui.label(normal_font.rich(player_meta.name.to_string()));
-
-                        /*
-                        if slot.confirmed {
-                            player_meta.name.to_string()
-                        } else {
-                            name_with_arrows
-                        }));
-                        */
-
-
-
-
                         
                         if slot.confirmed {
                             let player_image_max_width = ui.available_width();

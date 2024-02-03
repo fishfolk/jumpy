@@ -4196,10 +4196,12 @@ dependencies = [
  "bincode",
  "byteorder",
  "cfg-if",
+ "js-sys",
  "lz4_flex",
  "once_cell",
  "parking_lot 0.12.1",
  "serde",
+ "web-time",
 ]
 
 [[package]]

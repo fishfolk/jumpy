@@ -219,6 +219,50 @@ fn handle_match_setup_messages(
     }
 }
 
+fn rotate_skins(to_right: bool, players: &Vec<Handle<PlayerMeta>>, current_skin: &mut Handle<PlayerMeta>) {
+    let current_id = players
+        .iter()
+        .enumerate()
+        .find(|(_, skin)| {skin == &current_skin})
+        .map(|(index, _)| index)
+        .unwrap_or(0);
+
+    let new_id: usize;
+    if to_right {
+        new_id = (current_id + 1) % players.len();
+    } else {
+        new_id = if current_id == 0 {
+                players.len() - 1
+            } else {
+                current_id - 1
+            };
+
+    }
+    *current_skin = players[new_id as usize];
+}
+
+fn rotate_hats(to_right: bool, hats: &Vec<Option<Handle<HatMeta>>>, current_hat: &mut Option<Handle<HatMeta>>) {
+    let current_id = hats
+        .iter()
+        .enumerate()
+        .find(|(_, hat)| {hat == &current_hat})
+        .map(|(index, _)| index)
+        .unwrap_or(0);
+   
+    let new_id: usize;
+    if to_right {
+        new_id = (current_id + 1) % hats.len();
+    } else {
+        new_id = 
+            if current_id == 0 {
+                hats.len() - 1
+            } else {
+                current_id - 1
+            };
+    }
+    *current_hat = hats[new_id];
+}       
+
 fn player_select_panel(
     mut params: In<(&mut egui::Ui, usize, &mut PlayerSelectState)>,
     meta: Root<GameMeta>,
@@ -391,6 +435,13 @@ fn player_select_panel(
 
             // Select a hat if the player has been confirmed
             if slot.confirmed {
+
+                rotate_hats(
+                    direction.x > 0.0,
+                    &state.hats,
+                    &mut slot.selected_hat);
+                    
+                /*
                 let current_hat_handle_idx = state
                     .hats
                     .iter()
@@ -410,6 +461,7 @@ fn player_select_panel(
                     }
                 };
                 slot.selected_hat = state.hats[next_idx];
+                */
 
                 #[cfg(not(target_arch = "wasm32"))]
                 if let Some(socket) = network_socket.as_ref() {
@@ -424,6 +476,13 @@ fn player_select_panel(
 
                 // Select player skin if the player has not be confirmed
             } else {
+
+                rotate_skins(
+                    direction.x > 0.0,
+                    &state.players,
+                    player_handle);
+                
+                /*
                 let current_player_handle_idx = state
                     .players
                     .iter()
@@ -442,6 +501,7 @@ fn player_select_panel(
                     }
                 };
                 *player_handle = state.players[next_idx];
+                */
 
                 #[cfg(not(target_arch = "wasm32"))]
                 if let Some(socket) = network_socket.as_ref() {
@@ -575,20 +635,54 @@ fn player_select_panel(
                     });
 
                     ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                        let name_with_arrows = format!("<  {}  >", player_meta.name);
-                        ui.label(normal_font.rich(if slot.confirmed {
+                        //let name_with_arrows = format!("<  {}  >", player_meta.name);
+                        ui.label(normal_font.rich(player_meta.name.to_string()));
+
+                        /*
+                        if slot.confirmed {
                             player_meta.name.to_string()
                         } else {
                             name_with_arrows
                         }));
+                        */
+
+
+
+
+                        
+                        if slot.confirmed {
+                            let player_image_max_width = ui.available_width();
+                            world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref(), player_image_max_width));
+                        } else {
+                            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                let left_arrow_label = ui.add(egui::Label::new(heading_font.rich("<")).sense(egui::Sense::click()));
+                                let player_image_max_width = ui.available_width() - left_arrow_label.rect.width() * 2.0;
+                                if left_arrow_label.clicked() {
+                                    rotate_skins(
+                                        false,
+                                        &state.players,
+                                        &mut slot.selected_player);
+                                }
+
+                                world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref(), player_image_max_width));
+
+                                let right_arrow_label = ui.add(egui::Label::new(heading_font.rich(">")).sense(egui::Sense::click()));
+                                if right_arrow_label.clicked() {
+                                    rotate_skins(
+                                        true,
+                                        &state.players,
+                                        &mut slot.selected_player);
+                                }
+                            });
+                        }
+                        
                         let hat_label = if let Some(hat_meta) = &hat_meta {
                             format!("< {} >", hat_meta.name)
                         } else {
                             format!("< {} >", localization.get("no-hat"))
                         };
                         ui.label(smaller_font.rich(if slot.confirmed { &hat_label } else { "" }));
-
-                        world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref()));
+                        
                     });
                 });
 
@@ -630,15 +724,15 @@ fn player_select_panel(
 }
 
 fn player_image(
-    mut params: In<(&mut egui::Ui, &PlayerMeta, Option<&HatMeta>)>,
+    mut params: In<(&mut egui::Ui, &PlayerMeta, Option<&HatMeta>, f32)>,
     egui_textures: Res<EguiTextures>,
     asset_server: Res<AssetServer>,
 ) {
-    let (ui, player_meta, hat_meta) = &mut *params;
+    let (ui, player_meta, hat_meta, image_max_width) = &mut *params;
     let time = ui.ctx().input(|i| i.time as f32);
-    let width = ui.available_width();
-    let available_height = ui.available_width();
-
+    let width = *image_max_width;
+    let available_height = width;
+    
     let body_rect;
     let body_scale;
     let body_offset;
@@ -748,5 +842,8 @@ fn player_image(
 
         mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
         ui.painter().add(mesh);
+        ui.advance_cursor_after_rect(rect.union(body_rect));
     }
+
+
 }

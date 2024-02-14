@@ -595,13 +595,20 @@ fn player_select_panel(
                         //let name_with_arrows = format!("<  {}  >", player_meta.name);
                         ui.label(normal_font.rich(player_meta.name.to_string()));
                         
+                        let char_space = ui.painter().layout_no_wrap(String::from("<"), heading_font.id(), egui::Color32::WHITE).rect.width();
+                        let player_image_max_width = ui.available_width() - char_space * 3.0;
+
+
                         if slot.confirmed {
-                            let player_image_max_width = ui.available_width();
-                            world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref(), player_image_max_width));
+                            ui.allocate_exact_size(egui::vec2(char_space, char_space), egui::Sense::hover());
+                            let player_image_rect = world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref(), player_image_max_width));
+                            ui.advance_cursor_after_rect(player_image_rect);
                         } else {
+                            //
+
                             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+
                                 let left_arrow_label = ui.add(egui::Label::new(heading_font.rich("<")).sense(egui::Sense::click()));
-                                let player_image_max_width = ui.available_width() - left_arrow_label.rect.width() * 2.0;
                                 if left_arrow_label.clicked() {
                                     rotate_skins(
                                         false,
@@ -609,7 +616,8 @@ fn player_select_panel(
                                         &mut slot.selected_player);
                                 }
 
-                                world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref(), player_image_max_width));
+                                let player_image_rect = world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref(), player_image_max_width));
+                                ui.advance_cursor_after_rect(player_image_rect);
 
                                 let right_arrow_label = ui.add(egui::Label::new(heading_font.rich(">")).sense(egui::Sense::click()));
                                 if right_arrow_label.clicked() {
@@ -620,13 +628,14 @@ fn player_select_panel(
                                 }
                             });
                         }
-                        
+
                         let hat_label = if let Some(hat_meta) = &hat_meta {
                             format!("< {} >", hat_meta.name)
                         } else {
                             format!("< {} >", localization.get("no-hat"))
                         };
-                        ui.label(smaller_font.rich(if slot.confirmed { &hat_label } else { "" }));
+                        ui.add_space(25.0);
+                        ui.label(normal_font.rich(if slot.confirmed { &hat_label } else { "" }));
                         
                     });
                 });
@@ -672,16 +681,20 @@ fn player_image(
     mut params: In<(&mut egui::Ui, &PlayerMeta, Option<&HatMeta>, f32)>,
     egui_textures: Res<EguiTextures>,
     asset_server: Res<AssetServer>,
-) {
+) -> egui::Rect {
     let (ui, player_meta, hat_meta, image_max_width) = &mut *params;
     let time = ui.ctx().input(|i| i.time as f32);
-    let width = *image_max_width;
+    let mut width = *image_max_width;
     let available_height = width;
     
-    let body_rect;
+    let mut body_rect;
     let body_scale;
     let body_offset;
     let y_offset;
+
+    let upscale_percent = 0.15;
+    //size to increase drawing rects by in order to properly use allocated space
+
     // Render the body sprite
     {
         let atlas_handle = &player_meta.layers.body.atlas;
@@ -704,7 +717,13 @@ fn player_image(
         let sprite_aspect = atlas.tile_size.y / atlas.tile_size.x;
         let height = sprite_aspect * width;
         y_offset = -(available_height - height) / 2.0;
-        let (rect, _) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
+        let (mut rect, _) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
+        body_rect = rect;
+        rect = rect.expand(width * upscale_percent);
+        body_rect.max.y = rect.max.y;
+        body_rect.min.y = rect.min.y;
+        width = rect.width();
+
 
         let uv_min = sprite_pos / atlas.size();
         let uv_max = (sprite_pos + atlas.tile_size) / atlas.size();
@@ -722,7 +741,6 @@ fn player_image(
         mesh.translate(egui::vec2(0.0, y_offset));
         ui.painter().add(mesh);
 
-        body_rect = rect;
         body_scale = width / atlas.tile_size.x;
     }
 
@@ -787,8 +805,8 @@ fn player_image(
 
         mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
         ui.painter().add(mesh);
-        ui.advance_cursor_after_rect(rect.union(body_rect));
+        return rect.union(body_rect);
     }
-
+    body_rect
 
 }

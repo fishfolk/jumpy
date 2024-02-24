@@ -29,6 +29,5 @@ if [[ $VENDOR == "Valve" ]]; then
 fi
 
 # Launch game
-DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "Launching game without modified scaling" >> jumpy.log
 ./jumpy 2>&1 >> jumpy.log

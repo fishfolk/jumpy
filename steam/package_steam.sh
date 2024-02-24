@@ -47,4 +47,3 @@ cd ..
 rm -r $RELEASE
 
 echo ".zip files in ./steam are prepared to be uploaded to steam for respective platforms."
-ls

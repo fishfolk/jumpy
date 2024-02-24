@@ -10,3 +10,4 @@ trace-*.json
 perf.data*
 callgrind.out*
 .cargo
+steam/packaged/**

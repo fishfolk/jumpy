@@ -48,3 +48,11 @@ Binary releases are automated via [Continuous Deployment](./.github/workflows/re
 - `jumpy-<version>-<target>.<ext>`
 
 A single archive includes the `jumpy` binary and `assets` directory. It can be verified by using a SHA256 hash file that has the same name as the artifact except it ends with ".sha256". Release artifacts are not signed at this time.
+
+### Steam
+
+This is WIP. In the `steam` folder there is a `./package_steam.sh` script. This pulls the latest github release and prepares windows/linx/apple builds as .zip files to be prepared for upload to steam. Output is in `./steam/packaged` dir. Subsequent runs cleanup built packages.
+
+To prepare packages other than latest, can be run as: `VERSION=v0.10.0 ./package_steam.sh`.
+
+This script also adds some additional launch scripts (see `./steam/launch_scripts`).

@@ -1,0 +1,5 @@
+name: Bucket Hat
+atlas: ./bucket.atlas.yaml
+
+offset: [-3, 31]
+body_size: [34, 33]

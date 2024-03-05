@@ -120,6 +120,27 @@ entities.</p>
         pos.y += vel.y;
     }
 }</code></pre></div>
+<p>You may optionally iterate over components with <code>&amp;Optional(&amp;comp)</code> or mutably with
+<code>&amp;mut OptionalMut(&amp;mut comp_mut)</code>. Entities are not filtered by component in <a href="struct.OptionalQueryItem.html" title="struct jumpy::prelude::OptionalQueryItem"><code>OptionalQueryItem</code></a>.
+None is returned for these. If done with single Optional query item, all entities are iterated over.</p>
+<p>Syntax is <code>&amp;Optional(&amp;comp)</code>, or <code>&amp;mut OptionalMut(&amp;mut comp)</code>. Reference to comp and reference to Optional
+is required for now.</p>
+<h5 id="optional-example"><a href="#optional-example"><code>Optional</code> Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>
+<span class="kw">fn </span>my_system(entities: Res&lt;Entities&gt;, <span class="kw-2">mut </span>pos: CompMut&lt;Pos&gt;, vel: Comp&lt;Vel&gt;, pos_max: Comp&lt;PosMax&gt;) {
+    <span class="kw">for </span>(entity, (pos, vel, pos_max)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>pos, <span class="kw-2">&amp;</span>vel, <span class="kw-2">&amp;</span>Optional(<span class="kw-2">&amp;</span>pos_max))) {
+        <span class="comment">// Update pos from vel on all entities that have pos and vel components
+        </span>pos.x += vel.x;
+        pos.y += vel.y;
+
+        <span class="comment">// limit pos.x by pos_max.x if entity has PosMax component
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(pos_max) = pos_max {
+            <span class="kw">if </span>pos.x &gt; pos_max.x {
+                pos.x = pos_max.x
+            }
+        }
+    }
+}</code></pre></div>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.create" class="method"><h4 class="code-header">pub fn <a href="#method.create" class="fn">create</a>(&amp;mut self) -&gt; <a class="struct" href="struct.Entity.html" title="struct jumpy::prelude::Entity">Entity</a></h4></section></summary><div class="docblock"><p>Creates a new <code>Entity</code> and returns it.</p>
 <p>This function will not reuse the index of an entity that is still in the killed entities.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.is_alive" class="method"><h4 class="code-header">pub fn <a href="#method.is_alive" class="fn">is_alive</a>(&amp;self, entity: <a class="struct" href="struct.Entity.html" title="struct jumpy::prelude::Entity">Entity</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.74.1/std/primitive.bool.html">bool</a></h4></section></summary><div class="docblock"><p>Checks if the <code>Entity</code> is still alive.</p>

@@ -1,11 +1,14 @@
 //! Debug tools and menus.
 
 use crate::prelude::*;
+use bones_framework::debug::frame_time_diagnostics_plugin;
+
 
 pub fn game_plugin(game: &mut Game) {
     game.sessions
         .create(SessionNames::DEBUG)
-        .install_plugin(session_plugin);
+        .install_plugin(session_plugin)
+        .install_plugin(frame_time_diagnostics_plugin);
 }
 
 fn session_plugin(session: &mut Session) {
@@ -64,6 +67,19 @@ fn debug_menu(
                             session.restore(&mut snapshot);
                         }
                     }
+                }
+
+                let show_frame_time_window = &mut ctx
+                    .get_state::<bones_framework::debug::FrameTimeWindowState>()
+                    .open;
+                if ui
+                    .button(localization.get("frame-time-diagnostics"))
+                    .clicked()
+                {
+                    *show_frame_time_window = !*show_frame_time_window;
+                    ctx.set_state(bones_framework::debug::FrameTimeWindowState {
+                        open: *show_frame_time_window,
+                    });
                 }
             })
         });

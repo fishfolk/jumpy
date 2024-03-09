@@ -10,6 +10,7 @@ allow = [
   "Zlib",
   "Apache-2.0 WITH LLVM-exception",
   "Unicode-DFS-2016",
+  "Unicode-3.0",
   "BSD-3-Clause",
   "BSL-1.0",
   "MIT-0",

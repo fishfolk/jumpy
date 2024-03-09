@@ -301,7 +301,7 @@ impl<'a> CollisionWorld<'a> {
             if !self.entities.is_alive(entity) {
                 // Remove any collisions with the killed entity from the collision cache.
                 let mut collisions = collision_cache.collisions.borrow_mut();
-                let colliding_with = collisions.remove(&entity);
+                let colliding_with = collisions.swap_remove(&entity);
                 if let Some(colliding_with) = colliding_with {
                     for other_entity in colliding_with {
                         if let Some(collisions) = collisions.get_mut(&other_entity) {

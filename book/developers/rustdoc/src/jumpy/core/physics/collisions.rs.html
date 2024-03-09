@@ -1359,7 +1359,7 @@
             <span class="kw">if </span>!<span class="self">self</span>.entities.is_alive(entity) {
                 <span class="comment">// Remove any collisions with the killed entity from the collision cache.
                 </span><span class="kw">let </span><span class="kw-2">mut </span>collisions = collision_cache.collisions.borrow_mut();
-                <span class="kw">let </span>colliding_with = collisions.remove(<span class="kw-2">&amp;</span>entity);
+                <span class="kw">let </span>colliding_with = collisions.swap_remove(<span class="kw-2">&amp;</span>entity);
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(colliding_with) = colliding_with {
                     <span class="kw">for </span>other_entity <span class="kw">in </span>colliding_with {
                         <span class="kw">if let </span><span class="prelude-val">Some</span>(collisions) = collisions.get_mut(<span class="kw-2">&amp;</span>other_entity) {

@@ -212,6 +212,67 @@ impl_system_param! {
 }
 
 impl<'a> CollisionWorld<'a> {
+    /// Update shape of actor's [`Collider`]. Warns if entity does not have an [`Actor`] component.
+    ///
+    /// Updates shape on `Collider` and rebuilds rapier's collider on rigidbody.
+    pub fn set_actor_shape(&mut self, entity: Entity, shape: ColliderShape) {
+        if !self.actors.contains(entity) {
+            // This doesn't technically need be restricted, however we use default settings of collider for Actor,
+            // and function would need to be updated to do this correctly for Solids, Tiles, or other classes of body.
+            warn!("CollisionWorld::set_actor_shape called on entity that is not an Actor.");
+            return;
+        }
+
+        if let Some(collider) = self.colliders.get_mut(entity) {
+            collider.shape = shape;
+
+            if let Some(handle) = collider.rapier_handle {
+                let RapierContext {
+                    rigid_body_set,
+                    collider_shape_cache,
+                    collider_set,
+                    islands,
+                    ..
+                } = &mut *self.ctx;
+
+                let rapier_body = rigid_body_set.get_mut(handle).unwrap();
+                let shared_shape = collider_shape_cache.shared_shape(shape);
+
+                // Make new collider from shape
+                let mut new_collider = build_actor_rapier_collider(entity, shared_shape.clone());
+
+                {
+                    let collider_handle = rapier_body.colliders()[0];
+                    let current_rapier_collider = collider_set.get(collider_handle).unwrap();
+
+                    // Update new collider with any settings that may have changed from default on existing.
+                    new_collider = new_collider.sensor(current_rapier_collider.is_sensor());
+
+                    // Remove body's current collider
+                    let wake_up = true;
+                    collider_set.remove(collider_handle, islands, rigid_body_set, wake_up);
+                }
+
+                // Insert body's new collider
+                collider_set.insert_with_parent(new_collider, handle, rigid_body_set);
+            } else {
+                // We have an existing Collider but no rapier body yet, shape was updated on Collider
+                // and will be used when body is created.
+            }
+        } else {
+            // No existing collider, insert new one with shape.
+            // Not really expecting this case to be called, but might as well handle it.
+            // rapier body will be created on next call to `sync_colliders`.
+            self.colliders.insert(
+                entity,
+                Collider {
+                    shape,
+                    ..Default::default()
+                },
+            );
+        }
+    }
+
     /// Call closure with mutable reference to [`rapier::RigidBody`] for entity.
     ///
     /// # Errors
@@ -243,6 +304,34 @@ impl<'a> CollisionWorld<'a> {
             ))
         }
     }
+}
+
+/// Helper function for configuring ColliderBuilder for actors.
+fn build_actor_rapier_collider(
+    entity: Entity,
+    shared_shape: rapier::SharedShape,
+) -> rapier::ColliderBuilder {
+    // Do not filter collision pairs, get all collision events
+    let collision_membership = CollisionGroup::DEFAULT;
+    let collision_filter = CollisionGroup::ALL;
+    // Only generate contact forces (when simulating) with solids/tiles, not other dynamics.
+    // This is not relevant if only Kinematic, only relevant if DynamicBody is added and switched to simulating.
+    let simulation_membership = SolverGroup::DYNAMIC;
+    let simulation_filter = SolverGroup::SOLID_WORLD | SolverGroup::JUMP_THROUGH;
+
+    rapier::ColliderBuilder::new(shared_shape)
+        .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
+        .active_collision_types(rapier::ActiveCollisionTypes::all())
+        .collision_groups(rapier::InteractionGroups::new(
+            collision_membership.bits().into(),
+            collision_filter.bits().into(),
+        ))
+        .solver_groups(rapier::InteractionGroups::new(
+            simulation_membership.bits().into(),
+            simulation_filter.bits().into(),
+        ))
+        .sensor(true)
+        .user_data(RapierUserData::from(entity))
 }
 
 /// An actor in the physics simulation.
@@ -522,28 +611,8 @@ impl<'a> CollisionWorld<'a> {
                         .user_data(RapierUserData::from(ent))
                 });
 
-                // Do not filter collision pairs, get all collision events
-                let collision_membership = CollisionGroup::DEFAULT;
-                let collision_filter = CollisionGroup::ALL;
-                // Only generate contact forces (when simulating) with solid world geometry, not other dynamics.
-                // This is not relevant if only Kinematic, only relevant if DynamicBody is added and switched to simulating.
-                let simulation_membership = SolverGroup::DYNAMIC;
-                let simulation_filter = SolverGroup::SOLID_WORLD | SolverGroup::JUMP_THROUGH;
-
                 collider_set.insert_with_parent(
-                    rapier::ColliderBuilder::new(shared_shape.clone())
-                        .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
-                        .active_collision_types(rapier::ActiveCollisionTypes::all())
-                        .collision_groups(rapier::InteractionGroups::new(
-                            collision_membership.bits().into(),
-                            collision_filter.bits().into(),
-                        ))
-                        .solver_groups(rapier::InteractionGroups::new(
-                            simulation_membership.bits().into(),
-                            simulation_filter.bits().into(),
-                        ))
-                        .sensor(true)
-                        .user_data(RapierUserData::from(ent)),
+                    build_actor_rapier_collider(ent, shared_shape.clone()),
                     body_handle,
                     rigid_body_set,
                 );

@@ -133,6 +133,11 @@ layers:
           - idx: 90
         fps: *fps
         repeat: false
+      death_ragdoll:
+        fps: *fps
+        frames:
+          - idx: 56
+            offset: [0, -4]
   fin:
     atlas: ./orcy-fin.atlas.yaml
     offset: [-14, 3]
@@ -194,6 +199,9 @@ layers:
         fps: *fps
         frames:
           - 3 # Intentionally an invisible frame
+      death_ragdoll:
+        frames:
+          - 20
       grab_1:
         fps: *fps
         frames:
@@ -260,6 +268,10 @@ layers:
         fps: *fps
         frames:
           - 8 # Intentionally an invisible frame
+      death_ragdoll:
+        fps: *fps
+        frames:
+          - 5
       emote_alarm:
         fps: *fps
         frames:

@@ -4,6 +4,9 @@ use crate::prelude::*;
 use bones_framework::debug::frame_time_diagnostics_plugin;
 
 
+#[cfg(not(target_arch = "wasm32"))]
+use bones_framework::networking::debug::network_debug_window;
+
 pub fn game_plugin(game: &mut Game) {
     game.sessions
         .create(SessionNames::DEBUG)
@@ -15,6 +18,11 @@ fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::First, debug_menu);
+
+    #[cfg(not(target_arch = "wasm32"))]
+    session
+        .stages
+        .add_system_to_stage(CoreStage::First, network_debug_window);
 }
 
 #[derive(HasSchema, Clone, Debug, Default)]
@@ -81,6 +89,25 @@ fn debug_menu(
                         open: *show_frame_time_window,
                     });
                 }
+
+                // Show net diagnostics button
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    let show_network_debug = &mut ctx.get_state::<NetworkDebugMenuState>().open;
+                    if ui.button(localization.get("network-debug")).clicked() {
+                        *show_network_debug = !*show_network_debug;
+                        // Set state so other debug menus may access
+                        ctx.set_state(NetworkDebugMenuState {
+                            open: *show_network_debug,
+                        });
+                    }
+                }
+
+                // Network debug disabled in wasm.
+                #[cfg(target_arch = "wasm32")]
+                ui.add_enabled_ui(false, |ui| {
+                    let _ = ui.button(localization.get("network-debug"));
+                });
             })
         });
 }

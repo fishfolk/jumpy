@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["frame_diagnostic_window","frame_time_diagnostics_plugin"],"struct":["FrameDiagState","FrameTimeWindowState"]};

@@ -3,7 +3,6 @@
 use crate::prelude::*;
 use bones_framework::debug::frame_time_diagnostics_plugin;
 
-
 #[cfg(not(target_arch = "wasm32"))]
 use bones_framework::networking::debug::network_debug_window;
 

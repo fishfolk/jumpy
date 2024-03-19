@@ -113,6 +113,7 @@ fn update(
     invincibles: CompMut<Invincibility>,
     mut emote_regions: CompMut<EmoteRegion>,
     asset_server: Res<AssetServer>,
+    time: Res<Time>,
 ) {
     for (entity, (bullet, bullet_handle)) in entities.iter_with((&mut bullets, &bullet_handles)) {
         let bullet_meta = asset_server.get(bullet_handle.0);
@@ -132,7 +133,8 @@ fn update(
         // Move bullet
         let position = {
             let position = transforms.get_mut(entity).unwrap();
-            position.translation += (bullet.direction * *speed).extend(0.0);
+            let delta_time = time.delta_seconds();
+            position.translation += (bullet.direction * *speed * delta_time).extend(0.0);
 
             let emote_size = Vec2::new(*body_diameter * 6.0, *body_diameter * 3.5);
             emote_regions.insert(entity, EmoteRegion::basic(Emote::Alarm, emote_size, true));

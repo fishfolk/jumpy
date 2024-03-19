@@ -327,7 +327,7 @@ fn update_kinematic_bodies(
                 body.velocity.y *= meta.core.physics.friction_lerp;
             }
 
-            if body.velocity.y <= meta.core.physics.gravity {
+            if body.velocity.y <= body.gravity * time_factor {
                 body.velocity.y = 0.0;
             }
         }

@@ -157,11 +157,11 @@ fn spawn(owner: Entity, jellyfish_ent: Entity) -> StaticSystem<(), ()> {
     .system()
 }
 
-const SPEED_X: f32 = 324.0;
-const SPEED_JUMP: f32 = 3.5;
-const GRAVITY: f32 = 0.1;
-const MIN_SPEED: Vec2 = vec2(-SPEED_X, -4.0);
-const MAX_SPEED: Vec2 = vec2(SPEED_X, 4.0);
+const SPEED_X: f32 = 19440.0;
+const SPEED_JUMP: f32 = 210.0;
+const GRAVITY: f32 = 360.0;
+const MIN_SPEED: Vec2 = vec2(-SPEED_X, -240.0);
+const MAX_SPEED: Vec2 = vec2(SPEED_X, 240.0);
 
 fn control_flappy_jellyfish(
     time: Res<Time>,

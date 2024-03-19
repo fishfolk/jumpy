@@ -1,4 +1,4 @@
-throw_velocity: 10
+throw_velocity: 600
 
 atlas: ./crate.atlas.yaml
 

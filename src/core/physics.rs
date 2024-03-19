@@ -151,10 +151,7 @@ fn update_kinematic_bodies(
 ) {
     puffin::profile_function!();
 
-    // This value was previously using dt / (1 / crate::FPS), this was changed
-    // to no longer have FPS impact velocity, the dt * 60 is a holdover to avoid having
-    // to update all velocities.
-    let time_factor = time.delta().as_secs_f32() * 60.0;
+    let time_factor = time.delta().as_secs_f32();
 
     collision_world.update(&transforms);
     for (entity, body) in entities.iter_with(&mut bodies) {

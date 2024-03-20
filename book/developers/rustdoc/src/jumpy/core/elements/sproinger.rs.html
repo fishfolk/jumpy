@@ -376,7 +376,7 @@
 
         <span class="kw">for </span>collider_ent <span class="kw">in </span>collision_world.actor_collisions(entity) {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(body) = bodies.get_mut(collider_ent) {
-                <span class="kw">if </span>body.velocity.y &lt; <span class="kw-2">*</span>spring_velocity - body.gravity {
+                <span class="kw">if </span>body.velocity.y &lt; <span class="kw-2">*</span>spring_velocity {
                     audio_center.play_sound(<span class="kw-2">*</span>sound, <span class="kw-2">*</span>sound_volume);
                     body.velocity.y = <span class="kw-2">*</span>spring_velocity;
                     sproinger.sproinging = <span class="bool-val">true</span>;

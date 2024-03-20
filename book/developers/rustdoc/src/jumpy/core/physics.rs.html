@@ -468,7 +468,6 @@
 <a href="#373" id="373">373</a>
 <a href="#374" id="374">374</a>
 <a href="#375" id="375">375</a>
-<a href="#376" id="376">376</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Physics and collision detection.
 
 </span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
@@ -622,10 +621,7 @@
 ) {
     <span class="macro">puffin::profile_function!</span>();
 
-    <span class="comment">// This value was previously using dt / (1 / crate::FPS), this was changed
-    // to no longer have FPS impact velocity, the dt * 60 is a holdover to avoid having
-    // to update all velocities.
-    </span><span class="kw">let </span>time_factor = time.delta().as_secs_f32() * <span class="number">60.0</span>;
+    <span class="kw">let </span>time_factor = time.delta().as_secs_f32();
 
     collision_world.update(<span class="kw-2">&amp;</span>transforms);
     <span class="kw">for </span>(entity, body) <span class="kw">in </span>entities.iter_with(<span class="kw-2">&amp;mut </span>bodies) {
@@ -798,7 +794,7 @@
                 body.velocity.y <span class="kw-2">*</span>= meta.core.physics.friction_lerp;
             }
 
-            <span class="kw">if </span>body.velocity.y &lt;= meta.core.physics.gravity {
+            <span class="kw">if </span>body.velocity.y &lt;= body.gravity * time_factor {
                 body.velocity.y = <span class="number">0.0</span>;
             }
         }
@@ -813,6 +809,7 @@
 
         <span class="kw">if </span>body.can_rotate {
             apply_rotation(
+                time_factor,
                 transforms.get_mut(entity).unwrap(),
                 body.velocity,
                 body.angular_velocity,
@@ -825,6 +822,7 @@
 
 <span class="doccomment">/// Helper function to apply rotation to a kinematic body.
 </span><span class="kw">fn </span>apply_rotation(
+    delta_time: f32,
     transform: <span class="kw-2">&amp;mut </span>Transform,
     velocity: Vec2,
     angular_velocity: f32,
@@ -840,7 +838,7 @@
             angle += velocity.x.abs() * angular_velocity;
         }
     } <span class="kw">else </span>{
-        angle += (angular_velocity * FPS).to_radians();
+        angle += (angular_velocity * delta_time).to_radians();
     }
 
     transform.rotation = Quat::from_rotation_z(angle);

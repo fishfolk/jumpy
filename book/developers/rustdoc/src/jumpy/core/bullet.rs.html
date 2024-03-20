@@ -305,6 +305,8 @@
 <a href="#210" id="210">210</a>
 <a href="#211" id="211">211</a>
 <a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Generic bullet implementation.
 //!
 //! These components are used for things like the musket and sniper rifle bullets.
@@ -420,6 +422,7 @@
     invincibles: CompMut&lt;Invincibility&gt;,
     <span class="kw-2">mut </span>emote_regions: CompMut&lt;EmoteRegion&gt;,
     asset_server: Res&lt;AssetServer&gt;,
+    time: Res&lt;Time&gt;,
 ) {
     <span class="kw">for </span>(entity, (bullet, bullet_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>bullets, <span class="kw-2">&amp;</span>bullet_handles)) {
         <span class="kw">let </span>bullet_meta = asset_server.get(bullet_handle.<span class="number">0</span>);
@@ -439,7 +442,8 @@
         <span class="comment">// Move bullet
         </span><span class="kw">let </span>position = {
             <span class="kw">let </span>position = transforms.get_mut(entity).unwrap();
-            position.translation += (bullet.direction * <span class="kw-2">*</span>speed).extend(<span class="number">0.0</span>);
+            <span class="kw">let </span>delta_time = time.delta_seconds();
+            position.translation += (bullet.direction * <span class="kw-2">*</span>speed * delta_time).extend(<span class="number">0.0</span>);
 
             <span class="kw">let </span>emote_size = Vec2::new(<span class="kw-2">*</span>body_diameter * <span class="number">6.0</span>, <span class="kw-2">*</span>body_diameter * <span class="number">3.5</span>);
             emote_regions.insert(entity, EmoteRegion::basic(Emote::Alarm, emote_size, <span class="bool-val">true</span>));

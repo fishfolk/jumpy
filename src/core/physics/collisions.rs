@@ -4,6 +4,7 @@ use std::hash::BuildHasherDefault;
 
 use indexmap::IndexMap;
 
+use rapier::Vector;
 pub use rapier2d::prelude as rapier;
 pub use shape::*;
 
@@ -23,6 +24,12 @@ pub struct RapierContext {
     pub rigid_body_set: rapier::RigidBodySet,
     pub collider_shape_cache: ColliderShapeCache,
     pub collision_cache: CollisionCache,
+    pub physics_pipeline: rapier::PhysicsPipeline,
+    pub islands: rapier::IslandManager,
+    pub impulse_joints: rapier::ImpulseJointSet,
+    pub ccd_solver: rapier::CCDSolver,
+    pub multibody_joints: rapier::MultibodyJointSet,
+    pub integration_params: rapier::IntegrationParameters,
 }
 
 impl Clone for RapierContext {
@@ -38,6 +45,14 @@ impl Clone for RapierContext {
             rigid_body_set: self.rigid_body_set.clone(),
             collider_shape_cache: self.collider_shape_cache.clone(),
             collision_cache: self.collision_cache.clone(),
+            // Probably should keep this around, it's safe to drop data as only temp buffers,
+            // but re-creating may hurt performance.
+            physics_pipeline: rapier::PhysicsPipeline::default(),
+            islands: self.islands.clone(),
+            impulse_joints: self.impulse_joints.clone(),
+            ccd_solver: self.ccd_solver.clone(),
+            multibody_joints: self.multibody_joints.clone(),
+            integration_params: self.integration_params,
         }
     }
 }
@@ -160,6 +175,13 @@ impl rapier::EventHandler for &mut CollisionCache {
     }
 }
 
+/// Errors produced from physics system
+#[derive(thiserror::Error, Debug)]
+pub enum PhysicsError {
+    #[error("Physics body not initialized: {0}")]
+    BodyNotInitialized(String),
+}
+
 impl_system_param! {
     pub struct CollisionWorld<'a> {
         entities: Res<'a, Entities>,
@@ -182,6 +204,40 @@ impl_system_param! {
         tile_layers: Comp<'a, TileLayer>,
         tile_collision_kinds: Comp<'a, TileCollisionKind>,
         spawned_map_layer_metas: Comp<'a, SpawnedMapLayerMeta>,
+    }
+}
+
+impl<'a> CollisionWorld<'a> {
+    /// Call closure with mutable reference to [`rapier::RigidBody`] for entity.
+    ///
+    /// # Errors
+    /// - [`PhysicsError::BodyNotInitialized`] when called before physics is updated to initialize body after
+    ///   a [`Collider`] component is newly added. (If missing collider or rapier handle does not map to body).
+    pub fn mutate_rigidbody(
+        &mut self,
+        entity: Entity,
+        command: impl FnOnce(&mut rapier::RigidBody),
+    ) -> Result<(), PhysicsError> {
+        if let Some(collider) = self.colliders.get(entity) {
+            if let Some(handle) = collider.rapier_handle {
+                if let Some(body) = self.ctx.rigid_body_set.get_mut(handle) {
+                    command(body);
+                    Ok(())
+                } else {
+                    Err(PhysicsError::BodyNotInitialized(
+                        "Rigidbody handle found but not in rigid body set.".to_string(),
+                    ))
+                }
+            } else {
+                Err(PhysicsError::BodyNotInitialized(
+                    "Entity has collider that is missing rapier handle.".to_string(),
+                ))
+            }
+        } else {
+            Err(PhysicsError::BodyNotInitialized(
+                "Entity does not have a Collider component.".to_string(),
+            ))
+        }
     }
 }
 
@@ -265,22 +321,35 @@ pub enum TileCollisionKind {
     JumpThrough,
 }
 
+/// Parameters for physics step
+pub struct PhysicsParams {
+    /// Gravity (positive value is downward force)
+    pub gravity: f32,
+
+    /// Terminal velocity (effectively min velocity on y axis, body will not fall faster than this).
+    pub terminal_velocity: Option<f32>,
+}
+
 impl<'a> CollisionWorld<'a> {
     /// Updates the collision world with the entity's actual transforms.
+    /// Advance physics, synchronize position of dynamic bodies.
     ///
     /// If the transform of an entity is changed without calling `update()`, then collision queries
     /// will be out-of-date with the actual entity positions.
     ///
     /// > **⚠️ Warning:** This does **not** update the map tile collisions. To do that, call
     /// > [`update_tiles()`][Self::update_tiles] instead.
-    pub fn update<'b, Tq>(&mut self, transforms: Tq)
-    where
-        Tq: QueryItem,
-        Tq::Iter: Iterator<Item = &'b Transform>,
-    {
+    pub fn update(
+        &mut self,
+        dt: f32,
+        physics_params: PhysicsParams,
+        transforms: &mut CompMut<Transform>,
+        dynamic_bodies: &mut CompMut<DynamicBody>,
+    ) {
         puffin::profile_function!();
 
-        self.sync_colliders(transforms);
+        self.sync_bodies(&*transforms, dynamic_bodies);
+        self.apply_simulation_commands(&mut *dynamic_bodies);
 
         let RapierContext {
             broad_phase,
@@ -289,7 +358,12 @@ impl<'a> CollisionWorld<'a> {
             collision_cache,
             rigid_body_set,
             narrow_phase,
-            collision_pipeline,
+            physics_pipeline,
+            islands,
+            impulse_joints,
+            ccd_solver,
+            multibody_joints,
+            integration_params,
             ..
         } = &mut *self.ctx;
 
@@ -318,39 +392,78 @@ impl<'a> CollisionWorld<'a> {
         for body_handle in to_delete {
             rigid_body_set.remove(
                 body_handle,
-                &mut default(),
+                islands,
                 collider_set,
-                &mut default(),
-                &mut default(),
+                impulse_joints,
+                multibody_joints,
                 true,
             );
         }
 
-        // Update the collision pipeline
-        {
-            puffin::profile_scope!("Collision Pipeline Step");
-            collision_pipeline.step(
-                0.0,
-                broad_phase,
-                narrow_phase,
-                rigid_body_set,
-                collider_set,
-                None,
-                &(),
-                &collision_cache,
-            );
-        }
+        // Step physics pipeline, also steps collision pipeline and updates collision cache.
+        let event_handler = collision_cache;
+        integration_params.dt = dt;
+        physics_pipeline.step(
+            &Vector::new(0.0, -physics_params.gravity),
+            integration_params,
+            islands,
+            broad_phase,
+            narrow_phase,
+            rigid_body_set,
+            collider_set,
+            impulse_joints,
+            multibody_joints,
+            ccd_solver,
+            Some(query_pipeline),
+            &(), // physics hooks
+            &event_handler,
+        );
 
-        // Update the query pipeline
-        {
-            puffin::profile_scope!("Query Pipeline Update");
-            query_pipeline.update(rigid_body_set, collider_set);
+        // Iter on each dynamic rigid-bodies that moved.
+        for rigid_body_handle in islands.active_dynamic_bodies() {
+            let rigid_body = rigid_body_set.get_mut(*rigid_body_handle).unwrap();
+            let entity = RapierUserData::entity(rigid_body.user_data);
+            if let Some(dynamic_body) = dynamic_bodies.get_mut(entity) {
+                if dynamic_body.is_dynamic {
+                    let transform = transforms.get_mut(entity).unwrap();
+                    let rotation = Quat::from_rotation_z(rigid_body.rotation().angle());
+                    // Get translation from physics and preserve Z offset of transform
+                    let translation: Vec3 = rigid_body
+                        .translation()
+                        .xy()
+                        .push(transform.translation.z)
+                        .into();
+                    transform.translation = translation;
+                    transform.rotation = rotation;
+
+                    // Apply terminal velocity. Without this kinematic and dynamic objects may
+                    // fall at different speeds even if same graviy applied. This is used to mirror
+                    // kinematic motion of gravity + terminal vel limit.
+                    if let Some(terminal_vel) = physics_params.terminal_velocity {
+                        let mut vel = *rigid_body.linvel();
+                        if vel.y < -terminal_vel {
+                            vel.y = -terminal_vel;
+                            rigid_body.set_linvel(vel, true);
+                        }
+                    }
+
+                    // Update simulation output for tracking if transform is modified outside of rapier
+                    // next frame.
+                    dynamic_body.update_last_rapier_synced_transform(translation, rotation)
+                } else {
+                    warn!("Active dynamic bodies contained DynamicBody that is not simulating");
+                }
+            } else {
+                warn!("Active dynamic bodies contained entity that does not have a DynamicBody.");
+            }
         }
     }
 
-    /// Sync the transforms and attributes ( like `disabled` ) of the colliders. ( Does not update
-    /// collision pipeline, and is only for use internally. )
-    fn sync_colliders<'b, Tq>(&mut self, transforms: Tq)
+    /// Sync the transforms and attributes ( like `disabled` ) of the colliders.
+    /// Creates rapier bodies for any object with collision.
+    ///
+    /// Handle [`DynamicBody`] toggling between simulation and kinematic mode.
+    pub fn sync_bodies<'b, Tq>(&mut self, transforms: Tq, dynamic_bodies: &mut CompMut<DynamicBody>)
     where
         Tq: QueryItem,
         Tq::Iter: Iterator<Item = &'b Transform>,
@@ -363,24 +476,40 @@ impl<'a> CollisionWorld<'a> {
             collider_shape_cache,
             ..
         } = &mut *self.ctx;
-        for (ent, (transform, collider)) in
-            self.entities.iter_with((transforms, &mut self.colliders))
-        {
+        for (ent, (transform, collider, dynamic_body)) in self.entities.iter_with((
+            transforms,
+            &mut self.colliders,
+            &mut OptionalMut(dynamic_bodies),
+        )) {
             // Get the rapier shape.
             //
             // TODO: Evaluate whether or not caching the colliders like this actually improves
             // performance.
             let shared_shape = collider_shape_cache.shared_shape(collider.shape);
 
+            let is_dynamic = match dynamic_body.as_ref() {
+                Some(dynamic_body) => dynamic_body.is_dynamic,
+                None => false,
+            };
+
             // Get the handle to the rapier collider, creating it if it doesn't exist.
             let rapier_handle = collider.rapier_handle.get_or_insert_with(|| {
-                let body_handle = rigid_body_set.insert(
-                    rapier::RigidBodyBuilder::dynamic().user_data(RapierUserData::from(ent)),
-                );
+                // Initialize body
+                let body_handle = rigid_body_set.insert(if is_dynamic {
+                    rapier::RigidBodyBuilder::dynamic().user_data(RapierUserData::from(ent))
+                } else if KINEMATIC_MODE == rapier::RigidBodyType::KinematicPositionBased {
+                    rapier::RigidBodyBuilder::kinematic_position_based()
+                        .user_data(RapierUserData::from(ent))
+                } else {
+                    rapier::RigidBodyBuilder::kinematic_velocity_based()
+                        .user_data(RapierUserData::from(ent))
+                });
+
                 collider_set.insert_with_parent(
                     rapier::ColliderBuilder::new(shared_shape.clone())
                         .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
                         .active_collision_types(rapier::ActiveCollisionTypes::all())
+                        .sensor(true)
                         .user_data(RapierUserData::from(ent)),
                     body_handle,
                     rigid_body_set,
@@ -389,14 +518,56 @@ impl<'a> CollisionWorld<'a> {
             });
             let rapier_body = rigid_body_set.get_mut(*rapier_handle).unwrap();
 
-            // Set the transform of the collider.
-            rapier_body.set_position(
-                rapier::Isometry::new(
-                    transform.translation.truncate().to_array().into(),
-                    transform.rotation.to_euler(EulerRot::XYZ).2,
-                ),
-                true,
-            );
+            if let Some(dynamic_body) = dynamic_body {
+                // Handle changes in is_dynamic
+                let was_dynamic = matches!(rapier_body.body_type(), rapier::RigidBodyType::Dynamic);
+                if !was_dynamic && is_dynamic {
+                    rapier_body.set_body_type(rapier::RigidBodyType::Dynamic, true);
+
+                    // Clear any velocity that may be left from previously simulating body.
+                    // If Dynamic is newly initialized or user wants to apply velocity changes before next step,
+                    // `DynamicBody::push_simulation_command` may be used which is called after this operation.
+                    rapier_body.set_linvel(Vector::zeros(), true);
+                    rapier_body.set_angvel(0.0, true);
+
+                    // TODO: We may want to synchronize kinematic body's gravity, mass, and other properties.
+
+                    collider_set
+                        .get_mut(rapier_body.colliders()[0])
+                        .unwrap()
+                        .set_sensor(false);
+                } else if was_dynamic && !is_dynamic {
+                    collider_set
+                        .get_mut(rapier_body.colliders()[0])
+                        .unwrap()
+                        .set_sensor(true);
+                    rapier_body.set_body_type(KINEMATIC_MODE, true);
+                }
+
+                // This function still calls for position update if is_dynamic = false
+                if dynamic_body.simulation_transform_needs_update(transform) {
+                    rapier_body.set_position(
+                        rapier::Isometry::new(
+                            transform.translation.truncate().to_array().into(),
+                            transform.rotation.to_euler(EulerRot::XYZ).2,
+                        ),
+                        true,
+                    )
+                }
+            } else {
+                // update position of kinematics
+                //
+                // TODO: we may want to use rapier::RigidBody::set_next_kinematic_position
+                // so rapier computes velocity of kinematics for better interaction with dynamics,
+                // however we don't currently have any kinematic <-> dynamic interaction.
+                rapier_body.set_position(
+                    rapier::Isometry::new(
+                        transform.translation.truncate().to_array().into(),
+                        transform.rotation.to_euler(EulerRot::XYZ).2,
+                    ),
+                    true,
+                );
+            }
             let rapier_collider = collider_set.get_mut(rapier_body.colliders()[0]).unwrap();
             rapier_collider.set_enabled(!collider.disabled);
             rapier_collider.set_position_wrt_parent(rapier::Isometry::new(default(), 0.0));
@@ -430,6 +601,31 @@ impl<'a> CollisionWorld<'a> {
             rapier_collider.set_enabled(!solid.disabled);
             rapier_collider.set_position_wrt_parent(rapier::Isometry::new(default(), 0.0));
             rapier_collider.set_shape(shared_shape.clone());
+        }
+    }
+
+    /// Apply simulation commands to dynamic bodies.
+    ///
+    /// # Panics
+    ///
+    /// This should be called after bodies are initialized, [`DynamicBody`] must have
+    /// a [`Collider`] with valid `rapier::RigidBodyHandle` otherwise will panic.
+    fn apply_simulation_commands<'b, Dq>(&mut self, dynamic_bodies: Dq)
+    where
+        Dq: QueryItem,
+        Dq::Iter: Iterator<Item = &'b mut DynamicBody>,
+    {
+        for (ent, dynamic_body) in self.entities.iter_with(dynamic_bodies) {
+            // This will consume commands even if body is_dynamic is false.
+            let commands = dynamic_body.simulation_commands();
+            if dynamic_body.is_dynamic {
+                let collider = self.colliders.get(ent).unwrap();
+                let rapier_handle = collider.rapier_handle.unwrap();
+                let rapier_body = self.ctx.rigid_body_set.get_mut(rapier_handle).unwrap();
+                for command in commands {
+                    command(rapier_body);
+                }
+            }
         }
     }
 

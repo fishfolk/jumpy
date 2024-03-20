@@ -5,11 +5,15 @@ use std::hash::BuildHasherDefault;
 use indexmap::IndexMap;
 
 use rapier::Vector;
+use rapier2d::geometry::InteractionGroups;
 pub use rapier2d::prelude as rapier;
 pub use shape::*;
 
+pub mod filtering;
 mod shape;
 
+use crate::collisions::filtering::CollisionGroup;
+use crate::collisions::filtering::SolverGroup;
 use crate::impl_system_param;
 use crate::prelude::*;
 
@@ -321,6 +325,19 @@ pub enum TileCollisionKind {
     JumpThrough,
 }
 
+impl TileCollisionKind {
+    /// Get the solver group for tile, this is collision filtering group
+    /// used against dynamic bodies that simulate physical collision.
+    /// Does not impact event filtering.
+    pub fn simulation_group_membership(&self) -> SolverGroup {
+        match self {
+            TileCollisionKind::Empty => SolverGroup::NONE,
+            TileCollisionKind::Solid => SolverGroup::SOLID_WORLD,
+            TileCollisionKind::JumpThrough => SolverGroup::JUMP_THROUGH,
+        }
+    }
+}
+
 /// Parameters for physics step
 pub struct PhysicsParams {
     /// Gravity (positive value is downward force)
@@ -505,10 +522,26 @@ impl<'a> CollisionWorld<'a> {
                         .user_data(RapierUserData::from(ent))
                 });
 
+                // Do not filter collision pairs, get all collision events
+                let collision_membership = CollisionGroup::DEFAULT;
+                let collision_filter = CollisionGroup::ALL;
+                // Only generate contact forces (when simulating) with solid world geometry, not other dynamics.
+                // This is not relevant if only Kinematic, only relevant if DynamicBody is added and switched to simulating.
+                let simulation_membership = SolverGroup::DYNAMIC;
+                let simulation_filter = SolverGroup::SOLID_WORLD | SolverGroup::JUMP_THROUGH;
+
                 collider_set.insert_with_parent(
                     rapier::ColliderBuilder::new(shared_shape.clone())
                         .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
                         .active_collision_types(rapier::ActiveCollisionTypes::all())
+                        .collision_groups(rapier::InteractionGroups::new(
+                            collision_membership.bits().into(),
+                            collision_filter.bits().into(),
+                        ))
+                        .solver_groups(rapier::InteractionGroups::new(
+                            simulation_membership.bits().into(),
+                            simulation_filter.bits().into(),
+                        ))
                         .sensor(true)
                         .user_data(RapierUserData::from(ent)),
                     body_handle,
@@ -582,10 +615,24 @@ impl<'a> CollisionWorld<'a> {
                 let body_handle = rigid_body_set.insert(
                     rapier::RigidBodyBuilder::fixed().user_data(RapierUserData::from(solid_ent)),
                 );
+                // Membership default, does not filter out collision events.
+                let collision_membership = CollisionGroup::DEFAULT;
+                let collision_filter = CollisionGroup::ALL;
+                // Solids do not filter contact forces with other bodies.
+                let simulation_membership = SolverGroup::SOLID_WORLD;
+                let simulation_filter = SolverGroup::ALL;
                 collider_set.insert_with_parent(
                     rapier::ColliderBuilder::new(shared_shape.clone())
                         .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
                         .active_collision_types(rapier::ActiveCollisionTypes::all())
+                        .collision_groups(InteractionGroups::new(
+                            collision_membership.bits().into(),
+                            collision_filter.bits().into(),
+                        ))
+                        .solver_groups(InteractionGroups::new(
+                            simulation_membership.bits().into(),
+                            simulation_filter.bits().into(),
+                        ))
                         .user_data(RapierUserData::from(solid_ent)),
                     body_handle,
                     rigid_body_set,
@@ -685,10 +732,24 @@ impl<'a> CollisionWorld<'a> {
                                 rapier::RigidBodyBuilder::fixed()
                                     .user_data(RapierUserData::from(tile_ent)),
                             );
+
+                            // Set SolverGroup based on collision kind so dynamic bodies
+                            // know if they should generate contact forces with tile or not.
+                            let mut simulation_membership = SolverGroup::NONE;
+                            if let Some(collision_kind) = self.tile_collision_kinds.get(tile_ent) {
+                                simulation_membership =
+                                    collision_kind.simulation_group_membership();
+                            }
+                            let simulation_filter = SolverGroup::ALL;
+
                             collider_set.insert_with_parent(
                                 rapier::ColliderBuilder::new(tile_shared_shape.clone())
                                     .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
                                     .active_collision_types(rapier::ActiveCollisionTypes::all())
+                                    .solver_groups(InteractionGroups::new(
+                                        simulation_membership.bits().into(),
+                                        simulation_filter.bits().into(),
+                                    ))
                                     .user_data(RapierUserData::from(tile_ent)),
                                 body_handle,
                                 rigid_body_set,

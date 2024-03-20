@@ -23,7 +23,7 @@ tracing             = "0.1.37"
 puffin              = { version = "0.17.0", features = ["web"] }
 puffin_egui         = "0.23.0"
 petgraph            = "0.6.4"
-rapier2d            = { version = "0.17.2", features = ["debug-render", "enhanced-determinism"] }
+rapier2d            = { git = "https://github.com/MaxCWhitehead/rapier", branch = "fix-dynamic-change", features = ["debug-render", "enhanced-determinism"] }
 indexmap            = "2.0.0"
 serde               = { version = "1.0.188", features = ["derive"] }
 shiftnanigans       = "0.3.3"

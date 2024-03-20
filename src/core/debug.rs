@@ -52,7 +52,8 @@ impl<'a> rapier::DebugRenderBackend for RapierDebugBackend<'a> {
             rapier::DebugRenderObject::Collider(_, collider) => collider.is_enabled(),
             rapier::DebugRenderObject::ImpulseJoint(_, _) => true,
             rapier::DebugRenderObject::MultibodyJoint(_, _, _) => true,
-            rapier::DebugRenderObject::Other => true,
+            rapier::DebugRenderObject::ColliderAabb(_, _, _) => true,
+            rapier::DebugRenderObject::ContactPair(_, _, _) => true,
         };
         if render {
             self.points.push(vec2(a.x, a.y));

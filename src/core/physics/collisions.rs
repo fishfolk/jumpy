@@ -28,6 +28,7 @@ pub struct RapierContext {
     pub rigid_body_set: rapier::RigidBodySet,
     pub collider_shape_cache: ColliderShapeCache,
     pub collision_cache: CollisionCache,
+    pub physics_hooks: PhysicsHooks,
     pub physics_pipeline: rapier::PhysicsPipeline,
     pub islands: rapier::IslandManager,
     pub impulse_joints: rapier::ImpulseJointSet,
@@ -49,6 +50,7 @@ impl Clone for RapierContext {
             rigid_body_set: self.rigid_body_set.clone(),
             collider_shape_cache: self.collider_shape_cache.clone(),
             collision_cache: self.collision_cache.clone(),
+            physics_hooks: self.physics_hooks.clone(),
             // Probably should keep this around, it's safe to drop data as only temp buffers,
             // but re-creating may hurt performance.
             physics_pipeline: rapier::PhysicsPipeline::default(),
@@ -215,6 +217,62 @@ impl rapier::EventHandler for &mut CollisionCache {
 pub enum PhysicsError {
     #[error("Physics body not initialized: {0}")]
     BodyNotInitialized(String),
+}
+
+#[derive(Default, Clone)]
+pub struct PhysicsHooks;
+
+impl rapier::PhysicsHooks for PhysicsHooks {
+    fn filter_contact_pair(
+        &self,
+        _context: &rapier::PairFilterContext,
+    ) -> Option<rapier::SolverFlags> {
+        // No contact pair filtering hook currently implemented
+        Some(rapier::SolverFlags::COMPUTE_IMPULSES)
+    }
+
+    fn filter_intersection_pair(&self, _context: &rapier::PairFilterContext) -> bool {
+        // No intersection pair hook currently implemented
+        true
+    }
+
+    fn modify_solver_contacts(&self, context: &mut rapier::ContactModificationContext) {
+        // Determine if jump through modifiation is needed:
+        // (If one body is a player, and other is jump through tile.)
+
+        let collider1 = context.colliders.get(context.collider1).unwrap();
+        let body1 = context.bodies.get(context.rigid_body1.unwrap()).unwrap();
+        let collider2 = context.colliders.get(context.collider2).unwrap();
+        let body2 = context.bodies.get(context.rigid_body2.unwrap()).unwrap();
+
+        let mut jump_through_body: Option<&rapier::RigidBody> = None;
+        let mut other_body: Option<&rapier::RigidBody> = None;
+
+        // Determine which body is jump through collider, if any.
+        if collider1
+            .solver_groups()
+            .memberships
+            .intersects(SolverGroup::JUMP_THROUGH.bits().into())
+        {
+            jump_through_body = Some(body1);
+            other_body = Some(body2);
+        } else if collider2
+            .solver_groups()
+            .memberships
+            .intersects(SolverGroup::JUMP_THROUGH.bits().into())
+        {
+            jump_through_body = Some(body2);
+            other_body = Some(body1);
+        }
+
+        if jump_through_body.is_some() {
+            let other_body = other_body.unwrap();
+
+            if other_body.linvel().y > 0.0 {
+                context.solver_contacts.clear();
+            }
+        }
+    }
 }
 
 impl_system_param! {
@@ -502,6 +560,7 @@ impl<'a> CollisionWorld<'a> {
             collision_cache,
             rigid_body_set,
             narrow_phase,
+            physics_hooks,
             physics_pipeline,
             islands,
             impulse_joints,
@@ -558,7 +617,7 @@ impl<'a> CollisionWorld<'a> {
             multibody_joints,
             ccd_solver,
             Some(query_pipeline),
-            &(), // physics hooks
+            physics_hooks,
             &collision_cache,
         );
 
@@ -659,6 +718,7 @@ impl<'a> CollisionWorld<'a> {
                 body_handle
             });
             let rapier_body = rigid_body_set.get_mut(*rapier_handle).unwrap();
+            let rapier_collider = collider_set.get_mut(rapier_body.colliders()[0]).unwrap();
 
             if let Some(dynamic_body) = dynamic_body {
                 // Handle changes in is_dynamic
@@ -674,15 +734,14 @@ impl<'a> CollisionWorld<'a> {
 
                     // TODO: We may want to synchronize kinematic body's gravity, mass, and other properties.
 
-                    collider_set
-                        .get_mut(rapier_body.colliders()[0])
-                        .unwrap()
-                        .set_sensor(false);
+                    rapier_collider.set_sensor(false);
+
+                    // Enable contact modification for all bodies to handle stuff like jump through.
+                    rapier_collider.set_active_hooks(rapier::ActiveHooks::MODIFY_SOLVER_CONTACTS);
                 } else if was_dynamic && !is_dynamic {
-                    collider_set
-                        .get_mut(rapier_body.colliders()[0])
-                        .unwrap()
-                        .set_sensor(true);
+                    rapier_collider.set_sensor(true);
+                    rapier_collider.set_active_hooks(rapier::ActiveHooks::empty());
+
                     rapier_body.set_body_type(KINEMATIC_MODE, true);
                 }
 
@@ -710,7 +769,6 @@ impl<'a> CollisionWorld<'a> {
                     true,
                 );
             }
-            let rapier_collider = collider_set.get_mut(rapier_body.colliders()[0]).unwrap();
             rapier_collider.set_enabled(!collider.disabled);
             rapier_collider.set_position_wrt_parent(rapier::Isometry::new(default(), 0.0));
         }

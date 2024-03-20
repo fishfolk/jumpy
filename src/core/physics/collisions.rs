@@ -66,12 +66,23 @@ impl Clone for RapierContext {
 pub struct CollisionCache {
     /// The collisions in the cache.
     pub collisions: Arc<AtomicCell<IndexMap<Entity, Vec<Entity>, EntityBuildHasher>>>,
+
+    /// Map removed collider handles to entities. When Rapier gives collision event for removal,
+    /// the collider is no longer in [`rapier::ColliderSet`], thus we cannot retrieve our user data
+    /// and determine entity to be removed.
+    ///
+    /// Colliders should be added here on removal for event processing, this is cleared each frame.
+    ///
+    /// TODO: Consider a safer way to handle this that doesn't involve remembering to update this on
+    /// removal.
+    removed_colliders: IndexMap<rapier::ColliderHandle, Entity>,
 }
 
 impl Default for CollisionCache {
     fn default() -> Self {
         Self {
             collisions: Arc::new(AtomicCell::new(IndexMap::default())),
+            removed_colliders: Default::default(),
         }
     }
 }
@@ -105,12 +116,24 @@ impl CollisionCache {
             x.entry(entity).or_default()
         })
     }
+
+    /// Notify cache of removal of collider to correctly handle stop event on removed collider.
+    /// see `Self::removed_colliders_userdata` field comment for details.
+    pub fn collider_removed(&mut self, entity: Entity, collider_handle: rapier::ColliderHandle) {
+        self.removed_colliders.insert(collider_handle, entity);
+    }
+
+    /// Clear tracked data for removed colliders this frame (call after rapier update)
+    pub fn clear_removed_colliders(&mut self) {
+        self.removed_colliders.clear();
+    }
 }
 
 impl Clone for CollisionCache {
     fn clone(&self) -> Self {
         Self {
             collisions: Arc::new(AtomicCell::new((*self.collisions.borrow()).clone())),
+            removed_colliders: self.removed_colliders.clone(),
         }
     }
 }
@@ -141,17 +164,25 @@ impl rapier::EventHandler for &mut CollisionCache {
                     .push(a_ent);
             }
             rapier::CollisionEvent::Stopped(a, b, _) => {
-                let Some(a_ent) = colliders
-                    .get(a)
-                    .map(|x| RapierUserData::entity(x.user_data))
-                else {
-                    return;
+                let a_ent = match colliders.get(a) {
+                    Some(a) => RapierUserData::entity(a.user_data),
+                    None => {
+                        if let Some(a_ent) = self.removed_colliders.get(&a) {
+                            *a_ent
+                        } else {
+                            return;
+                        }
+                    }
                 };
-                let Some(b_ent) = colliders
-                    .get(b)
-                    .map(|x| RapierUserData::entity(x.user_data))
-                else {
-                    return;
+                let b_ent = match colliders.get(b) {
+                    Some(b) => RapierUserData::entity(b.user_data),
+                    None => {
+                        if let Some(b_ent) = self.removed_colliders.get(&b) {
+                            *b_ent
+                        } else {
+                            return;
+                        }
+                    }
                 };
 
                 self.collisions
@@ -229,6 +260,7 @@ impl<'a> CollisionWorld<'a> {
             if let Some(handle) = collider.rapier_handle {
                 let RapierContext {
                     rigid_body_set,
+                    collision_cache,
                     collider_shape_cache,
                     collider_set,
                     islands,
@@ -251,6 +283,12 @@ impl<'a> CollisionWorld<'a> {
                     // Remove body's current collider
                     let wake_up = true;
                     collider_set.remove(collider_handle, islands, rigid_body_set, wake_up);
+
+                    // Notify collision event cache handle was removed
+                    //
+                    // We may get a stop/start even while changing collider. This is required to make sure
+                    // collision event is properly handled by rapier.
+                    collision_cache.collider_removed(entity, collider_handle);
                 }
 
                 // Insert body's new collider
@@ -507,7 +545,6 @@ impl<'a> CollisionWorld<'a> {
         }
 
         // Step physics pipeline, also steps collision pipeline and updates collision cache.
-        let event_handler = collision_cache;
         integration_params.dt = dt;
         physics_pipeline.step(
             &Vector::new(0.0, -physics_params.gravity),
@@ -522,7 +559,7 @@ impl<'a> CollisionWorld<'a> {
             ccd_solver,
             Some(query_pipeline),
             &(), // physics hooks
-            &event_handler,
+            &collision_cache,
         );
 
         // Iter on each dynamic rigid-bodies that moved.
@@ -563,6 +600,9 @@ impl<'a> CollisionWorld<'a> {
                 warn!("Active dynamic bodies contained entity that does not have a DynamicBody.");
             }
         }
+
+        // Reset tracking of removed colliders for this frame
+        collision_cache.clear_removed_colliders();
     }
 
     /// Sync the transforms and attributes ( like `disabled` ) of the colliders.

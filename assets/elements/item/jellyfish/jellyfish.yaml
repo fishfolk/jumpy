@@ -1,6 +1,6 @@
 atlas: ./jellyfish.atlas.yaml
 body_size: [30, 39]
-throw_velocity: 6
+throw_velocity: 360
 angular_velocity: 0.1
 fin_anim: grab_2
 grab_offset: [0, 0]

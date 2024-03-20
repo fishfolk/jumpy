@@ -135,7 +135,7 @@ fn update(
 
         for collider_ent in collision_world.actor_collisions(entity) {
             if let Some(body) = bodies.get_mut(collider_ent) {
-                if body.velocity.y < *spring_velocity - body.gravity {
+                if body.velocity.y < *spring_velocity {
                     audio_center.play_sound(*sound, *sound_volume);
                     body.velocity.y = *spring_velocity;
                     sproinger.sproinging = true;

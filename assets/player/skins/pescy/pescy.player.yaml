@@ -11,17 +11,17 @@ sounds:
   drop_volume: 0.05
 
 stats:
-  air_speed: 6
-  accel_air_speed: 1
-  walk_speed: 6
-  accel_walk_speed: 1
-  jump_speed: 11
-  slow_fall_speed: 1.5
-  slowdown: 0.8
+  air_speed: 360
+  accel_air_speed: 60
+  walk_speed: 360
+  accel_walk_speed: 60
+  jump_speed: 660
+  slow_fall_speed: 90
+  slowdown: 48.0
 
 body_size: [32, 48]
 slide_body_size: [48, 32]
-gravity: 0.6
+gravity: 2160
 
 layers:
   body:

@@ -151,10 +151,7 @@ fn update_kinematic_bodies(
 ) {
     puffin::profile_function!();
 
-    // This value was previously using dt / (1 / crate::FPS), this was changed
-    // to no longer have FPS impact velocity, the dt * 60 is a holdover to avoid having
-    // to update all velocities.
-    let time_factor = time.delta().as_secs_f32() * 60.0;
+    let time_factor = time.delta().as_secs_f32();
 
     collision_world.update(&transforms);
     for (entity, body) in entities.iter_with(&mut bodies) {
@@ -327,7 +324,7 @@ fn update_kinematic_bodies(
                 body.velocity.y *= meta.core.physics.friction_lerp;
             }
 
-            if body.velocity.y <= meta.core.physics.gravity {
+            if body.velocity.y <= body.gravity * time_factor {
                 body.velocity.y = 0.0;
             }
         }
@@ -342,6 +339,7 @@ fn update_kinematic_bodies(
 
         if body.can_rotate {
             apply_rotation(
+                time_factor,
                 transforms.get_mut(entity).unwrap(),
                 body.velocity,
                 body.angular_velocity,
@@ -354,6 +352,7 @@ fn update_kinematic_bodies(
 
 /// Helper function to apply rotation to a kinematic body.
 fn apply_rotation(
+    delta_time: f32,
     transform: &mut Transform,
     velocity: Vec2,
     angular_velocity: f32,
@@ -369,7 +368,7 @@ fn apply_rotation(
             angle += velocity.x.abs() * angular_velocity;
         }
     } else {
-        angle += (angular_velocity * FPS).to_radians();
+        angle += (angular_velocity * delta_time).to_radians();
     }
 
     transform.rotation = Quat::from_rotation_z(angle);

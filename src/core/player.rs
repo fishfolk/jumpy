@@ -741,7 +741,7 @@ fn hydrate_players(
                         sync_animation: false,
                     },
                 );
-                item_throws.insert(hat_ent, ItemThrow::strength(7.0));
+                item_throws.insert(hat_ent, ItemThrow::strength(420.0));
                 Some(hat_ent)
             } else {
                 to_kill.push(hat_ent);

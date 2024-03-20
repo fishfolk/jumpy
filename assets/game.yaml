@@ -257,10 +257,10 @@ core:
     move_lerp_factor: 0.1
 
   physics:
-    terminal_velocity: 30
+    terminal_velocity: 1800
     friction_lerp: 0.85
-    stop_threshold: 1.0
-    gravity: 0.6
+    stop_threshold: 60.0
+    gravity: 2160
 
   players:
     - ./player/skins/fishy/fishy.player.yaml

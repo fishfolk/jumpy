@@ -1,0 +1,99 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The constant dimension 89 ."><title>U89 in jumpy::core::physics::rapier::nalgebra::base::dimension - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../../../../../../" data-static-root-path="../../../../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.1 (a28077b28 2023-12-04)" data-channel="1.74.1" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../../../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../../../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../../../../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function (e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move;
+        position: relative;
+    }
+
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
+    .code .nodeLabel {
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc constant"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../../../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a></nav><nav class="sidebar"><a class="logo-container" href="../../../../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><div class="sidebar-elems"><h2><a href="index.html">In jumpy::core::physics::rapier::nalgebra::base::dimension</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Constant <a href="../../../../../../index.html">jumpy</a>::<wbr><a href="../../../../../index.html">core</a>::<wbr><a href="../../../../index.html">physics</a>::<wbr><a href="../../../index.html">rapier</a>::<wbr><a href="../../index.html">nalgebra</a>::<wbr><a href="../index.html">base</a>::<wbr><a href="index.html">dimension</a>::<wbr><a class="constant" href="#">U89</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="https://docs.rs/nalgebra/0.25.0/src/nalgebra/base/dimension.rs.html#325-334">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub const U89: <a class="struct" href="../../struct.Const.html" title="struct jumpy::core::physics::rapier::nalgebra::Const">Const</a>&lt;89&gt;;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The constant dimension
+89
+.</p>
+</div></details></section></div></main></body></html>

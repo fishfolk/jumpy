@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["ShapeConstraint"],"trait":["AreMultipliable","DimEq","SameDimension","SameNumberOfColumns","SameNumberOfRows"]};

@@ -312,6 +312,8 @@
 <a href="#217" id="217">217</a>
 <a href="#218" id="218">218</a>
 <a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Debug rendering for collision boxes, etc.
 
 </span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
@@ -366,7 +368,8 @@
             rapier::DebugRenderObject::Collider(<span class="kw">_</span>, collider) =&gt; collider.is_enabled(),
             rapier::DebugRenderObject::ImpulseJoint(<span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
             rapier::DebugRenderObject::MultibodyJoint(<span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
-            rapier::DebugRenderObject::Other =&gt; <span class="bool-val">true</span>,
+            rapier::DebugRenderObject::ColliderAabb(<span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
+            rapier::DebugRenderObject::ContactPair(<span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
         };
         <span class="kw">if </span>render {
             <span class="self">self</span>.points.push(vec2(a.x, a.y));
@@ -408,6 +411,7 @@
     settings: ResInit&lt;DebugSettings&gt;,
     <span class="kw-2">mut </span>collision_world: CollisionWorld,
     transforms: Comp&lt;Transform&gt;,
+    <span class="kw-2">mut </span>dynamic_bodies: CompMut&lt;DynamicBody&gt;,
     <span class="kw-2">mut </span>paths: CompMut&lt;Path2d&gt;,
     <span class="kw-2">mut </span>debug_context: ResMutInit&lt;RapierDebugContext&gt;,
 ) {
@@ -415,7 +419,7 @@
         <span class="comment">// TODO: It&#39;s unfortunate that we are doing an extra sync here, just for debug rendering. We
         // should try find a way to avoid this. Without this, the collider body positions will be
         // out of sync when they are rendered.
-        </span>collision_world.update(<span class="kw-2">&amp;</span>transforms);
+        </span>collision_world.sync_bodies(<span class="kw-2">&amp;</span>transforms, <span class="kw-2">&amp;mut </span>dynamic_bodies);
 
         <span class="kw">let </span><span class="kw-2">mut </span>points = Vec::new();
         <span class="kw">let </span><span class="kw-2">mut </span>line_breaks = Vec::new();

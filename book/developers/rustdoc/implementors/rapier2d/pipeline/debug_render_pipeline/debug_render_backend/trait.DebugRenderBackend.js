@@ -1,3 +1,3 @@
 (function() {var implementors = {
-"jumpy":[["impl&lt;'a&gt; <a class=\"trait\" href=\"jumpy/core/physics/collisions/rapier/trait.DebugRenderBackend.html\" title=\"trait jumpy::core::physics::collisions::rapier::DebugRenderBackend\">DebugRenderBackend</a> for <a class=\"struct\" href=\"jumpy/core/debug/struct.RapierDebugBackend.html\" title=\"struct jumpy::core::debug::RapierDebugBackend\">RapierDebugBackend</a>&lt;'a&gt;"]]
+"jumpy":[["impl&lt;'a&gt; <a class=\"trait\" href=\"jumpy/core/physics/rapier/trait.DebugRenderBackend.html\" title=\"trait jumpy::core::physics::rapier::DebugRenderBackend\">DebugRenderBackend</a> for <a class=\"struct\" href=\"jumpy/core/debug/struct.RapierDebugBackend.html\" title=\"struct jumpy::core::debug::RapierDebugBackend\">RapierDebugBackend</a>&lt;'a&gt;"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

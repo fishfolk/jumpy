@@ -468,18 +468,49 @@
 <a href="#373" id="373">373</a>
 <a href="#374" id="374">374</a>
 <a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Physics and collision detection.
 
 </span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub use </span>collisions::{
-    Actor, Collider, ColliderShape, CollisionWorld, RapierContext, RapierUserData, Solid,
-    TileCollisionKind,
+    Actor, Collider, ColliderShape, CollisionWorld, PhysicsParams, RapierContext, RapierUserData,
+    Solid, TileCollisionKind,
 };
 
 <span class="kw">use </span><span class="kw">super</span>::utils::Rect;
+<span class="kw">pub use </span>rapier2d::prelude <span class="kw">as </span>rapier;
 
 <span class="kw">pub mod </span>collisions;
+<span class="kw">pub mod </span>dynamic_body;
+
+<span class="kw">pub use </span>dynamic_body::<span class="kw-2">*</span>;
+
+<span class="doccomment">/// For now kinematic mode is globally position based.
+</span><span class="kw">pub static </span>KINEMATIC_MODE: rapier::RigidBodyType = rapier::RigidBodyType::KinematicPositionBased;
 
 <span class="attr">#[derive(Debug, Clone, Copy)]
 </span><span class="kw">enum </span>PhysicsStage {
@@ -615,6 +646,7 @@
     meta: Root&lt;GameMeta&gt;,
     entities: Res&lt;Entities&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
+    <span class="kw-2">mut </span>dynamic_bodies: CompMut&lt;DynamicBody&gt;,
     <span class="kw-2">mut </span>collision_world: CollisionWorld,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     time: Res&lt;Time&gt;,
@@ -623,8 +655,19 @@
 
     <span class="kw">let </span>time_factor = time.delta().as_secs_f32();
 
-    collision_world.update(<span class="kw-2">&amp;</span>transforms);
-    <span class="kw">for </span>(entity, body) <span class="kw">in </span>entities.iter_with(<span class="kw-2">&amp;mut </span>bodies) {
+    <span class="kw">let </span>global_gravity = meta.core.physics.gravity;
+    collision_world.update(
+        time_factor,
+        PhysicsParams {
+            gravity: global_gravity,
+            terminal_velocity: <span class="prelude-val">Some</span>(meta.core.physics.terminal_velocity),
+        },
+        <span class="kw-2">&amp;mut </span>transforms,
+        <span class="kw-2">&amp;mut </span>dynamic_bodies,
+    );
+    <span class="kw">for </span>(entity, (body, dynamic_body)) <span class="kw">in
+        </span>entities.iter_with((<span class="kw-2">&amp;mut </span>bodies, <span class="kw-2">&amp;mut </span>OptionalMut(<span class="kw-2">&amp;mut </span>dynamic_bodies)))
+    {
         <span class="kw">if </span>body.is_deactivated {
             collision_world.colliders.get_mut(entity).unwrap().disabled = <span class="bool-val">true</span>;
             <span class="kw">continue</span>;
@@ -632,6 +675,11 @@
             collision_world.colliders.get_mut(entity).unwrap().disabled = <span class="bool-val">false</span>;
         }
 
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(dynamic_body) = dynamic_body {
+            <span class="kw">if </span>dynamic_body.is_dynamic {
+                <span class="kw">continue</span>;
+            }
+        }
         <span class="comment">// has the body moved since last call to update_kinematic_bodies?
         </span><span class="kw">let </span>has_moved = {
             <span class="kw">let </span>transform = transforms.get(entity).copied().unwrap();

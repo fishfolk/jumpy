@@ -52,7 +52,8 @@ impl<'a> rapier::DebugRenderBackend for RapierDebugBackend<'a> {
             rapier::DebugRenderObject::Collider(_, collider) => collider.is_enabled(),
             rapier::DebugRenderObject::ImpulseJoint(_, _) => true,
             rapier::DebugRenderObject::MultibodyJoint(_, _, _) => true,
-            rapier::DebugRenderObject::Other => true,
+            rapier::DebugRenderObject::ColliderAabb(_, _, _) => true,
+            rapier::DebugRenderObject::ContactPair(_, _, _) => true,
         };
         if render {
             self.points.push(vec2(a.x, a.y));
@@ -94,6 +95,7 @@ fn debug_render_colliders(
     settings: ResInit<DebugSettings>,
     mut collision_world: CollisionWorld,
     transforms: Comp<Transform>,
+    mut dynamic_bodies: CompMut<DynamicBody>,
     mut paths: CompMut<Path2d>,
     mut debug_context: ResMutInit<RapierDebugContext>,
 ) {
@@ -101,7 +103,7 @@ fn debug_render_colliders(
         // TODO: It's unfortunate that we are doing an extra sync here, just for debug rendering. We
         // should try find a way to avoid this. Without this, the collider body positions will be
         // out of sync when they are rendered.
-        collision_world.update(&transforms);
+        collision_world.sync_bodies(&transforms, &mut dynamic_bodies);
 
         let mut points = Vec::new();
         let mut line_breaks = Vec::new();

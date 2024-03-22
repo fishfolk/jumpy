@@ -1,9 +1,4 @@
 use bitflags::bitflags;
-// pub enum CollisionGroupEnum {
-//     NONE: u32 = 32,
-//     SOLID = 0b0001,
-//     ALL = u32::MAX,
-// }
 
 bitflags! {
 /// Flags for collision filtering, this is used for collision events.

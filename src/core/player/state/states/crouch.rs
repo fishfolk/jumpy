@@ -47,7 +47,9 @@ pub fn player_state_transition(
         }
         let control = &player_inputs.players[player_idx.0 as usize].control;
 
-        if !body.is_on_ground || control.move_direction.y > -0.5 {
+        if control.ragdoll_just_pressed {
+            state.current = *ragdoll::ID;
+        } else if !body.is_on_ground || control.move_direction.y > -0.5 {
             state.current = *idle::ID;
         }
     }

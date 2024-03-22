@@ -22,6 +22,7 @@ pub fn player_state_transition(
     {
         let meta_handle = player_inputs.players[player_idx.0 as usize].selected_player;
         let meta = assets.get(meta_handle);
+        let control = &player_inputs.players[player_idx.0 as usize].control;
         if player_state.current != *ID {
             continue;
         }
@@ -31,6 +32,9 @@ pub fn player_state_transition(
             audio_center.play_sound(meta.sounds.land, meta.sounds.land_volume);
             // Switch to idle state
             player_state.current = *idle::ID;
+        } else if control.ragdoll_just_pressed {
+            // TODO audio
+            player_state.current = *ragdoll::ID;
         }
     }
 }

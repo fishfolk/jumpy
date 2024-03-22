@@ -24,7 +24,9 @@ pub fn player_state_transition(
 
         let control = &player_inputs.players[player_idx.0 as usize].control;
 
-        if !body.is_on_ground {
+        if control.ragdoll_just_pressed {
+            player_state.current = *ragdoll::ID;
+        } else if !body.is_on_ground {
             player_state.current = *midair::ID;
         } else if control.move_direction.y < -0.5 {
             player_state.current = *crouch::ID;

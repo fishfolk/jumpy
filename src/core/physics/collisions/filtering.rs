@@ -17,6 +17,7 @@ bitflags! {
 /// First [`CollisionGroup`] filters intersection, and then
 /// if `SimulationGroup` flags do not intersect, collision event is generated,
 /// but not contact forces.
+#[derive(Copy, Clone)]
 pub struct SolverGroup: u32 {
     const NONE = 0b0000;
     // Solid world geometry like tiles go in this group

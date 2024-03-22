@@ -5,7 +5,7 @@ use std::{
     collections::VecDeque,
 };
 
-use super::physics::collisions::{CollisionWorld, TileCollisionKind};
+use super::physics::collisions::{CollisionWorld, TileCollisionKind, TileDynamicCollider};
 use crate::prelude::*;
 
 pub fn install(session: &mut Session) {
@@ -147,6 +147,7 @@ fn spawn_map(
     mut commands: Commands,
     mut entities: ResMutInit<Entities>,
     mut clear_color: ResMutInit<ClearColor>,
+    assets: Res<AssetServer>,
     map: Res<LoadedMap>,
     mut map_spawned: ResMutInit<MapSpawned>,
     mut tiles: CompMut<Tile>,
@@ -154,6 +155,7 @@ fn spawn_map(
     mut transforms: CompMut<Transform>,
     mut element_handles: CompMut<ElementHandle>,
     mut tile_collisions: CompMut<TileCollisionKind>,
+    mut tile_dynamic_colliders: CompMut<TileDynamicCollider>,
     mut parallax_bg_sprites: CompMut<ParallaxBackgroundSprite>,
     mut sprites: CompMut<Sprite>,
     mut nav_graph: ResMutInit<NavGraph>,
@@ -247,6 +249,34 @@ fn spawn_map(
                 // properly.
                 if tile_meta.collision != TileCollisionKind::Empty {
                     tile_collisions.insert(tile_ent, tile_meta.collision);
+                }
+
+                let atlas = assets.get(tilemap);
+                let optional_tile_colliders = &atlas.tile_collision;
+                // If metadata has valid dynamics collider, create component for it.
+                if let Some(extra_collider) =
+                    optional_tile_colliders.get(&format!("{}", tile_meta.idx))
+                {
+                    if extra_collider.has_area() {
+                        // clamp collider between 0.0, 1.0
+                        let extra_collider = extra_collider.clamped_values();
+
+                        // scale min/max between 0 and tile size.
+                        let tile_size = spawned_map_meta.tile_size;
+                        let min = extra_collider.min * tile_size;
+                        let max = extra_collider.max * tile_size;
+
+                        // compute offset from center of tile
+                        let collider_center = min + (max - min) * 0.5;
+                        let offset =
+                            collider_center - Vec2::new(tile_size.x * 0.5, tile_size.y * 0.5);
+
+                        let extents = max - min;
+                        let shape = ColliderShape::Rectangle { size: extents };
+
+                        tile_dynamic_colliders
+                            .insert(tile_ent, TileDynamicCollider { shape, offset });
+                    }
                 }
             }
             let layer_ent = entities.create();

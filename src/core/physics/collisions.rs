@@ -296,6 +296,7 @@ impl_system_param! {
 
         tile_layers: Comp<'a, TileLayer>,
         tile_collision_kinds: Comp<'a, TileCollisionKind>,
+        tile_dynamic_colliders: Comp<'a, TileDynamicCollider>,
         spawned_map_layer_metas: Comp<'a, SpawnedMapLayerMeta>,
     }
 }
@@ -490,6 +491,22 @@ pub struct Collider {
 /// Component added to tiles that have been given corresponding rapier colliders.
 #[derive(Default, Clone, Debug, HasSchema, Deref, DerefMut)]
 pub struct TileRapierHandle(pub rapier::RigidBodyHandle);
+
+/// Component added to tiles that have an additional collider used for interaction with
+/// dynamic bodies that simulate physics.
+///
+/// This collider is added to rapier body stored in [`TileRapierHandle`]. If present,
+/// default collider will not interact with dynamics, and this one will.
+///
+/// This is mostly useful for Jump through tiles.
+#[derive(Default, Clone, HasSchema)]
+pub struct TileDynamicCollider {
+    /// Shape of collider, should be contained within tile.
+    pub shape: ColliderShape,
+
+    /// Offset of collider from center of tile.
+    pub offset: Vec2,
+}
 
 /// Namespace struct for converting rapier collider user data to/from [`Entity`].
 pub struct RapierUserData;
@@ -886,9 +903,11 @@ impl<'a> CollisionWorld<'a> {
             .entities
             .iter_with((&self.tile_layers, &self.spawned_map_layer_metas))
         {
-            let tile_shared_shape = collider_shape_cache.shared_shape(ColliderShape::Rectangle {
-                size: layer.tile_size,
-            });
+            let tile_shared_shape = collider_shape_cache
+                .shared_shape(ColliderShape::Rectangle {
+                    size: layer.tile_size,
+                })
+                .clone();
             for x in 0..layer.grid_size.x {
                 for y in 0..layer.grid_size.y {
                     let pos = uvec2(x, y);
@@ -901,6 +920,9 @@ impl<'a> CollisionWorld<'a> {
                     };
                     let collider_x = x as f32 * layer.tile_size.x + layer.tile_size.x / 2.0;
                     let collider_y = y as f32 * layer.tile_size.y + layer.tile_size.y / 2.0;
+
+                    // Get dynamic collider if we have one
+                    let dynamic_collider = self.tile_dynamic_colliders.get(tile_ent);
 
                     // Get or create a collider for the tile
                     let handle = self
@@ -922,18 +944,50 @@ impl<'a> CollisionWorld<'a> {
                             }
                             let simulation_filter = SolverGroup::ALL;
 
+                            // Sim group for default tile collider. This is not used for collision
+                            // (only used for events) if an additional "dynamic" collider is present
+                            // to be used for collision response.
+                            let mut default_collider_sim_membership = simulation_membership;
+                            if dynamic_collider.is_some() {
+                                default_collider_sim_membership = SolverGroup::NONE;
+                            }
+
+                            // Insert default collider
                             collider_set.insert_with_parent(
                                 rapier::ColliderBuilder::new(tile_shared_shape.clone())
                                     .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
                                     .active_collision_types(rapier::ActiveCollisionTypes::all())
                                     .solver_groups(InteractionGroups::new(
-                                        simulation_membership.bits().into(),
+                                        default_collider_sim_membership.bits().into(),
                                         simulation_filter.bits().into(),
                                     ))
                                     .user_data(RapierUserData::from(tile_ent)),
                                 body_handle,
                                 rigid_body_set,
                             );
+
+                            // Insert dynamic collider if we have one
+                            if let Some(dynamic_collider) = dynamic_collider {
+                                let shared_shape =
+                                    collider_shape_cache.shared_shape(dynamic_collider.shape);
+                                collider_set.insert_with_parent(
+                                    rapier::ColliderBuilder::new(shared_shape.clone())
+                                        // Don't generate events for this collider
+                                        .active_events(rapier::ActiveEvents::empty())
+                                        // Only needs to collide with dynamics
+                                        .active_collision_types(
+                                            rapier::ActiveCollisionTypes::DYNAMIC_FIXED,
+                                        )
+                                        .solver_groups(InteractionGroups::new(
+                                            simulation_membership.bits().into(),
+                                            simulation_filter.bits().into(),
+                                        ))
+                                        .position(dynamic_collider.offset.into())
+                                        .user_data(RapierUserData::from(tile_ent)),
+                                    body_handle,
+                                    rigid_body_set,
+                                );
+                            }
                             self.tile_rapier_handles
                                 .insert(tile_ent, TileRapierHandle(body_handle));
                             body_handle

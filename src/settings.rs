@@ -88,6 +88,7 @@ pub struct PlayerControlSetting {
     pub grab: InputKind,
     pub shoot: InputKind,
     pub slide: InputKind,
+    pub ragdoll: InputKind,
     pub menu_back: InputKind,
     pub menu_start: InputKind,
     pub menu_confirm: InputKind,

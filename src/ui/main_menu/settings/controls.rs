@@ -104,6 +104,14 @@ pub(super) fn widget(
             ],
         ),
         (
+            localization.get("ragdoll"),
+            [
+                &mut mapping.keyboard1.ragdoll,
+                &mut mapping.keyboard2.ragdoll,
+                &mut mapping.gamepad.ragdoll,
+            ],
+        ),
+        (
             localization.get("pause"),
             [
                 &mut mapping.keyboard1.pause,

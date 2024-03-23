@@ -247,6 +247,7 @@ impl PlayerCommand {
         })
         .system()
     }
+
     /// Despawn a player.
     ///
     /// > **Note:** This is different than the [`kill`][Self::kill] event in that it immediately
@@ -288,6 +289,7 @@ impl PlayerCommand {
         })
         .system()
     }
+
     /// Set the player's inventory
     pub fn set_inventory(player: Entity, item: Option<Entity>) -> StaticSystem<(), ()> {
         (move |mut items_grabbed: CompMut<ItemGrabbed>,
@@ -310,6 +312,7 @@ impl PlayerCommand {
         })
         .system()
     }
+
     /// Have the player use the item they are carrying, if any.
     pub fn use_item(player: Entity) -> StaticSystem<(), ()> {
         (move |mut items_used: CompMut<ItemUsed>, inventories: CompMut<Inventory>| {
@@ -317,6 +320,29 @@ impl PlayerCommand {
             if let Some(item) = inventories.get(player).and_then(|x| x.0) {
                 // Use it
                 items_used.insert(item, ItemUsed { owner: player });
+            }
+        })
+        .system()
+    }
+
+    /// Drop the player's hat and reset its state.
+    pub fn drop_hat(player: Entity) -> StaticSystem<(), ()> {
+        (move |player_layers: Comp<PlayerLayers>,
+               mut player_body_attachments: CompMut<PlayerBodyAttachment>,
+               mut bodies: CompMut<KinematicBody>,
+               mut atlas_sprites: CompMut<AtlasSprite>| {
+            let Some(layers) = player_layers.get(player) else {
+                return;
+            };
+            let Some(hat_ent) = layers.hat_ent else {
+                return;
+            };
+            // Drop the hat
+            player_body_attachments.remove(hat_ent);
+            bodies.get_mut(hat_ent).unwrap().is_deactivated = false;
+            // Reset its states
+            if let Some(hat_sprite) = atlas_sprites.get_mut(hat_ent) {
+                hat_sprite.color.set_a(1.0);
             }
         })
         .system()

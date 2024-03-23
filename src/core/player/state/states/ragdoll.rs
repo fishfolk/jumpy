@@ -33,8 +33,6 @@ pub fn handle_player_state(
     mut animations: CompMut<AnimationBankSprite>,
     mut bodies: CompMut<KinematicBody>,
     mut dynamic_bodies: CompMut<DynamicBody>,
-    mut player_body_attachments: CompMut<PlayerBodyAttachment>,
-    player_layers: Comp<PlayerLayers>,
     mut ragdoll_states: CompMut<PlayerRagdollState>,
     game_meta: Root<GameMeta>,
     mut collision_world: CollisionWorld,
@@ -67,11 +65,7 @@ pub fn handle_player_state(
                 commands.add(PlayerCommand::set_inventory(player_ent, None));
 
                 // Knock the player's hat off if they had one.
-                let layers = player_layers.get(player_ent).unwrap();
-                if let Some(hat_ent) = layers.hat_ent {
-                    player_body_attachments.remove(hat_ent);
-                    bodies.get_mut(hat_ent).unwrap().is_deactivated = false;
-                }
+                commands.add(PlayerCommand::drop_hat(player_ent));
 
                 // Set to simulate physics
                 let dynamic_body =

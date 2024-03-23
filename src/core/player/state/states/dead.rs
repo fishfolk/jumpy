@@ -27,8 +27,6 @@ pub fn handle_player_state(
     killed_players: Comp<PlayerKilled>,
     _sprites: Comp<AtlasSprite>,
     _transform: Comp<Transform>,
-    player_layers: Comp<PlayerLayers>,
-    mut player_body_attachments: CompMut<PlayerBodyAttachment>,
     mut kinematic_bodies: CompMut<KinematicBody>,
     mut dynamic_bodies: CompMut<DynamicBody>,
     mut animations: CompMut<AnimationBankSprite>,
@@ -49,13 +47,9 @@ pub fn handle_player_state(
             // let sprite = sprites.get(player_ent).unwrap();
             // let player_on_right = !sprite.flip_x;
             // let transform = transform.get(player_ent).unwrap();
-            let layers = player_layers.get(player_ent).unwrap();
 
             // Knock the player's hat off if they had one.
-            if let Some(hat_ent) = layers.hat_ent {
-                player_body_attachments.remove(hat_ent);
-                kinematic_bodies.get_mut(hat_ent).unwrap().is_deactivated = false;
-            }
+            commands.add(PlayerCommand::drop_hat(player_ent));
 
             if !dynamic_bodies.contains(player_ent) {
                 let dynamic_body = DynamicBody::new(true);

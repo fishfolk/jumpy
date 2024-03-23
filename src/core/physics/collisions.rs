@@ -304,7 +304,26 @@ impl<'a> CollisionWorld<'a> {
     /// Update shape of actor's [`Collider`]. Warns if entity does not have an [`Actor`] component.
     ///
     /// Updates shape on `Collider` and rebuilds rapier's collider on rigidbody.
+    ///
+    /// Use [`Self::set_actor_shape_from_builder`] for more control over new collider's settings.
     pub fn set_actor_shape(&mut self, entity: Entity, shape: ColliderShape) {
+        let shared_shape = self.ctx.collider_shape_cache.shared_shape(shape);
+        let new_collider = build_actor_rapier_collider(entity, shared_shape.clone());
+        self.set_actor_shape_from_builder(entity, new_collider, shape);
+    }
+
+    /// Update shape of actor's [`Collider`]. Warns if entity does not have an [`Actor`] component.
+    ///
+    /// Updates shape on `Collider` and rebuilds rapier's collider on rigidbody.
+    ///
+    /// Accepts a [`rapier::ColliderBuilder`] (can get one with [`build_actor_rapier_collider`]) so
+    /// other settings may be configured on new collider.
+    pub fn set_actor_shape_from_builder(
+        &mut self,
+        entity: Entity,
+        mut collider_builder: rapier::ColliderBuilder,
+        shape: ColliderShape,
+    ) {
         if !self.actors.contains(entity) {
             // This doesn't technically need be restricted, however we use default settings of collider for Actor,
             // and function would need to be updated to do this correctly for Solids, Tiles, or other classes of body.
@@ -319,24 +338,19 @@ impl<'a> CollisionWorld<'a> {
                 let RapierContext {
                     rigid_body_set,
                     collision_cache,
-                    collider_shape_cache,
                     collider_set,
                     islands,
                     ..
                 } = &mut *self.ctx;
 
                 let rapier_body = rigid_body_set.get_mut(handle).unwrap();
-                let shared_shape = collider_shape_cache.shared_shape(shape);
-
-                // Make new collider from shape
-                let mut new_collider = build_actor_rapier_collider(entity, shared_shape.clone());
 
                 {
                     let collider_handle = rapier_body.colliders()[0];
                     let current_rapier_collider = collider_set.get(collider_handle).unwrap();
 
-                    // Update new collider with any settings that may have changed from default on existing.
-                    new_collider = new_collider.sensor(current_rapier_collider.is_sensor());
+                    // Update new collider with any settings that need to be synchronized
+                    collider_builder = collider_builder.sensor(current_rapier_collider.is_sensor());
 
                     // Remove body's current collider
                     let wake_up = true;
@@ -350,7 +364,7 @@ impl<'a> CollisionWorld<'a> {
                 }
 
                 // Insert body's new collider
-                collider_set.insert_with_parent(new_collider, handle, rigid_body_set);
+                collider_set.insert_with_parent(collider_builder, handle, rigid_body_set);
             } else {
                 // We have an existing Collider but no rapier body yet, shape was updated on Collider
                 // and will be used when body is created.
@@ -403,7 +417,7 @@ impl<'a> CollisionWorld<'a> {
 }
 
 /// Helper function for configuring ColliderBuilder for actors.
-fn build_actor_rapier_collider(
+pub fn build_actor_rapier_collider(
     entity: Entity,
     shared_shape: rapier::SharedShape,
 ) -> rapier::ColliderBuilder {

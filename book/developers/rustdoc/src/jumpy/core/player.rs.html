@@ -1153,6 +1153,32 @@
 <a href="#1058" id="1058">1058</a>
 <a href="#1059" id="1059">1059</a>
 <a href="#1060" id="1060">1060</a>
+<a href="#1061" id="1061">1061</a>
+<a href="#1062" id="1062">1062</a>
+<a href="#1063" id="1063">1063</a>
+<a href="#1064" id="1064">1064</a>
+<a href="#1065" id="1065">1065</a>
+<a href="#1066" id="1066">1066</a>
+<a href="#1067" id="1067">1067</a>
+<a href="#1068" id="1068">1068</a>
+<a href="#1069" id="1069">1069</a>
+<a href="#1070" id="1070">1070</a>
+<a href="#1071" id="1071">1071</a>
+<a href="#1072" id="1072">1072</a>
+<a href="#1073" id="1073">1073</a>
+<a href="#1074" id="1074">1074</a>
+<a href="#1075" id="1075">1075</a>
+<a href="#1076" id="1076">1076</a>
+<a href="#1077" id="1077">1077</a>
+<a href="#1078" id="1078">1078</a>
+<a href="#1079" id="1079">1079</a>
+<a href="#1080" id="1080">1080</a>
+<a href="#1081" id="1081">1081</a>
+<a href="#1082" id="1082">1082</a>
+<a href="#1083" id="1083">1083</a>
+<a href="#1084" id="1084">1084</a>
+<a href="#1085" id="1085">1085</a>
+<a href="#1086" id="1086">1086</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Player controller, states, and animation implementation.
 
 </span><span class="kw">use </span>std::collections::VecDeque;
@@ -1402,6 +1428,7 @@
         })
         .system()
     }
+
     <span class="doccomment">/// Despawn a player.
     ///
     /// &gt; **Note:** This is different than the [`kill`][Self::kill] event in that it immediately
@@ -1443,6 +1470,7 @@
         })
         .system()
     }
+
     <span class="doccomment">/// Set the player&#39;s inventory
     </span><span class="kw">pub fn </span>set_inventory(player: Entity, item: <span class="prelude-ty">Option</span>&lt;Entity&gt;) -&gt; StaticSystem&lt;(), ()&gt; {
         (<span class="kw">move </span>|<span class="kw-2">mut </span>items_grabbed: CompMut&lt;ItemGrabbed&gt;,
@@ -1465,6 +1493,7 @@
         })
         .system()
     }
+
     <span class="doccomment">/// Have the player use the item they are carrying, if any.
     </span><span class="kw">pub fn </span>use_item(player: Entity) -&gt; StaticSystem&lt;(), ()&gt; {
         (<span class="kw">move </span>|<span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;, inventories: CompMut&lt;Inventory&gt;| {
@@ -1472,6 +1501,29 @@
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = inventories.get(player).and_then(|x| x.<span class="number">0</span>) {
                 <span class="comment">// Use it
                 </span>items_used.insert(item, ItemUsed { owner: player });
+            }
+        })
+        .system()
+    }
+
+    <span class="doccomment">/// Drop the player&#39;s hat and reset its state.
+    </span><span class="kw">pub fn </span>drop_hat(player: Entity) -&gt; StaticSystem&lt;(), ()&gt; {
+        (<span class="kw">move </span>|player_layers: Comp&lt;PlayerLayers&gt;,
+               <span class="kw-2">mut </span>player_body_attachments: CompMut&lt;PlayerBodyAttachment&gt;,
+               <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
+               <span class="kw-2">mut </span>atlas_sprites: CompMut&lt;AtlasSprite&gt;| {
+            <span class="kw">let </span><span class="prelude-val">Some</span>(layers) = player_layers.get(player) <span class="kw">else </span>{
+                <span class="kw">return</span>;
+            };
+            <span class="kw">let </span><span class="prelude-val">Some</span>(hat_ent) = layers.hat_ent <span class="kw">else </span>{
+                <span class="kw">return</span>;
+            };
+            <span class="comment">// Drop the hat
+            </span>player_body_attachments.remove(hat_ent);
+            bodies.get_mut(hat_ent).unwrap().is_deactivated = <span class="bool-val">false</span>;
+            <span class="comment">// Reset its states
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(hat_sprite) = atlas_sprites.get_mut(hat_ent) {
+                hat_sprite.color.set_a(<span class="number">1.0</span>);
             }
         })
         .system()

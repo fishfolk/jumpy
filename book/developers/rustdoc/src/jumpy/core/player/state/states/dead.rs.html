@@ -194,12 +194,6 @@
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-<a href="#104" id="104">104</a>
-<a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub static </span>ID: Lazy&lt;Ustr&gt; = Lazy::new(|| ustr(<span class="string">&quot;core::dead&quot;</span>));
@@ -229,8 +223,6 @@
     killed_players: Comp&lt;PlayerKilled&gt;,
     _sprites: Comp&lt;AtlasSprite&gt;,
     _transform: Comp&lt;Transform&gt;,
-    player_layers: Comp&lt;PlayerLayers&gt;,
-    <span class="kw-2">mut </span>player_body_attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>kinematic_bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>dynamic_bodies: CompMut&lt;DynamicBody&gt;,
     <span class="kw-2">mut </span>animations: CompMut&lt;AnimationBankSprite&gt;,
@@ -251,13 +243,9 @@
             <span class="comment">// let sprite = sprites.get(player_ent).unwrap();
             // let player_on_right = !sprite.flip_x;
             // let transform = transform.get(player_ent).unwrap();
-            </span><span class="kw">let </span>layers = player_layers.get(player_ent).unwrap();
 
-            <span class="comment">// Knock the player&#39;s hat off if they had one.
-            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(hat_ent) = layers.hat_ent {
-                player_body_attachments.remove(hat_ent);
-                kinematic_bodies.get_mut(hat_ent).unwrap().is_deactivated = <span class="bool-val">false</span>;
-            }
+            // Knock the player&#39;s hat off if they had one.
+            </span>commands.add(PlayerCommand::drop_hat(player_ent));
 
             <span class="kw">if </span>!dynamic_bodies.contains(player_ent) {
                 <span class="kw">let </span>dynamic_body = DynamicBody::new(<span class="bool-val">true</span>);

@@ -54,7 +54,11 @@ pub fn widget(
             let session_runner: Box<dyn SessionRunner> = match network_socket {
                 Some(socket) => Box::new(GgrsSessionRunner::<NetworkInputConfig>::new(
                     FPS,
-                    GgrsSessionRunnerInfo::from(socket.as_ref()),
+                    GgrsSessionRunnerInfo::new(
+                        socket.as_ref(),
+                        Some(meta.network.max_prediction_window),
+                        Some(meta.network.local_input_delay),
+                    ),
                 )),
                 None => Box::<JumpyDefaultMatchRunner>::default(),
             };

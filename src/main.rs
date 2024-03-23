@@ -52,6 +52,24 @@ pub struct GameMeta {
     pub theme: ui::UiTheme,
     pub main_menu: ui::main_menu::MainMenuMeta,
     pub music: GameMusic,
+    pub network: NetworkMeta,
+}
+
+#[derive(HasSchema, Copy, Clone, Debug)]
+#[repr(C)]
+pub struct NetworkMeta {
+    pub max_prediction_window: usize,
+    pub local_input_delay: usize,
+}
+
+impl Default for NetworkMeta {
+    fn default() -> Self {
+        Self {
+            local_input_delay: bones_framework::networking::NETWORK_LOCAL_INPUT_DELAY_DEFAULT,
+            max_prediction_window:
+                bones_framework::networking::NETWORK_MAX_PREDICTION_WINDOW_DEFAULT,
+        }
+    }
 }
 
 #[derive(HasSchema, Clone, Debug, Default)]

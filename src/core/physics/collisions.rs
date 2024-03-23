@@ -770,7 +770,6 @@ impl<'a> CollisionWorld<'a> {
                 );
             }
             rapier_collider.set_enabled(!collider.disabled);
-            rapier_collider.set_position_wrt_parent(rapier::Isometry::new(default(), 0.0));
         }
 
         for (solid_ent, solid) in self.entities.iter_with(&mut self.solids) {

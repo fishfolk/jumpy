@@ -264,6 +264,12 @@ core:
     friction_lerp: 0.85
     stop_threshold: 60.0
     gravity: 2160
+    player:
+      ragdoll_initial_pop: 200
+      ragdoll_initial_ang_vel: 2
+      ragdoll_twitch_vel: 50
+      ragdoll_twitch_delay: 0.15
+      ragdoll_additional_mass: 300
 
   players:
     - ./player/skins/fishy/fishy.player.yaml

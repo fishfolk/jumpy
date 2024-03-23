@@ -93,6 +93,17 @@ layers:
             offset: [0, -4]
         fps: *fps
         repeat: false
+      ragdoll:
+        fps: *fps
+        frames:
+          - idx: 28
+            offset: [0, 3]
+        repeat: false
+      ragdoll_twitch:
+        fps: *fps
+        frames:
+          - idx: 42
+            offset: [0, 3]
       slide:
         fps: *fps
         frames:
@@ -163,6 +174,14 @@ layers:
         fps: *fps
         frames:
           - 20
+      ragdoll:
+        fps: *fps
+        frames:
+          - 10
+      ragdoll_twitch:
+        fps: *fps
+        frames:
+          - 15
       slide:
         fps: *fps
         frames:
@@ -218,6 +237,14 @@ layers:
         frames:
           - 2
       crouch:
+        fps: *fps
+        frames:
+          - 4
+      ragdoll:
+        fps: *fps
+        frames:
+          - 7
+      ragdoll_twitch:
         fps: *fps
         frames:
           - 4

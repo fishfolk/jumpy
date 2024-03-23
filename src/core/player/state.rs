@@ -52,6 +52,7 @@ pub fn plugin(session: &mut Session) {
     drive_jellyfish::install(session);
     idle::install(session);
     incapacitated::install(session);
+    ragdoll::install(session);
     midair::install(session);
     walk::install(session);
 }

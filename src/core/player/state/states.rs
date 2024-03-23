@@ -7,4 +7,5 @@ pub mod drive_jellyfish;
 pub mod idle;
 pub mod incapacitated;
 pub mod midair;
+pub mod ragdoll;
 pub mod walk;

@@ -550,6 +550,13 @@ struct PlayersHaveSpawned {
 #[derive(Debug, Clone, HasSchema, Default)]
 struct Hat(Handle<HatMeta>);
 
+/// Build `ColliderShape` for player from `PlayerMeta`.
+pub fn player_collider_shape(meta: &PlayerMeta) -> ColliderShape {
+    ColliderShape::Rectangle {
+        size: meta.body_size,
+    }
+}
+
 fn hydrate_players(
     mut commands: Commands,
     mut entities: ResMutInit<Entities>,
@@ -627,9 +634,7 @@ fn hydrate_players(
         kinematic_bodies.insert(
             player_entity,
             KinematicBody {
-                shape: ColliderShape::Rectangle {
-                    size: meta.body_size,
-                },
+                shape: player_collider_shape(&meta),
                 has_mass: true,
                 has_friction: false,
                 gravity: meta.gravity,

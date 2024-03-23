@@ -16,6 +16,8 @@ impl ColliderShapeCache {
 pub enum ColliderShape {
     Circle { diameter: f32 },
     Rectangle { size: Vec2 },
+    // Capsule aligned with Y axis
+    CapsuleY { half_length: f32, radius: f32 },
 }
 
 impl ColliderShape {
@@ -32,6 +34,13 @@ impl ColliderShape {
                 half_extents: (*size / 2.0).to_array().into(),
             }
             .aabb(&rapier::Isometry::new(
+                transform.translation.truncate().to_array().into(),
+                transform.rotation.to_euler(EulerRot::XYZ).2,
+            )),
+            ColliderShape::CapsuleY {
+                half_length,
+                radius,
+            } => { rapier::Capsule::new_y(*half_length, *radius) }.aabb(&rapier::Isometry::new(
                 transform.translation.truncate().to_array().into(),
                 transform.rotation.to_euler(EulerRot::XYZ).2,
             )),
@@ -59,6 +68,10 @@ impl ColliderShape {
             ColliderShape::Rectangle { size } => {
                 rapier::SharedShape::cuboid(size.x / 2.0, size.y / 2.0)
             }
+            ColliderShape::CapsuleY {
+                half_length,
+                radius,
+            } => rapier::SharedShape::capsule_y(*half_length, *radius),
         }
     }
 }
@@ -103,6 +116,13 @@ impl std::hash::Hash for ColliderShape {
                 F(size.x).hash(state);
                 F(size.y).hash(state);
             }
+            ColliderShape::CapsuleY {
+                half_length,
+                radius,
+            } => {
+                F(*half_length).hash(state);
+                F(*radius).hash(state);
+            }
         }
     }
 }
@@ -121,6 +141,7 @@ impl Ord for ColliderShape {
             ColliderShape::Circle { diameter: r1 } => match other {
                 ColliderShape::Circle { diameter: r2 } => F(*r1).cmp(&F(*r2)),
                 ColliderShape::Rectangle { .. } => Less,
+                ColliderShape::CapsuleY { .. } => Less,
             },
             ColliderShape::Rectangle { size: s1 } => match other {
                 ColliderShape::Rectangle { size: s2 } => {
@@ -132,6 +153,25 @@ impl Ord for ColliderShape {
                     }
                 }
                 ColliderShape::Circle { .. } => Greater,
+                ColliderShape::CapsuleY { .. } => Less,
+            },
+            ColliderShape::CapsuleY {
+                half_length: l1,
+                radius: r1,
+            } => match other {
+                ColliderShape::CapsuleY {
+                    half_length: l2,
+                    radius: r2,
+                } => {
+                    let ldiff = F(*l1).cmp(&F(*l2));
+                    if ldiff == Equal {
+                        F(*r1).cmp(&F(*r2))
+                    } else {
+                        ldiff
+                    }
+                }
+                ColliderShape::Circle { .. } => Greater,
+                ColliderShape::Rectangle { .. } => Greater,
             },
         }
     }

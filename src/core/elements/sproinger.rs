@@ -99,7 +99,8 @@ fn update(
     mut sproingers: CompMut<Sproinger>,
     mut atlas_sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
-    collision_world: CollisionWorld,
+    dynamic_bodies: Comp<DynamicBody>,
+    mut collision_world: CollisionWorld,
     mut audio_center: ResMut<AudioCenter>,
 ) {
     for (entity, (sproinger, sprite)) in entities.iter_with((&mut sproingers, &mut atlas_sprites)) {
@@ -135,10 +136,33 @@ fn update(
 
         for collider_ent in collision_world.actor_collisions(entity) {
             if let Some(body) = bodies.get_mut(collider_ent) {
-                if body.velocity.y < *spring_velocity {
-                    audio_center.play_sound(*sound, *sound_volume);
-                    body.velocity.y = *spring_velocity;
-                    sproinger.sproinging = true;
+                let dynamic_body = dynamic_bodies.get(collider_ent);
+                let is_dynamic = if let Some(dynamic_body) = dynamic_body {
+                    dynamic_body.is_dynamic
+                } else {
+                    false
+                };
+
+                if !is_dynamic {
+                    if body.velocity.y < *spring_velocity {
+                        audio_center.play_sound(*sound, *sound_volume);
+                        body.velocity.y = *spring_velocity;
+                        sproinger.sproinging = true;
+                    }
+                } else {
+                    let spring_velocity = *spring_velocity;
+
+                    let _ = collision_world.mutate_rigidbody(
+                        collider_ent,
+                        |rb: &mut rapier::RigidBody| {
+                            let mut vel = *rb.linvel();
+                            if vel.y < spring_velocity {
+                                vel.y = spring_velocity;
+                                rb.set_linvel(vel, true);
+                                audio_center.play_sound(*sound, *sound_volume);
+                            }
+                        },
+                    );
                 }
             }
         }

@@ -45,6 +45,7 @@ default_settings:
       shoot: !Button West
       slide: !Button North
       pause: !Button Start
+      ragdoll: !Button RightTrigger
       menu_back: !Button East
       menu_start: !Button Start
       menu_confirm: !Button South
@@ -60,6 +61,7 @@ default_settings:
       grab: !Keyboard V
       shoot: !Keyboard C
       slide: !Keyboard B
+      ragdoll: !Keyboard F
       pause: !Keyboard Escape
       menu_back: !Keyboard Escape
       menu_start: !Keyboard Return
@@ -76,6 +78,7 @@ default_settings:
       grab: !Keyboard ShiftRight
       shoot: !Keyboard Period
       slide: !Keyboard Slash
+      ragdoll: !Keyboard M
       menu_confirm: !Keyboard Comma
       menu_back: !Keyboard ShiftRight
 
@@ -261,6 +264,12 @@ core:
     friction_lerp: 0.85
     stop_threshold: 60.0
     gravity: 2160
+    player:
+      ragdoll_initial_pop: 200
+      ragdoll_initial_ang_vel: 2
+      ragdoll_twitch_vel: 50
+      ragdoll_twitch_delay: 0.15
+      ragdoll_additional_mass: 300
 
   players:
     - ./player/skins/fishy/fishy.player.yaml

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["crouch","dead","default","drive_jellyfish","idle","incapacitated","midair","walk"]};
+window.SIDEBAR_ITEMS = {"mod":["crouch","dead","default","drive_jellyfish","idle","incapacitated","midair","ragdoll","walk"]};

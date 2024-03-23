@@ -161,6 +161,45 @@
 <a href="#66" id="66">66</a>
 <a href="#67" id="67">67</a>
 <a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub static </span>ID: Lazy&lt;Ustr&gt; = Lazy::new(|| ustr(<span class="string">&quot;core::dead&quot;</span>));
@@ -183,27 +222,36 @@
 <span class="kw">pub fn </span>handle_player_state(
     entities: Res&lt;Entities&gt;,
     <span class="kw-2">mut </span>commands: Commands,
+    assets: Res&lt;AssetServer&gt;,
+    player_indices: Comp&lt;PlayerIdx&gt;,
+    player_inputs: Res&lt;MatchInputs&gt;,
     player_states: Comp&lt;PlayerState&gt;,
     killed_players: Comp&lt;PlayerKilled&gt;,
-    sprites: Comp&lt;AtlasSprite&gt;,
-    transform: Comp&lt;Transform&gt;,
+    _sprites: Comp&lt;AtlasSprite&gt;,
+    _transform: Comp&lt;Transform&gt;,
     player_layers: Comp&lt;PlayerLayers&gt;,
     <span class="kw-2">mut </span>player_body_attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>kinematic_bodies: CompMut&lt;KinematicBody&gt;,
+    <span class="kw-2">mut </span>dynamic_bodies: CompMut&lt;DynamicBody&gt;,
     <span class="kw-2">mut </span>animations: CompMut&lt;AnimationBankSprite&gt;,
+    game_meta: Root&lt;GameMeta&gt;,
+    <span class="kw-2">mut </span>collision_world: CollisionWorld,
 ) {
-    <span class="kw">for </span>(player_ent, (state, animation, killed_player)) <span class="kw">in
-        </span>entities.iter_with((<span class="kw-2">&amp;</span>player_states, <span class="kw-2">&amp;mut </span>animations, <span class="kw-2">&amp;</span>killed_players))
-    {
+    <span class="kw">for </span>(player_ent, (state, animation, _killed_player, player_idx)) <span class="kw">in </span>entities.iter_with((
+        <span class="kw-2">&amp;</span>player_states,
+        <span class="kw-2">&amp;mut </span>animations,
+        <span class="kw-2">&amp;</span>killed_players,
+        <span class="kw-2">&amp;</span>player_indices,
+    )) {
         <span class="kw">if </span>state.current != <span class="kw-2">*</span>ID {
             <span class="kw">continue</span>;
         };
 
         <span class="kw">if </span>state.age == <span class="number">0 </span>{
-            <span class="kw">let </span>sprite = sprites.get(player_ent).unwrap();
-            <span class="kw">let </span>player_on_right = !sprite.flip_x;
-            <span class="kw">let </span>transform = transform.get(player_ent).unwrap();
-            <span class="kw">let </span>layers = player_layers.get(player_ent).unwrap();
+            <span class="comment">// let sprite = sprites.get(player_ent).unwrap();
+            // let player_on_right = !sprite.flip_x;
+            // let transform = transform.get(player_ent).unwrap();
+            </span><span class="kw">let </span>layers = player_layers.get(player_ent).unwrap();
 
             <span class="comment">// Knock the player&#39;s hat off if they had one.
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(hat_ent) = layers.hat_ent {
@@ -211,17 +259,47 @@
                 kinematic_bodies.get_mut(hat_ent).unwrap().is_deactivated = <span class="bool-val">false</span>;
             }
 
-            animation.current = <span class="kw">match </span>killed_player.hit_from {
-                <span class="prelude-val">Some</span>(hit_from)
-                    <span class="kw">if </span>{
-                        <span class="kw">let </span>is_hit_right = transform.translation.x &lt; hit_from.x;
-                        (player_on_right &amp;&amp; is_hit_right) || (!player_on_right &amp;&amp; !is_hit_right)
-                    } =&gt;
-                {
-                    <span class="string">&quot;death_spine&quot;</span>.into()
-                }
-                <span class="kw">_ </span>=&gt; <span class="string">&quot;death_belly&quot;</span>.into(),
-            };
+            <span class="kw">if </span>!dynamic_bodies.contains(player_ent) {
+                <span class="kw">let </span>dynamic_body = DynamicBody::new(<span class="bool-val">true</span>);
+                dynamic_bodies.insert(player_ent, dynamic_body);
+            } <span class="kw">else </span>{
+                dynamic_bodies.get_mut(player_ent).unwrap().is_dynamic = <span class="bool-val">true</span>;
+            }
+
+            <span class="kw">let </span>player_physics = <span class="kw-2">&amp;</span>game_meta.core.physics.player;
+            <span class="kw">let </span>dynamic = dynamic_bodies.get_mut(player_ent).unwrap();
+            <span class="kw">let </span>pop_vel = Vec2::new(<span class="number">0.0</span>, player_physics.ragdoll_initial_pop);
+            <span class="kw">let </span>ang_vel = player_physics.ragdoll_initial_ang_vel;
+            <span class="kw">let </span>current_vel = kinematic_bodies.get_mut(player_ent).unwrap().velocity;
+            dynamic.push_simulation_command(Box::new(<span class="kw">move </span>|body: <span class="kw-2">&amp;mut </span>rapier::RigidBody| {
+                <span class="kw">let </span>mass = body.mass();
+                body.set_linvel(current_vel.into(), <span class="bool-val">true</span>);
+
+                <span class="comment">// apply initial impulse
+                </span>body.apply_impulse((pop_vel * mass).into(), <span class="bool-val">true</span>);
+                body.apply_torque_impulse(
+                    ang_vel * body.mass_properties().effective_angular_inertia(),
+                    <span class="bool-val">true</span>,
+                )
+            }));
+
+            <span class="kw">let </span>player_meta_handle = player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize].selected_player;
+            <span class="kw">let </span>player_meta = <span class="kw-2">&amp;*</span>assets.get(player_meta_handle);
+            ragdoll::use_ragdoll_collider(player_ent, player_meta, <span class="kw-2">&amp;mut </span>collision_world);
+
+            <span class="comment">// animation.current = match killed_player.hit_from {
+            //     Some(hit_from)
+            //         if {
+            //             let is_hit_right = transform.translation.x &lt; hit_from.x;
+            //             (player_on_right &amp;&amp; is_hit_right) || (!player_on_right &amp;&amp; !is_hit_right)
+            //         } =&gt;
+            //     {
+            //         &quot;death_spine&quot;.into()
+            //     }
+            //     _ =&gt; &quot;death_belly&quot;.into(),
+            // };
+
+            </span>animation.current = <span class="string">&quot;death_ragdoll&quot;</span>.into();
         }
 
         <span class="kw">if </span>state.age &gt;= <span class="number">80 </span>{

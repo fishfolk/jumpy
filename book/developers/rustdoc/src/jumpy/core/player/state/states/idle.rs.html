@@ -186,6 +186,8 @@
 <a href="#91" id="91">91</a>
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub static </span>ID: Lazy&lt;Ustr&gt; = Lazy::new(|| ustr(<span class="string">&quot;core::idle&quot;</span>));
@@ -212,7 +214,9 @@
 
         <span class="kw">let </span>control = <span class="kw-2">&amp;</span>player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize].control;
 
-        <span class="kw">if </span>!body.is_on_ground {
+        <span class="kw">if </span>control.ragdoll_just_pressed {
+            player_state.current = <span class="kw-2">*</span>ragdoll::ID;
+        } <span class="kw">else if </span>!body.is_on_ground {
             player_state.current = <span class="kw-2">*</span>midair::ID;
         } <span class="kw">else if </span>control.move_direction.y &lt; -<span class="number">0.5 </span>{
             player_state.current = <span class="kw-2">*</span>crouch::ID;

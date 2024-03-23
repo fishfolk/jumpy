@@ -1480,6 +1480,19 @@
 <a href="#1385" id="1385">1385</a>
 <a href="#1386" id="1386">1386</a>
 <a href="#1387" id="1387">1387</a>
+<a href="#1388" id="1388">1388</a>
+<a href="#1389" id="1389">1389</a>
+<a href="#1390" id="1390">1390</a>
+<a href="#1391" id="1391">1391</a>
+<a href="#1392" id="1392">1392</a>
+<a href="#1393" id="1393">1393</a>
+<a href="#1394" id="1394">1394</a>
+<a href="#1395" id="1395">1395</a>
+<a href="#1396" id="1396">1396</a>
+<a href="#1397" id="1397">1397</a>
+<a href="#1398" id="1398">1398</a>
+<a href="#1399" id="1399">1399</a>
+<a href="#1400" id="1400">1400</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Collision detection implementation.
 
 </span><span class="kw">use </span>std::hash::BuildHasherDefault;
@@ -1786,7 +1799,26 @@
     <span class="doccomment">/// Update shape of actor&#39;s [`Collider`]. Warns if entity does not have an [`Actor`] component.
     ///
     /// Updates shape on `Collider` and rebuilds rapier&#39;s collider on rigidbody.
+    ///
+    /// Use [`Self::set_actor_shape_from_builder`] for more control over new collider&#39;s settings.
     </span><span class="kw">pub fn </span>set_actor_shape(<span class="kw-2">&amp;mut </span><span class="self">self</span>, entity: Entity, shape: ColliderShape) {
+        <span class="kw">let </span>shared_shape = <span class="self">self</span>.ctx.collider_shape_cache.shared_shape(shape);
+        <span class="kw">let </span>new_collider = build_actor_rapier_collider(entity, shared_shape.clone());
+        <span class="self">self</span>.set_actor_shape_from_builder(entity, new_collider, shape);
+    }
+
+    <span class="doccomment">/// Update shape of actor&#39;s [`Collider`]. Warns if entity does not have an [`Actor`] component.
+    ///
+    /// Updates shape on `Collider` and rebuilds rapier&#39;s collider on rigidbody.
+    ///
+    /// Accepts a [`rapier::ColliderBuilder`] (can get one with [`build_actor_rapier_collider`]) so
+    /// other settings may be configured on new collider.
+    </span><span class="kw">pub fn </span>set_actor_shape_from_builder(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        entity: Entity,
+        <span class="kw-2">mut </span>collider_builder: rapier::ColliderBuilder,
+        shape: ColliderShape,
+    ) {
         <span class="kw">if </span>!<span class="self">self</span>.actors.contains(entity) {
             <span class="comment">// This doesn&#39;t technically need be restricted, however we use default settings of collider for Actor,
             // and function would need to be updated to do this correctly for Solids, Tiles, or other classes of body.
@@ -1801,24 +1833,19 @@
                 <span class="kw">let </span>RapierContext {
                     rigid_body_set,
                     collision_cache,
-                    collider_shape_cache,
                     collider_set,
                     islands,
                     ..
                 } = <span class="kw-2">&amp;mut *</span><span class="self">self</span>.ctx;
 
                 <span class="kw">let </span>rapier_body = rigid_body_set.get_mut(handle).unwrap();
-                <span class="kw">let </span>shared_shape = collider_shape_cache.shared_shape(shape);
-
-                <span class="comment">// Make new collider from shape
-                </span><span class="kw">let </span><span class="kw-2">mut </span>new_collider = build_actor_rapier_collider(entity, shared_shape.clone());
 
                 {
                     <span class="kw">let </span>collider_handle = rapier_body.colliders()[<span class="number">0</span>];
                     <span class="kw">let </span>current_rapier_collider = collider_set.get(collider_handle).unwrap();
 
-                    <span class="comment">// Update new collider with any settings that may have changed from default on existing.
-                    </span>new_collider = new_collider.sensor(current_rapier_collider.is_sensor());
+                    <span class="comment">// Update new collider with any settings that need to be synchronized
+                    </span>collider_builder = collider_builder.sensor(current_rapier_collider.is_sensor());
 
                     <span class="comment">// Remove body&#39;s current collider
                     </span><span class="kw">let </span>wake_up = <span class="bool-val">true</span>;
@@ -1832,7 +1859,7 @@
                 }
 
                 <span class="comment">// Insert body&#39;s new collider
-                </span>collider_set.insert_with_parent(new_collider, handle, rigid_body_set);
+                </span>collider_set.insert_with_parent(collider_builder, handle, rigid_body_set);
             } <span class="kw">else </span>{
                 <span class="comment">// We have an existing Collider but no rapier body yet, shape was updated on Collider
                 // and will be used when body is created.
@@ -1885,7 +1912,7 @@
 }
 
 <span class="doccomment">/// Helper function for configuring ColliderBuilder for actors.
-</span><span class="kw">fn </span>build_actor_rapier_collider(
+</span><span class="kw">pub fn </span>build_actor_rapier_collider(
     entity: Entity,
     shared_shape: rapier::SharedShape,
 ) -&gt; rapier::ColliderBuilder {
@@ -2252,7 +2279,6 @@
                 );
             }
             rapier_collider.set_enabled(!collider.disabled);
-            rapier_collider.set_position_wrt_parent(rapier::Isometry::new(default(), <span class="number">0.0</span>));
         }
 
         <span class="kw">for </span>(solid_ent, solid) <span class="kw">in </span><span class="self">self</span>.entities.iter_with(<span class="kw-2">&amp;mut </span><span class="self">self</span>.solids) {

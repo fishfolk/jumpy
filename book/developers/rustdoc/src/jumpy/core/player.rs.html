@@ -1148,6 +1148,11 @@
 <a href="#1053" id="1053">1053</a>
 <a href="#1054" id="1054">1054</a>
 <a href="#1055" id="1055">1055</a>
+<a href="#1056" id="1056">1056</a>
+<a href="#1057" id="1057">1057</a>
+<a href="#1058" id="1058">1058</a>
+<a href="#1059" id="1059">1059</a>
+<a href="#1060" id="1060">1060</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Player controller, states, and animation implementation.
 
 </span><span class="kw">use </span>std::collections::VecDeque;
@@ -1700,6 +1705,13 @@
 </span><span class="attr">#[derive(Debug, Clone, HasSchema, Default)]
 </span><span class="kw">struct </span>Hat(Handle&lt;HatMeta&gt;);
 
+<span class="doccomment">/// Build `ColliderShape` for player from `PlayerMeta`.
+</span><span class="kw">pub fn </span>player_collider_shape(meta: <span class="kw-2">&amp;</span>PlayerMeta) -&gt; ColliderShape {
+    ColliderShape::Rectangle {
+        size: meta.body_size,
+    }
+}
+
 <span class="kw">fn </span>hydrate_players(
     <span class="kw-2">mut </span>commands: Commands,
     <span class="kw-2">mut </span>entities: ResMutInit&lt;Entities&gt;,
@@ -1777,9 +1789,7 @@
         kinematic_bodies.insert(
             player_entity,
             KinematicBody {
-                shape: ColliderShape::Rectangle {
-                    size: meta.body_size,
-                },
+                shape: player_collider_shape(<span class="kw-2">&amp;</span>meta),
                 has_mass: <span class="bool-val">true</span>,
                 has_friction: <span class="bool-val">false</span>,
                 gravity: meta.gravity,

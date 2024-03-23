@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["handle_player_state","install","restore_player_collider","use_ragdoll_collider"],"static":["ID"],"struct":["PlayerRagdollState"]};

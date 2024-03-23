@@ -193,6 +193,10 @@
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub static </span>ID: Lazy&lt;Ustr&gt; = Lazy::new(|| ustr(<span class="string">&quot;core::midair&quot;</span>));
@@ -217,6 +221,7 @@
     {
         <span class="kw">let </span>meta_handle = player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize].selected_player;
         <span class="kw">let </span>meta = assets.get(meta_handle);
+        <span class="kw">let </span>control = <span class="kw-2">&amp;</span>player_inputs.players[player_idx.<span class="number">0 </span><span class="kw">as </span>usize].control;
         <span class="kw">if </span>player_state.current != <span class="kw-2">*</span>ID {
             <span class="kw">continue</span>;
         }
@@ -226,6 +231,9 @@
             </span>audio_center.play_sound(meta.sounds.land, meta.sounds.land_volume);
             <span class="comment">// Switch to idle state
             </span>player_state.current = <span class="kw-2">*</span>idle::ID;
+        } <span class="kw">else if </span>control.ragdoll_just_pressed {
+            <span class="comment">// TODO audio
+            </span>player_state.current = <span class="kw-2">*</span>ragdoll::ID;
         }
     }
 }

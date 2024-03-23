@@ -554,6 +554,21 @@
 <a href="#459" id="459">459</a>
 <a href="#460" id="460">460</a>
 <a href="#461" id="461">461</a>
+<a href="#462" id="462">462</a>
+<a href="#463" id="463">463</a>
+<a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
+<a href="#466" id="466">466</a>
+<a href="#467" id="467">467</a>
+<a href="#468" id="468">468</a>
+<a href="#469" id="469">469</a>
+<a href="#470" id="470">470</a>
+<a href="#471" id="471">471</a>
+<a href="#472" id="472">472</a>
+<a href="#473" id="473">473</a>
+<a href="#474" id="474">474</a>
+<a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     prelude::<span class="kw-2">*</span>,
     settings::{InputKind, PlayerControlMapping, PlayerControlSetting, Settings},
@@ -729,6 +744,9 @@
 
     <span class="kw">pub </span>slide_pressed: bool,
     <span class="kw">pub </span>slide_just_pressed: bool,
+
+    <span class="kw">pub </span>ragdoll_pressed: bool,
+    <span class="kw">pub </span>ragdoll_just_pressed: bool,
 }
 
 <span class="attr">#[derive(HasSchema, Clone)]
@@ -801,6 +819,11 @@
                         <span class="kw-2">&amp;mut </span>current.slide_just_pressed,
                         current.slide_pressed,
                         last.slide_pressed,
+                    ),
+                    (
+                        <span class="kw-2">&amp;mut </span>current.ragdoll_just_pressed,
+                        current.ragdoll_pressed,
+                        last.ragdoll_pressed,
                     ),
                     (
                         <span class="kw-2">&amp;mut </span>current.menu_back_just_pressed,
@@ -905,6 +928,7 @@
                 (<span class="kw-2">&amp;mut </span>control.grab_pressed, <span class="kw-2">&amp;</span>mapping.grab),
                 (<span class="kw-2">&amp;mut </span>control.shoot_pressed, <span class="kw-2">&amp;</span>mapping.shoot),
                 (<span class="kw-2">&amp;mut </span>control.slide_pressed, <span class="kw-2">&amp;</span>mapping.slide),
+                (<span class="kw-2">&amp;mut </span>control.ragdoll_pressed, <span class="kw-2">&amp;</span>mapping.ragdoll),
                 (<span class="kw-2">&amp;mut </span>control.menu_back_pressed, <span class="kw-2">&amp;</span>mapping.menu_back),
                 (<span class="kw-2">&amp;mut </span>control.menu_confirm_pressed, <span class="kw-2">&amp;</span>mapping.menu_confirm),
                 (<span class="kw-2">&amp;mut </span>control.menu_start_pressed, <span class="kw-2">&amp;</span>mapping.menu_start),
@@ -955,6 +979,7 @@
         dense_control.set_grab_pressed(<span class="self">self</span>.grab_pressed);
         dense_control.set_slide_pressed(<span class="self">self</span>.slide_pressed);
         dense_control.set_shoot_pressed(<span class="self">self</span>.shoot_pressed);
+        dense_control.set_ragdoll_pressed(<span class="self">self</span>.ragdoll_pressed);
         dense_control.set_move_direction(proto::DenseMoveDirection(<span class="self">self</span>.move_direction));
         dense_control
     }
@@ -972,6 +997,10 @@
         <span class="self">self</span>.shoot_just_pressed = shoot_pressed &amp;&amp; !<span class="self">self</span>.shoot_pressed;
         <span class="self">self</span>.shoot_pressed = shoot_pressed;
 
+        <span class="kw">let </span>ragdoll_pressed = new_control.ragdoll_pressed();
+        <span class="self">self</span>.ragdoll_just_pressed = ragdoll_pressed &amp;&amp; !<span class="self">self</span>.ragdoll_pressed;
+        <span class="self">self</span>.ragdoll_pressed = ragdoll_pressed;
+
         <span class="kw">let </span>was_moving = <span class="self">self</span>.move_direction.length_squared() &gt; f32::MIN_POSITIVE;
         <span class="self">self</span>.move_direction = new_control.move_direction().<span class="number">0</span>;
         <span class="kw">let </span>is_moving = <span class="self">self</span>.move_direction.length_squared() &gt; f32::MIN_POSITIVE;
@@ -981,18 +1010,19 @@
 
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 </span><span class="macro">bitfield::bitfield! </span>{
-    <span class="doccomment">/// A player&#39;s controller inputs densely packed into a single u16.
+    <span class="doccomment">/// A player&#39;s controller inputs densely packed into a single u32.
     ///
     /// This is used when sending player inputs across the network.
     </span><span class="attr">#[derive(bytemuck::Pod, bytemuck::Zeroable, Copy, Clone, PartialEq, Eq)]</span><span class="comment">//, Reflect)]
     </span><span class="attr">#[repr(transparent)]
-    </span><span class="kw">pub struct </span>DensePlayerControl(u16);
+    </span><span class="kw">pub struct </span>DensePlayerControl(u32);
     <span class="kw">impl </span>Debug;
     <span class="kw">pub </span>jump_pressed, set_jump_pressed: <span class="number">0</span>;
     <span class="kw">pub </span>shoot_pressed, set_shoot_pressed: <span class="number">1</span>;
     <span class="kw">pub </span>grab_pressed, set_grab_pressed: <span class="number">2</span>;
     <span class="kw">pub </span>slide_pressed, set_slide_pressed: <span class="number">3</span>;
-    <span class="kw">pub </span>from into DenseMoveDirection, move_direction, set_move_direction: <span class="number">15</span>, <span class="number">4</span>;
+    <span class="kw">pub </span>ragdoll_pressed, set_ragdoll_pressed: <span class="number">4</span>;
+    <span class="kw">pub </span>from into DenseMoveDirection, move_direction, set_move_direction: <span class="number">16</span>, <span class="number">5</span>;
 }
 
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]

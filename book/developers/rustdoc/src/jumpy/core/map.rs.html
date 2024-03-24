@@ -817,6 +817,36 @@
 <a href="#722" id="722">722</a>
 <a href="#723" id="723">723</a>
 <a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
+<a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
+<a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
+<a href="#743" id="743">743</a>
+<a href="#744" id="744">744</a>
+<a href="#745" id="745">745</a>
+<a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a>
+<a href="#753" id="753">753</a>
+<a href="#754" id="754">754</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Map and navigation mesh implementation.
 
 </span><span class="kw">use </span>std::{
@@ -824,7 +854,7 @@
     collections::VecDeque,
 };
 
-<span class="kw">use </span><span class="kw">super</span>::physics::collisions::{CollisionWorld, TileCollisionKind};
+<span class="kw">use </span><span class="kw">super</span>::physics::collisions::{CollisionWorld, TileCollisionKind, TileDynamicCollider};
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>Session) {
@@ -966,6 +996,7 @@
     <span class="kw-2">mut </span>commands: Commands,
     <span class="kw-2">mut </span>entities: ResMutInit&lt;Entities&gt;,
     <span class="kw-2">mut </span>clear_color: ResMutInit&lt;ClearColor&gt;,
+    assets: Res&lt;AssetServer&gt;,
     map: Res&lt;LoadedMap&gt;,
     <span class="kw-2">mut </span>map_spawned: ResMutInit&lt;MapSpawned&gt;,
     <span class="kw-2">mut </span>tiles: CompMut&lt;Tile&gt;,
@@ -973,6 +1004,7 @@
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>element_handles: CompMut&lt;ElementHandle&gt;,
     <span class="kw-2">mut </span>tile_collisions: CompMut&lt;TileCollisionKind&gt;,
+    <span class="kw-2">mut </span>tile_dynamic_colliders: CompMut&lt;TileDynamicCollider&gt;,
     <span class="kw-2">mut </span>parallax_bg_sprites: CompMut&lt;ParallaxBackgroundSprite&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;Sprite&gt;,
     <span class="kw-2">mut </span>nav_graph: ResMutInit&lt;NavGraph&gt;,
@@ -1066,6 +1098,34 @@
                 // properly.
                 </span><span class="kw">if </span>tile_meta.collision != TileCollisionKind::Empty {
                     tile_collisions.insert(tile_ent, tile_meta.collision);
+                }
+
+                <span class="kw">let </span>atlas = assets.get(tilemap);
+                <span class="kw">let </span>optional_tile_colliders = <span class="kw-2">&amp;</span>atlas.tile_collision;
+                <span class="comment">// If metadata has valid dynamics collider, create component for it.
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(extra_collider) =
+                    optional_tile_colliders.get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, tile_meta.idx))
+                {
+                    <span class="kw">if </span>extra_collider.has_area() {
+                        <span class="comment">// clamp collider between 0.0, 1.0
+                        </span><span class="kw">let </span>extra_collider = extra_collider.clamped_values();
+
+                        <span class="comment">// scale min/max between 0 and tile size.
+                        </span><span class="kw">let </span>tile_size = spawned_map_meta.tile_size;
+                        <span class="kw">let </span>min = extra_collider.min * tile_size;
+                        <span class="kw">let </span>max = extra_collider.max * tile_size;
+
+                        <span class="comment">// compute offset from center of tile
+                        </span><span class="kw">let </span>collider_center = min + (max - min) * <span class="number">0.5</span>;
+                        <span class="kw">let </span>offset =
+                            collider_center - Vec2::new(tile_size.x * <span class="number">0.5</span>, tile_size.y * <span class="number">0.5</span>);
+
+                        <span class="kw">let </span>extents = max - min;
+                        <span class="kw">let </span>shape = ColliderShape::Rectangle { size: extents };
+
+                        tile_dynamic_colliders
+                            .insert(tile_ent, TileDynamicCollider { shape, offset });
+                    }
                 }
             }
             <span class="kw">let </span>layer_ent = entities.create();

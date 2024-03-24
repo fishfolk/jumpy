@@ -29,6 +29,10 @@ main_menu:
 
   menu_width: 350
 
+network:
+  local_input_delay: 2
+  max_prediction_window: 7
+
 default_settings:
   main_volume: 1.0
   matchmaking_server: matchmaker.bones.fishfolk.org:65534

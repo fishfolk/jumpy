@@ -52,6 +52,36 @@ pub struct GameMeta {
     pub theme: ui::UiTheme,
     pub main_menu: ui::main_menu::MainMenuMeta,
     pub music: GameMusic,
+    pub network: NetworkMeta,
+}
+
+#[derive(HasSchema, Copy, Clone, Debug)]
+#[repr(C)]
+pub struct NetworkMeta {
+    pub max_prediction_window: usize,
+    pub local_input_delay: usize,
+}
+
+// In wasm build get derivable_impls clippy warning which breaks CI
+#[allow(clippy::derivable_impls)]
+impl Default for NetworkMeta {
+    fn default() -> Self {
+        #[cfg(target_arch = "wasm32")]
+        {
+            Self {
+                local_input_delay: 0,
+                max_prediction_window: 0,
+            }
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            Self {
+                local_input_delay: bones_framework::networking::NETWORK_LOCAL_INPUT_DELAY_DEFAULT,
+                max_prediction_window:
+                    bones_framework::networking::NETWORK_MAX_PREDICTION_WINDOW_DEFAULT,
+            }
+        }
+    }
 }
 
 #[derive(HasSchema, Clone, Debug, Default)]

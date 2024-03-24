@@ -64,20 +64,20 @@ pub struct NetworkMeta {
 
 impl Default for NetworkMeta {
     fn default() -> Self {
-        let local_input_delay = if !cfg!(target_arch = "wasm32") {
-            bones_framework::networking::NETWORK_LOCAL_INPUT_DELAY_DEFAULT
-        } else {
-            0
-        };
-        let max_prediction_window = if !cfg!(target_arch = "wasm32") {
-            bones_framework::networking::NETWORK_MAX_PREDICTION_WINDOW_DEFAULT
-        } else {
-            0
-        };
-
-        Self {
-            local_input_delay,
-            max_prediction_window,
+        #[cfg(target_arch = "wasm32")]
+        {
+            Self {
+                local_input_delay: 0,
+                max_prediction_window: 0,
+            }
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            Self {
+                local_input_delay: bones_framework::networking::NETWORK_LOCAL_INPUT_DELAY_DEFAULT,
+                max_prediction_window:
+                    bones_framework::networking::NETWORK_MAX_PREDICTION_WINDOW_DEFAULT,
+            }
         }
     }
 }

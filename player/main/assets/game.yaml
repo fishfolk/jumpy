@@ -29,6 +29,10 @@ main_menu:
 
   menu_width: 350
 
+network:
+  local_input_delay: 2
+  max_prediction_window: 7
+
 default_settings:
   main_volume: 1.0
   matchmaking_server: matchmaker.bones.fishfolk.org:65534
@@ -45,6 +49,7 @@ default_settings:
       shoot: !Button West
       slide: !Button North
       pause: !Button Start
+      ragdoll: !Button RightTrigger
       menu_back: !Button East
       menu_start: !Button Start
       menu_confirm: !Button South
@@ -60,6 +65,7 @@ default_settings:
       grab: !Keyboard V
       shoot: !Keyboard C
       slide: !Keyboard B
+      ragdoll: !Keyboard F
       pause: !Keyboard Escape
       menu_back: !Keyboard Escape
       menu_start: !Keyboard Return
@@ -76,6 +82,7 @@ default_settings:
       grab: !Keyboard ShiftRight
       shoot: !Keyboard Period
       slide: !Keyboard Slash
+      ragdoll: !Keyboard M
       menu_confirm: !Keyboard Comma
       menu_back: !Keyboard ShiftRight
 
@@ -257,10 +264,16 @@ core:
     move_lerp_factor: 0.1
 
   physics:
-    terminal_velocity: 30
+    terminal_velocity: 1800
     friction_lerp: 0.85
-    stop_threshold: 1.0
-    gravity: 0.6
+    stop_threshold: 60.0
+    gravity: 2160
+    player:
+      ragdoll_initial_pop: 200
+      ragdoll_initial_ang_vel: 2
+      ragdoll_twitch_vel: 50
+      ragdoll_twitch_delay: 0.15
+      ragdoll_additional_mass: 300
 
   players:
     - ./player/skins/fishy/fishy.player.yaml

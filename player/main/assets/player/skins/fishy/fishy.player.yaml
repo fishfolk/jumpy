@@ -11,17 +11,17 @@ sounds:
   drop_volume: 0.05
 
 stats:
-  air_speed: 6
-  accel_air_speed: 1
-  walk_speed: 6
-  accel_walk_speed: 1
-  jump_speed: 11
-  slow_fall_speed: 1.5
-  slowdown: 0.8
+  air_speed: 360
+  accel_air_speed: 60
+  walk_speed: 360
+  accel_walk_speed: 60
+  jump_speed: 660
+  slow_fall_speed: 90
+  slowdown: 48.0
 
 body_size: [32, 48]
 slide_body_size: [48, 32]
-gravity: 0.6
+gravity: 2160
 
 layers:
   body:
@@ -93,6 +93,17 @@ layers:
             offset: [0, -4]
         fps: *fps
         repeat: false
+      ragdoll:
+        fps: *fps
+        frames:
+          - idx: 28
+            offset: [0, 3]
+        repeat: false
+      ragdoll_twitch:
+        fps: *fps
+        frames:
+          - idx: 42
+            offset: [0, 3]
       slide:
         fps: *fps
         frames:
@@ -120,6 +131,12 @@ layers:
           - idx: 88
           - idx: 89
           - idx: 90
+        fps: *fps
+        repeat: false
+      death_ragdoll:
+        frames:
+          - idx: 56
+            offset: [0, -4]
         fps: *fps
         repeat: false
   fin:
@@ -163,6 +180,14 @@ layers:
         fps: *fps
         frames:
           - 20
+      ragdoll:
+        fps: *fps
+        frames:
+          - 10
+      ragdoll_twitch:
+        fps: *fps
+        frames:
+          - 15
       slide:
         fps: *fps
         frames:
@@ -175,6 +200,10 @@ layers:
         fps: *fps
         frames:
           - 3 # Intentionally an invisible frame
+      death_ragdoll:
+        fps: *fps
+        frames:
+          - 20
       grab_1:
         fps: *fps
         frames:
@@ -219,6 +248,14 @@ layers:
         fps: *fps
         frames:
           - 5
+      ragdoll:
+        fps: *fps
+        frames:
+          - 9
+      ragdoll_twitch:
+        fps: *fps
+        frames:
+          - 4
       slide:
         fps: *fps
         frames:
@@ -231,6 +268,10 @@ layers:
         fps: *fps
         frames:
           - 10 # Intentionally an invisible frame
+      death_ragdoll:
+        fps: *fps
+        frames:
+          - 5
       emote_alarm:
         fps: *fps
         frames:

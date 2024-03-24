@@ -62,6 +62,8 @@ pub struct NetworkMeta {
     pub local_input_delay: usize,
 }
 
+// In wasm build get derivable_impls clippy warning which breaks CI
+#[allow(clippy::derivable_impls)]
 impl Default for NetworkMeta {
     fn default() -> Self {
         #[cfg(target_arch = "wasm32")]

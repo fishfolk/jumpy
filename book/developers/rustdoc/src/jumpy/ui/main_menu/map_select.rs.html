@@ -235,6 +235,10 @@
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
 <a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::{JumpyDefaultMatchRunner, MatchPlugin};
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
@@ -291,7 +295,11 @@
             </span><span class="kw">let </span>session_runner: Box&lt;<span class="kw">dyn </span>SessionRunner&gt; = <span class="kw">match </span>network_socket {
                 <span class="prelude-val">Some</span>(socket) =&gt; Box::new(GgrsSessionRunner::&lt;NetworkInputConfig&gt;::new(
                     FPS,
-                    GgrsSessionRunnerInfo::from(socket.as_ref()),
+                    GgrsSessionRunnerInfo::new(
+                        socket.as_ref(),
+                        <span class="prelude-val">Some</span>(meta.network.max_prediction_window),
+                        <span class="prelude-val">Some</span>(meta.network.local_input_delay),
+                    ),
                 )),
                 <span class="prelude-val">None </span>=&gt; Box::&lt;JumpyDefaultMatchRunner&gt;::default(),
             };

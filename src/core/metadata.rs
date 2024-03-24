@@ -83,6 +83,18 @@ pub struct PhysicsMeta {
     pub terminal_velocity: f32,
     pub friction_lerp: f32,
     pub stop_threshold: f32,
+    pub player: PhysicsPlayerMeta,
+}
+
+#[derive(HasSchema, Clone, Debug, Default)]
+#[repr(C)]
+pub struct PhysicsPlayerMeta {
+    pub ragdoll_initial_pop: f32,
+    pub ragdoll_initial_ang_vel: f32,
+    pub ragdoll_twitch_vel: f32,
+    pub ragdoll_twitch_delay: f32,
+    // Add additional mass to ragdoll body
+    pub ragdoll_additional_mass: f32,
 }
 
 #[derive(HasSchema, Deserialize, Clone, Debug, Default)]

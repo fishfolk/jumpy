@@ -112,6 +112,9 @@ pub fn update_attachments(
             }
         }
 
+        // Apply parent rotation to offset. Currently scale is not applied (but probably should be.)
+        offset = attached_transform.rotation * offset;
+
         transform.translation += offset;
     }
 }

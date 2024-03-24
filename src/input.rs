@@ -173,6 +173,9 @@ pub struct PlayerControl {
 
     pub slide_pressed: bool,
     pub slide_just_pressed: bool,
+
+    pub ragdoll_pressed: bool,
+    pub ragdoll_just_pressed: bool,
 }
 
 #[derive(HasSchema, Clone)]
@@ -245,6 +248,11 @@ impl<'a>
                         &mut current.slide_just_pressed,
                         current.slide_pressed,
                         last.slide_pressed,
+                    ),
+                    (
+                        &mut current.ragdoll_just_pressed,
+                        current.ragdoll_pressed,
+                        last.ragdoll_pressed,
                     ),
                     (
                         &mut current.menu_back_just_pressed,
@@ -349,6 +357,7 @@ impl<'a>
                 (&mut control.grab_pressed, &mapping.grab),
                 (&mut control.shoot_pressed, &mapping.shoot),
                 (&mut control.slide_pressed, &mapping.slide),
+                (&mut control.ragdoll_pressed, &mapping.ragdoll),
                 (&mut control.menu_back_pressed, &mapping.menu_back),
                 (&mut control.menu_confirm_pressed, &mapping.menu_confirm),
                 (&mut control.menu_start_pressed, &mapping.menu_start),
@@ -399,6 +408,7 @@ impl NetworkPlayerControl<DensePlayerControl> for PlayerControl {
         dense_control.set_grab_pressed(self.grab_pressed);
         dense_control.set_slide_pressed(self.slide_pressed);
         dense_control.set_shoot_pressed(self.shoot_pressed);
+        dense_control.set_ragdoll_pressed(self.ragdoll_pressed);
         dense_control.set_move_direction(proto::DenseMoveDirection(self.move_direction));
         dense_control
     }
@@ -416,6 +426,10 @@ impl NetworkPlayerControl<DensePlayerControl> for PlayerControl {
         self.shoot_just_pressed = shoot_pressed && !self.shoot_pressed;
         self.shoot_pressed = shoot_pressed;
 
+        let ragdoll_pressed = new_control.ragdoll_pressed();
+        self.ragdoll_just_pressed = ragdoll_pressed && !self.ragdoll_pressed;
+        self.ragdoll_pressed = ragdoll_pressed;
+
         let was_moving = self.move_direction.length_squared() > f32::MIN_POSITIVE;
         self.move_direction = new_control.move_direction().0;
         let is_moving = self.move_direction.length_squared() > f32::MIN_POSITIVE;
@@ -425,18 +439,19 @@ impl NetworkPlayerControl<DensePlayerControl> for PlayerControl {
 
 #[cfg(not(target_arch = "wasm32"))]
 bitfield::bitfield! {
-    /// A player's controller inputs densely packed into a single u16.
+    /// A player's controller inputs densely packed into a single u32.
     ///
     /// This is used when sending player inputs across the network.
     #[derive(bytemuck::Pod, bytemuck::Zeroable, Copy, Clone, PartialEq, Eq)]//, Reflect)]
     #[repr(transparent)]
-    pub struct DensePlayerControl(u16);
+    pub struct DensePlayerControl(u32);
     impl Debug;
     pub jump_pressed, set_jump_pressed: 0;
     pub shoot_pressed, set_shoot_pressed: 1;
     pub grab_pressed, set_grab_pressed: 2;
     pub slide_pressed, set_slide_pressed: 3;
-    pub from into DenseMoveDirection, move_direction, set_move_direction: 15, 4;
+    pub ragdoll_pressed, set_ragdoll_pressed: 4;
+    pub from into DenseMoveDirection, move_direction, set_move_direction: 16, 5;
 }
 
 #[cfg(not(target_arch = "wasm32"))]

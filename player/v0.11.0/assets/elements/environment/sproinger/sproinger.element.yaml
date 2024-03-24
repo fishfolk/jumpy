@@ -1,0 +1,7 @@
+name: Sproinger
+category: Gameplay
+editor:
+  grab_size: [30, 10]
+  grab_offset: [0, -5]
+  show_name: false
+data: sproinger.yaml

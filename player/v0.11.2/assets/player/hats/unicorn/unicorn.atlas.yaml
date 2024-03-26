@@ -1,0 +1,4 @@
+image: ./unicorn.png
+tile_size: [30, 37]
+columns: 1
+rows: 1

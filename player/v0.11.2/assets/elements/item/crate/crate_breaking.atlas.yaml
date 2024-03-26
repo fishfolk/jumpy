@@ -1,0 +1,4 @@
+image: ./crate_breaking.png
+tile_size: [128, 128]
+rows: 1
+columns: 25

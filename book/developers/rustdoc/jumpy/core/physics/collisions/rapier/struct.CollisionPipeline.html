@@ -104,7 +104,7 @@ instance to benefit from the cached data.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.step" class="method"><h4 class="code-header">pub fn <a href="#method.step" class="fn">step</a>(
     &amp;mut self,
     prediction_distance: <a class="primitive" href="https://doc.rust-lang.org/1.74.1/std/primitive.f32.html">f32</a>,
-    broad_phase: &amp;mut <a class="struct" href="../../rapier/struct.BroadPhase.html" title="struct jumpy::core::physics::rapier::BroadPhase">BroadPhase</a>,
+    broad_phase: &amp;mut dyn <a class="trait" href="../../rapier/trait.BroadPhase.html" title="trait jumpy::core::physics::rapier::BroadPhase">BroadPhase</a>,
     narrow_phase: &amp;mut <a class="struct" href="../../rapier/struct.NarrowPhase.html" title="struct jumpy::core::physics::rapier::NarrowPhase">NarrowPhase</a>,
     bodies: &amp;mut <a class="struct" href="../../rapier/struct.RigidBodySet.html" title="struct jumpy::core::physics::rapier::RigidBodySet">RigidBodySet</a>,
     colliders: &amp;mut <a class="struct" href="../../rapier/struct.ColliderSet.html" title="struct jumpy::core::physics::rapier::ColliderSet">ColliderSet</a>,

@@ -1570,7 +1570,7 @@
 </span><span class="attr">#[derive(HasSchema, Default)]
 </span><span class="kw">pub struct </span>RapierContext {
     <span class="kw">pub </span>collision_pipeline: rapier::CollisionPipeline,
-    <span class="kw">pub </span>broad_phase: rapier::BroadPhase,
+    <span class="kw">pub </span>broad_phase: rapier::DefaultBroadPhase,
     <span class="kw">pub </span>narrow_phase: rapier::NarrowPhase,
     <span class="kw">pub </span>query_pipeline: rapier::QueryPipeline,
     <span class="kw">pub </span>collider_set: rapier::ColliderSet,

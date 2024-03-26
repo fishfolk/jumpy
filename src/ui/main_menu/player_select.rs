@@ -219,6 +219,50 @@ fn handle_match_setup_messages(
     }
 }
 
+fn rotate_skins(to_right: bool, players: &Vec<Handle<PlayerMeta>>, current_skin: &mut Handle<PlayerMeta>) {
+    let current_id = players
+        .iter()
+        .enumerate()
+        .find(|(_, skin)| {skin == &current_skin})
+        .map(|(index, _)| index)
+        .unwrap_or(0);
+
+    let new_id: usize;
+    if to_right {
+        new_id = (current_id + 1) % players.len();
+    } else {
+        new_id = if current_id == 0 {
+                players.len() - 1
+            } else {
+                current_id - 1
+            };
+
+    }
+    *current_skin = players[new_id as usize];
+}
+
+fn rotate_hats(to_right: bool, hats: &Vec<Option<Handle<HatMeta>>>, current_hat: &mut Option<Handle<HatMeta>>) {
+    let current_id = hats
+        .iter()
+        .enumerate()
+        .find(|(_, hat)| {hat == &current_hat})
+        .map(|(index, _)| index)
+        .unwrap_or(0);
+   
+    let new_id: usize;
+    if to_right {
+        new_id = (current_id + 1) % hats.len();
+    } else {
+        new_id = 
+            if current_id == 0 {
+                hats.len() - 1
+            } else {
+                current_id - 1
+            };
+    }
+    *current_hat = hats[new_id];
+}       
+
 fn player_select_panel(
     mut params: In<(&mut egui::Ui, usize, &mut PlayerSelectState)>,
     meta: Root<GameMeta>,
@@ -391,25 +435,11 @@ fn player_select_panel(
 
             // Select a hat if the player has been confirmed
             if slot.confirmed {
-                let current_hat_handle_idx = state
-                    .hats
-                    .iter()
-                    .enumerate()
-                    .find(|(_, handle)| **handle == slot.selected_hat)
-                    .map(|(i, _)| i)
-                    .unwrap_or(0);
 
-                let next_idx = if direction.x > 0.0 {
-                    (current_hat_handle_idx + 1) % state.hats.len()
-                } else {
-                    let idx = current_hat_handle_idx as i32 - 1;
-                    if idx == -1 {
-                        state.hats.len() - 1
-                    } else {
-                        idx as usize
-                    }
-                };
-                slot.selected_hat = state.hats[next_idx];
+                rotate_hats(
+                    direction.x > 0.0,
+                    &state.hats,
+                    &mut slot.selected_hat);
 
                 #[cfg(not(target_arch = "wasm32"))]
                 if let Some(socket) = network_socket.as_ref() {
@@ -424,24 +454,11 @@ fn player_select_panel(
 
                 // Select player skin if the player has not be confirmed
             } else {
-                let current_player_handle_idx = state
-                    .players
-                    .iter()
-                    .enumerate()
-                    .find(|(_, handle)| *handle == player_handle)
-                    .map(|(i, _)| i)
-                    .unwrap_or(0);
-                let next_idx = if direction.x > 0.0 {
-                    (current_player_handle_idx + 1) % state.players.len()
-                } else {
-                    let idx = current_player_handle_idx as i32 - 1;
-                    if idx == -1 {
-                        state.players.len() - 1
-                    } else {
-                        idx as usize
-                    }
-                };
-                *player_handle = state.players[next_idx];
+
+                rotate_skins(
+                    direction.x > 0.0,
+                    &state.players,
+                    player_handle);
 
                 #[cfg(not(target_arch = "wasm32"))]
                 if let Some(socket) = network_socket.as_ref() {
@@ -575,20 +592,51 @@ fn player_select_panel(
                     });
 
                     ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                        let name_with_arrows = format!("<  {}  >", player_meta.name);
-                        ui.label(normal_font.rich(if slot.confirmed {
-                            player_meta.name.to_string()
+                        //let name_with_arrows = format!("<  {}  >", player_meta.name);
+                        ui.label(normal_font.rich(player_meta.name.to_string()));
+                        
+                        let char_space = ui.painter().layout_no_wrap(String::from("<"), heading_font.id(), egui::Color32::WHITE).rect.width();
+                        let player_image_max_width = ui.available_width() - char_space * 3.0;
+
+
+                        if slot.confirmed {
+                            ui.allocate_exact_size(egui::vec2(char_space, char_space), egui::Sense::hover());
+                            let player_image_rect = world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref(), player_image_max_width));
+                            ui.advance_cursor_after_rect(player_image_rect);
                         } else {
-                            name_with_arrows
-                        }));
+                            //
+
+                            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+
+                                let left_arrow_label = ui.add(egui::Label::new(heading_font.rich("<")).sense(egui::Sense::click()));
+                                if left_arrow_label.clicked() {
+                                    rotate_skins(
+                                        false,
+                                        &state.players,
+                                        &mut slot.selected_player);
+                                }
+
+                                let player_image_rect = world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref(), player_image_max_width));
+                                ui.advance_cursor_after_rect(player_image_rect);
+
+                                let right_arrow_label = ui.add(egui::Label::new(heading_font.rich(">")).sense(egui::Sense::click()));
+                                if right_arrow_label.clicked() {
+                                    rotate_skins(
+                                        true,
+                                        &state.players,
+                                        &mut slot.selected_player);
+                                }
+                            });
+                        }
+
                         let hat_label = if let Some(hat_meta) = &hat_meta {
                             format!("< {} >", hat_meta.name)
                         } else {
                             format!("< {} >", localization.get("no-hat"))
                         };
-                        ui.label(smaller_font.rich(if slot.confirmed { &hat_label } else { "" }));
-
-                        world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref()));
+                        ui.add_space(25.0);
+                        ui.label(normal_font.rich(if slot.confirmed { &hat_label } else { "" }));
+                        
                     });
                 });
 
@@ -630,19 +678,23 @@ fn player_select_panel(
 }
 
 fn player_image(
-    mut params: In<(&mut egui::Ui, &PlayerMeta, Option<&HatMeta>)>,
+    mut params: In<(&mut egui::Ui, &PlayerMeta, Option<&HatMeta>, f32)>,
     egui_textures: Res<EguiTextures>,
     asset_server: Res<AssetServer>,
-) {
-    let (ui, player_meta, hat_meta) = &mut *params;
+) -> egui::Rect {
+    let (ui, player_meta, hat_meta, image_max_width) = &mut *params;
     let time = ui.ctx().input(|i| i.time as f32);
-    let width = ui.available_width();
-    let available_height = ui.available_width();
-
-    let body_rect;
+    let mut width = *image_max_width;
+    let available_height = width;
+    
+    let mut body_rect;
     let body_scale;
     let body_offset;
     let y_offset;
+
+    let upscale_percent = 0.15;
+    //size to increase drawing rects by in order to properly use allocated space
+
     // Render the body sprite
     {
         let atlas_handle = &player_meta.layers.body.atlas;
@@ -665,7 +717,13 @@ fn player_image(
         let sprite_aspect = atlas.tile_size.y / atlas.tile_size.x;
         let height = sprite_aspect * width;
         y_offset = -(available_height - height) / 2.0;
-        let (rect, _) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
+        let (mut rect, _) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
+        body_rect = rect;
+        rect = rect.expand(width * upscale_percent);
+        body_rect.max.y = rect.max.y;
+        body_rect.min.y = rect.min.y;
+        width = rect.width();
+
 
         let uv_min = sprite_pos / atlas.size();
         let uv_max = (sprite_pos + atlas.tile_size) / atlas.size();
@@ -683,7 +741,6 @@ fn player_image(
         mesh.translate(egui::vec2(0.0, y_offset));
         ui.painter().add(mesh);
 
-        body_rect = rect;
         body_scale = width / atlas.tile_size.x;
     }
 
@@ -748,5 +805,8 @@ fn player_image(
 
         mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
         ui.painter().add(mesh);
+        return rect.union(body_rect);
     }
+    body_rect
+
 }

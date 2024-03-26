@@ -1,0 +1,4 @@
+image: ./chef.png
+tile_size: [35, 28]
+columns: 1
+rows: 1

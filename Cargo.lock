@@ -4433,7 +4433,7 @@ checksum = "9c8a99fddc9f0ba0a85884b8d14e3592853e787d581ca1816c91349b10e4eeab"
 [[package]]
 name = "rapier2d"
 version = "0.18.0"
-source = "git+https://github.com/MaxCWhitehead/rapier?branch=fix-dynamic-change#6eed9a53a58e33263f1b9cf7bb41f6c443966c35"
+source = "git+https://github.com/dimforge/rapier?rev=e69e73e589cf4525c96ee7b919032c80ce205244#e69e73e589cf4525c96ee7b919032c80ce205244"
 dependencies = [
  "approx",
  "arrayvec",

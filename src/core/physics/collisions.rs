@@ -21,7 +21,7 @@ use crate::prelude::*;
 #[derive(HasSchema, Default)]
 pub struct RapierContext {
     pub collision_pipeline: rapier::CollisionPipeline,
-    pub broad_phase: rapier::BroadPhase,
+    pub broad_phase: rapier::DefaultBroadPhase,
     pub narrow_phase: rapier::NarrowPhase,
     pub query_pipeline: rapier::QueryPipeline,
     pub collider_set: rapier::ColliderSet,

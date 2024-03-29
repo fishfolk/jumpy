@@ -6,6 +6,7 @@ use std::sync::Mutex;
 
 use crate::{impl_system_param, prelude::*};
 
+pub mod buss;
 pub mod crab;
 pub mod crate_item;
 pub mod decoration;
@@ -16,7 +17,6 @@ pub mod jellyfish;
 pub mod kick_bomb;
 pub mod mine;
 pub mod musket;
-pub mod buss;
 pub mod player_spawner;
 pub mod slippery;
 pub mod slippery_seaweed;
@@ -29,8 +29,8 @@ pub mod urchin;
 
 pub mod prelude {
     pub use super::{
-        crab::*, crate_item::*, decoration::*, fish_school::*, grenade::*, jellyfish::*,
-        kick_bomb::*, mine::*, musket::*, buss::*, player_spawner::*, slippery::*, slippery_seaweed::*,
+        buss::*, crab::*, crate_item::*, decoration::*, fish_school::*, grenade::*, jellyfish::*,
+        kick_bomb::*, mine::*, musket::*, player_spawner::*, slippery::*, slippery_seaweed::*,
         snail::*, spike::*, sproinger::*, stomp_boots::*, sword::*, urchin::*, *,
     };
 }

@@ -1220,7 +1220,7 @@ layers:
   - pos:
     - 536.0
     - 303.0
-    element: /elements/item/grenade/grenade.element.yaml
+    element: /elements/item/buss/buss.element.yaml
   - pos:
     - 784.0
     - 495.0

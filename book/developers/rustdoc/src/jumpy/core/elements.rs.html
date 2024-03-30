@@ -437,6 +437,8 @@
 <a href="#342" id="342">342</a>
 <a href="#343" id="343">343</a>
 <a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Map element implementations.
 //!
 //! A map element is anything that can be placed on the map in the editor.
@@ -445,6 +447,7 @@
 
 <span class="kw">use crate</span>::{impl_system_param, prelude::<span class="kw-2">*</span>};
 
+<span class="kw">pub mod </span>buss;
 <span class="kw">pub mod </span>crab;
 <span class="kw">pub mod </span>crate_item;
 <span class="kw">pub mod </span>decoration;
@@ -467,7 +470,7 @@
 
 <span class="kw">pub mod </span>prelude {
     <span class="kw">pub use super</span>::{
-        crab::<span class="kw-2">*</span>, crate_item::<span class="kw-2">*</span>, decoration::<span class="kw-2">*</span>, fish_school::<span class="kw-2">*</span>, grenade::<span class="kw-2">*</span>, jellyfish::<span class="kw-2">*</span>,
+        buss::<span class="kw-2">*</span>, crab::<span class="kw-2">*</span>, crate_item::<span class="kw-2">*</span>, decoration::<span class="kw-2">*</span>, fish_school::<span class="kw-2">*</span>, grenade::<span class="kw-2">*</span>, jellyfish::<span class="kw-2">*</span>,
         kick_bomb::<span class="kw-2">*</span>, mine::<span class="kw-2">*</span>, musket::<span class="kw-2">*</span>, player_spawner::<span class="kw-2">*</span>, slippery::<span class="kw-2">*</span>, slippery_seaweed::<span class="kw-2">*</span>,
         snail::<span class="kw-2">*</span>, spike::<span class="kw-2">*</span>, sproinger::<span class="kw-2">*</span>, stomp_boots::<span class="kw-2">*</span>, sword::<span class="kw-2">*</span>, urchin::<span class="kw-2">*</span>, <span class="kw-2">*</span>,
     };
@@ -753,6 +756,7 @@
     kick_bomb,
     mine,
     musket,
+    buss,
     player_spawner,
     slippery_seaweed,
     slippery,

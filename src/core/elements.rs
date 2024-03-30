@@ -18,6 +18,7 @@ pub mod kick_bomb;
 pub mod mine;
 pub mod musket;
 pub mod player_spawner;
+pub mod periscope;
 pub mod slippery;
 pub mod slippery_seaweed;
 pub mod snail;
@@ -30,7 +31,7 @@ pub mod urchin;
 pub mod prelude {
     pub use super::{
         buss::*, crab::*, crate_item::*, decoration::*, fish_school::*, grenade::*, jellyfish::*,
-        kick_bomb::*, mine::*, musket::*, player_spawner::*, slippery::*, slippery_seaweed::*,
+        kick_bomb::*, mine::*, musket::*, player_spawner::*, periscope::*, slippery::*, slippery_seaweed::*,
         snail::*, spike::*, sproinger::*, stomp_boots::*, sword::*, urchin::*, *,
     };
 }
@@ -317,6 +318,7 @@ install_plugins!(
     musket,
     buss,
     player_spawner,
+    periscope,
     slippery_seaweed,
     slippery,
     snail,

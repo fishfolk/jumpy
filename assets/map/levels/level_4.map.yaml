@@ -1067,7 +1067,7 @@ layers:
   - pos:
     - 1008.0
     - 118.5
-    element: /elements/item/musket/musket.element.yaml
+    element: /elements/item/buss/buss.element.yaml
   - pos:
     - 1008.0
     - 342.5
@@ -1079,7 +1079,7 @@ layers:
   - pos:
     - 112.0
     - 118.5
-    element: /elements/item/musket/musket.element.yaml
+    element: /elements/item/buss/buss.element.yaml
   - pos:
     - 112.0
     - 342.5

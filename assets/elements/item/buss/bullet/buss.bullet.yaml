@@ -1,0 +1,11 @@
+lifetime: 0.2
+speed: 900
+body_diameter: 15
+atlas: ./buss_bullet.atlas.yaml
+
+explosion_fps: 21
+explosion_frames: 3
+explosion_volume: 0.015
+explosion_lifetime: 0.140
+explosion_sound: ../explosion/bullet_hit_dull.ogg
+explosion_atlas: ../explosion/explosion.atlas.yaml

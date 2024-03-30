@@ -154,7 +154,9 @@ fn update(
 
     mut bodies: CompMut<KinematicBody>,
 ) {
-    for (entity, (periscope, element_handle)) in entities.iter_with((&mut periscopes, &element_handles)) {
+    for (entity, (periscope, element_handle)) in
+        entities.iter_with((&mut periscopes, &element_handles))
+    {
         let element_meta = assets.get(element_handle.0);
 
         let asset = assets.get(element_meta.data);

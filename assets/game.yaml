@@ -348,6 +348,7 @@ core:
     - /elements/item/mine/mine.element.yaml
     - /elements/item/musket/musket.element.yaml
     - /elements/item/buss/buss.element.yaml
+    - /elements/item/periscope/periscope.element.yaml
     - /elements/item/stomp_boots/stomp_boots.element.yaml
     - /elements/item/sword/sword.element.yaml
     - /elements/item/sniper_rifle/sniper_rifle.element.yaml

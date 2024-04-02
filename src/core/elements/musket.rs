@@ -184,6 +184,7 @@ fn update(
             // If the item is being used
             let item_used = items_used.remove(entity).is_some();
             if item_used && musket.cooldown.finished() {
+                musket.cooldown = Timer::new(*cooldown, TimerMode::Once);
                 // Empty
                 if musket.ammo.eq(&0) {
                     audio_center.play_sound(*empty_shoot_sound, *empty_shoot_sound_volume);
@@ -191,7 +192,7 @@ fn update(
                 }
 
                 // Reset fire cooldown and subtract ammo
-                musket.cooldown = Timer::new(*cooldown, TimerMode::Once);
+                // musket.cooldown = Timer::new(*cooldown, TimerMode::Once);
                 musket.ammo = musket.ammo.saturating_sub(1).clamp(0, musket.ammo);
                 audio_center.play_sound(*shoot_sound, *shoot_sound_volume);
 

@@ -125,7 +125,7 @@ fn use_drop_or_grab_items_system(id: Ustr) -> StaticSystem<(), ()> {
             }
 
             // If we are using an item
-            if control.shoot_just_pressed && inventory.is_some() {
+            if control.shoot_pressed && inventory.is_some() {
                 commands.add(PlayerCommand::use_item(player_ent));
             }
         }

@@ -1,2 +1,3 @@
-name: Machine Gun
+name: MachineGun
 category: Weapons
+data: machine_gun.yaml

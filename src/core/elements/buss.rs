@@ -188,14 +188,15 @@ fn update(
             // If the item is being used
             let item_used = items_used.remove(entity).is_some();
             if item_used && buss.cooldown.finished() {
+                // Reset fire cooldown
+                buss.cooldown = Timer::new(*cooldown, TimerMode::Once);
                 // Empty
                 if buss.ammo.eq(&0) {
                     audio_center.play_sound(*empty_shoot_sound, *empty_shoot_sound_volume);
                     continue;
                 }
 
-                // Reset fire cooldown and subtract ammo
-                buss.cooldown = Timer::new(*cooldown, TimerMode::Once);
+                // Subtract ammo
                 buss.ammo = buss.ammo.saturating_sub(1).clamp(0, buss.ammo);
                 audio_center.play_sound(*shoot_sound, *shoot_sound_volume);
 

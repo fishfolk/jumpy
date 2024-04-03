@@ -1,5 +1,5 @@
-lifetime: 1.0
-speed: 400
+lifetime: 0.65
+speed: 650
 body_diameter: 15
 atlas: ./machine_gun_bullet.atlas.yaml
 

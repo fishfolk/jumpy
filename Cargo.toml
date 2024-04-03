@@ -42,7 +42,7 @@ postcard               = { version = "1.0", default-features = false, features =
 strum = { version = "0.25.0", features = ["derive"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-bevy_dylib = "0.11"
+bevy_dylib             = "0.11"
 bitfield               = "0.14"
 bytemuck               = "1.12"
 

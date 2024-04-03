@@ -21,12 +21,8 @@ pub struct MachineGunMeta {
     pub bullet_spread: f32,
     pub kickback: f32,
 
-    pub shoot_fps: f32,
-    pub shoot_lifetime: f32,
-    pub shoot_frames: u32,
     pub shoot_sound_volume: f64,
     pub empty_shoot_sound_volume: f64,
-    pub shoot_atlas: Handle<Atlas>,
     pub shoot_sound: Handle<AudioSource>,
     pub empty_shoot_sound: Handle<AudioSource>,
 }
@@ -48,6 +44,14 @@ pub struct MachineGun {
     pub ammo: u32,
     pub cooldown: Timer,
     pub empty_cooldown: Timer,
+    pub state: MachineGunState,
+}
+
+#[derive(Default, Clone, Copy, Debug)]
+pub enum MachineGunState {
+    #[default]
+    Idle,
+    Shooting,
 }
 
 fn hydrate(
@@ -116,6 +120,7 @@ fn hydrate(
                     ammo: *max_ammo,
                     cooldown: Timer::new(Duration::from_millis(0), TimerMode::Once),
                     empty_cooldown: Timer::new(Duration::from_millis(0), TimerMode::Once),
+                    state: MachineGunState::Idle,
                 },
             );
             atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
@@ -164,10 +169,6 @@ fn update(
         let asset = assets.get(element_meta.data);
         let Ok(MachineGunMeta {
             max_ammo,
-            shoot_fps,
-            shoot_atlas,
-            shoot_frames,
-            shoot_lifetime,
             cooldown,
             empty_cooldown,
             bullet_meta,
@@ -188,77 +189,75 @@ fn update(
 
         // If the item is being held
         if let Some(Inv { player, .. }) = player_inventories.find_item(entity) {
+            let sprite = sprites.get_mut(entity).unwrap();
+
+            // Reset machine gun animation
+            if let MachineGunState::Idle = machine_gun.state {
+                sprite.index = 0;
+            }
+
             // If the item is being used
             let item_used = items_used.remove(entity).is_some();
-            if item_used && machine_gun.cooldown.finished() {
-                // Reset fire cooldown
-                machine_gun.cooldown = Timer::new(*cooldown, TimerMode::Once);
-                // Empty
-                if machine_gun.ammo.eq(&0) {
-                    if machine_gun.empty_cooldown.finished() {
-                        audio_center.play_sound(*empty_shoot_sound, *empty_shoot_sound_volume);
-                        machine_gun.empty_cooldown = Timer::new(*empty_cooldown, TimerMode::Once);
+            if item_used {
+                if machine_gun.cooldown.finished() {
+                    // Reset fire cooldown
+                    machine_gun.cooldown = Timer::new(*cooldown, TimerMode::Once);
+                    
+                    // Run machine gun animation
+                    if let MachineGunState::Shooting = machine_gun.state {
+                        if sprite.index == 2 {
+                            sprite.index = 3;
+                        } else if sprite.index == 3 {
+                            sprite.index = 2;
+                        }
                     }
-                    continue;
-                }
 
-                // Subtract ammo
-                machine_gun.ammo = machine_gun.ammo.saturating_sub(1).clamp(0, machine_gun.ammo);
-                audio_center.play_sound(*shoot_sound, *shoot_sound_volume);
+                    // Empty
+                    if machine_gun.ammo.eq(&0) {
+                        // Reset machine gun state if out of ammo
+                        machine_gun.state = MachineGunState::Idle;
+                        if machine_gun.empty_cooldown.finished() {
+                            audio_center.play_sound(*empty_shoot_sound, *empty_shoot_sound_volume);
+                            machine_gun.empty_cooldown =
+                                Timer::new(*empty_cooldown, TimerMode::Once);
+                        }
+                        continue;
+                    }
 
-                let player_sprite = sprites.get_mut(player).unwrap();
-                let player_flip_x = player_sprite.flip_x;
-                let player_body = bodies.get_mut(player).unwrap();
+                    if matches!(machine_gun.state, MachineGunState::Idle) {
+                        machine_gun.state = MachineGunState::Shooting;
+                        sprite.index = 2;
+                    }
 
-                //Set kickback
-                player_body.velocity.x = if player_flip_x { 1.0 } else { -1.0 } * kickback;
+                    // Subtract ammo
+                    machine_gun.ammo = machine_gun
+                        .ammo
+                        .saturating_sub(1)
+                        .clamp(0, machine_gun.ammo);
+                    audio_center.play_sound(*shoot_sound, *shoot_sound_volume);
 
-                let mut shoot_animation_transform = *transforms.get(entity).unwrap();
-                shoot_animation_transform.translation.z += 1.0;
-                shoot_animation_transform.translation.x +=
-                    if player_sprite.flip_x { -15.0 } else { 15.0 };
+                    let player_sprite = sprites.get_mut(player).unwrap();
+                    let player_flip_x = player_sprite.flip_x;
+                    let player_body = bodies.get_mut(player).unwrap();
 
-                let shoot_fps = *shoot_fps;
-                let shoot_frames = *shoot_frames;
-                let shoot_lifetime = *shoot_lifetime;
-                let shoot_atlas = *shoot_atlas;
+                    //Set kickback
+                    player_body.velocity.x = if player_flip_x { 1.0 } else { -1.0 } * kickback;
 
-                let bullet_meta = *bullet_meta;
-                let bullet_spread = *bullet_spread;
+                    let mut shoot_animation_transform = *transforms.get(entity).unwrap();
+                    shoot_animation_transform.translation.z += 1.0;
+                    shoot_animation_transform.translation.y += 8.0;
+                    shoot_animation_transform.translation.x +=
+                        if player_sprite.flip_x { -30.0 } else { 30.0 };
 
-                commands.add(
+                    let bullet_meta = *bullet_meta;
+                    let bullet_spread = *bullet_spread;
+
+                    commands.add(
                     move |rng: Res<GlobalRng>,
                           mut entities: ResMutInit<Entities>,
-                          mut lifetimes: CompMut<Lifetime>,
-                          mut sprites: CompMut<AtlasSprite>,
                           mut transforms: CompMut<Transform>,
                           mut bullets: CompMut<Bullet>,
-                          mut bullet_handles: CompMut<BulletHandle>,
-                          mut animated_sprites: CompMut<AnimatedSprite>| {
-                        // spawn fire animation
-                        {
-                            let ent = entities.create();
-                            transforms.insert(ent, shoot_animation_transform);
-                            sprites.insert(
-                                ent,
-                                AtlasSprite {
-                                    flip_x: player_flip_x,
-                                    atlas: shoot_atlas,
-                                    ..default()
-                                },
-                            );
-
-                            animated_sprites.insert(
-                                ent,
-                                AnimatedSprite {
-                                    frames: (0..shoot_frames).collect(),
-                                    fps: shoot_fps,
-                                    repeat: false,
-                                    ..default()
-                                },
-                            );
-                            lifetimes.insert(ent, Lifetime::new(shoot_lifetime));
-                        }
+                          mut bullet_handles: CompMut<BulletHandle>| {
 
                         // spawn bullet
                         {
@@ -279,6 +278,14 @@ fn update(
                         }
                     },
                 );
+                }
+            } else {
+                match machine_gun.state {
+                    MachineGunState::Idle => (),
+                    MachineGunState::Shooting => {
+                        machine_gun.state = MachineGunState::Idle;
+                    }
+                }
             }
         }
 

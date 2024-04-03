@@ -1,4 +1,4 @@
 image: ./machine_gun.png
-tile_size: [92, 32]
-rows: 1
-columns: 1
+tile_size: [80, 24]
+rows: 2
+columns: 2

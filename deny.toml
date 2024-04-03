@@ -2,33 +2,38 @@
 # More documentation for the licenses section can be found here:
 # https://embarkstudios.github.io/cargo-deny/checks/licenses/cfg.html
 [licenses]
-unlicensed = "deny"
+version = 2
 allow = [
-  "MIT",
-  "Apache-2.0",
-  "Unlicense",
-  "Zlib",
-  "Apache-2.0 WITH LLVM-exception",
-  "Unicode-DFS-2016",
-  "Unicode-3.0",
-  "BSD-3-Clause",
-  "BSL-1.0",
-  "MIT-0",
-  "OFL-1.1",
-  "LicenseRef-UFL-1.0",
-  "CC0-1.0",
-  "ISC",
-  "BSD-2-Clause",
-  "BSD-2-Clause-Patent",
-  "MPL-2.0",
-  "OpenSSL",
+    "Apache-2.0 WITH LLVM-exception",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-2-Clause-Patent",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "CC0-1.0",
+    "ISC",
+    "LicenseRef-UFL-1.0",
+    "MIT",
+    "MIT-0",
+    "MPL-2.0",
+    "OFL-1.1",
+    "OpenSSL",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "Unlicense",
+    "Zlib",
 ]
-default = "deny"
 
 [[licenses.clarify]]
 name          = "ring"
 expression    = "OpenSSL"
 license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
+
+[sources]
+allow-git = [
+    "https://github.com/dimforge/rapier.git",
+    "https://github.com/gschup/ggrs.git",
+]
 
 [sources.allow-org]
 github = ["fishfolk"]

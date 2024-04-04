@@ -93,9 +93,7 @@ fn pause_menu_system(
         sessions.start_menu();
     } else if restart_game {
         sessions.restart_game();
-    } else if let Some(map_handle) = select_map {
-        let map = assets.get(map_handle).clone();
-
+    } else if let Some(maps) = select_map {
         let match_info = sessions
             .get(SessionNames::GAME)
             .unwrap()
@@ -105,7 +103,7 @@ fn pause_menu_system(
             .clone();
         sessions.end_game();
         sessions.start_game(crate::core::MatchPlugin {
-            map,
+            maps,
             player_info: std::array::from_fn(|i| PlayerInput {
                 control: default(),
                 editor_input: default(),

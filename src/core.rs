@@ -11,6 +11,7 @@ pub mod item;
 pub mod lifetime;
 pub mod map;
 pub mod map_constructor;
+pub mod map_pool;
 pub mod metadata;
 pub mod physics;
 pub mod player;
@@ -32,8 +33,8 @@ pub mod prelude {
     pub use super::{
         attachment::*, bullet::*, camera::*, damage::*, debug::*, editor::*, editor::*,
         elements::prelude::*, flappy_jellyfish::*, globals::*, input::*, item::*, lifetime::*,
-        map::*, map_constructor::*, metadata::*, physics::*, player::*, random::*, utils::*,
-        win_indicator::*, FPS, MAX_PLAYERS,
+        map::*, map_constructor::*, map_pool::*, metadata::*, physics::*, player::*, random::*,
+        utils::*, win_indicator::*, FPS, MAX_PLAYERS,
     };
 }
 
@@ -49,7 +50,7 @@ pub fn game_plugin(game: &mut Game) {
 }
 
 pub struct MatchPlugin {
-    pub map: MapMeta,
+    pub maps: MapPool,
     pub player_info: [PlayerInput; MAX_PLAYERS],
     /// The lua plugins to enable for this match.
     pub plugins: Arc<Vec<Handle<LuaPlugin>>>,
@@ -85,7 +86,18 @@ impl SessionPlugin for MatchPlugin {
         bullet::session_plugin(session);
         editor::install(session);
 
-        session.world.insert_resource(LoadedMap(Arc::new(self.map)));
+        let current_map = self.maps.current_map;
+        session.world.insert_resource(self.maps);
+
+        // Initialize LoadedMap on startup as we cannot access AssetServer during MatchPlugin install
+        // to get map meta.
+        session.add_startup_system(
+            move |mut loaded_map: ResMutInit<LoadedMap>, assets: Res<AssetServer>| {
+                let map_meta = assets.get(current_map).clone();
+                *loaded_map = LoadedMap(Arc::new(map_meta))
+            },
+        );
+
         session.world.insert_resource(MatchInputs {
             players: self.player_info,
         });

@@ -12,7 +12,7 @@ use bones_framework::networking::{GgrsSessionRunner, GgrsSessionRunnerInfo, Netw
 /// Network message that may be sent when selecting a map.
 #[derive(Serialize, Deserialize)]
 pub enum MapSelectMessage {
-    SelectMap(NetworkHandle<MapMeta>),
+    SelectMap(MapPoolNetwork),
 }
 
 pub fn widget(
@@ -46,7 +46,7 @@ pub fn widget(
 
     match select_action {
         MapSelectAction::None => (),
-        MapSelectAction::SelectMap(map_handle) => {
+        MapSelectAction::SelectMap(maps) => {
             session_options.delete = true;
             ui.ctx().set_state(MenuPage::Home);
 
@@ -65,11 +65,9 @@ pub fn widget(
             #[cfg(target_arch = "wasm32")]
             let session_runner = Box::<JumpyDefaultMatchRunner>::default();
 
-            let map_meta = assets.get(map_handle).clone();
-
             let player_select_state = ui.ctx().get_state::<PlayerSelectState>();
             sessions.start_game(MatchPlugin {
-                map: map_meta,
+                maps,
                 player_info: std::array::from_fn(|i| {
                     let slot = player_select_state.slots[i];
 
@@ -101,12 +99,12 @@ fn replicate_map_select_action(
 ) {
     use bones_framework::networking::SocketTarget;
     if let Some(socket) = socket {
-        if let MapSelectAction::SelectMap(map) = action {
+        if let MapSelectAction::SelectMap(maps) = action {
             info!("Sending network SelectMap message.");
             socket.send_reliable(
                 SocketTarget::All,
                 &postcard::to_allocvec(&MapSelectMessage::SelectMap(
-                    map.network_handle(asset_server),
+                    maps.into_network(asset_server),
                 ))
                 .unwrap(),
             );
@@ -125,11 +123,13 @@ fn handle_match_setup_messages(
         for (_player, data) in datas {
             match postcard::from_bytes::<MapSelectMessage>(&data) {
                 Ok(message) => match message {
-                    MapSelectMessage::SelectMap(map_handle) => {
+                    MapSelectMessage::SelectMap(maps) => {
                         info!("Map select message received, starting game");
 
-                        let handle = map_handle.into_handle(asset_server);
-                        return Some(MapSelectAction::SelectMap(handle));
+                        return Some(MapSelectAction::SelectMap(MapPool::from_network(
+                            maps,
+                            asset_server,
+                        )));
                     }
                 },
                 Err(e) => {

@@ -29,9 +29,9 @@ impl SessionExt for Sessions {
 
     #[track_caller]
     fn restart_game(&mut self) {
-        if let Some((map, player_info, plugins, mut session_runner)) =
+        if let Some((map_pool, player_info, plugins, mut session_runner)) =
             self.get_mut(SessionNames::GAME).map(|session| {
-                let map = (*session.world.resource::<LoadedMap>().0).clone();
+                let map_pool = (*session.world.resource::<MapPool>()).clone();
                 let match_inputs = session.world.resource::<MatchInputs>();
 
                 // Take ownership of session runner (we want to preserve socket and such for network runner)
@@ -41,7 +41,7 @@ impl SessionExt for Sessions {
                 std::mem::swap(&mut session.runner, &mut session_runner);
 
                 (
-                    map,
+                    map_pool,
                     match_inputs.players.clone(),
                     session.world.resource::<LuaPlugins>().0.clone(),
                     session_runner,
@@ -55,7 +55,7 @@ impl SessionExt for Sessions {
 
             self.create(SessionNames::GAME)
                 .install_plugin(crate::core::MatchPlugin {
-                    map,
+                    maps: map_pool,
                     player_info,
                     plugins,
                     session_runner,

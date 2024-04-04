@@ -6,7 +6,7 @@ use super::main_menu::MenuPage;
 pub enum MapSelectAction {
     #[default]
     None,
-    SelectMap(Handle<MapMeta>),
+    SelectMap(MapPool),
     GoBack,
 }
 
@@ -22,6 +22,7 @@ pub fn map_select_menu(
     ctx: Res<EguiCtx>,
     localization: Localization<GameMeta>,
     player_controls: Res<GlobalPlayerControls>,
+    rng: ResInit<GlobalRng>,
 ) -> MapSelectAction {
     if player_controls.values().any(|x| x.menu_back_just_pressed) {
         return MapSelectAction::GoBack;
@@ -73,21 +74,34 @@ pub fn map_select_menu(
                         egui::ScrollArea::vertical()
                             .show(ui, |ui| {
                                 ui.vertical_centered_justified(|ui| {
-                                    for (i, handle) in meta.core.stable_maps.iter().enumerate() {
+                                    let all_maps_button = BorderedButton::themed(
+                                        &meta.theme.buttons.small,
+                                        "All Maps".to_string(),
+                                    )
+                                    .show(ui)
+                                    .focus_by_default(ui);
+
+                                    if all_maps_button.clicked() {
+                                        // TODO: Currently does not include packs, only stable maps.
+                                        let mut map_pool =
+                                            MapPool::from_slice(&meta.core.stable_maps);
+                                        map_pool.randomize_current_map(&rng);
+                                        return MapSelectAction::SelectMap(map_pool);
+                                    }
+
+                                    for handle in meta.core.stable_maps.iter() {
                                         let map_meta = asset_server.get(*handle);
 
-                                        let mut button = BorderedButton::themed(
+                                        let button = BorderedButton::themed(
                                             &meta.theme.buttons.small,
                                             map_meta.name.to_string(),
                                         )
                                         .show(ui);
 
-                                        if i == 0 {
-                                            button = button.focus_by_default(ui);
-                                        }
-
                                         if button.clicked() {
-                                            return MapSelectAction::SelectMap(*handle);
+                                            return MapSelectAction::SelectMap(
+                                                MapPool::from_single_map(*handle),
+                                            );
                                         }
                                     }
 
@@ -103,7 +117,9 @@ pub fn map_select_menu(
                                             .show(ui);
 
                                             if button.clicked() {
-                                                return MapSelectAction::SelectMap(*map);
+                                                return MapSelectAction::SelectMap(
+                                                    MapPool::from_single_map(*map),
+                                                );
                                             }
                                         }
                                     }

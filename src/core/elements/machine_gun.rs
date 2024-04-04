@@ -19,6 +19,7 @@ pub struct MachineGunMeta {
     pub empty_cooldown: Duration,
     pub bullet_meta: Handle<BulletMeta>,
     pub bullet_spread: f32,
+    pub bullet_spawn_offset: Vec2,
     pub kickback: f32,
 
     pub shoot_sound_volume: f64,
@@ -173,8 +174,9 @@ fn update(
             max_ammo,
             cooldown,
             empty_cooldown,
-            bullet_meta,
             bullet_spread,
+            bullet_meta,
+            bullet_spawn_offset,
             shoot_sound,
             empty_shoot_sound,
             shoot_sound_volume,
@@ -246,10 +248,14 @@ fn update(
                     player_body.velocity.x = if player_flip_x { 1.0 } else { -1.0 } * kickback;
 
                     let mut shoot_animation_transform = *transforms.get(entity).unwrap();
+                    let bullet_spawn_offset = *bullet_spawn_offset;
                     shoot_animation_transform.translation.z += 1.0;
-                    shoot_animation_transform.translation.y += 8.0;
-                    shoot_animation_transform.translation.x +=
-                        if player_sprite.flip_x { -30.0 } else { 30.0 };
+                    shoot_animation_transform.translation.y += bullet_spawn_offset.y;
+                    shoot_animation_transform.translation.x += if player_sprite.flip_x {
+                        -bullet_spawn_offset.x
+                    } else {
+                        bullet_spawn_offset.x
+                    };
 
                     let bullet_meta = *bullet_meta;
                     let bullet_spread = *bullet_spread;

@@ -5,6 +5,7 @@ cooldown: 1000ms
 bullet_meta: ./bullet/buss.bullet.yaml
 bullet_count: 10
 bullet_spread: 0.3
+bullet_spawn_offset: [28, 6]
 
 shoot_fps: 15
 shoot_frames: 3

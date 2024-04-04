@@ -3,6 +3,7 @@ atlas: ./musket.atlas.yaml
 max_ammo: 4
 cooldown: 600ms
 bullet_meta: ./bullet/musket.bullet.yaml
+bullet_spawn_offset: [15, 0]
 
 shoot_fps: 15
 shoot_frames: 3

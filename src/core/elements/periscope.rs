@@ -17,6 +17,7 @@ pub struct PeriscopeMeta {
     pub max_ammo: u32,
     pub cooldown: Duration,
     pub bullet_meta: Handle<BulletMeta>,
+    pub bullet_spawn_offset: Vec2,
     pub kickback: f32,
 
     pub shoot_fps: f32,
@@ -168,6 +169,7 @@ fn update(
             shoot_lifetime,
             cooldown,
             bullet_meta,
+            bullet_spawn_offset,
             shoot_sound,
             empty_shoot_sound,
             shoot_sound_volume,
@@ -206,10 +208,14 @@ fn update(
                 player_body.velocity.x = if player_flip_x { 1.0 } else { -1.0 } * kickback;
 
                 let mut shoot_animation_transform = *transforms.get(entity).unwrap();
+                let bullet_spawn_offset = *bullet_spawn_offset;
                 shoot_animation_transform.translation.z += 1.0;
-                shoot_animation_transform.translation.y += 25.0;
-                shoot_animation_transform.translation.x +=
-                    if player_sprite.flip_x { -30.0 } else { 30.0 };
+                shoot_animation_transform.translation.y += bullet_spawn_offset.y;
+                shoot_animation_transform.translation.x += if player_sprite.flip_x {
+                    -bullet_spawn_offset.x
+                } else {
+                    bullet_spawn_offset.x
+                };
 
                 let shoot_fps = *shoot_fps;
                 let shoot_frames = *shoot_frames;

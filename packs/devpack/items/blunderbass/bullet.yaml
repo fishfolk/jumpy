@@ -1,5 +1,5 @@
 lifetime: 1.0
-speed: 12
+speed: 720
 body_diameter: 15
 atlas: ./bullet.atlas.yaml
 

@@ -163,7 +163,9 @@ fn update(
 
     mut bodies: CompMut<KinematicBody>,
 ) {
-    for (entity, (machine_gun, element_handle)) in entities.iter_with((&mut machine_guns, &element_handles)) {
+    for (entity, (machine_gun, element_handle)) in
+        entities.iter_with((&mut machine_guns, &element_handles))
+    {
         let element_meta = assets.get(element_handle.0);
 
         let asset = assets.get(element_meta.data);
@@ -202,7 +204,7 @@ fn update(
                 if machine_gun.cooldown.finished() {
                     // Reset fire cooldown
                     machine_gun.cooldown = Timer::new(*cooldown, TimerMode::Once);
-                    
+
                     // Run machine gun animation
                     if let MachineGunState::Shooting = machine_gun.state {
                         if sprite.index == 2 {
@@ -253,31 +255,30 @@ fn update(
                     let bullet_spread = *bullet_spread;
 
                     commands.add(
-                    move |rng: Res<GlobalRng>,
-                          mut entities: ResMutInit<Entities>,
-                          mut transforms: CompMut<Transform>,
-                          mut bullets: CompMut<Bullet>,
-                          mut bullet_handles: CompMut<BulletHandle>| {
-
-                        // spawn bullet
-                        {
-                            let ent = entities.create();
-                            bullets.insert(
-                                ent,
-                                Bullet {
-                                    owner: player,
-                                    direction: if player_flip_x {
-                                        vec2(-1.0, (rng.f32() - 0.5) * bullet_spread)
-                                    } else {
-                                        vec2(1.0, (rng.f32() - 0.5) * bullet_spread)
+                        move |rng: Res<GlobalRng>,
+                              mut entities: ResMutInit<Entities>,
+                              mut transforms: CompMut<Transform>,
+                              mut bullets: CompMut<Bullet>,
+                              mut bullet_handles: CompMut<BulletHandle>| {
+                            // spawn bullet
+                            {
+                                let ent = entities.create();
+                                bullets.insert(
+                                    ent,
+                                    Bullet {
+                                        owner: player,
+                                        direction: if player_flip_x {
+                                            vec2(-1.0, (rng.f32() - 0.5) * bullet_spread)
+                                        } else {
+                                            vec2(1.0, (rng.f32() - 0.5) * bullet_spread)
+                                        },
                                     },
-                                },
-                            );
-                            transforms.insert(ent, shoot_animation_transform);
-                            bullet_handles.insert(ent, BulletHandle(bullet_meta));
-                        }
-                    },
-                );
+                                );
+                                transforms.insert(ent, shoot_animation_transform);
+                                bullet_handles.insert(ent, BulletHandle(bullet_meta));
+                            }
+                        },
+                    );
                 }
             } else {
                 match machine_gun.state {

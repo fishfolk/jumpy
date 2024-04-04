@@ -3,6 +3,7 @@ atlas: ./periscope.atlas.yaml
 max_ammo: 6
 cooldown: 700ms
 bullet_meta: ./bullet/periscope.bullet.yaml
+bullet_spawn_offset: [30, 25]
 
 shoot_fps: 15
 shoot_frames: 3

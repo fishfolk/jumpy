@@ -1173,7 +1173,7 @@ layers:
   - pos:
     - 216.0
     - 310.5
-    element: /elements/item/musket/musket.element.yaml
+    element: /elements/item/machine_gun/machine_gun.element.yaml
   - pos:
     - 248.0
     - 438.5

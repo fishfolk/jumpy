@@ -346,6 +346,7 @@ core:
     - /elements/item/jellyfish/jellyfish.element.yaml
     - /elements/item/kick_bomb/kick_bomb.element.yaml
     - /elements/item/mine/mine.element.yaml
+    - /elements/item/machine_gun/machine_gun.element.yaml
     - /elements/item/musket/musket.element.yaml
     - /elements/item/buss/buss.element.yaml
     - /elements/item/periscope/periscope.element.yaml

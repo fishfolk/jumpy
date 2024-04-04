@@ -20,4 +20,4 @@ fin_anim: grab_2
 angular_velocity: 0.1
 throw_velocity: 360
 grab_offset: [23, 0]
-kickback: 15
+kickback: 900

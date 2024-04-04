@@ -1,9 +1,9 @@
 use crate::prelude::*;
 
 #[derive(HasSchema, Default, Debug, Clone)]
-#[type_data(metadata_asset("buss"))]
+#[type_data(metadata_asset("machine_gun"))]
 #[repr(C)]
-pub struct BussMeta {
+pub struct MachineGunMeta {
     pub grab_offset: Vec2,
     pub fin_anim: Ustr,
 
@@ -16,23 +16,19 @@ pub struct BussMeta {
 
     pub max_ammo: u32,
     pub cooldown: Duration,
-    pub bullet_count: u32,
-    pub bullet_spread: f32,
+    pub empty_cooldown: Duration,
     pub bullet_meta: Handle<BulletMeta>,
+    pub bullet_spread: f32,
     pub kickback: f32,
 
-    pub shoot_fps: f32,
-    pub shoot_lifetime: f32,
-    pub shoot_frames: u32,
     pub shoot_sound_volume: f64,
     pub empty_shoot_sound_volume: f64,
-    pub shoot_atlas: Handle<Atlas>,
     pub shoot_sound: Handle<AudioSource>,
     pub empty_shoot_sound: Handle<AudioSource>,
 }
 
 pub fn game_plugin(game: &mut Game) {
-    BussMeta::register_schema();
+    MachineGunMeta::register_schema();
     game.init_shared_resource::<AssetServer>();
 }
 
@@ -44,9 +40,18 @@ pub fn session_plugin(session: &mut Session) {
 }
 
 #[derive(Clone, Debug, HasSchema, Default)]
-pub struct Buss {
+pub struct MachineGun {
     pub ammo: u32,
     pub cooldown: Timer,
+    pub empty_cooldown: Timer,
+    pub state: MachineGunState,
+}
+
+#[derive(Default, Clone, Copy, Debug)]
+pub enum MachineGunState {
+    #[default]
+    Idle,
+    Shooting,
 }
 
 fn hydrate(
@@ -55,7 +60,7 @@ fn hydrate(
     mut hydrated: CompMut<MapElementHydrated>,
     mut element_handles: CompMut<ElementHandle>,
     assets: Res<AssetServer>,
-    mut busses: CompMut<Buss>,
+    mut machine_guns: CompMut<MachineGun>,
     mut atlas_sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
@@ -78,7 +83,7 @@ fn hydrate(
         let element_handle = *element_handles.get(spawner_ent).unwrap();
         let element_meta = assets.get(element_handle.0);
 
-        if let Ok(BussMeta {
+        if let Ok(MachineGunMeta {
             atlas,
             fin_anim,
             grab_offset,
@@ -99,7 +104,7 @@ fn hydrate(
                 entity,
                 ItemThrow::strength(*throw_velocity)
                     .with_spin(*angular_velocity)
-                    .with_system(buss_drop(entity, *max_ammo)),
+                    .with_system(machine_gun_drop(entity, *max_ammo)),
             );
             item_grabs.insert(
                 entity,
@@ -109,11 +114,13 @@ fn hydrate(
                     grab_offset: *grab_offset,
                 },
             );
-            busses.insert(
+            machine_guns.insert(
                 entity,
-                Buss {
+                MachineGun {
                     ammo: *max_ammo,
                     cooldown: Timer::new(Duration::from_millis(0), TimerMode::Once),
+                    empty_cooldown: Timer::new(Duration::from_millis(0), TimerMode::Once),
+                    state: MachineGunState::Idle,
                 },
             );
             atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
@@ -144,7 +151,7 @@ fn update(
     element_handles: Comp<ElementHandle>,
     assets: Res<AssetServer>,
 
-    mut busses: CompMut<Buss>,
+    mut machine_guns: CompMut<MachineGun>,
     transforms: CompMut<Transform>,
     mut sprites: CompMut<AtlasSprite>,
     mut audio_center: ResMut<AudioCenter>,
@@ -156,19 +163,17 @@ fn update(
 
     mut bodies: CompMut<KinematicBody>,
 ) {
-    for (entity, (buss, element_handle)) in entities.iter_with((&mut busses, &element_handles)) {
+    for (entity, (machine_gun, element_handle)) in
+        entities.iter_with((&mut machine_guns, &element_handles))
+    {
         let element_meta = assets.get(element_handle.0);
 
         let asset = assets.get(element_meta.data);
-        let Ok(BussMeta {
+        let Ok(MachineGunMeta {
             max_ammo,
-            shoot_fps,
-            shoot_atlas,
-            shoot_frames,
-            shoot_lifetime,
             cooldown,
+            empty_cooldown,
             bullet_meta,
-            bullet_count,
             bullet_spread,
             shoot_sound,
             empty_shoot_sound,
@@ -181,84 +186,82 @@ fn update(
             unreachable!();
         };
 
-        buss.cooldown.tick(time.delta());
+        machine_gun.cooldown.tick(time.delta());
+        machine_gun.empty_cooldown.tick(time.delta());
 
         // If the item is being held
         if let Some(Inv { player, .. }) = player_inventories.find_item(entity) {
+            let sprite = sprites.get_mut(entity).unwrap();
+
+            // Reset machine gun animation
+            if let MachineGunState::Idle = machine_gun.state {
+                sprite.index = 0;
+            }
+
             // If the item is being used
             let item_used = items_used.remove(entity).is_some();
-            if item_used && buss.cooldown.finished() {
-                // Reset fire cooldown
-                buss.cooldown = Timer::new(*cooldown, TimerMode::Once);
-                // Empty
-                if buss.ammo.eq(&0) {
-                    audio_center.play_sound(*empty_shoot_sound, *empty_shoot_sound_volume);
-                    continue;
-                }
+            if item_used {
+                if machine_gun.cooldown.finished() {
+                    // Reset fire cooldown
+                    machine_gun.cooldown = Timer::new(*cooldown, TimerMode::Once);
 
-                // Subtract ammo
-                buss.ammo = buss.ammo.saturating_sub(1).clamp(0, buss.ammo);
-                audio_center.play_sound(*shoot_sound, *shoot_sound_volume);
-
-                let player_sprite = sprites.get_mut(player).unwrap();
-                let player_flip_x = player_sprite.flip_x;
-                let player_body = bodies.get_mut(player).unwrap();
-
-                //Set kickback
-                player_body.velocity.x = if player_flip_x { 1.0 } else { -1.0 } * kickback;
-
-                let mut shoot_animation_transform = *transforms.get(entity).unwrap();
-                shoot_animation_transform.translation.z += 1.0;
-                shoot_animation_transform.translation.y += 6.0;
-                shoot_animation_transform.translation.x +=
-                    if player_sprite.flip_x { -28.0 } else { 28.0 };
-
-                let shoot_fps = *shoot_fps;
-                let shoot_frames = *shoot_frames;
-                let shoot_lifetime = *shoot_lifetime;
-                let shoot_atlas = *shoot_atlas;
-
-                let bullet_meta = *bullet_meta;
-                let bullet_spread = *bullet_spread;
-                let bullet_count = *bullet_count;
-
-                commands.add(
-                    move |rng: Res<GlobalRng>,
-                          mut entities: ResMutInit<Entities>,
-                          mut lifetimes: CompMut<Lifetime>,
-                          mut sprites: CompMut<AtlasSprite>,
-                          mut transforms: CompMut<Transform>,
-                          mut bullets: CompMut<Bullet>,
-                          mut bullet_handles: CompMut<BulletHandle>,
-                          mut animated_sprites: CompMut<AnimatedSprite>| {
-                        // spawn fire animation
-                        {
-                            let ent = entities.create();
-                            transforms.insert(ent, shoot_animation_transform);
-                            sprites.insert(
-                                ent,
-                                AtlasSprite {
-                                    flip_x: player_flip_x,
-                                    atlas: shoot_atlas,
-                                    ..default()
-                                },
-                            );
-
-                            animated_sprites.insert(
-                                ent,
-                                AnimatedSprite {
-                                    frames: (0..shoot_frames).collect(),
-                                    fps: shoot_fps,
-                                    repeat: false,
-                                    ..default()
-                                },
-                            );
-                            lifetimes.insert(ent, Lifetime::new(shoot_lifetime));
+                    // Run machine gun animation
+                    if let MachineGunState::Shooting = machine_gun.state {
+                        if sprite.index == 2 {
+                            sprite.index = 3;
+                        } else if sprite.index == 3 {
+                            sprite.index = 2;
                         }
+                    }
 
-                        // spawn bullet
-                        {
-                            for _bullet in 0..bullet_count {
+                    // Empty
+                    if machine_gun.ammo.eq(&0) {
+                        // Reset machine gun state if out of ammo
+                        machine_gun.state = MachineGunState::Idle;
+                        if machine_gun.empty_cooldown.finished() {
+                            audio_center.play_sound(*empty_shoot_sound, *empty_shoot_sound_volume);
+                            machine_gun.empty_cooldown =
+                                Timer::new(*empty_cooldown, TimerMode::Once);
+                        }
+                        continue;
+                    }
+
+                    if matches!(machine_gun.state, MachineGunState::Idle) {
+                        machine_gun.state = MachineGunState::Shooting;
+                        sprite.index = 2;
+                    }
+
+                    // Subtract ammo
+                    machine_gun.ammo = machine_gun
+                        .ammo
+                        .saturating_sub(1)
+                        .clamp(0, machine_gun.ammo);
+                    audio_center.play_sound(*shoot_sound, *shoot_sound_volume);
+
+                    let player_sprite = sprites.get_mut(player).unwrap();
+                    let player_flip_x = player_sprite.flip_x;
+                    let player_body = bodies.get_mut(player).unwrap();
+
+                    //Set kickback
+                    player_body.velocity.x = if player_flip_x { 1.0 } else { -1.0 } * kickback;
+
+                    let mut shoot_animation_transform = *transforms.get(entity).unwrap();
+                    shoot_animation_transform.translation.z += 1.0;
+                    shoot_animation_transform.translation.y += 8.0;
+                    shoot_animation_transform.translation.x +=
+                        if player_sprite.flip_x { -30.0 } else { 30.0 };
+
+                    let bullet_meta = *bullet_meta;
+                    let bullet_spread = *bullet_spread;
+
+                    commands.add(
+                        move |rng: Res<GlobalRng>,
+                              mut entities: ResMutInit<Entities>,
+                              mut transforms: CompMut<Transform>,
+                              mut bullets: CompMut<Bullet>,
+                              mut bullet_handles: CompMut<BulletHandle>| {
+                            // spawn bullet
+                            {
                                 let ent = entities.create();
                                 bullets.insert(
                                     ent,
@@ -274,24 +277,30 @@ fn update(
                                 transforms.insert(ent, shoot_animation_transform);
                                 bullet_handles.insert(ent, BulletHandle(bullet_meta));
                             }
-                        }
-                    },
-                );
+                        },
+                    );
+                }
+            } else {
+                match machine_gun.state {
+                    MachineGunState::Idle => (),
+                    MachineGunState::Shooting => {
+                        machine_gun.state = MachineGunState::Idle;
+                    }
+                }
             }
         }
 
         // If the item was dropped
         if items_dropped.get(entity).is_some() {
             // reload gun
-            buss.ammo = *max_ammo;
+            machine_gun.ammo = *max_ammo;
         }
     }
 }
 
-fn buss_drop(entity: Entity, max_ammo: u32) -> StaticSystem<(), ()> {
-    (move |mut busses: CompMut<Buss>| {
-        // Reload musket
-        busses.get_mut(entity).unwrap().ammo = max_ammo;
+fn machine_gun_drop(entity: Entity, max_ammo: u32) -> StaticSystem<(), ()> {
+    (move |mut machine_guns: CompMut<MachineGun>| {
+        machine_guns.get_mut(entity).unwrap().ammo = max_ammo;
     })
     .system()
 }

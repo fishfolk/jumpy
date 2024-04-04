@@ -186,14 +186,15 @@ fn update(
             // If the item is being used
             let item_used = items_used.remove(entity).is_some();
             if item_used && periscope.cooldown.finished() {
+                // Reset fire cooldown
+                periscope.cooldown = Timer::new(*cooldown, TimerMode::Once);
                 // Empty
                 if periscope.ammo.eq(&0) {
                     audio_center.play_sound(*empty_shoot_sound, *empty_shoot_sound_volume);
                     continue;
                 }
 
-                // Reset fire cooldown and subtract ammo
-                periscope.cooldown = Timer::new(*cooldown, TimerMode::Once);
+                // Subtract ammo
                 periscope.ammo = periscope.ammo.saturating_sub(1).clamp(0, periscope.ammo);
                 audio_center.play_sound(*shoot_sound, *shoot_sound_volume);
 

@@ -439,6 +439,11 @@
 <a href="#344" id="344">344</a>
 <a href="#345" id="345">345</a>
 <a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Map element implementations.
 //!
 //! A map element is anything that can be placed on the map in the editor.
@@ -456,8 +461,10 @@
 <span class="kw">pub mod </span>grenade;
 <span class="kw">pub mod </span>jellyfish;
 <span class="kw">pub mod </span>kick_bomb;
+<span class="kw">pub mod </span>machine_gun;
 <span class="kw">pub mod </span>mine;
 <span class="kw">pub mod </span>musket;
+<span class="kw">pub mod </span>periscope;
 <span class="kw">pub mod </span>player_spawner;
 <span class="kw">pub mod </span>slippery;
 <span class="kw">pub mod </span>slippery_seaweed;
@@ -471,8 +478,9 @@
 <span class="kw">pub mod </span>prelude {
     <span class="kw">pub use super</span>::{
         buss::<span class="kw-2">*</span>, crab::<span class="kw-2">*</span>, crate_item::<span class="kw-2">*</span>, decoration::<span class="kw-2">*</span>, fish_school::<span class="kw-2">*</span>, grenade::<span class="kw-2">*</span>, jellyfish::<span class="kw-2">*</span>,
-        kick_bomb::<span class="kw-2">*</span>, mine::<span class="kw-2">*</span>, musket::<span class="kw-2">*</span>, player_spawner::<span class="kw-2">*</span>, slippery::<span class="kw-2">*</span>, slippery_seaweed::<span class="kw-2">*</span>,
-        snail::<span class="kw-2">*</span>, spike::<span class="kw-2">*</span>, sproinger::<span class="kw-2">*</span>, stomp_boots::<span class="kw-2">*</span>, sword::<span class="kw-2">*</span>, urchin::<span class="kw-2">*</span>, <span class="kw-2">*</span>,
+        kick_bomb::<span class="kw-2">*</span>, machine_gun::<span class="kw-2">*</span>, mine::<span class="kw-2">*</span>, musket::<span class="kw-2">*</span>, periscope::<span class="kw-2">*</span>, player_spawner::<span class="kw-2">*</span>,
+        slippery::<span class="kw-2">*</span>, slippery_seaweed::<span class="kw-2">*</span>, snail::<span class="kw-2">*</span>, spike::<span class="kw-2">*</span>, sproinger::<span class="kw-2">*</span>, stomp_boots::<span class="kw-2">*</span>,
+        sword::<span class="kw-2">*</span>, urchin::<span class="kw-2">*</span>, <span class="kw-2">*</span>,
     };
 }
 
@@ -755,9 +763,11 @@
     jellyfish,
     kick_bomb,
     mine,
+    machine_gun,
     musket,
     buss,
     player_spawner,
+    periscope,
     slippery_seaweed,
     slippery,
     snail,

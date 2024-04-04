@@ -354,7 +354,7 @@
             }
 
             <span class="comment">// If we are using an item
-            </span><span class="kw">if </span>control.shoot_just_pressed &amp;&amp; inventory.is_some() {
+            </span><span class="kw">if </span>control.shoot_pressed &amp;&amp; inventory.is_some() {
                 commands.add(PlayerCommand::use_item(player_ent));
             }
         }

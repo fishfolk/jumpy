@@ -379,6 +379,7 @@
 <a href="#284" id="284">284</a>
 <a href="#285" id="285">285</a>
 <a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Default, Debug, Clone)]
@@ -565,15 +566,16 @@
             <span class="comment">// If the item is being used
             </span><span class="kw">let </span>item_used = items_used.remove(entity).is_some();
             <span class="kw">if </span>item_used &amp;&amp; musket.cooldown.finished() {
+                <span class="comment">// Reset fire cooldown
+                </span>musket.cooldown = Timer::new(<span class="kw-2">*</span>cooldown, TimerMode::Once);
                 <span class="comment">// Empty
                 </span><span class="kw">if </span>musket.ammo.eq(<span class="kw-2">&amp;</span><span class="number">0</span>) {
                     audio_center.play_sound(<span class="kw-2">*</span>empty_shoot_sound, <span class="kw-2">*</span>empty_shoot_sound_volume);
                     <span class="kw">continue</span>;
                 }
 
-                <span class="comment">// Reset fire cooldown and subtract ammo
-                </span>musket.cooldown = Timer::new(<span class="kw-2">*</span>cooldown, TimerMode::Once);
-                musket.ammo = musket.ammo.saturating_sub(<span class="number">1</span>).clamp(<span class="number">0</span>, musket.ammo);
+                <span class="comment">// Subtract ammo
+                </span>musket.ammo = musket.ammo.saturating_sub(<span class="number">1</span>).clamp(<span class="number">0</span>, musket.ammo);
                 audio_center.play_sound(<span class="kw-2">*</span>shoot_sound, <span class="kw-2">*</span>shoot_sound_volume);
 
                 <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();

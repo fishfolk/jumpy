@@ -389,6 +389,7 @@
 <a href="#294" id="294">294</a>
 <a href="#295" id="295">295</a>
 <a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Default, Debug, Clone)]
@@ -579,15 +580,16 @@
             <span class="comment">// If the item is being used
             </span><span class="kw">let </span>item_used = items_used.remove(entity).is_some();
             <span class="kw">if </span>item_used &amp;&amp; buss.cooldown.finished() {
+                <span class="comment">// Reset fire cooldown
+                </span>buss.cooldown = Timer::new(<span class="kw-2">*</span>cooldown, TimerMode::Once);
                 <span class="comment">// Empty
                 </span><span class="kw">if </span>buss.ammo.eq(<span class="kw-2">&amp;</span><span class="number">0</span>) {
                     audio_center.play_sound(<span class="kw-2">*</span>empty_shoot_sound, <span class="kw-2">*</span>empty_shoot_sound_volume);
                     <span class="kw">continue</span>;
                 }
 
-                <span class="comment">// Reset fire cooldown and subtract ammo
-                </span>buss.cooldown = Timer::new(<span class="kw-2">*</span>cooldown, TimerMode::Once);
-                buss.ammo = buss.ammo.saturating_sub(<span class="number">1</span>).clamp(<span class="number">0</span>, buss.ammo);
+                <span class="comment">// Subtract ammo
+                </span>buss.ammo = buss.ammo.saturating_sub(<span class="number">1</span>).clamp(<span class="number">0</span>, buss.ammo);
                 audio_center.play_sound(<span class="kw-2">*</span>shoot_sound, <span class="kw-2">*</span>shoot_sound_volume);
 
                 <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();

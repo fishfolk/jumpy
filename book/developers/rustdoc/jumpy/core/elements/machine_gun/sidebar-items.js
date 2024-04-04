@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["MachineGunState"],"fn":["game_plugin","hydrate","machine_gun_drop","session_plugin","update"],"struct":["MachineGun","MachineGunMeta"]};

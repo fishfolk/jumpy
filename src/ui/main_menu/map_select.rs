@@ -55,7 +55,7 @@ pub fn widget(
                 Some(socket) => Box::new(GgrsSessionRunner::<NetworkInputConfig>::new(
                     FPS,
                     GgrsSessionRunnerInfo::new(
-                        socket.as_ref(),
+                        socket.ggrs_socket(),
                         Some(meta.network.max_prediction_window),
                         Some(meta.network.local_input_delay),
                     ),

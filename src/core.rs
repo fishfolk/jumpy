@@ -164,4 +164,8 @@ impl SessionRunner for JumpyDefaultMatchRunner {
 
         self.last_run = Some(frame_start);
     }
+
+    fn restart_session(&mut self) {
+        *self = JumpyDefaultMatchRunner::default();
+    }
 }

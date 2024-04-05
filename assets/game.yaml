@@ -250,6 +250,10 @@ theme:
 core:
   config:
     respawn_invincibility_time: 2s
+    # How long after 1 or less players live until score is applied
+    round_end_score_time: 3s
+    # How long after scoring to wait before transitioning out of round
+    round_end_post_score_linger_time: 3s
 
   camera:
     default_height: 448

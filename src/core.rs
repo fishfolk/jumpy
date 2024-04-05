@@ -16,6 +16,7 @@ pub mod metadata;
 pub mod physics;
 pub mod player;
 pub mod random;
+pub mod scoring;
 pub mod utils;
 pub mod win_indicator;
 
@@ -34,7 +35,7 @@ pub mod prelude {
         attachment::*, bullet::*, camera::*, damage::*, debug::*, editor::*, editor::*,
         elements::prelude::*, flappy_jellyfish::*, globals::*, input::*, item::*, lifetime::*,
         map::*, map_constructor::*, map_pool::*, metadata::*, physics::*, player::*, random::*,
-        utils::*, win_indicator::*, FPS, MAX_PLAYERS,
+        scoring::*, utils::*, win_indicator::*, FPS, MAX_PLAYERS,
     };
 }
 
@@ -85,6 +86,7 @@ impl SessionPlugin for MatchPlugin {
         attachment::install(session);
         bullet::session_plugin(session);
         editor::install(session);
+        scoring::session_plugin(session);
 
         let current_map = self.maps.current_map;
         session.world.insert_resource(self.maps);

@@ -104,4 +104,14 @@ pub struct CoreConfigMeta {
     #[serde(default)]
     #[serde(with = "humantime_serde")]
     pub respawn_invincibility_time: Duration,
+
+    /// After one or fewer players left, how long to watch before scoring
+    #[serde(default)]
+    #[serde(with = "humantime_serde")]
+    pub round_end_score_time: Duration,
+
+    /// How long round lingers after displaying round winner
+    #[serde(default)]
+    #[serde(with = "humantime_serde")]
+    pub round_end_post_score_linger_time: Duration,
 }

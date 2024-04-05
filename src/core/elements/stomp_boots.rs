@@ -150,6 +150,8 @@ fn update(
                             sync_color: false,
                             offset: Vec3::ZERO,
                             sync_animation: true,
+                            sync_flip: true,
+                            offset_inherits_rotation: true,
                         };
                         attachments.insert(attachment_ent, attachment);
                         sprites.insert(attachment_ent, AtlasSprite::new(player_decoration));

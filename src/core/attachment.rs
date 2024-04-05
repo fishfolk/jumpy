@@ -22,8 +22,8 @@ pub fn install(session: &mut Session) {
 /// > entity.
 ///
 /// Attachments have special behavior built-in for attaching to other [`Sprite`] or [`AtlasSprite`]
-/// entities. When attached to a sprite, the attached item will automatically flip it's offset when
-/// the sprite is flipped, and will also synchronize it's own flip value, if it has a sprite component.
+/// entities. When attached to a sprite, the attached item will automatically flip it's offset and
+/// sprite flip value when the sprite is flipped if `sync_flip` is  set.
 #[derive(Clone, Copy, HasSchema, Debug, Default)]
 pub struct Attachment {
     /// The entity to attach to.
@@ -34,6 +34,10 @@ pub struct Attachment {
     pub sync_animation: bool,
     /// Synchronize [`Sprite`] color with entity color
     pub sync_color: bool,
+    /// Synchronize [`Sprite`] flip values from parent (both flip and offset)
+    pub sync_flip: bool,
+    /// Should attachment inherit parent's rotation (applied to offset and sprite)
+    pub offset_inherits_rotation: bool,
 }
 
 /// System to update the transforms of entities with the [`Attachment`] component.
@@ -54,28 +58,37 @@ pub fn update_attachments(
             .get_mut(ent)
             .expect("Entities with `Attachment` component must also have a `Transform` component.");
 
-        *transform = attached_transform;
+        if attachment.offset_inherits_rotation {
+            *transform = attached_transform;
+        } else {
+            // Copy transform values except for rotation
+            transform.translation = attached_transform.translation;
+            transform.scale = attached_transform.scale;
+        }
 
         let mut offset = attachment.offset;
-        if let Some((flip_x, flip_y)) = atlas_sprites
-            .get(attachment.entity)
-            .map(|x| (x.flip_x, x.flip_y))
-            .or_else(|| sprites.get(attachment.entity).map(|x| (x.flip_x, x.flip_y)))
-        {
-            if flip_x {
-                offset.x *= -1.0;
-            }
-            if flip_y {
-                offset.y *= -1.0;
-            }
 
-            if let Some((self_flip_x, self_flip_y)) = atlas_sprites
-                .get_mut(ent)
-                .map(|x| (&mut x.flip_x, &mut x.flip_y))
-                .or_else(|| sprites.get_mut(ent).map(|x| (&mut x.flip_x, &mut x.flip_y)))
+        if attachment.sync_flip {
+            if let Some((flip_x, flip_y)) = atlas_sprites
+                .get(attachment.entity)
+                .map(|x| (x.flip_x, x.flip_y))
+                .or_else(|| sprites.get(attachment.entity).map(|x| (x.flip_x, x.flip_y)))
             {
-                *self_flip_x = flip_x;
-                *self_flip_y = flip_y;
+                if flip_x {
+                    offset.x *= -1.0;
+                }
+                if flip_y {
+                    offset.y *= -1.0;
+                }
+
+                if let Some((self_flip_x, self_flip_y)) = atlas_sprites
+                    .get_mut(ent)
+                    .map(|x| (&mut x.flip_x, &mut x.flip_y))
+                    .or_else(|| sprites.get_mut(ent).map(|x| (&mut x.flip_x, &mut x.flip_y)))
+                {
+                    *self_flip_x = flip_x;
+                    *self_flip_y = flip_y;
+                }
             }
         }
 
@@ -112,8 +125,10 @@ pub fn update_attachments(
             }
         }
 
-        // Apply parent rotation to offset. Currently scale is not applied (but probably should be.)
-        offset = attached_transform.rotation * offset;
+        if attachment.offset_inherits_rotation {
+            // Apply parent rotation to offset. Currently scale is not applied (but probably should be.)
+            offset = attached_transform.rotation * offset;
+        }
 
         transform.translation += offset;
     }
@@ -195,6 +210,8 @@ fn update_player_body_attachments(
                 sync_color: body_attachment.sync_color,
                 sync_animation: body_attachment.sync_animation,
                 offset: current_body_offset.extend(0.0) + body_attachment.offset,
+                sync_flip: true,
+                offset_inherits_rotation: true,
             },
         );
     }

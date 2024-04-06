@@ -24,7 +24,8 @@ tracing             = "0.1.37"
 puffin              = { version = "0.17.0", features = ["web"] }
 puffin_egui         = "0.23.0"
 petgraph            = "0.6.4"
-rapier2d            = { git = "https://github.com/dimforge/rapier", rev= "e69e73e589cf4525c96ee7b919032c80ce205244",  features = ["debug-render", "enhanced-determinism"] }
+# Use rapier w/ parry2d 0.13.7 for qbvh crash fix: https://github.com/dimforge/parry/pull/185
+rapier2d            = { git = "https://github.com/MaxCWhitehead/rapier.git", rev= "29c72c6c282e7c40987c0d0d0ce3089ea019a532",  features = ["debug-render", "enhanced-determinism"] }
 indexmap            = "2.0.0"
 serde               = { version = "1.0.188", features = ["derive"] }
 shiftnanigans       = "0.3.3"

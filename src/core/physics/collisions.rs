@@ -652,6 +652,13 @@ impl<'a> CollisionWorld<'a> {
             &collision_cache,
         );
 
+        // Force a full rebuild of broadphase
+        // PhysicsPipeline step should incrementally update it, but due to an issue with
+        // incrementally rebalancing BVH in parry2d, the tree becomes unbalanced and query perf tanks.
+        // Rebuilding it every frame is quite fast for our game, and avoids this issue.
+        // https://github.com/fishfolk/jumpy/issues/961
+        query_pipeline.update(rigid_body_set, collider_set);
+
         // Iter on each dynamic rigid-bodies that moved.
         for rigid_body_handle in islands.active_dynamic_bodies() {
             let rigid_body = rigid_body_set.get_mut(*rigid_body_handle).unwrap();

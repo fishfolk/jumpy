@@ -83,6 +83,7 @@ pub fn widget(
                 }),
                 plugins: meta.get_plugins(&assets),
                 session_runner,
+                score: default(),
             });
             ui.ctx().set_state(PlayerSelectState::default());
         }

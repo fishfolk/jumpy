@@ -56,6 +56,11 @@ pub struct MatchPlugin {
     /// The lua plugins to enable for this match.
     pub plugins: Arc<Vec<Handle<LuaPlugin>>>,
 
+    /// Tracks score for match. Should be default if installing for
+    /// new match, but if restarting MatchPlugin to transition between rounds,
+    /// should be inputted from previous session resourc.
+    pub score: MatchScore,
+
     pub session_runner: Box<dyn SessionRunner>,
 }
 
@@ -103,6 +108,7 @@ impl SessionPlugin for MatchPlugin {
         session.world.insert_resource(MatchInputs {
             players: self.player_info,
         });
+        session.world.insert_resource(self.score);
         session.runner = self.session_runner;
     }
 }

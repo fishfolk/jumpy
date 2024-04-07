@@ -50,6 +50,11 @@ impl MapPool {
         self.current_map = *rng.sample(&self.maps).unwrap();
         self.current_map
     }
+
+    /// Return a random map handle from pool
+    pub fn get_random_map(&self, rng: &GlobalRng) -> Handle<MapMeta> {
+        *rng.sample(&self.maps).unwrap()
+    }
 }
 
 #[derive(Serialize, Deserialize)]

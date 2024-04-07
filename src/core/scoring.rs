@@ -11,10 +11,17 @@ pub struct RoundScoringState {
 
     /// If true: round has been scored, timer counts down to round transition.
     round_scored: bool,
+
+    /// Save MapPool state to transitin with when determining round end.
+    next_maps: Option<MapPool>,
+
+    /// Save the frame round was marked to transition on in network play.
+    /// Transition does not execute until this is confirmed by remote players.
+    network_round_end_frame: Option<i32>,
 }
 
 /// Store player's match score's (rounds won)
-#[derive(HasSchema, Clone, Default)]
+#[derive(HasSchema, Clone, Default, Debug)]
 pub struct MatchScore {
     /// Map player to score, if no entry is 0.
     player_score: HashMap<Entity, u32>,
@@ -54,8 +61,6 @@ pub fn session_plugin(session: &mut Session) {
     session
         .stages
         .add_system_to_stage(CoreStage::PostUpdate, round_end);
-
-    session.world.insert_resource(MatchScore::default());
 }
 
 pub fn round_end(
@@ -63,13 +68,14 @@ pub fn round_end(
     meta: Root<GameMeta>,
     entities: Res<Entities>,
     rng: Res<GlobalRng>,
-    mut map_pool: ResMut<MapPool>,
-    mut score: ResMut<MatchScore>,
+    map_pool: Res<MapPool>,
+    mut score: ResMutInit<MatchScore>,
     mut sessions: ResMut<Sessions>,
     time: Res<Time>,
     mut state: ResMutInit<RoundScoringState>,
     killed_players: Comp<PlayerKilled>,
     player_indices: Comp<PlayerIdx>,
+    #[cfg(not(target_arch = "wasm32"))] network_info: Option<Res<NetworkInfo>>,
 ) {
     // Count players so we can avoid ending round if it's a one player match
     let mut player_count = 0;
@@ -126,11 +132,54 @@ pub fn round_end(
             ));
         }
         Some(ref t) if t.finished() && state.round_scored => {
-            // post-score linger timer complete, go to next round
-            map_pool.randomize_current_map(&rng);
+            // post-score linger timer complete, go to next round if all players confirmed transition
+
+            // Is round transition sycnrhonized on all clients in network play?
+            // Will evaluate to true in local play.
+            let mut round_transition_synchronized = false;
+
+            // If in network play and determined a prev frame round should end on:
+            if let Some(end_net_frame) = state.network_round_end_frame {
+                // check if this frame is confirmed by all players.
+                #[cfg(not(target_arch = "wasm32"))]
+                if let Some(network_info) = network_info {
+                    round_transition_synchronized =
+                        end_net_frame <= network_info.last_confirmed_frame;
+                }
+            } else {
+                // Network frame for round end not yet recorded (or in local only)
+
+                // Randomize map and save MapPool to be used for transition
+                let mut map_pool = map_pool.clone();
+                map_pool.randomize_current_map(&rng);
+                state.next_maps = Some(map_pool);
+
+                // Save current predicted frame for round end.
+                // Will not follow through with transition until this frame is confirmed
+                // by all players in network play. If local, safe to transition now.
+                #[cfg(not(target_arch = "wasm32"))]
+                if let Some(network_info) = network_info {
+                    state.network_round_end_frame = Some(network_info.current_frame);
+                } else {
+                    // `Option<Res<NetworkInfo>>` always available in network play,
+                    // we are local and can transition now.
+                    round_transition_synchronized = true;
+                }
+
+                // Wasm32 is always local, can transition now.
+                #[cfg(target_arch = "wasm32")]
+                {
+                    round_transition_synchronized = true;
+                }
+            }
+
+            if round_transition_synchronized {
+                // Use maps originally determined on synchronized transition frame
+                let next_maps = state.next_maps.clone().unwrap();
                 sessions.add_command(Box::new(|sessions: &mut Sessions| {
-                sessions.restart_game();
-            }));
+                    sessions.restart_game(Some(next_maps));
+                }));
+            }
         }
         None => {
             // Scoring timer does not exist, start a new one

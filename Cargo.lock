@@ -1102,7 +1102,7 @@ dependencies = [
 [[package]]
 name = "bones_asset"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "anyhow",
  "append-only-vec",
@@ -1133,7 +1133,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_renderer"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "anyhow",
  "bevy",
@@ -1150,7 +1150,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "anyhow",
  "atomicell",
@@ -1167,7 +1167,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "bones_ecs_macros_core",
  "proc-macro2",
@@ -1176,7 +1176,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs_macros_core"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1186,7 +1186,7 @@ dependencies = [
 [[package]]
 name = "bones_framework"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -1235,7 +1235,7 @@ dependencies = [
 [[package]]
 name = "bones_lib"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "bones_ecs",
  "instant",
@@ -1244,7 +1244,7 @@ dependencies = [
 [[package]]
 name = "bones_matchmaker_proto"
 version = "0.2.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "serde",
 ]
@@ -1252,7 +1252,7 @@ dependencies = [
 [[package]]
 name = "bones_schema"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "append-only-vec",
  "bones_schema_macros",
@@ -1270,7 +1270,7 @@ dependencies = [
 [[package]]
 name = "bones_schema_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1280,7 +1280,7 @@ dependencies = [
 [[package]]
 name = "bones_scripting"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "async-channel",
  "bevy_tasks",
@@ -1297,7 +1297,7 @@ dependencies = [
 [[package]]
 name = "bones_utils"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "bones_utils_macros",
  "branches",
@@ -1318,7 +1318,7 @@ dependencies = [
 [[package]]
 name = "bones_utils_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "quote",
  "venial",
@@ -4254,7 +4254,7 @@ dependencies = [
 [[package]]
 name = "quinn_runtime_bevy"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#cf03875700f59203cd0e272f0836dad40ad5bdc7"
+source = "git+https://github.com/fishfolk/bones#cbe537f8d0640b03bf10d9217591c06d0a47af0c"
 dependencies = [
  "async-executor",
  "async-io",

@@ -1547,6 +1547,13 @@
 <a href="#1452" id="1452">1452</a>
 <a href="#1453" id="1453">1453</a>
 <a href="#1454" id="1454">1454</a>
+<a href="#1455" id="1455">1455</a>
+<a href="#1456" id="1456">1456</a>
+<a href="#1457" id="1457">1457</a>
+<a href="#1458" id="1458">1458</a>
+<a href="#1459" id="1459">1459</a>
+<a href="#1460" id="1460">1460</a>
+<a href="#1461" id="1461">1461</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Collision detection implementation.
 
 </span><span class="kw">use </span>std::hash::BuildHasherDefault;
@@ -2200,6 +2207,13 @@
             physics_hooks,
             <span class="kw-2">&amp;</span>collision_cache,
         );
+
+        <span class="comment">// Force a full rebuild of broadphase
+        // PhysicsPipeline step should incrementally update it, but due to an issue with
+        // incrementally rebalancing BVH in parry2d, the tree becomes unbalanced and query perf tanks.
+        // Rebuilding it every frame is quite fast for our game, and avoids this issue.
+        // https://github.com/fishfolk/jumpy/issues/961
+        </span>query_pipeline.update(rigid_body_set, collider_set);
 
         <span class="comment">// Iter on each dynamic rigid-bodies that moved.
         </span><span class="kw">for </span>rigid_body_handle <span class="kw">in </span>islands.active_dynamic_bodies() {

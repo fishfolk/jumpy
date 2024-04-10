@@ -390,6 +390,12 @@
 <a href="#295" id="295">295</a>
 <a href="#296" id="296">296</a>
 <a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Default, Debug, Clone)]
@@ -411,6 +417,7 @@
     <span class="kw">pub </span>bullet_count: u32,
     <span class="kw">pub </span>bullet_spread: f32,
     <span class="kw">pub </span>bullet_meta: Handle&lt;BulletMeta&gt;,
+    <span class="kw">pub </span>bullet_spawn_offset: Vec2,
     <span class="kw">pub </span>kickback: f32,
 
     <span class="kw">pub </span>shoot_fps: f32,
@@ -562,6 +569,7 @@
             bullet_meta,
             bullet_count,
             bullet_spread,
+            bullet_spawn_offset,
             shoot_sound,
             empty_shoot_sound,
             shoot_sound_volume,
@@ -600,10 +608,14 @@
                 </span>player_body.velocity.x = <span class="kw">if </span>player_flip_x { <span class="number">1.0 </span>} <span class="kw">else </span>{ -<span class="number">1.0 </span>} * kickback;
 
                 <span class="kw">let </span><span class="kw-2">mut </span>shoot_animation_transform = <span class="kw-2">*</span>transforms.get(entity).unwrap();
+                <span class="kw">let </span>bullet_spawn_offset = <span class="kw-2">*</span>bullet_spawn_offset;
                 shoot_animation_transform.translation.z += <span class="number">1.0</span>;
-                shoot_animation_transform.translation.y += <span class="number">6.0</span>;
-                shoot_animation_transform.translation.x +=
-                    <span class="kw">if </span>player_sprite.flip_x { -<span class="number">28.0 </span>} <span class="kw">else </span>{ <span class="number">28.0 </span>};
+                shoot_animation_transform.translation.y += bullet_spawn_offset.y;
+                shoot_animation_transform.translation.x += <span class="kw">if </span>player_sprite.flip_x {
+                    -bullet_spawn_offset.x
+                } <span class="kw">else </span>{
+                    bullet_spawn_offset.x
+                };
 
                 <span class="kw">let </span>shoot_fps = <span class="kw-2">*</span>shoot_fps;
                 <span class="kw">let </span>shoot_frames = <span class="kw-2">*</span>shoot_frames;

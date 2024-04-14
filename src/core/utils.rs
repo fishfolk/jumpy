@@ -8,3 +8,5 @@ mod rect;
 pub use rect::*;
 mod macros;
 pub use macros::*;
+mod metadata;
+pub use metadata::*;

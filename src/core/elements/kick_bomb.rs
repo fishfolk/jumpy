@@ -52,22 +52,109 @@ pub struct LitKickBomb {
     kicks: u32,
 }
 
+/// Component containing the kick bombs's metadata handle.
+#[derive(Deref, DerefMut, HasSchema, Default, Clone)]
+#[repr(C)]
+pub struct KickBombHandle(pub Handle<KickBombMeta>);
+
+/// Commands for KickBombs
+#[derive(Clone, Debug)]
+pub struct KickBombCommand;
+
+impl KickBombCommand {
+    /// Command for spawning  a kick bomb.
+    /// If entity is provided, components are added to this entity, otherwise command spawns the entity
+    ///
+    /// `kick_bomb_handle` must cast to `Handle<KickBombMeta>` or `Handle<ElementMeta>` where [`ElementMeta`]
+    /// contains handle that casts to `Handle<KickBombMeta>`.
+    /// [`Handle::untyped`] should be used to convert to [`UntypedHandle`].
+    pub fn spawn_kick_bomb(
+        entity: Option<Entity>,
+        transform: Transform,
+        kick_bomb_meta_handle: UntypedHandle,
+    ) -> StaticSystem<(), ()> {
+        (move |game_meta: Root<GameMeta>,
+               assets: Res<AssetServer>,
+               mut animated_sprites: CompMut<AnimatedSprite>,
+               mut atlas_sprites: CompMut<AtlasSprite>,
+               mut bodies: CompMut<KinematicBody>,
+               mut entities: ResMutInit<Entities>,
+               mut idle_bombs: CompMut<IdleKickBomb>,
+               mut items: CompMut<Item>,
+               mut item_throws: CompMut<ItemThrow>,
+               mut item_grabs: CompMut<ItemGrab>,
+               mut kick_bomb_handles: CompMut<KickBombHandle>,
+               mut transforms: CompMut<Transform>| {
+            // Unwrap entity or spawn if existing entity was not provided.
+            let entity = entity.unwrap_or_else(|| entities.create());
+
+            // Try to use handle as Handle<KickBombMeta>.
+            let kick_bomb_meta_handle =
+                match try_cast_meta_handle::<KickBombMeta>(kick_bomb_meta_handle, &assets) {
+                    Ok(handle) => handle,
+                    Err(err) => {
+                        error!("KickBombCommand::spawn_kick_bomb() failed: {err}");
+                        return;
+                    }
+                };
+
+            let KickBombMeta {
+                atlas,
+                fin_anim,
+                grab_offset,
+                body_diameter,
+                can_rotate,
+                bounciness,
+                throw_velocity,
+                angular_velocity,
+                ..
+            } = *assets.get(kick_bomb_meta_handle);
+            kick_bomb_handles.insert(entity, KickBombHandle(kick_bomb_meta_handle));
+            items.insert(entity, Item);
+            item_throws.insert(
+                entity,
+                ItemThrow::strength(throw_velocity).with_spin(angular_velocity),
+            );
+            item_grabs.insert(
+                entity,
+                ItemGrab {
+                    fin_anim,
+                    sync_animation: false,
+                    grab_offset,
+                },
+            );
+            idle_bombs.insert(entity, IdleKickBomb);
+            atlas_sprites.insert(entity, AtlasSprite::new(atlas));
+            transforms.insert(entity, transform);
+            animated_sprites.insert(entity, default());
+            bodies.insert(
+                entity,
+                KinematicBody {
+                    shape: ColliderShape::Circle {
+                        diameter: body_diameter,
+                    },
+                    gravity: game_meta.core.physics.gravity,
+                    has_mass: true,
+                    has_friction: true,
+                    can_rotate,
+                    bounciness,
+                    ..default()
+                },
+            );
+        })
+        .system()
+    }
+}
+
 fn hydrate(
-    game_meta: Root<GameMeta>,
-    mut items: CompMut<Item>,
-    mut item_throws: CompMut<ItemThrow>,
-    mut item_grabs: CompMut<ItemGrab>,
-    mut entities: ResMutInit<Entities>,
-    mut bodies: CompMut<KinematicBody>,
-    mut transforms: CompMut<Transform>,
-    mut idle_bombs: CompMut<IdleKickBomb>,
-    mut atlas_sprites: CompMut<AtlasSprite>,
     assets: Res<AssetServer>,
+    mut entities: ResMutInit<Entities>,
+    transforms: Comp<Transform>,
     mut hydrated: CompMut<MapElementHydrated>,
     mut element_handles: CompMut<ElementHandle>,
-    mut animated_sprites: CompMut<AnimatedSprite>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
     mut spawner_manager: SpawnerManager,
+    mut commands: Commands,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -80,58 +167,27 @@ fn hydrate(
     for spawner_ent in spawner_entities {
         let transform = *transforms.get(spawner_ent).unwrap();
         let element_handle = *element_handles.get(spawner_ent).unwrap();
+
+        hydrated.insert(spawner_ent, MapElementHydrated);
+
+        let entity = entities.create();
+        hydrated.insert(entity, MapElementHydrated);
+        element_handles.insert(entity, element_handle);
+        respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
+        spawner_manager.create_spawner(spawner_ent, vec![entity]);
+
+        // Check if spawner element handle is for kick bomb
         let element_meta = assets.get(element_handle.0);
-
-        if let Ok(KickBombMeta {
-            atlas,
-            fin_anim,
-            grab_offset,
-            body_diameter,
-            can_rotate,
-            bounciness,
-            throw_velocity,
-            angular_velocity,
-            ..
-        }) = assets.get(element_meta.data).try_cast_ref()
+        if assets
+            .get(element_meta.data)
+            .try_cast_ref::<KickBombMeta>()
+            .is_ok()
         {
-            hydrated.insert(spawner_ent, MapElementHydrated);
-
-            let entity = entities.create();
-            hydrated.insert(entity, MapElementHydrated);
-            element_handles.insert(entity, element_handle);
-            items.insert(entity, Item);
-            item_throws.insert(
-                entity,
-                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
-            );
-            item_grabs.insert(
-                entity,
-                ItemGrab {
-                    fin_anim: *fin_anim,
-                    sync_animation: false,
-                    grab_offset: *grab_offset,
-                },
-            );
-            idle_bombs.insert(entity, IdleKickBomb);
-            atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
-            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
-            transforms.insert(entity, transform);
-            animated_sprites.insert(entity, default());
-            bodies.insert(
-                entity,
-                KinematicBody {
-                    shape: ColliderShape::Circle {
-                        diameter: *body_diameter,
-                    },
-                    gravity: game_meta.core.physics.gravity,
-                    has_mass: true,
-                    has_friction: true,
-                    can_rotate: *can_rotate,
-                    bounciness: *bounciness,
-                    ..default()
-                },
-            );
-            spawner_manager.create_spawner(spawner_ent, vec![entity])
+            commands.add(KickBombCommand::spawn_kick_bomb(
+                Some(entity),
+                transform,
+                element_meta.data.untyped(),
+            ));
         }
     }
 }
@@ -141,33 +197,26 @@ fn update_idle_kick_bombs(
     mut commands: Commands,
     mut items_used: CompMut<ItemUsed>,
     mut audio_center: ResMut<AudioCenter>,
-    element_handles: Comp<ElementHandle>,
+    kick_bomb_handles: Comp<KickBombHandle>,
     mut idle_bombs: CompMut<IdleKickBomb>,
     assets: Res<AssetServer>,
     mut animated_sprites: CompMut<AnimatedSprite>,
 ) {
-    for (entity, (_kick_bomb, element_handle)) in
-        entities.iter_with((&mut idle_bombs, &element_handles))
+    for (entity, (_kick_bomb, kick_bomb_handle)) in
+        entities.iter_with((&mut idle_bombs, &kick_bomb_handles))
     {
-        let element_meta = assets.get(element_handle.0);
+        let kick_bomb_meta = assets.get(kick_bomb_handle.0);
 
-        let asset = assets.get(element_meta.data);
-        let Ok(KickBombMeta {
+        let KickBombMeta {
             fuse_sound,
             fuse_sound_volume,
             arm_delay,
             fuse_time,
             ..
-        }) = asset.try_cast_ref()
-        else {
-            unreachable!();
-        };
-
-        let arm_delay = *arm_delay;
-        let fuse_time = *fuse_time;
+        } = *kick_bomb_meta;
 
         if items_used.remove(entity).is_some() {
-            audio_center.play_sound(*fuse_sound, *fuse_sound_volume);
+            audio_center.play_sound(fuse_sound, fuse_sound_volume);
             let animated_sprite = animated_sprites.get_mut(entity).unwrap();
             animated_sprite.frames = [3, 4, 5].into_iter().collect();
             animated_sprite.repeat = true;
@@ -192,9 +241,8 @@ fn update_idle_kick_bombs(
 
 fn update_lit_kick_bombs(
     entities: Res<Entities>,
-    element_handles: Comp<ElementHandle>,
+    kick_bomb_handles: Comp<KickBombHandle>,
     assets: Res<AssetServer>,
-
     collision_world: CollisionWorld,
     player_indexes: Comp<PlayerIdx>,
     mut audio_center: ResMut<AudioCenter>,
@@ -210,12 +258,11 @@ fn update_lit_kick_bombs(
     spawners: Comp<DehydrateOutOfBounds>,
     invincibles: CompMut<Invincibility>,
 ) {
-    for (entity, (kick_bomb, element_handle, spawner)) in
-        entities.iter_with((&mut lit_grenades, &element_handles, &spawners))
+    for (entity, (kick_bomb, kick_bomb_handle, spawner)) in
+        entities.iter_with((&mut lit_grenades, &kick_bomb_handles, &Optional(&spawners)))
     {
-        let element_meta = assets.get(element_handle.0);
-        let asset = assets.get(element_meta.data);
-        let Ok(KickBombMeta {
+        let kick_bomb_meta = assets.get(kick_bomb_handle.0);
+        let KickBombMeta {
             explosion_sound,
             explosion_volume,
             kick_velocity,
@@ -226,10 +273,7 @@ fn update_lit_kick_bombs(
             explosion_fps,
             explosion_frames,
             ..
-        }) = asset.try_cast_ref()
-        else {
-            unreachable!();
-        };
+        } = *kick_bomb_meta;
 
         kick_bomb.fuse_time.tick(time.delta());
         kick_bomb.arm_delay.tick(time.delta());
@@ -271,7 +315,7 @@ fn update_lit_kick_bombs(
                 let player_standing_left = player_translation.x <= translation.x;
 
                 if body.velocity.x == 0.0 {
-                    body.velocity = *kick_velocity;
+                    body.velocity = kick_velocity;
                     if player_sprite.flip_x {
                         body.velocity.x *= -1.0;
                     }
@@ -293,23 +337,19 @@ fn update_lit_kick_bombs(
 
         // If it's time to explode
         if should_explode {
-            audio_center.play_sound(*explosion_sound, *explosion_volume);
+            audio_center.play_sound(explosion_sound, explosion_volume);
 
             trauma_events.send(7.5);
 
-            // Cause the item to respawn by un-hydrating it's spawner.
-            hydrated.remove(**spawner);
+            if let Some(spawner) = spawner {
+                // Cause the item to respawn by un-hydrating it's spawner.
+                hydrated.remove(**spawner);
+            }
+
             let mut explosion_transform = *transforms.get(entity).unwrap();
             explosion_transform.translation.z = -10.0; // On top of almost everything
             explosion_transform.rotation = Quat::IDENTITY;
 
-            // Clone types for move into closure
-            let damage_region_size = *damage_region_size;
-            let damage_region_lifetime = *damage_region_lifetime;
-            let explosion_lifetime = *explosion_lifetime;
-            let explosion_atlas = *explosion_atlas;
-            let explosion_fps = *explosion_fps;
-            let explosion_frames = *explosion_frames;
             commands.add(
                 move |mut entities: ResMutInit<Entities>,
                       mut transforms: CompMut<Transform>,

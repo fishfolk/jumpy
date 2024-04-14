@@ -29,22 +29,36 @@ impl SessionExt for Sessions {
 
     #[track_caller]
     fn restart_game(&mut self) {
-        if let Some((map, player_info, plugins)) = self.get(SessionNames::GAME).map(|session| {
-            let map = (*session.world.resource::<LoadedMap>().0).clone();
-            let match_inputs = session.world.resource::<MatchInputs>();
-            (
-                map,
-                match_inputs.players.clone(),
-                session.world.resource::<LuaPlugins>().0.clone(),
-            )
-        }) {
+        if let Some((map, player_info, plugins, mut session_runner)) =
+            self.get_mut(SessionNames::GAME).map(|session| {
+                let map = (*session.world.resource::<LoadedMap>().0).clone();
+                let match_inputs = session.world.resource::<MatchInputs>();
+
+                // Take ownership of session runner (we want to preserve socket and such for network runner)
+                // by swapping a dummy one with session.
+                let mut session_runner: Box<dyn SessionRunner> =
+                    Box::<JumpyDefaultMatchRunner>::default();
+                std::mem::swap(&mut session.runner, &mut session_runner);
+
+                (
+                    map,
+                    match_inputs.players.clone(),
+                    session.world.resource::<LuaPlugins>().0.clone(),
+                    session_runner,
+                )
+            })
+        {
             self.end_game();
+
+            // Reset session runner
+            session_runner.restart_session();
+
             self.create(SessionNames::GAME)
                 .install_plugin(crate::core::MatchPlugin {
                     map,
                     player_info,
                     plugins,
-                    session_runner: Box::<JumpyDefaultMatchRunner>::default(),
+                    session_runner,
                 });
         } else {
             panic!("Cannot restart game when game is not running");

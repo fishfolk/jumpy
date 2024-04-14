@@ -138,6 +138,7 @@ pub fn network_game_menu(
                         }
                         if BorderedButton::themed(normal_button_style, lan)
                             .show(ui)
+                            .focus_by_default(ui)
                             .clicked()
                         {
                             state.match_kind = MatchKind::Lan(default());

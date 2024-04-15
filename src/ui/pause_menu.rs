@@ -111,7 +111,7 @@ fn pause_menu_system(
             }),
             plugins: meta.get_plugins(&assets),
             session_runner: Box::<JumpyDefaultMatchRunner>::default(),
-            score: default()
+            score: default(),
         })
     }
 }

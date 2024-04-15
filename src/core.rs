@@ -16,6 +16,7 @@ pub mod physics;
 pub mod player;
 pub mod random;
 pub mod utils;
+pub mod win_indicator;
 
 /// The target fixed frames-per-second that the game sumulation runs at.
 pub const FPS: f32 = 60.0;
@@ -31,8 +32,8 @@ pub mod prelude {
     pub use super::{
         attachment::*, bullet::*, camera::*, damage::*, debug::*, editor::*, editor::*,
         elements::prelude::*, flappy_jellyfish::*, globals::*, input::*, item::*, lifetime::*,
-        map::*, map_constructor::*, metadata::*, physics::*, player::*, random::*, utils::*, FPS,
-        MAX_PLAYERS,
+        map::*, map_constructor::*, metadata::*, physics::*, player::*, random::*, utils::*,
+        win_indicator::*, FPS, MAX_PLAYERS,
     };
 }
 
@@ -43,6 +44,7 @@ pub fn game_plugin(game: &mut Game) {
     MapMeta::register_schema();
     game.install_plugin(elements::game_plugin)
         .install_plugin(bullet::game_plugin)
+        .install_plugin(win_indicator::game_plugin)
         .init_shared_resource::<AssetServer>();
 }
 

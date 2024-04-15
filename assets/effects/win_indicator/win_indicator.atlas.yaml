@@ -1,0 +1,4 @@
+image: ./win_indicator.png
+tile_size: [32, 32]
+columns: 1
+rows: 1

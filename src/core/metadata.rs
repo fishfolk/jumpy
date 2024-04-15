@@ -39,6 +39,7 @@ pub struct CoreMeta {
     pub players: SVec<Handle<PlayerMeta>>,
     pub player_emotes: SMap<Ustr, Handle<EmoteMeta>>,
     pub player_hats: SVec<Handle<HatMeta>>,
+    pub player_win_indicator: Handle<WinIndicatorMeta>,
     pub stable_maps: SVec<Handle<MapMeta>>,
     pub map_elements: SVec<Handle<ElementMeta>>,
     pub experimental_maps: SVec<Handle<MapMeta>>,

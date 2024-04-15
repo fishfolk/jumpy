@@ -1,0 +1,8 @@
+name: win_indicator
+atlas: ./win_indicator.atlas.yaml
+offset: [0, 40]
+animation:
+  fps: 1
+  frames:
+    - 0
+attachment_easing: ./win_indicator.attachment_easing.yaml

@@ -305,6 +305,8 @@ core:
     - /player/hats/viking/viking.hat.yaml
     - /player/hats/water_lily/water_lily.hat.yaml
 
+  player_win_indicator: /effects/win_indicator/win_indicator.yaml
+
   stable_maps:
     - /map/levels/level_1.map.yaml
     - /map/levels/level_2.map.yaml

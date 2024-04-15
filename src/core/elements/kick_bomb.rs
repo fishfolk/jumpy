@@ -168,14 +168,6 @@ fn hydrate(
         let transform = *transforms.get(spawner_ent).unwrap();
         let element_handle = *element_handles.get(spawner_ent).unwrap();
 
-        hydrated.insert(spawner_ent, MapElementHydrated);
-
-        let entity = entities.create();
-        hydrated.insert(entity, MapElementHydrated);
-        element_handles.insert(entity, element_handle);
-        respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
-        spawner_manager.create_spawner(spawner_ent, vec![entity]);
-
         // Check if spawner element handle is for kick bomb
         let element_meta = assets.get(element_handle.0);
         if assets
@@ -183,6 +175,14 @@ fn hydrate(
             .try_cast_ref::<KickBombMeta>()
             .is_ok()
         {
+            hydrated.insert(spawner_ent, MapElementHydrated);
+
+            let entity = entities.create();
+            hydrated.insert(entity, MapElementHydrated);
+            element_handles.insert(entity, element_handle);
+            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
+            spawner_manager.create_spawner(spawner_ent, vec![entity]);
+
             commands.add(KickBombCommand::spawn_kick_bomb(
                 Some(entity),
                 transform,

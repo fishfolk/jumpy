@@ -139,6 +139,7 @@ pub fn round_end(
             let mut round_transition_synchronized = false;
 
             // If in network play and determined a prev frame round should end on:
+            #[allow(unused_variables)]
             if let Some(end_net_frame) = state.network_round_end_frame {
                 // check if this frame is confirmed by all players.
                 #[cfg(not(target_arch = "wasm32"))]

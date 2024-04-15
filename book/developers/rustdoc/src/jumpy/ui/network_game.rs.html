@@ -637,6 +637,7 @@
 <a href="#542" id="542">542</a>
 <a href="#543" id="543">543</a>
 <a href="#544" id="544">544</a>
+<a href="#545" id="545">545</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bones_framework::networking::online::SearchState;
 
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
@@ -777,6 +778,7 @@
                         }
                         <span class="kw">if </span>BorderedButton::themed(normal_button_style, lan)
                             .show(ui)
+                            .focus_by_default(ui)
                             .clicked()
                         {
                             state.match_kind = MatchKind::Lan(default());

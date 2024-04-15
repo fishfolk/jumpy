@@ -296,7 +296,7 @@
                 <span class="prelude-val">Some</span>(socket) =&gt; Box::new(GgrsSessionRunner::&lt;NetworkInputConfig&gt;::new(
                     FPS,
                     GgrsSessionRunnerInfo::new(
-                        socket.as_ref(),
+                        socket.ggrs_socket(),
                         <span class="prelude-val">Some</span>(meta.network.max_prediction_window),
                         <span class="prelude-val">Some</span>(meta.network.local_input_delay),
                     ),

@@ -451,6 +451,46 @@
 <a href="#356" id="356">356</a>
 <a href="#357" id="357">357</a>
 <a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Default, Debug, Clone)]
@@ -505,22 +545,109 @@
     kicks: u32,
 }
 
+<span class="doccomment">/// Component containing the kick bombs&#39;s metadata handle.
+</span><span class="attr">#[derive(Deref, DerefMut, HasSchema, Default, Clone)]
+#[repr(C)]
+</span><span class="kw">pub struct </span>KickBombHandle(<span class="kw">pub </span>Handle&lt;KickBombMeta&gt;);
+
+<span class="doccomment">/// Commands for KickBombs
+</span><span class="attr">#[derive(Clone, Debug)]
+</span><span class="kw">pub struct </span>KickBombCommand;
+
+<span class="kw">impl </span>KickBombCommand {
+    <span class="doccomment">/// Command for spawning  a kick bomb.
+    /// If entity is provided, components are added to this entity, otherwise command spawns the entity
+    ///
+    /// `kick_bomb_handle` must cast to `Handle&lt;KickBombMeta&gt;` or `Handle&lt;ElementMeta&gt;` where [`ElementMeta`]
+    /// contains handle that casts to `Handle&lt;KickBombMeta&gt;`.
+    /// [`Handle::untyped`] should be used to convert to [`UntypedHandle`].
+    </span><span class="kw">pub fn </span>spawn_kick_bomb(
+        entity: <span class="prelude-ty">Option</span>&lt;Entity&gt;,
+        transform: Transform,
+        kick_bomb_meta_handle: UntypedHandle,
+    ) -&gt; StaticSystem&lt;(), ()&gt; {
+        (<span class="kw">move </span>|game_meta: Root&lt;GameMeta&gt;,
+               assets: Res&lt;AssetServer&gt;,
+               <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
+               <span class="kw-2">mut </span>atlas_sprites: CompMut&lt;AtlasSprite&gt;,
+               <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
+               <span class="kw-2">mut </span>entities: ResMutInit&lt;Entities&gt;,
+               <span class="kw-2">mut </span>idle_bombs: CompMut&lt;IdleKickBomb&gt;,
+               <span class="kw-2">mut </span>items: CompMut&lt;Item&gt;,
+               <span class="kw-2">mut </span>item_throws: CompMut&lt;ItemThrow&gt;,
+               <span class="kw-2">mut </span>item_grabs: CompMut&lt;ItemGrab&gt;,
+               <span class="kw-2">mut </span>kick_bomb_handles: CompMut&lt;KickBombHandle&gt;,
+               <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;| {
+            <span class="comment">// Unwrap entity or spawn if existing entity was not provided.
+            </span><span class="kw">let </span>entity = entity.unwrap_or_else(|| entities.create());
+
+            <span class="comment">// Try to use handle as Handle&lt;KickBombMeta&gt;.
+            </span><span class="kw">let </span>kick_bomb_meta_handle =
+                <span class="kw">match </span>try_cast_meta_handle::&lt;KickBombMeta&gt;(kick_bomb_meta_handle, <span class="kw-2">&amp;</span>assets) {
+                    <span class="prelude-val">Ok</span>(handle) =&gt; handle,
+                    <span class="prelude-val">Err</span>(err) =&gt; {
+                        <span class="macro">error!</span>(<span class="string">&quot;KickBombCommand::spawn_kick_bomb() failed: {err}&quot;</span>);
+                        <span class="kw">return</span>;
+                    }
+                };
+
+            <span class="kw">let </span>KickBombMeta {
+                atlas,
+                fin_anim,
+                grab_offset,
+                body_diameter,
+                can_rotate,
+                bounciness,
+                throw_velocity,
+                angular_velocity,
+                ..
+            } = <span class="kw-2">*</span>assets.get(kick_bomb_meta_handle);
+            kick_bomb_handles.insert(entity, KickBombHandle(kick_bomb_meta_handle));
+            items.insert(entity, Item);
+            item_throws.insert(
+                entity,
+                ItemThrow::strength(throw_velocity).with_spin(angular_velocity),
+            );
+            item_grabs.insert(
+                entity,
+                ItemGrab {
+                    fin_anim,
+                    sync_animation: <span class="bool-val">false</span>,
+                    grab_offset,
+                },
+            );
+            idle_bombs.insert(entity, IdleKickBomb);
+            atlas_sprites.insert(entity, AtlasSprite::new(atlas));
+            transforms.insert(entity, transform);
+            animated_sprites.insert(entity, default());
+            bodies.insert(
+                entity,
+                KinematicBody {
+                    shape: ColliderShape::Circle {
+                        diameter: body_diameter,
+                    },
+                    gravity: game_meta.core.physics.gravity,
+                    has_mass: <span class="bool-val">true</span>,
+                    has_friction: <span class="bool-val">true</span>,
+                    can_rotate,
+                    bounciness,
+                    ..default()
+                },
+            );
+        })
+        .system()
+    }
+}
+
 <span class="kw">fn </span>hydrate(
-    game_meta: Root&lt;GameMeta&gt;,
-    <span class="kw-2">mut </span>items: CompMut&lt;Item&gt;,
-    <span class="kw-2">mut </span>item_throws: CompMut&lt;ItemThrow&gt;,
-    <span class="kw-2">mut </span>item_grabs: CompMut&lt;ItemGrab&gt;,
-    <span class="kw-2">mut </span>entities: ResMutInit&lt;Entities&gt;,
-    <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
-    <span class="kw-2">mut </span>idle_bombs: CompMut&lt;IdleKickBomb&gt;,
-    <span class="kw-2">mut </span>atlas_sprites: CompMut&lt;AtlasSprite&gt;,
     assets: Res&lt;AssetServer&gt;,
+    <span class="kw-2">mut </span>entities: ResMutInit&lt;Entities&gt;,
+    transforms: Comp&lt;Transform&gt;,
     <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
     <span class="kw-2">mut </span>element_handles: CompMut&lt;ElementHandle&gt;,
-    <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
     <span class="kw-2">mut </span>respawn_points: CompMut&lt;DehydrateOutOfBounds&gt;,
     <span class="kw-2">mut </span>spawner_manager: SpawnerManager,
+    <span class="kw-2">mut </span>commands: Commands,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -533,58 +660,27 @@
     <span class="kw">for </span>spawner_ent <span class="kw">in </span>spawner_entities {
         <span class="kw">let </span>transform = <span class="kw-2">*</span>transforms.get(spawner_ent).unwrap();
         <span class="kw">let </span>element_handle = <span class="kw-2">*</span>element_handles.get(spawner_ent).unwrap();
-        <span class="kw">let </span>element_meta = assets.get(element_handle.<span class="number">0</span>);
 
-        <span class="kw">if let </span><span class="prelude-val">Ok</span>(KickBombMeta {
-            atlas,
-            fin_anim,
-            grab_offset,
-            body_diameter,
-            can_rotate,
-            bounciness,
-            throw_velocity,
-            angular_velocity,
-            ..
-        }) = assets.get(element_meta.data).try_cast_ref()
+        hydrated.insert(spawner_ent, MapElementHydrated);
+
+        <span class="kw">let </span>entity = entities.create();
+        hydrated.insert(entity, MapElementHydrated);
+        element_handles.insert(entity, element_handle);
+        respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
+        spawner_manager.create_spawner(spawner_ent, <span class="macro">vec!</span>[entity]);
+
+        <span class="comment">// Check if spawner element handle is for kick bomb
+        </span><span class="kw">let </span>element_meta = assets.get(element_handle.<span class="number">0</span>);
+        <span class="kw">if </span>assets
+            .get(element_meta.data)
+            .try_cast_ref::&lt;KickBombMeta&gt;()
+            .is_ok()
         {
-            hydrated.insert(spawner_ent, MapElementHydrated);
-
-            <span class="kw">let </span>entity = entities.create();
-            hydrated.insert(entity, MapElementHydrated);
-            element_handles.insert(entity, element_handle);
-            items.insert(entity, Item);
-            item_throws.insert(
-                entity,
-                ItemThrow::strength(<span class="kw-2">*</span>throw_velocity).with_spin(<span class="kw-2">*</span>angular_velocity),
-            );
-            item_grabs.insert(
-                entity,
-                ItemGrab {
-                    fin_anim: <span class="kw-2">*</span>fin_anim,
-                    sync_animation: <span class="bool-val">false</span>,
-                    grab_offset: <span class="kw-2">*</span>grab_offset,
-                },
-            );
-            idle_bombs.insert(entity, IdleKickBomb);
-            atlas_sprites.insert(entity, AtlasSprite::new(<span class="kw-2">*</span>atlas));
-            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
-            transforms.insert(entity, transform);
-            animated_sprites.insert(entity, default());
-            bodies.insert(
-                entity,
-                KinematicBody {
-                    shape: ColliderShape::Circle {
-                        diameter: <span class="kw-2">*</span>body_diameter,
-                    },
-                    gravity: game_meta.core.physics.gravity,
-                    has_mass: <span class="bool-val">true</span>,
-                    has_friction: <span class="bool-val">true</span>,
-                    can_rotate: <span class="kw-2">*</span>can_rotate,
-                    bounciness: <span class="kw-2">*</span>bounciness,
-                    ..default()
-                },
-            );
-            spawner_manager.create_spawner(spawner_ent, <span class="macro">vec!</span>[entity])
+            commands.add(KickBombCommand::spawn_kick_bomb(
+                <span class="prelude-val">Some</span>(entity),
+                transform,
+                element_meta.data.untyped(),
+            ));
         }
     }
 }
@@ -594,33 +690,26 @@
     <span class="kw-2">mut </span>commands: Commands,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
     <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
-    element_handles: Comp&lt;ElementHandle&gt;,
+    kick_bomb_handles: Comp&lt;KickBombHandle&gt;,
     <span class="kw-2">mut </span>idle_bombs: CompMut&lt;IdleKickBomb&gt;,
     assets: Res&lt;AssetServer&gt;,
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
 ) {
-    <span class="kw">for </span>(entity, (_kick_bomb, element_handle)) <span class="kw">in
-        </span>entities.iter_with((<span class="kw-2">&amp;mut </span>idle_bombs, <span class="kw-2">&amp;</span>element_handles))
+    <span class="kw">for </span>(entity, (_kick_bomb, kick_bomb_handle)) <span class="kw">in
+        </span>entities.iter_with((<span class="kw-2">&amp;mut </span>idle_bombs, <span class="kw-2">&amp;</span>kick_bomb_handles))
     {
-        <span class="kw">let </span>element_meta = assets.get(element_handle.<span class="number">0</span>);
+        <span class="kw">let </span>kick_bomb_meta = assets.get(kick_bomb_handle.<span class="number">0</span>);
 
-        <span class="kw">let </span>asset = assets.get(element_meta.data);
-        <span class="kw">let </span><span class="prelude-val">Ok</span>(KickBombMeta {
+        <span class="kw">let </span>KickBombMeta {
             fuse_sound,
             fuse_sound_volume,
             arm_delay,
             fuse_time,
             ..
-        }) = asset.try_cast_ref()
-        <span class="kw">else </span>{
-            <span class="macro">unreachable!</span>();
-        };
-
-        <span class="kw">let </span>arm_delay = <span class="kw-2">*</span>arm_delay;
-        <span class="kw">let </span>fuse_time = <span class="kw-2">*</span>fuse_time;
+        } = <span class="kw-2">*</span>kick_bomb_meta;
 
         <span class="kw">if </span>items_used.remove(entity).is_some() {
-            audio_center.play_sound(<span class="kw-2">*</span>fuse_sound, <span class="kw-2">*</span>fuse_sound_volume);
+            audio_center.play_sound(fuse_sound, fuse_sound_volume);
             <span class="kw">let </span>animated_sprite = animated_sprites.get_mut(entity).unwrap();
             animated_sprite.frames = [<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>].into_iter().collect();
             animated_sprite.repeat = <span class="bool-val">true</span>;
@@ -645,9 +734,8 @@
 
 <span class="kw">fn </span>update_lit_kick_bombs(
     entities: Res&lt;Entities&gt;,
-    element_handles: Comp&lt;ElementHandle&gt;,
+    kick_bomb_handles: Comp&lt;KickBombHandle&gt;,
     assets: Res&lt;AssetServer&gt;,
-
     collision_world: CollisionWorld,
     player_indexes: Comp&lt;PlayerIdx&gt;,
     <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;,
@@ -663,12 +751,11 @@
     spawners: Comp&lt;DehydrateOutOfBounds&gt;,
     invincibles: CompMut&lt;Invincibility&gt;,
 ) {
-    <span class="kw">for </span>(entity, (kick_bomb, element_handle, spawner)) <span class="kw">in
-        </span>entities.iter_with((<span class="kw-2">&amp;mut </span>lit_grenades, <span class="kw-2">&amp;</span>element_handles, <span class="kw-2">&amp;</span>spawners))
+    <span class="kw">for </span>(entity, (kick_bomb, kick_bomb_handle, spawner)) <span class="kw">in
+        </span>entities.iter_with((<span class="kw-2">&amp;mut </span>lit_grenades, <span class="kw-2">&amp;</span>kick_bomb_handles, <span class="kw-2">&amp;</span>Optional(<span class="kw-2">&amp;</span>spawners)))
     {
-        <span class="kw">let </span>element_meta = assets.get(element_handle.<span class="number">0</span>);
-        <span class="kw">let </span>asset = assets.get(element_meta.data);
-        <span class="kw">let </span><span class="prelude-val">Ok</span>(KickBombMeta {
+        <span class="kw">let </span>kick_bomb_meta = assets.get(kick_bomb_handle.<span class="number">0</span>);
+        <span class="kw">let </span>KickBombMeta {
             explosion_sound,
             explosion_volume,
             kick_velocity,
@@ -679,10 +766,7 @@
             explosion_fps,
             explosion_frames,
             ..
-        }) = asset.try_cast_ref()
-        <span class="kw">else </span>{
-            <span class="macro">unreachable!</span>();
-        };
+        } = <span class="kw-2">*</span>kick_bomb_meta;
 
         kick_bomb.fuse_time.tick(time.delta());
         kick_bomb.arm_delay.tick(time.delta());
@@ -724,7 +808,7 @@
                 <span class="kw">let </span>player_standing_left = player_translation.x &lt;= translation.x;
 
                 <span class="kw">if </span>body.velocity.x == <span class="number">0.0 </span>{
-                    body.velocity = <span class="kw-2">*</span>kick_velocity;
+                    body.velocity = kick_velocity;
                     <span class="kw">if </span>player_sprite.flip_x {
                         body.velocity.x <span class="kw-2">*</span>= -<span class="number">1.0</span>;
                     }
@@ -746,23 +830,19 @@
 
         <span class="comment">// If it&#39;s time to explode
         </span><span class="kw">if </span>should_explode {
-            audio_center.play_sound(<span class="kw-2">*</span>explosion_sound, <span class="kw-2">*</span>explosion_volume);
+            audio_center.play_sound(explosion_sound, explosion_volume);
 
             trauma_events.send(<span class="number">7.5</span>);
 
-            <span class="comment">// Cause the item to respawn by un-hydrating it&#39;s spawner.
-            </span>hydrated.remove(<span class="kw-2">**</span>spawner);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(spawner) = spawner {
+                <span class="comment">// Cause the item to respawn by un-hydrating it&#39;s spawner.
+                </span>hydrated.remove(<span class="kw-2">**</span>spawner);
+            }
+
             <span class="kw">let </span><span class="kw-2">mut </span>explosion_transform = <span class="kw-2">*</span>transforms.get(entity).unwrap();
             explosion_transform.translation.z = -<span class="number">10.0</span>; <span class="comment">// On top of almost everything
             </span>explosion_transform.rotation = Quat::IDENTITY;
 
-            <span class="comment">// Clone types for move into closure
-            </span><span class="kw">let </span>damage_region_size = <span class="kw-2">*</span>damage_region_size;
-            <span class="kw">let </span>damage_region_lifetime = <span class="kw-2">*</span>damage_region_lifetime;
-            <span class="kw">let </span>explosion_lifetime = <span class="kw-2">*</span>explosion_lifetime;
-            <span class="kw">let </span>explosion_atlas = <span class="kw-2">*</span>explosion_atlas;
-            <span class="kw">let </span>explosion_fps = <span class="kw-2">*</span>explosion_fps;
-            <span class="kw">let </span>explosion_frames = <span class="kw-2">*</span>explosion_frames;
             commands.add(
                 <span class="kw">move </span>|<span class="kw-2">mut </span>entities: ResMutInit&lt;Entities&gt;,
                       <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/work/jumpy/jumpy/target/debug/build/jumpy-0569ee603d18634f/out/shadow.rs`."><title>shadow.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../../../../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../../../../../../../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../../../../../../../../../../../" data-static-root-path="../../../../../../../../../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.1 (a28077b28 2023-12-04)" data-channel="1.74.1" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../../../../../../../../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../../../../../../../../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../../../../../../../../../../src-files.js"></script><script defer src="../../../../../../../../../../../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../../../../../../../../../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../../../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../../../../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../../../../../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/work/jumpy/jumpy/target/debug/build/jumpy-f34cdf5733f7e3c5/out/shadow.rs`."><title>shadow.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../../../../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../../../../../../../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../../../../../../../../../../../" data-static-root-path="../../../../../../../../../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.1 (a28077b28 2023-12-04)" data-channel="1.74.1" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../../../../../../../../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../../../../../../../../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../../../../../../../../../../src-files.js"></script><script defer src="../../../../../../../../../../../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../../../../../../../../../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../../../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../../../../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../../../../../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -1709,10 +1709,9 @@
 <a href="#1614" id="1614">1614</a>
 <a href="#1615" id="1615">1615</a>
 <a href="#1616" id="1616">1616</a>
-<a href="#1617" id="1617">1617</a>
 </pre></div><pre class="rust"><code><span class="comment">// Code automatically generated by `shadow-rs` (https://github.com/baoyachi/shadow-rs), do not edit.
 // Author: https://www.github.com/baoyachi
-// Generation time: 2024-04-10 00:18:08 +00:00
+// Generation time: 2024-04-15 00:07:55 +00:00
 
 
 
@@ -1757,19 +1756,19 @@ The architecture of the target for this build. This is the &quot;architecture&qu
 The project build time, formatted in modified ISO 8601 format (`YYYY-MM-DD HH-MM ±hh-mm` where hh-mm is the offset from UTC).&quot;#</span>]
 #[allow(dead_code)]
 #[allow(clippy::all)]
-</span><span class="kw">pub const </span>BUILD_TIME :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;2024-04-10 00:18:08 +00:00&quot;#</span>;
+</span><span class="kw">pub const </span>BUILD_TIME :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;2024-04-15 00:07:54 +00:00&quot;#</span>;
 
 <span class="attr">#[doc=<span class="string">r#&quot;
 The project build time, formatted according to [RFC 2822](https://datatracker.ietf.org/doc/html/rfc2822#section-3.3) (e.g. HTTP Headers).&quot;#</span>]
 #[allow(dead_code)]
 #[allow(clippy::all)]
-</span><span class="kw">pub const </span>BUILD_TIME_2822 :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;Wed, 10 Apr 2024 00:18:08 +0000&quot;#</span>;
+</span><span class="kw">pub const </span>BUILD_TIME_2822 :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;Mon, 15 Apr 2024 00:07:54 +0000&quot;#</span>;
 
 <span class="attr">#[doc=<span class="string">r#&quot;
 The project build time, formatted according to [RFC 3339 and ISO 8601](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6).&quot;#</span>]
 #[allow(dead_code)]
 #[allow(clippy::all)]
-</span><span class="kw">pub const </span>BUILD_TIME_3339 :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;2024-04-10T00:18:08Z&quot;#</span>;
+</span><span class="kw">pub const </span>BUILD_TIME_3339 :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;2024-04-15T00:07:54Z&quot;#</span>;
 
 <span class="attr">#[doc=<span class="string">r#&quot;
 The directory of the Cargo.toml manifest file of the project during build.
@@ -1796,60 +1795,60 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   ├── bevy_app v0.11.3
 │       │   │   ├── bevy_derive v0.11.3 (proc-macro)
 │       │   │   │   ├── bevy_macro_utils v0.11.3
-│       │   │   │   │   ├── quote v1.0.35
-│       │   │   │   │   │   └── proc-macro2 v1.0.79
+│       │   │   │   │   ├── quote v1.0.36
+│       │   │   │   │   │   └── proc-macro2 v1.0.80
 │       │   │   │   │   │       └── unicode-ident v1.0.12
 │       │   │   │   │   ├── rustc-hash v1.1.0
-│       │   │   │   │   ├── syn v2.0.52
-│       │   │   │   │   │   ├── proc-macro2 v1.0.79 (*)
-│       │   │   │   │   │   ├── quote v1.0.35 (*)
+│       │   │   │   │   ├── syn v2.0.58
+│       │   │   │   │   │   ├── proc-macro2 v1.0.80 (*)
+│       │   │   │   │   │   ├── quote v1.0.36 (*)
 │       │   │   │   │   │   └── unicode-ident v1.0.12
 │       │   │   │   │   └── toml_edit v0.19.15
-│       │   │   │   │       ├── indexmap v2.2.5
+│       │   │   │   │       ├── indexmap v2.2.6
 │       │   │   │   │       │   ├── equivalent v1.0.1
 │       │   │   │   │       │   └── hashbrown v0.14.3
 │       │   │   │   │       ├── toml_datetime v0.6.5
 │       │   │   │   │       └── winnow v0.5.40
-│       │   │   │   ├── quote v1.0.35 (*)
-│       │   │   │   └── syn v2.0.52 (*)
+│       │   │   │   ├── quote v1.0.36 (*)
+│       │   │   │   └── syn v2.0.58 (*)
 │       │   │   ├── bevy_ecs v0.11.3
 │       │   │   │   ├── async-channel v1.9.0 (*)
 │       │   │   │   ├── bevy_ecs_macros v0.11.3 (proc-macro)
 │       │   │   │   │   ├── bevy_macro_utils v0.11.3 (*)
-│       │   │   │   │   ├── proc-macro2 v1.0.79 (*)
-│       │   │   │   │   ├── quote v1.0.35 (*)
-│       │   │   │   │   └── syn v2.0.52 (*)
+│       │   │   │   │   ├── proc-macro2 v1.0.80 (*)
+│       │   │   │   │   ├── quote v1.0.36 (*)
+│       │   │   │   │   └── syn v2.0.58 (*)
 │       │   │   │   ├── bevy_ptr v0.11.3
 │       │   │   │   ├── bevy_reflect v0.11.3
 │       │   │   │   │   ├── bevy_math v0.11.3
 │       │   │   │   │   │   ├── glam v0.24.2
 │       │   │   │   │   │   │   ├── bytemuck v1.15.0
 │       │   │   │   │   │   │   │   └── bytemuck_derive v1.6.0 (proc-macro)
-│       │   │   │   │   │   │   │       ├── proc-macro2 v1.0.79 (*)
-│       │   │   │   │   │   │   │       ├── quote v1.0.35 (*)
-│       │   │   │   │   │   │   │       └── syn v2.0.52 (*)
+│       │   │   │   │   │   │   │       ├── proc-macro2 v1.0.80 (*)
+│       │   │   │   │   │   │   │       ├── quote v1.0.36 (*)
+│       │   │   │   │   │   │   │       └── syn v2.0.58 (*)
 │       │   │   │   │   │   │   └── serde v1.0.197
 │       │   │   │   │   │   │       └── serde_derive v1.0.197 (proc-macro)
-│       │   │   │   │   │   │           ├── proc-macro2 v1.0.79 (*)
-│       │   │   │   │   │   │           ├── quote v1.0.35 (*)
-│       │   │   │   │   │   │           └── syn v2.0.52 (*)
+│       │   │   │   │   │   │           ├── proc-macro2 v1.0.80 (*)
+│       │   │   │   │   │   │           ├── quote v1.0.36 (*)
+│       │   │   │   │   │   │           └── syn v2.0.58 (*)
 │       │   │   │   │   │   └── serde v1.0.197 (*)
 │       │   │   │   │   ├── bevy_ptr v0.11.3
 │       │   │   │   │   ├── bevy_reflect_derive v0.11.3 (proc-macro)
 │       │   │   │   │   │   ├── bevy_macro_utils v0.11.3 (*)
 │       │   │   │   │   │   ├── bit-set v0.5.3
 │       │   │   │   │   │   │   └── bit-vec v0.6.3
-│       │   │   │   │   │   ├── proc-macro2 v1.0.79 (*)
-│       │   │   │   │   │   ├── quote v1.0.35 (*)
-│       │   │   │   │   │   ├── syn v2.0.52 (*)
-│       │   │   │   │   │   └── uuid v1.7.0
-│       │   │   │   │   │       └── getrandom v0.2.12
+│       │   │   │   │   │   ├── proc-macro2 v1.0.80 (*)
+│       │   │   │   │   │   ├── quote v1.0.36 (*)
+│       │   │   │   │   │   ├── syn v2.0.58 (*)
+│       │   │   │   │   │   └── uuid v1.8.0
+│       │   │   │   │   │       └── getrandom v0.2.14
 │       │   │   │   │   │           ├── cfg-if v1.0.0
 │       │   │   │   │   │           └── libc v0.2.153
 │       │   │   │   │   ├── bevy_utils v0.11.3
 │       │   │   │   │   │   ├── ahash v0.8.11
 │       │   │   │   │   │   │   ├── cfg-if v1.0.0
-│       │   │   │   │   │   │   ├── getrandom v0.2.12
+│       │   │   │   │   │   │   ├── getrandom v0.2.14
 │       │   │   │   │   │   │   │   ├── cfg-if v1.0.0
 │       │   │   │   │   │   │   │   └── libc v0.2.153
 │       │   │   │   │   │   │   ├── once_cell v1.19.0
@@ -1858,35 +1857,35 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   │   │   │   [build-dependencies]
 │       │   │   │   │   │   │   └── version_check v0.9.4
 │       │   │   │   │   │   ├── bevy_utils_proc_macros v0.11.3 (proc-macro)
-│       │   │   │   │   │   │   ├── proc-macro2 v1.0.79 (*)
-│       │   │   │   │   │   │   ├── quote v1.0.35 (*)
-│       │   │   │   │   │   │   └── syn v2.0.52 (*)
+│       │   │   │   │   │   │   ├── proc-macro2 v1.0.80 (*)
+│       │   │   │   │   │   │   ├── quote v1.0.36 (*)
+│       │   │   │   │   │   │   └── syn v2.0.58 (*)
 │       │   │   │   │   │   ├── hashbrown v0.14.3
 │       │   │   │   │   │   │   ├── ahash v0.8.11 (*)
-│       │   │   │   │   │   │   ├── allocator-api2 v0.2.16
+│       │   │   │   │   │   │   ├── allocator-api2 v0.2.18
 │       │   │   │   │   │   │   └── serde v1.0.197 (*)
 │       │   │   │   │   │   ├── instant v0.1.12
 │       │   │   │   │   │   │   └── cfg-if v1.0.0
 │       │   │   │   │   │   ├── petgraph v0.6.4
 │       │   │   │   │   │   │   ├── fixedbitset v0.4.2
-│       │   │   │   │   │   │   └── indexmap v2.2.5 (*)
+│       │   │   │   │   │   │   └── indexmap v2.2.6 (*)
 │       │   │   │   │   │   ├── thiserror v1.0.58
 │       │   │   │   │   │   │   └── thiserror-impl v1.0.58 (proc-macro)
-│       │   │   │   │   │   │       ├── proc-macro2 v1.0.79 (*)
-│       │   │   │   │   │   │       ├── quote v1.0.35 (*)
-│       │   │   │   │   │   │       └── syn v2.0.52 (*)
+│       │   │   │   │   │   │       ├── proc-macro2 v1.0.80 (*)
+│       │   │   │   │   │   │       ├── quote v1.0.36 (*)
+│       │   │   │   │   │   │       └── syn v2.0.58 (*)
 │       │   │   │   │   │   ├── tracing v0.1.40
-│       │   │   │   │   │   │   ├── pin-project-lite v0.2.13
+│       │   │   │   │   │   │   ├── pin-project-lite v0.2.14
 │       │   │   │   │   │   │   ├── tracing-attributes v0.1.27 (proc-macro)
-│       │   │   │   │   │   │   │   ├── proc-macro2 v1.0.79 (*)
-│       │   │   │   │   │   │   │   ├── quote v1.0.35 (*)
-│       │   │   │   │   │   │   │   └── syn v2.0.52 (*)
+│       │   │   │   │   │   │   │   ├── proc-macro2 v1.0.80 (*)
+│       │   │   │   │   │   │   │   ├── quote v1.0.36 (*)
+│       │   │   │   │   │   │   │   └── syn v2.0.58 (*)
 │       │   │   │   │   │   │   └── tracing-core v0.1.32
 │       │   │   │   │   │   │       └── once_cell v1.19.0
-│       │   │   │   │   │   └── uuid v1.7.0
-│       │   │   │   │   │       ├── getrandom v0.2.12 (*)
+│       │   │   │   │   │   └── uuid v1.8.0
+│       │   │   │   │   │       ├── getrandom v0.2.14 (*)
 │       │   │   │   │   │       └── serde v1.0.197 (*)
-│       │   │   │   │   ├── downcast-rs v1.2.0
+│       │   │   │   │   ├── downcast-rs v1.2.1
 │       │   │   │   │   ├── erased-serde v0.3.31
 │       │   │   │   │   │   └── serde v1.0.197 (*)
 │       │   │   │   │   ├── glam v0.24.2 (*)
@@ -1895,52 +1894,43 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   │   │   ├── lock_api v0.4.11
 │       │   │   │   │   │   │   └── scopeguard v1.2.0
 │       │   │   │   │   │   │   [build-dependencies]
-│       │   │   │   │   │   │   └── autocfg v1.1.0
+│       │   │   │   │   │   │   └── autocfg v1.2.0
 │       │   │   │   │   │   └── parking_lot_core v0.9.9
 │       │   │   │   │   │       ├── cfg-if v1.0.0
 │       │   │   │   │   │       ├── libc v0.2.153
-│       │   │   │   │   │       └── smallvec v1.13.1
+│       │   │   │   │   │       └── smallvec v1.13.2
 │       │   │   │   │   │           └── serde v1.0.197 (*)
 │       │   │   │   │   ├── serde v1.0.197 (*)
-│       │   │   │   │   ├── smallvec v1.13.1 (*)
+│       │   │   │   │   ├── smallvec v1.13.2 (*)
 │       │   │   │   │   ├── smol_str v0.2.1
 │       │   │   │   │   └── thiserror v1.0.58 (*)
 │       │   │   │   ├── bevy_tasks v0.11.3
 │       │   │   │   │   ├── async-channel v1.9.0 (*)
-│       │   │   │   │   ├── async-executor v1.8.0
-│       │   │   │   │   │   ├── async-lock v3.3.0
-│       │   │   │   │   │   │   ├── event-listener v4.0.3
-│       │   │   │   │   │   │   │   ├── concurrent-queue v2.4.0 (*)
-│       │   │   │   │   │   │   │   ├── parking v2.2.0
-│       │   │   │   │   │   │   │   └── pin-project-lite v0.2.13
-│       │   │   │   │   │   │   ├── event-listener-strategy v0.4.0
-│       │   │   │   │   │   │   │   ├── event-listener v4.0.3 (*)
-│       │   │   │   │   │   │   │   └── pin-project-lite v0.2.13
-│       │   │   │   │   │   │   └── pin-project-lite v0.2.13
+│       │   │   │   │   ├── async-executor v1.11.0
 │       │   │   │   │   │   ├── async-task v4.7.0
 │       │   │   │   │   │   ├── concurrent-queue v2.4.0 (*)
-│       │   │   │   │   │   ├── fastrand v2.0.1
+│       │   │   │   │   │   ├── fastrand v2.0.2
 │       │   │   │   │   │   ├── futures-lite v2.3.0
-│       │   │   │   │   │   │   ├── fastrand v2.0.1
+│       │   │   │   │   │   │   ├── fastrand v2.0.2
 │       │   │   │   │   │   │   ├── futures-core v0.3.30
 │       │   │   │   │   │   │   ├── futures-io v0.3.30
 │       │   │   │   │   │   │   ├── parking v2.2.0
-│       │   │   │   │   │   │   └── pin-project-lite v0.2.13
+│       │   │   │   │   │   │   └── pin-project-lite v0.2.14
 │       │   │   │   │   │   └── slab v0.4.9
 │       │   │   │   │   │       [build-dependencies]
-│       │   │   │   │   │       └── autocfg v1.1.0
+│       │   │   │   │   │       └── autocfg v1.2.0
 │       │   │   │   │   ├── async-task v4.7.0
 │       │   │   │   │   ├── concurrent-queue v2.4.0 (*)
 │       │   │   │   │   └── futures-lite v1.13.0
 │       │   │   │   │       ├── fastrand v1.9.0
 │       │   │   │   │       ├── futures-core v0.3.30
 │       │   │   │   │       ├── futures-io v0.3.30
-│       │   │   │   │       ├── memchr v2.7.1
+│       │   │   │   │       ├── memchr v2.7.2
 │       │   │   │   │       ├── parking v2.2.0
-│       │   │   │   │       ├── pin-project-lite v0.2.13
+│       │   │   │   │       ├── pin-project-lite v0.2.14
 │       │   │   │   │       └── waker-fn v1.1.1
 │       │   │   │   ├── bevy_utils v0.11.3 (*)
-│       │   │   │   ├── downcast-rs v1.2.0
+│       │   │   │   ├── downcast-rs v1.2.1
 │       │   │   │   ├── event-listener v2.5.3
 │       │   │   │   ├── fixedbitset v0.4.2
 │       │   │   │   ├── rustc-hash v1.1.0
@@ -1952,12 +1942,12 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   ├── bevy_reflect v0.11.3 (*)
 │       │   │   ├── bevy_tasks v0.11.3 (*)
 │       │   │   ├── bevy_utils v0.11.3 (*)
-│       │   │   └── downcast-rs v1.2.0
+│       │   │   └── downcast-rs v1.2.1
 │       │   ├── bevy_derive v0.11.3 (proc-macro) (*)
 │       │   └── bevy_ecs v0.11.3 (*)
 │       ├── bevy_app v0.11.3 (*)
 │       ├── bevy_asset v0.11.3
-│       │   ├── anyhow v1.0.81
+│       │   ├── anyhow v1.0.82
 │       │   ├── async-channel v1.9.0 (*)
 │       │   ├── bevy_app v0.11.3 (*)
 │       │   ├── bevy_diagnostic v0.11.3
@@ -1986,18 +1976,18 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │       ├── nu-ansi-term v0.46.0
 │       │   │   │       │   └── overload v0.1.1
 │       │   │   │       ├── once_cell v1.19.0
-│       │   │   │       ├── regex v1.10.3
-│       │   │   │       │   ├── aho-corasick v1.1.2
-│       │   │   │       │   │   └── memchr v2.7.1
-│       │   │   │       │   ├── memchr v2.7.1
+│       │   │   │       ├── regex v1.10.4
+│       │   │   │       │   ├── aho-corasick v1.1.3
+│       │   │   │       │   │   └── memchr v2.7.2
+│       │   │   │       │   ├── memchr v2.7.2
 │       │   │   │       │   ├── regex-automata v0.4.6
-│       │   │   │       │   │   ├── aho-corasick v1.1.2 (*)
-│       │   │   │       │   │   ├── memchr v2.7.1
-│       │   │   │       │   │   └── regex-syntax v0.8.2
-│       │   │   │       │   └── regex-syntax v0.8.2
+│       │   │   │       │   │   ├── aho-corasick v1.1.3 (*)
+│       │   │   │       │   │   ├── memchr v2.7.2
+│       │   │   │       │   │   └── regex-syntax v0.8.3
+│       │   │   │       │   └── regex-syntax v0.8.3
 │       │   │   │       ├── sharded-slab v0.1.7
 │       │   │   │       │   └── lazy_static v1.4.0
-│       │   │   │       ├── smallvec v1.13.1 (*)
+│       │   │   │       ├── smallvec v1.13.2 (*)
 │       │   │   │       ├── thread_local v1.1.8 (*)
 │       │   │   │       ├── tracing v0.1.40 (*)
 │       │   │   │       ├── tracing-core v0.1.32 (*)
@@ -2024,7 +2014,7 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   ├── bevy_tasks v0.11.3 (*)
 │       │   ├── bevy_utils v0.11.3 (*)
 │       │   ├── crossbeam-channel v0.5.12 (*)
-│       │   ├── downcast-rs v1.2.0
+│       │   ├── downcast-rs v1.2.1
 │       │   ├── fastrand v1.9.0
 │       │   ├── parking_lot v0.12.1 (*)
 │       │   ├── serde v1.0.197 (*)
@@ -2039,7 +2029,7 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   ├── bevy_math v0.11.3 (*)
 │       │   ├── bevy_reflect v0.11.3 (*)
 │       │   ├── bevy_render v0.11.3
-│       │   │   ├── anyhow v1.0.81
+│       │   │   ├── anyhow v1.0.82
 │       │   │   ├── async-channel v1.9.0 (*)
 │       │   │   ├── bevy_app v0.11.3 (*)
 │       │   │   ├── bevy_asset v0.11.3 (*)
@@ -2049,9 +2039,9 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   ├── bevy_encase_derive v0.11.3 (proc-macro)
 │       │   │   │   ├── bevy_macro_utils v0.11.3 (*)
 │       │   │   │   └── encase_derive_impl v0.6.1
-│       │   │   │       ├── proc-macro2 v1.0.79 (*)
-│       │   │   │       ├── quote v1.0.35 (*)
-│       │   │   │       └── syn v2.0.52 (*)
+│       │   │   │       ├── proc-macro2 v1.0.80 (*)
+│       │   │   │       ├── quote v1.0.36 (*)
+│       │   │   │       └── syn v2.0.58 (*)
 │       │   │   ├── bevy_hierarchy v0.11.3
 │       │   │   │   ├── bevy_app v0.11.3 (*)
 │       │   │   │   ├── bevy_core v0.11.3 (*)
@@ -2059,7 +2049,7 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   ├── bevy_log v0.11.3 (*)
 │       │   │   │   ├── bevy_reflect v0.11.3 (*)
 │       │   │   │   ├── bevy_utils v0.11.3 (*)
-│       │   │   │   └── smallvec v1.13.1 (*)
+│       │   │   │   └── smallvec v1.13.2 (*)
 │       │   │   ├── bevy_log v0.11.3 (*)
 │       │   │   ├── bevy_math v0.11.3 (*)
 │       │   │   ├── bevy_mikktspace v0.11.3
@@ -2067,9 +2057,9 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   ├── bevy_reflect v0.11.3 (*)
 │       │   │   ├── bevy_render_macros v0.11.3 (proc-macro)
 │       │   │   │   ├── bevy_macro_utils v0.11.3 (*)
-│       │   │   │   ├── proc-macro2 v1.0.79 (*)
-│       │   │   │   ├── quote v1.0.35 (*)
-│       │   │   │   └── syn v2.0.52 (*)
+│       │   │   │   ├── proc-macro2 v1.0.80 (*)
+│       │   │   │   ├── quote v1.0.36 (*)
+│       │   │   │   └── syn v2.0.58 (*)
 │       │   │   ├── bevy_tasks v0.11.3 (*)
 │       │   │   ├── bevy_time v0.11.3 (*)
 │       │   │   ├── bevy_transform v0.11.3
@@ -2093,12 +2083,12 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   ├── bevy_reflect v0.11.3 (*)
 │       │   │   │   ├── bevy_utils v0.11.3 (*)
 │       │   │   │   └── raw-window-handle v0.5.2
-│       │   │   ├── bitflags v2.4.2
+│       │   │   ├── bitflags v2.5.0
 │       │   │   ├── bytemuck v1.15.0 (*)
 │       │   │   ├── codespan-reporting v0.11.1
 │       │   │   │   ├── termcolor v1.4.1
 │       │   │   │   └── unicode-width v0.1.11
-│       │   │   ├── downcast-rs v1.2.0
+│       │   │   ├── downcast-rs v1.2.1
 │       │   │   ├── encase v0.6.1
 │       │   │   │   ├── const_panic v0.2.8
 │       │   │   │   ├── encase_derive v0.6.1 (proc-macro)
@@ -2107,7 +2097,7 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   └── thiserror v1.0.58 (*)
 │       │   │   ├── futures-lite v1.13.0 (*)
 │       │   │   ├── hexasphere v9.1.0
-│       │   │   │   ├── constgebra v0.1.3
+│       │   │   │   ├── constgebra v0.1.4
 │       │   │   │   │   └── const_soft_float v0.1.4
 │       │   │   │   └── glam v0.24.2 (*)
 │       │   │   ├── image v0.24.9
@@ -2117,7 +2107,7 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   ├── num-traits v0.2.18
 │       │   │   │   │   └── libm v0.2.8
 │       │   │   │   │   [build-dependencies]
-│       │   │   │   │   └── autocfg v1.1.0
+│       │   │   │   │   └── autocfg v1.2.0
 │       │   │   │   └── png v0.17.13
 │       │   │   │       ├── bitflags v1.3.2
 │       │   │   │       ├── crc32fast v1.4.0
@@ -2139,7 +2129,7 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   │   ├── hashbrown v0.12.3
 │       │   │   │   │   └── serde v1.0.197 (*)
 │       │   │   │   │   [build-dependencies]
-│       │   │   │   │   └── autocfg v1.1.0
+│       │   │   │   │   └── autocfg v1.2.0
 │       │   │   │   ├── log v0.4.21
 │       │   │   │   ├── num-traits v0.2.18 (*)
 │       │   │   │   ├── pp-rs v0.2.1
@@ -2158,16 +2148,16 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   ├── indexmap v1.9.3 (*)
 │       │   │   │   ├── naga v0.12.3 (*)
 │       │   │   │   ├── once_cell v1.19.0
-│       │   │   │   ├── regex v1.10.3 (*)
+│       │   │   │   ├── regex v1.10.4 (*)
 │       │   │   │   ├── regex-syntax v0.6.29
 │       │   │   │   ├── rustc-hash v1.1.0
 │       │   │   │   ├── thiserror v1.0.58 (*)
 │       │   │   │   ├── tracing v0.1.40 (*)
 │       │   │   │   └── unicode-ident v1.0.12
 │       │   │   ├── parking_lot v0.12.1 (*)
-│       │   │   ├── regex v1.10.3 (*)
+│       │   │   ├── regex v1.10.4 (*)
 │       │   │   ├── serde v1.0.197 (*)
-│       │   │   ├── smallvec v1.13.1 (*)
+│       │   │   ├── smallvec v1.13.2 (*)
 │       │   │   ├── thiserror v1.0.58 (*)
 │       │   │   ├── thread_local v1.1.8 (*)
 │       │   │   ├── wgpu v0.16.3
@@ -2178,12 +2168,12 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   ├── parking_lot v0.12.1 (*)
 │       │   │   │   ├── profiling v1.0.15
 │       │   │   │   ├── raw-window-handle v0.5.2
-│       │   │   │   ├── smallvec v1.13.1 (*)
+│       │   │   │   ├── smallvec v1.13.2 (*)
 │       │   │   │   ├── static_assertions v1.1.0
 │       │   │   │   ├── wgpu-core v0.16.1
 │       │   │   │   │   ├── arrayvec v0.7.4
 │       │   │   │   │   ├── bit-vec v0.6.3
-│       │   │   │   │   ├── bitflags v2.4.2
+│       │   │   │   │   ├── bitflags v2.5.0
 │       │   │   │   │   ├── codespan-reporting v0.11.1 (*)
 │       │   │   │   │   ├── log v0.4.21
 │       │   │   │   │   ├── naga v0.12.3 (*)
@@ -2191,23 +2181,23 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   │   ├── profiling v1.0.15
 │       │   │   │   │   ├── raw-window-handle v0.5.2
 │       │   │   │   │   ├── rustc-hash v1.1.0
-│       │   │   │   │   ├── smallvec v1.13.1 (*)
+│       │   │   │   │   ├── smallvec v1.13.2 (*)
 │       │   │   │   │   ├── thiserror v1.0.58 (*)
 │       │   │   │   │   ├── wgpu-hal v0.16.2
 │       │   │   │   │   │   ├── arrayvec v0.7.4
 │       │   │   │   │   │   ├── ash v0.37.3+1.3.251
 │       │   │   │   │   │   │   └── libloading v0.7.4
 │       │   │   │   │   │   │       └── cfg-if v1.0.0
-│       │   │   │   │   │   ├── bitflags v2.4.2
+│       │   │   │   │   │   ├── bitflags v2.5.0
 │       │   │   │   │   │   ├── glow v0.12.3
 │       │   │   │   │   │   ├── gpu-alloc v0.5.4
 │       │   │   │   │   │   │   ├── bitflags v1.3.2
 │       │   │   │   │   │   │   └── gpu-alloc-types v0.2.0
 │       │   │   │   │   │   │       └── bitflags v1.3.2
 │       │   │   │   │   │   ├── gpu-descriptor v0.2.4
-│       │   │   │   │   │   │   ├── bitflags v2.4.2
+│       │   │   │   │   │   │   ├── bitflags v2.5.0
 │       │   │   │   │   │   │   ├── gpu-descriptor-types v0.1.2
-│       │   │   │   │   │   │   │   └── bitflags v2.4.2
+│       │   │   │   │   │   │   │   └── bitflags v2.5.0
 │       │   │   │   │   │   │   └── hashbrown v0.14.3 (*)
 │       │   │   │   │   │   ├── khronos-egl v4.1.0
 │       │   │   │   │   │   │   ├── libc v0.2.153
@@ -2222,17 +2212,17 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   │   │   ├── raw-window-handle v0.5.2
 │       │   │   │   │   │   ├── renderdoc-sys v1.1.0
 │       │   │   │   │   │   ├── rustc-hash v1.1.0
-│       │   │   │   │   │   ├── smallvec v1.13.1 (*)
+│       │   │   │   │   │   ├── smallvec v1.13.2 (*)
 │       │   │   │   │   │   ├── thiserror v1.0.58 (*)
 │       │   │   │   │   │   └── wgpu-types v0.16.1
-│       │   │   │   │   │       └── bitflags v2.4.2
+│       │   │   │   │   │       └── bitflags v2.5.0
 │       │   │   │   │   └── wgpu-types v0.16.1 (*)
 │       │   │   │   ├── wgpu-hal v0.16.2 (*)
 │       │   │   │   └── wgpu-types v0.16.1 (*)
 │       │   │   └── wgpu-hal v0.16.2 (*)
 │       │   ├── bevy_transform v0.11.3 (*)
 │       │   ├── bevy_utils v0.11.3 (*)
-│       │   ├── bitflags v2.4.2
+│       │   ├── bitflags v2.5.0
 │       │   ├── radsort v0.1.0
 │       │   └── serde v1.0.197 (*)
 │       ├── bevy_derive v0.11.3 (proc-macro) (*)
@@ -2245,7 +2235,7 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   ├── bevy_log v0.11.3 (*)
 │       │   ├── bevy_time v0.11.3 (*)
 │       │   ├── bevy_utils v0.11.3 (*)
-│       │   ├── gilrs v0.10.5
+│       │   ├── gilrs v0.10.6
 │       │   │   ├── fnv v1.0.7
 │       │   │   ├── gilrs-core v0.5.11
 │       │   │   │   ├── inotify v0.10.2
@@ -2260,15 +2250,15 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   │   │   │   └── pkg-config v0.3.30
 │       │   │   │   ├── log v0.4.21
 │       │   │   │   ├── nix v0.28.0
-│       │   │   │   │   ├── bitflags v2.4.2
+│       │   │   │   │   ├── bitflags v2.5.0
 │       │   │   │   │   ├── cfg-if v1.0.0
 │       │   │   │   │   └── libc v0.2.153
 │       │   │   │   │   [build-dependencies]
 │       │   │   │   │   └── cfg_aliases v0.1.1
-│       │   │   │   ├── uuid v1.7.0 (*)
+│       │   │   │   ├── uuid v1.8.0 (*)
 │       │   │   │   └── vec_map v0.8.2
 │       │   │   ├── log v0.4.21
-│       │   │   ├── uuid v1.7.0 (*)
+│       │   │   ├── uuid v1.8.0 (*)
 │       │   │   └── vec_map v0.8.2
 │       │   └── thiserror v1.0.58 (*)
 │       ├── bevy_hierarchy v0.11.3 (*)
@@ -2290,7 +2280,7 @@ Note that this variable may contain local file system paths for path dependencie
 │       │   ├── bevy_render v0.11.3 (*)
 │       │   ├── bevy_transform v0.11.3 (*)
 │       │   ├── bevy_utils v0.11.3 (*)
-│       │   ├── bitflags v2.4.2
+│       │   ├── bitflags v2.5.0
 │       │   ├── bytemuck v1.15.0 (*)
 │       │   ├── fixedbitset v0.4.2
 │       │   ├── guillotiere v0.6.2
@@ -2326,9 +2316,9 @@ Note that this variable may contain local file system paths for path dependencie
 │           │       [build-dependencies]
 │           │       ├── cfg_aliases v0.1.1
 │           │       └── wayland-scanner v0.29.5
-│           │           ├── proc-macro2 v1.0.79 (*)
-│           │           ├── quote v1.0.35 (*)
-│           │           └── xml-rs v0.8.19
+│           │           ├── proc-macro2 v1.0.80 (*)
+│           │           ├── quote v1.0.36 (*)
+│           │           └── xml-rs v0.8.20
 │           ├── approx v0.5.1
 │           │   └── num-traits v0.2.18 (*)
 │           ├── bevy_a11y v0.11.3 (*)
@@ -2345,9 +2335,9 @@ Note that this variable may contain local file system paths for path dependencie
 │           └── winit v0.28.7 (*)
 ├── bevy_tasks v0.11.3 (*)
 ├── bitfield v0.14.0
-├── bitflags v2.4.2
+├── bitflags v2.5.0
 ├── bones_bevy_renderer v0.3.0 (* git)
-│   ├── anyhow v1.0.81
+│   ├── anyhow v1.0.82
 │   ├── bevy v0.11.3
 │   │   └── bevy_internal v0.11.3 (*)
 │   ├── bevy_egui v0.22.0
@@ -2357,15 +2347,15 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   ├── parking_lot v0.12.1 (*)
 │   │   │   ├── thiserror v1.0.58 (*)
 │   │   │   └── x11rb v0.13.0
-│   │   │       ├── rustix v0.38.31
-│   │   │       │   ├── bitflags v2.4.2
+│   │   │       ├── rustix v0.38.32
+│   │   │       │   ├── bitflags v2.5.0
 │   │   │       │   └── linux-raw-sys v0.4.13
 │   │   │       └── x11rb-protocol v0.13.0
 │   │   ├── bevy v0.11.3 (*)
 │   │   ├── egui v0.23.0
 │   │   │   ├── ahash v0.8.11 (*)
 │   │   │   ├── epaint v0.23.0
-│   │   │   │   ├── ab_glyph v0.2.23
+│   │   │   │   ├── ab_glyph v0.2.25
 │   │   │   │   │   ├── ab_glyph_rasterizer v0.1.8
 │   │   │   │   │   └── owned_ttf_parser v0.20.0
 │   │   │   │   │       └── ttf-parser v0.20.0
@@ -2383,7 +2373,7 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   ├── nohash-hasher v0.2.0
 │   │   │   └── serde v1.0.197 (*)
 │   │   ├── thread_local v1.1.8 (*)
-│   │   └── webbrowser v0.8.13
+│   │   └── webbrowser v0.8.15
 │   │       ├── home v0.5.9
 │   │       ├── log v0.4.21
 │   │       └── url v2.5.0
@@ -2412,25 +2402,25 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   └── svgtypes v0.8.2
 │   │       └── siphasher v0.3.11
 │   ├── bones_framework v0.3.0 (* git)
-│   │   ├── anyhow v1.0.81
+│   │   ├── anyhow v1.0.82
 │   │   ├── async-channel v1.9.0 (*)
 │   │   ├── bevy_tasks v0.11.3 (*)
 │   │   ├── bones_asset v0.3.0 (* git)
-│   │   │   ├── anyhow v1.0.81
+│   │   │   ├── anyhow v1.0.82
 │   │   │   ├── append-only-vec v0.1.3
 │   │   │   ├── async-channel v1.9.0 (*)
 │   │   │   ├── bevy_tasks v0.11.3 (*)
 │   │   │   ├── bones_schema v0.3.0 (* git)
 │   │   │   │   ├── append-only-vec v0.1.3
 │   │   │   │   ├── bones_schema_macros v0.3.0 (proc-macro) (* git)
-│   │   │   │   │   ├── proc-macro2 v1.0.79 (*)
-│   │   │   │   │   ├── quote v1.0.35 (*)
+│   │   │   │   │   ├── proc-macro2 v1.0.80 (*)
+│   │   │   │   │   ├── quote v1.0.36 (*)
 │   │   │   │   │   └── venial v0.5.0
-│   │   │   │   │       ├── proc-macro2 v1.0.79 (*)
-│   │   │   │   │       └── quote v1.0.35 (*)
+│   │   │   │   │       ├── proc-macro2 v1.0.80 (*)
+│   │   │   │   │       └── quote v1.0.36 (*)
 │   │   │   │   ├── bones_utils v0.3.0 (* git)
 │   │   │   │   │   ├── bones_utils_macros v0.3.0 (proc-macro) (* git)
-│   │   │   │   │   │   ├── quote v1.0.35 (*)
+│   │   │   │   │   │   ├── quote v1.0.36 (*)
 │   │   │   │   │   │   └── venial v0.5.0 (*)
 │   │   │   │   │   ├── branches v0.1.3
 │   │   │   │   │   ├── futures-lite v2.3.0 (*)
@@ -2441,16 +2431,16 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │   │   ├── maybe-owned v0.3.4
 │   │   │   │   │   ├── parking_lot v0.12.1 (*)
 │   │   │   │   │   ├── serde v1.0.197 (*)
-│   │   │   │   │   ├── smallvec v1.13.1 (*)
+│   │   │   │   │   ├── smallvec v1.13.2 (*)
 │   │   │   │   │   ├── turborand v0.10.1
-│   │   │   │   │   │   └── getrandom v0.2.12 (*)
+│   │   │   │   │   │   └── getrandom v0.2.14 (*)
 │   │   │   │   │   ├── ulid v1.1.2
 │   │   │   │   │   │   ├── rand v0.8.5
 │   │   │   │   │   │   │   ├── libc v0.2.153
 │   │   │   │   │   │   │   ├── rand_chacha v0.3.1
 │   │   │   │   │   │   │   │   ├── ppv-lite86 v0.2.17
 │   │   │   │   │   │   │   │   └── rand_core v0.6.4
-│   │   │   │   │   │   │   │       └── getrandom v0.2.12 (*)
+│   │   │   │   │   │   │   │       └── getrandom v0.2.14 (*)
 │   │   │   │   │   │   │   └── rand_core v0.6.4 (*)
 │   │   │   │   │   │   └── serde v1.0.197 (*)
 │   │   │   │   │   └── ustr v0.10.0
@@ -2469,7 +2459,7 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │   ├── stable_deref_trait v1.2.0
 │   │   │   │   └── ulid v1.1.2 (*)
 │   │   │   ├── bones_utils v0.3.0 (* git)
-│   │   │   ├── bs58 v0.5.0
+│   │   │   ├── bs58 v0.5.1
 │   │   │   ├── dashmap v5.5.3
 │   │   │   │   ├── cfg-if v1.0.0
 │   │   │   │   ├── hashbrown v0.14.3 (*)
@@ -2484,55 +2474,58 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │   │   ├── flate2 v1.0.28 (*)
 │   │   │   │   │   ├── log v0.4.21
 │   │   │   │   │   ├── once_cell v1.19.0
-│   │   │   │   │   ├── rustls v0.22.2
+│   │   │   │   │   ├── rustls v0.22.3
 │   │   │   │   │   │   ├── log v0.4.21
 │   │   │   │   │   │   ├── ring v0.17.8
 │   │   │   │   │   │   │   ├── cfg-if v1.0.0
-│   │   │   │   │   │   │   ├── getrandom v0.2.12 (*)
+│   │   │   │   │   │   │   ├── getrandom v0.2.14 (*)
 │   │   │   │   │   │   │   ├── spin v0.9.8
 │   │   │   │   │   │   │   │   └── lock_api v0.4.11 (*)
 │   │   │   │   │   │   │   └── untrusted v0.9.0
 │   │   │   │   │   │   │   [build-dependencies]
-│   │   │   │   │   │   │   └── cc v1.0.90
-│   │   │   │   │   │   │       ├── jobserver v0.1.28
+│   │   │   │   │   │   │   └── cc v1.0.94
+│   │   │   │   │   │   │       ├── jobserver v0.1.30
 │   │   │   │   │   │   │       │   └── libc v0.2.153
 │   │   │   │   │   │   │       └── libc v0.2.153
-│   │   │   │   │   │   ├── rustls-pki-types v1.3.1
+│   │   │   │   │   │   ├── rustls-pki-types v1.4.1
 │   │   │   │   │   │   ├── rustls-webpki v0.102.2
 │   │   │   │   │   │   │   ├── ring v0.17.8 (*)
-│   │   │   │   │   │   │   ├── rustls-pki-types v1.3.1
+│   │   │   │   │   │   │   ├── rustls-pki-types v1.4.1
 │   │   │   │   │   │   │   └── untrusted v0.9.0
 │   │   │   │   │   │   ├── subtle v2.5.0
 │   │   │   │   │   │   └── zeroize v1.7.0
-│   │   │   │   │   ├── rustls-pki-types v1.3.1
+│   │   │   │   │   ├── rustls-pki-types v1.4.1
 │   │   │   │   │   ├── rustls-webpki v0.102.2 (*)
 │   │   │   │   │   ├── url v2.5.0 (*)
 │   │   │   │   │   └── webpki-roots v0.26.1
-│   │   │   │   │       └── rustls-pki-types v1.3.1
+│   │   │   │   │       └── rustls-pki-types v1.4.1
 │   │   │   │   └── web-sys v0.3.69
 │   │   │   │       ├── js-sys v0.3.69
 │   │   │   │       │   └── wasm-bindgen v0.2.92
 │   │   │   │       │       ├── cfg-if v1.0.0
 │   │   │   │       │       └── wasm-bindgen-macro v0.2.92 (proc-macro)
-│   │   │   │       │           ├── quote v1.0.35 (*)
+│   │   │   │       │           ├── quote v1.0.36 (*)
 │   │   │   │       │           └── wasm-bindgen-macro-support v0.2.92
-│   │   │   │       │               ├── proc-macro2 v1.0.79 (*)
-│   │   │   │       │               ├── quote v1.0.35 (*)
-│   │   │   │       │               ├── syn v2.0.52 (*)
+│   │   │   │       │               ├── proc-macro2 v1.0.80 (*)
+│   │   │   │       │               ├── quote v1.0.36 (*)
+│   │   │   │       │               ├── syn v2.0.58 (*)
 │   │   │   │       │               ├── wasm-bindgen-backend v0.2.92
-│   │   │   │       │               │   ├── bumpalo v3.15.4
+│   │   │   │       │               │   ├── bumpalo v3.16.0
 │   │   │   │       │               │   ├── log v0.4.21
 │   │   │   │       │               │   ├── once_cell v1.19.0
-│   │   │   │       │               │   ├── proc-macro2 v1.0.79 (*)
-│   │   │   │       │               │   ├── quote v1.0.35 (*)
-│   │   │   │       │               │   ├── syn v2.0.52 (*)
+│   │   │   │       │               │   ├── proc-macro2 v1.0.80 (*)
+│   │   │   │       │               │   ├── quote v1.0.36 (*)
+│   │   │   │       │               │   ├── syn v2.0.58 (*)
 │   │   │   │       │               │   └── wasm-bindgen-shared v0.2.92
 │   │   │   │       │               └── wasm-bindgen-shared v0.2.92
 │   │   │   │       └── wasm-bindgen v0.2.92 (*)
 │   │   │   ├── elsa v1.10.0
 │   │   │   │   └── stable_deref_trait v1.2.0
 │   │   │   ├── erased-serde v0.4.4 (*)
-│   │   │   ├── event-listener v4.0.3 (*)
+│   │   │   ├── event-listener v4.0.3
+│   │   │   │   ├── concurrent-queue v2.4.0 (*)
+│   │   │   │   ├── parking v2.2.0
+│   │   │   │   └── pin-project-lite v0.2.14
 │   │   │   ├── notify v6.1.1
 │   │   │   │   ├── crossbeam-channel v0.5.12 (*)
 │   │   │   │   ├── filetime v0.2.23
@@ -2555,16 +2548,16 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   ├── semver v1.0.22
 │   │   │   │   └── serde v1.0.197 (*)
 │   │   │   ├── serde v1.0.197 (*)
-│   │   │   ├── serde_json v1.0.114
-│   │   │   │   ├── itoa v1.0.10
+│   │   │   ├── serde_json v1.0.115
+│   │   │   │   ├── itoa v1.0.11
 │   │   │   │   ├── ryu v1.0.17
 │   │   │   │   └── serde v1.0.197 (*)
-│   │   │   ├── serde_yaml v0.9.32
-│   │   │   │   ├── indexmap v2.2.5 (*)
-│   │   │   │   ├── itoa v1.0.10
+│   │   │   ├── serde_yaml v0.9.34+deprecated
+│   │   │   │   ├── indexmap v2.2.6 (*)
+│   │   │   │   ├── itoa v1.0.11
 │   │   │   │   ├── ryu v1.0.17
 │   │   │   │   ├── serde v1.0.197 (*)
-│   │   │   │   └── unsafe-libyaml v0.2.10
+│   │   │   │   └── unsafe-libyaml v0.2.11
 │   │   │   ├── sha2 v0.10.8
 │   │   │   │   ├── cfg-if v1.0.0
 │   │   │   │   ├── cpufeatures v0.2.12
@@ -2581,19 +2574,19 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   └── ulid v1.1.2 (*)
 │   │   ├── bones_lib v0.3.0 (* git)
 │   │   │   ├── bones_ecs v0.3.0 (* git)
-│   │   │   │   ├── anyhow v1.0.81
+│   │   │   │   ├── anyhow v1.0.82
 │   │   │   │   ├── atomicell v0.2.0
 │   │   │   │   ├── bitset-core v0.1.1
 │   │   │   │   ├── bones_ecs_macros v0.3.0 (proc-macro) (* git)
 │   │   │   │   │   ├── bones_ecs_macros_core v0.3.0 (* git)
-│   │   │   │   │   │   ├── proc-macro2 v1.0.79 (*)
-│   │   │   │   │   │   ├── quote v1.0.35 (*)
-│   │   │   │   │   │   └── syn v2.0.52 (*)
-│   │   │   │   │   └── proc-macro2 v1.0.79 (*)
+│   │   │   │   │   │   ├── proc-macro2 v1.0.80 (*)
+│   │   │   │   │   │   ├── quote v1.0.36 (*)
+│   │   │   │   │   │   └── syn v2.0.58 (*)
+│   │   │   │   │   └── proc-macro2 v1.0.80 (*)
 │   │   │   │   ├── bones_schema v0.3.0 (* git)
 │   │   │   │   ├── bones_utils v0.3.0 (* git)
 │   │   │   │   ├── glam v0.24.2 (*)
-│   │   │   │   ├── once_map v0.4.15
+│   │   │   │   ├── once_map v0.4.16
 │   │   │   │   │   ├── ahash v0.8.11 (*)
 │   │   │   │   │   ├── hashbrown v0.14.3 (*)
 │   │   │   │   │   ├── parking_lot v0.12.1 (*)
@@ -2610,22 +2603,22 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   ├── bones_asset v0.3.0 (* git)
 │   │   │   ├── bones_lib v0.3.0 (* git)
 │   │   │   ├── gc-arena v0.5.0
-│   │   │   │   ├── allocator-api2 v0.2.16
+│   │   │   │   ├── allocator-api2 v0.2.18
 │   │   │   │   ├── gc-arena-derive v0.5.0 (proc-macro)
-│   │   │   │   │   ├── proc-macro2 v1.0.79 (*)
-│   │   │   │   │   ├── quote v1.0.35 (*)
-│   │   │   │   │   ├── syn v2.0.52 (*)
+│   │   │   │   │   ├── proc-macro2 v1.0.80 (*)
+│   │   │   │   │   ├── quote v1.0.36 (*)
+│   │   │   │   │   ├── syn v2.0.58 (*)
 │   │   │   │   │   └── synstructure v0.13.1
-│   │   │   │   │       ├── proc-macro2 v1.0.79 (*)
-│   │   │   │   │       ├── quote v1.0.35 (*)
-│   │   │   │   │       └── syn v2.0.52 (*)
+│   │   │   │   │       ├── proc-macro2 v1.0.80 (*)
+│   │   │   │   │       ├── quote v1.0.36 (*)
+│   │   │   │   │       └── syn v2.0.58 (*)
 │   │   │   │   ├── hashbrown v0.14.3 (*)
 │   │   │   │   └── sptr v0.3.2
 │   │   │   ├── gc-arena-derive v0.5.0 (proc-macro) (*)
 │   │   │   ├── piccolo v0.3.1
 │   │   │   │   ├── ahash v0.8.11 (*)
-│   │   │   │   ├── allocator-api2 v0.2.16
-│   │   │   │   ├── anyhow v1.0.81
+│   │   │   │   ├── allocator-api2 v0.2.18
+│   │   │   │   ├── anyhow v1.0.82
 │   │   │   │   ├── gc-arena v0.5.0 (*)
 │   │   │   │   ├── hashbrown v0.14.3 (*)
 │   │   │   │   ├── rand v0.8.5 (*)
@@ -2633,7 +2626,7 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   ├── send_wrapper v0.6.0
 │   │   │   └── tracing v0.1.40 (*)
 │   │   ├── bytemuck v1.15.0 (*)
-│   │   ├── bytes v1.5.0
+│   │   ├── bytes v1.6.0
 │   │   ├── csscolorparser v0.6.2
 │   │   │   └── phf v0.11.2
 │   │   │       ├── phf_macros v0.11.2 (proc-macro)
@@ -2643,15 +2636,15 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │       │   │   └── rand v0.8.5
 │   │   │       │   │       └── rand_core v0.6.4
 │   │   │       │   ├── phf_shared v0.11.2 (*)
-│   │   │       │   ├── proc-macro2 v1.0.79 (*)
-│   │   │       │   ├── quote v1.0.35 (*)
-│   │   │       │   └── syn v2.0.52 (*)
+│   │   │       │   ├── proc-macro2 v1.0.80 (*)
+│   │   │       │   ├── quote v1.0.36 (*)
+│   │   │       │   └── syn v2.0.58 (*)
 │   │   │       └── phf_shared v0.11.2
 │   │   │           └── siphasher v0.3.11
 │   │   ├── egui v0.23.0 (*)
 │   │   ├── egui_plot v0.23.0
 │   │   │   └── egui v0.23.0 (*)
-│   │   ├── either v1.10.0
+│   │   ├── either v1.11.0
 │   │   ├── fluent v0.15.0
 │   │   │   ├── fluent-bundle v0.15.2
 │   │   │   │   ├── fluent-langneg v0.13.0
@@ -2660,9 +2653,9 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │   │           ├── serde v1.0.197 (*)
 │   │   │   │   │           └── tinystr v0.7.5
 │   │   │   │   │               └── displaydoc v0.2.4 (proc-macro)
-│   │   │   │   │                   ├── proc-macro2 v1.0.79 (*)
-│   │   │   │   │                   ├── quote v1.0.35 (*)
-│   │   │   │   │                   └── syn v2.0.52 (*)
+│   │   │   │   │                   ├── proc-macro2 v1.0.80 (*)
+│   │   │   │   │                   ├── quote v1.0.36 (*)
+│   │   │   │   │                   └── syn v2.0.58 (*)
 │   │   │   │   ├── fluent-syntax v0.11.0
 │   │   │   │   │   └── thiserror v1.0.58 (*)
 │   │   │   │   ├── intl-memoizer v0.5.1
@@ -2674,7 +2667,7 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │   ├── rustc-hash v1.1.0
 │   │   │   │   ├── self_cell v0.10.3
 │   │   │   │   │   └── self_cell v1.0.3
-│   │   │   │   ├── smallvec v1.13.1 (*)
+│   │   │   │   ├── smallvec v1.13.2 (*)
 │   │   │   │   └── unic-langid v0.9.4 (*)
 │   │   │   └── unic-langid v0.9.4 (*)
 │   │   ├── fluent-langneg v0.13.0 (*)
@@ -2683,7 +2676,7 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   ├── bincode v1.3.3
 │   │   │   │   └── serde v1.0.197 (*)
 │   │   │   ├── bitfield-rle v0.2.1
-│   │   │   │   ├── anyhow v1.0.81
+│   │   │   │   ├── anyhow v1.0.82
 │   │   │   │   └── varinteger v1.0.6
 │   │   │   ├── bytemuck v1.15.0 (*)
 │   │   │   ├── instant v0.1.12 (*)
@@ -2703,7 +2696,7 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │   │   │   └── libc v0.2.153
 │   │   │   │   │   │   [build-dependencies]
 │   │   │   │   │   │   └── pkg-config v0.3.30
-│   │   │   │   │   ├── bitflags v2.4.2
+│   │   │   │   │   ├── bitflags v2.5.0
 │   │   │   │   │   └── libc v0.2.153
 │   │   │   │   ├── dasp_sample v0.11.0
 │   │   │   │   └── libc v0.2.153
@@ -2725,7 +2718,7 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │       │   └── symphonia-utils-xiph v0.5.4
 │   │   │       │       ├── symphonia-core v0.5.4 (*)
 │   │   │       │       └── symphonia-metadata v0.5.4
-│   │   │       │           ├── encoding_rs v0.8.33
+│   │   │       │           ├── encoding_rs v0.8.34
 │   │   │       │           │   └── cfg-if v1.0.0
 │   │   │       │           ├── lazy_static v1.4.0
 │   │   │       │           ├── log v0.4.21
@@ -2747,7 +2740,7 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │   ├── libc v0.2.153
 │   │   │   │   └── log v0.4.21
 │   │   │   │   [build-dependencies]
-│   │   │   │   └── autocfg v1.1.0
+│   │   │   │   └── autocfg v1.2.0
 │   │   │   └── socket2 v0.5.6
 │   │   │       └── libc v0.2.153
 │   │   ├── noise v0.9.0
@@ -2771,13 +2764,13 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │   │       ├── futures-core v0.3.30
 │   │   │   │   │       ├── futures-io v0.3.30
 │   │   │   │   │       ├── futures-macro v0.3.30 (proc-macro)
-│   │   │   │   │       │   ├── proc-macro2 v1.0.79 (*)
-│   │   │   │   │       │   ├── quote v1.0.35 (*)
-│   │   │   │   │       │   └── syn v2.0.52 (*)
+│   │   │   │   │       │   ├── proc-macro2 v1.0.80 (*)
+│   │   │   │   │       │   ├── quote v1.0.36 (*)
+│   │   │   │   │       │   └── syn v2.0.58 (*)
 │   │   │   │   │       ├── futures-sink v0.3.30
 │   │   │   │   │       ├── futures-task v0.3.30
-│   │   │   │   │       ├── memchr v2.7.1
-│   │   │   │   │       ├── pin-project-lite v0.2.13
+│   │   │   │   │       ├── memchr v2.7.2
+│   │   │   │   │       ├── pin-project-lite v0.2.14
 │   │   │   │   │       ├── pin-utils v0.1.0
 │   │   │   │   │       └── slab v0.4.9 (*)
 │   │   │   │   ├── futures-io v0.3.30
@@ -2802,10 +2795,10 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │       └── semver v1.0.22
 │   │   │   └── serde v1.0.197 (*)
 │   │   ├── quinn v0.10.2
-│   │   │   ├── bytes v1.5.0
-│   │   │   ├── pin-project-lite v0.2.13
+│   │   │   ├── bytes v1.6.0
+│   │   │   ├── pin-project-lite v0.2.14
 │   │   │   ├── quinn-proto v0.10.6
-│   │   │   │   ├── bytes v1.5.0
+│   │   │   │   ├── bytes v1.6.0
 │   │   │   │   ├── rand v0.8.5 (*)
 │   │   │   │   ├── ring v0.16.20
 │   │   │   │   │   ├── libc v0.2.153
@@ -2813,7 +2806,7 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │   │   ├── spin v0.5.2
 │   │   │   │   │   └── untrusted v0.7.1
 │   │   │   │   │   [build-dependencies]
-│   │   │   │   │   └── cc v1.0.90 (*)
+│   │   │   │   │   └── cc v1.0.94 (*)
 │   │   │   │   ├── rustc-hash v1.1.0
 │   │   │   │   ├── rustls v0.21.10
 │   │   │   │   │   ├── log v0.4.21
@@ -2833,20 +2826,25 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │   ├── tinyvec v1.6.0 (*)
 │   │   │   │   └── tracing v0.1.40 (*)
 │   │   │   ├── quinn-udp v0.4.1
-│   │   │   │   ├── bytes v1.5.0
+│   │   │   │   ├── bytes v1.6.0
 │   │   │   │   ├── libc v0.2.153
 │   │   │   │   ├── socket2 v0.5.6 (*)
 │   │   │   │   └── tracing v0.1.40 (*)
 │   │   │   ├── rustc-hash v1.1.0
 │   │   │   ├── rustls v0.21.10 (*)
 │   │   │   ├── thiserror v1.0.58 (*)
-│   │   │   ├── tokio v1.36.0
-│   │   │   │   └── pin-project-lite v0.2.13
+│   │   │   ├── tokio v1.37.0
+│   │   │   │   └── pin-project-lite v0.2.14
 │   │   │   └── tracing v0.1.40 (*)
 │   │   ├── quinn_runtime_bevy v0.3.0 (* git)
-│   │   │   ├── async-executor v1.8.0 (*)
+│   │   │   ├── async-executor v1.11.0 (*)
 │   │   │   ├── async-io v2.3.2
-│   │   │   │   ├── async-lock v3.3.0 (*)
+│   │   │   │   ├── async-lock v3.3.0
+│   │   │   │   │   ├── event-listener v4.0.3 (*)
+│   │   │   │   │   ├── event-listener-strategy v0.4.0
+│   │   │   │   │   │   ├── event-listener v4.0.3 (*)
+│   │   │   │   │   │   └── pin-project-lite v0.2.14
+│   │   │   │   │   └── pin-project-lite v0.2.14
 │   │   │   │   ├── cfg-if v1.0.0
 │   │   │   │   ├── concurrent-queue v2.4.0 (*)
 │   │   │   │   ├── futures-io v0.3.30
@@ -2854,42 +2852,42 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   │   ├── parking v2.2.0
 │   │   │   │   ├── polling v3.6.0
 │   │   │   │   │   ├── cfg-if v1.0.0
-│   │   │   │   │   ├── rustix v0.38.31 (*)
+│   │   │   │   │   ├── rustix v0.38.32 (*)
 │   │   │   │   │   └── tracing v0.1.40 (*)
-│   │   │   │   ├── rustix v0.38.31 (*)
+│   │   │   │   ├── rustix v0.38.32 (*)
 │   │   │   │   ├── slab v0.4.9 (*)
 │   │   │   │   └── tracing v0.1.40 (*)
 │   │   │   ├── bevy_tasks v0.11.3 (*)
 │   │   │   ├── futures-lite v2.3.0 (*)
 │   │   │   ├── pin-project v1.1.5
 │   │   │   │   └── pin-project-internal v1.1.5 (proc-macro)
-│   │   │   │       ├── proc-macro2 v1.0.79 (*)
-│   │   │   │       ├── quote v1.0.35 (*)
-│   │   │   │       └── syn v2.0.52 (*)
+│   │   │   │       ├── proc-macro2 v1.0.80 (*)
+│   │   │   │       ├── quote v1.0.36 (*)
+│   │   │   │       └── syn v2.0.58 (*)
 │   │   │   ├── quinn v0.10.2 (*)
 │   │   │   └── quinn-udp v0.4.1 (*)
 │   │   ├── rcgen v0.12.1
-│   │   │   ├── pem v3.0.3
-│   │   │   │   └── base64 v0.21.7
+│   │   │   ├── pem v3.0.4
+│   │   │   │   └── base64 v0.22.0
 │   │   │   ├── ring v0.17.8 (*)
-│   │   │   ├── time v0.3.34
+│   │   │   ├── time v0.3.36
 │   │   │   │   ├── deranged v0.3.11
 │   │   │   │   │   └── powerfmt v0.2.0
-│   │   │   │   ├── itoa v1.0.10
+│   │   │   │   ├── itoa v1.0.11
 │   │   │   │   ├── libc v0.2.153
 │   │   │   │   ├── num-conv v0.1.0
 │   │   │   │   ├── num_threads v0.1.7
 │   │   │   │   ├── powerfmt v0.2.0
 │   │   │   │   ├── time-core v0.1.2
-│   │   │   │   └── time-macros v0.2.17 (proc-macro)
+│   │   │   │   └── time-macros v0.2.18 (proc-macro)
 │   │   │   │       ├── num-conv v0.1.0
 │   │   │   │       └── time-core v0.1.2
 │   │   │   └── yasna v0.5.2
-│   │   │       └── time v0.3.34 (*)
+│   │   │       └── time v0.3.36 (*)
 │   │   ├── rustls v0.21.10 (*)
 │   │   ├── serde v1.0.197 (*)
-│   │   ├── serde_yaml v0.9.32 (*)
-│   │   ├── smallvec v1.13.1 (*)
+│   │   ├── serde_yaml v0.9.34+deprecated (*)
+│   │   ├── smallvec v1.13.2 (*)
 │   │   ├── sys-locale v0.3.1
 │   │   ├── thiserror v1.0.58 (*)
 │   │   ├── tracing v0.1.40 (*)
@@ -2901,36 +2899,36 @@ Note that this variable may contain local file system paths for path dependencie
 │   │       └── option-ext v0.2.0
 │   ├── glam v0.24.2 (*)
 │   ├── serde v1.0.197 (*)
-│   └── serde_yaml v0.9.32 (*)
+│   └── serde_yaml v0.9.34+deprecated (*)
 ├── bones_framework v0.3.0 (* git)
 ├── bytemuck v1.15.0 (*)
 ├── egui_extras v0.23.0
 │   ├── egui v0.23.0 (*)
 │   ├── enum-map v2.7.3
 │   │   ├── enum-map-derive v0.17.0 (proc-macro)
-│   │   │   ├── proc-macro2 v1.0.79 (*)
-│   │   │   ├── quote v1.0.35 (*)
-│   │   │   └── syn v2.0.52 (*)
+│   │   │   ├── proc-macro2 v1.0.80 (*)
+│   │   │   ├── quote v1.0.36 (*)
+│   │   │   └── syn v2.0.58 (*)
 │   │   └── serde v1.0.197 (*)
 │   ├── log v0.4.21
 │   └── serde v1.0.197 (*)
 ├── humantime-serde v1.1.1
 │   ├── humantime v2.1.0
 │   └── serde v1.0.197 (*)
-├── indexmap v2.2.5 (*)
-├── nalgebra v0.32.4
+├── indexmap v2.2.6 (*)
+├── nalgebra v0.32.5
 │   ├── approx v0.5.1 (*)
 │   ├── glam v0.24.2 (*)
 │   ├── matrixmultiply v0.3.8
 │   │   └── rawpointer v0.2.1
 │   │   [build-dependencies]
-│   │   └── autocfg v1.1.0
+│   │   └── autocfg v1.2.0
 │   ├── nalgebra-macros v0.2.1 (proc-macro)
-│   │   ├── proc-macro2 v1.0.79 (*)
-│   │   ├── quote v1.0.35 (*)
+│   │   ├── proc-macro2 v1.0.80 (*)
+│   │   ├── quote v1.0.36 (*)
 │   │   └── syn v1.0.109
-│   │       ├── proc-macro2 v1.0.79 (*)
-│   │       ├── quote v1.0.35 (*)
+│   │       ├── proc-macro2 v1.0.80 (*)
+│   │       ├── quote v1.0.36 (*)
 │   │       └── unicode-ident v1.0.12
 │   ├── num-complex v0.4.5
 │   │   └── num-traits v0.2.18 (*)
@@ -2939,7 +2937,7 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   │   └── num-traits v0.2.18 (*)
 │   │   └── num-traits v0.2.18 (*)
 │   │   [build-dependencies]
-│   │   └── autocfg v1.1.0
+│   │   └── autocfg v1.2.0
 │   ├── num-traits v0.2.18 (*)
 │   ├── simba v0.8.1
 │   │   ├── approx v0.5.1 (*)
@@ -2958,17 +2956,17 @@ Note that this variable may contain local file system paths for path dependencie
 ├── peg v0.8.2
 │   ├── peg-macros v0.8.2 (proc-macro)
 │   │   ├── peg-runtime v0.8.2
-│   │   ├── proc-macro2 v1.0.79 (*)
-│   │   └── quote v1.0.35 (*)
+│   │   ├── proc-macro2 v1.0.80 (*)
+│   │   └── quote v1.0.36 (*)
 │   └── peg-runtime v0.8.2
 ├── petgraph v0.6.4 (*)
 ├── postcard v1.0.8 (*)
 ├── puffin v0.17.0
-│   ├── anyhow v1.0.81
+│   ├── anyhow v1.0.82
 │   ├── bincode v1.3.3 (*)
 │   ├── byteorder v1.5.0
 │   ├── cfg-if v1.0.0
-│   ├── lz4_flex v0.11.2
+│   ├── lz4_flex v0.11.3
 │   ├── once_cell v1.19.0
 │   ├── parking_lot v0.12.1 (*)
 │   └── serde v1.0.197 (*)
@@ -2978,8 +2976,8 @@ Note that this variable may contain local file system paths for path dependencie
 │   ├── natord v1.0.9
 │   ├── once_cell v1.19.0
 │   ├── puffin v0.17.0 (*)
-│   ├── time v0.3.34 (*)
-│   ├── vec1 v1.10.1
+│   ├── time v0.3.36 (*)
+│   ├── vec1 v1.12.0
 │   └── web-time v0.2.4
 ├── rapier2d v0.18.0 (* git)
 │   ├── approx v0.5.1 (*)
@@ -2996,44 +2994,44 @@ Note that this variable may contain local file system paths for path dependencie
 │   │   ├── crossbeam-queue v0.3.11
 │   │   │   └── crossbeam-utils v0.8.19
 │   │   └── crossbeam-utils v0.8.19
-│   ├── downcast-rs v1.2.0
-│   ├── nalgebra v0.32.4 (*)
+│   ├── downcast-rs v1.2.1
+│   ├── nalgebra v0.32.5 (*)
 │   ├── num-derive v0.4.2 (proc-macro)
-│   │   ├── proc-macro2 v1.0.79 (*)
-│   │   ├── quote v1.0.35 (*)
-│   │   └── syn v2.0.52 (*)
+│   │   ├── proc-macro2 v1.0.80 (*)
+│   │   ├── quote v1.0.36 (*)
+│   │   └── syn v2.0.58 (*)
 │   ├── num-traits v0.2.18 (*)
 │   ├── parry2d v0.13.7
 │   │   ├── approx v0.5.1 (*)
 │   │   ├── arrayvec v0.7.4
 │   │   ├── bitflags v1.3.2
-│   │   ├── downcast-rs v1.2.0
-│   │   ├── either v1.10.0
+│   │   ├── downcast-rs v1.2.1
+│   │   ├── either v1.11.0
 │   │   ├── indexmap v1.9.3 (*)
-│   │   ├── nalgebra v0.32.4 (*)
+│   │   ├── nalgebra v0.32.5 (*)
 │   │   ├── num-derive v0.4.2 (proc-macro) (*)
 │   │   ├── num-traits v0.2.18 (*)
 │   │   ├── rustc-hash v1.1.0
 │   │   ├── simba v0.8.1 (*)
 │   │   ├── slab v0.4.9 (*)
-│   │   ├── smallvec v1.13.1 (*)
+│   │   ├── smallvec v1.13.2 (*)
 │   │   └── spade v2.6.0
 │   │       ├── hashbrown v0.14.3 (*)
 │   │       ├── num-traits v0.2.18 (*)
 │   │       ├── robust v1.1.0
-│   │       └── smallvec v1.13.1 (*)
+│   │       └── smallvec v1.13.2 (*)
 │   ├── rustc-hash v1.1.0
 │   └── simba v0.8.1 (*)
 ├── serde v1.0.197 (*)
-├── serde_yaml v0.9.32 (*)
+├── serde_yaml v0.9.34+deprecated (*)
 ├── shadow-rs v0.25.0
 │   ├── const_format v0.2.32
 │   │   └── const_format_proc_macros v0.2.32 (proc-macro)
-│   │       ├── proc-macro2 v1.0.79 (*)
-│   │       ├── quote v1.0.35 (*)
+│   │       ├── proc-macro2 v1.0.80 (*)
+│   │       ├── quote v1.0.36 (*)
 │   │       └── unicode-xid v0.2.4
 │   ├── is_debug v1.0.1
-│   └── time v0.3.34 (*)
+│   └── time v0.3.36 (*)
 ├── shiftnanigans v0.3.3
 │   ├── bitvec v1.0.1
 │   │   ├── funty v2.0.0
@@ -3043,42 +3041,42 @@ Note that this variable may contain local file system paths for path dependencie
 │   │       └── tap v1.0.1
 │   ├── fastrand v1.9.0
 │   ├── itertools v0.10.5
-│   │   └── either v1.10.0
+│   │   └── either v1.11.0
 │   ├── log v0.4.21
 │   └── nohash-hasher v0.2.0
 ├── strum v0.25.0
 │   └── strum_macros v0.25.3 (proc-macro)
 │       ├── heck v0.4.1
-│       ├── proc-macro2 v1.0.79 (*)
-│       ├── quote v1.0.35 (*)
-│       ├── rustversion v1.0.14 (proc-macro)
-│       └── syn v2.0.52 (*)
+│       ├── proc-macro2 v1.0.80 (*)
+│       ├── quote v1.0.36 (*)
+│       ├── rustversion v1.0.15 (proc-macro)
+│       └── syn v2.0.58 (*)
 ├── thiserror v1.0.58 (*)
 ├── tracing v0.1.40 (*)
 └── turborand v0.10.1 (*)
 [build-dependencies]
 └── shadow-rs v0.25.0
     ├── const_format v0.2.32 (*)
-    ├── git2 v0.18.2
-    │   ├── bitflags v2.4.2
+    ├── git2 v0.18.3
+    │   ├── bitflags v2.5.0
     │   ├── libc v0.2.153
     │   ├── libgit2-sys v0.16.2+1.7.2
     │   │   ├── libc v0.2.153
-    │   │   └── libz-sys v1.1.15
+    │   │   └── libz-sys v1.1.16
     │   │       └── libc v0.2.153
     │   │       [build-dependencies]
-    │   │       ├── cc v1.0.90 (*)
+    │   │       ├── cc v1.0.94 (*)
     │   │       ├── pkg-config v0.3.30
     │   │       └── vcpkg v0.2.15
     │   │   [build-dependencies]
-    │   │   ├── cc v1.0.90 (*)
+    │   │   ├── cc v1.0.94 (*)
     │   │   └── pkg-config v0.3.30
     │   ├── log v0.4.21
     │   └── url v2.5.0 (*)
     ├── is_debug v1.0.1
-    ├── time v0.3.34
+    ├── time v0.3.36
     │   ├── deranged v0.3.11 (*)
-    │   ├── itoa v1.0.10
+    │   ├── itoa v1.0.11
     │   ├── libc v0.2.153
     │   ├── num-conv v0.1.0
     │   ├── num_threads v0.1.7
@@ -3115,7 +3113,7 @@ The time is formatted in modified ISO 8601 format (`YYYY-MM-DD HH-MM ±hh-mm` wh
 This constant will be empty if the last commit cannot be determined.&quot;#</span>]
 #[allow(dead_code)]
 #[allow(clippy::all)]
-</span><span class="kw">pub const </span>COMMIT_DATE :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;2024-04-10 00:12:49 +00:00&quot;#</span>;
+</span><span class="kw">pub const </span>COMMIT_DATE :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;2024-04-14 23:58:05 +00:00&quot;#</span>;
 
 <span class="attr">#[doc=<span class="string">r#&quot;
 The name of the Git branch that this project was built from.
@@ -3124,7 +3122,7 @@ The time is formatted according to [RFC 2822](https://datatracker.ietf.org/doc/h
 This constant will be empty if the last commit cannot be determined.&quot;#</span>]
 #[allow(dead_code)]
 #[allow(clippy::all)]
-</span><span class="kw">pub const </span>COMMIT_DATE_2822 :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;Wed, 10 Apr 2024 00:12:49 +0000&quot;#</span>;
+</span><span class="kw">pub const </span>COMMIT_DATE_2822 :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;Sun, 14 Apr 2024 23:58:05 +0000&quot;#</span>;
 
 <span class="attr">#[doc=<span class="string">r#&quot;
 The name of the Git branch that this project was built from.
@@ -3133,7 +3131,7 @@ The time is formatted according to [RFC 3339 and ISO 8601](https://datatracker.i
 This constant will be empty if the last commit cannot be determined.&quot;#</span>]
 #[allow(dead_code)]
 #[allow(clippy::all)]
-</span><span class="kw">pub const </span>COMMIT_DATE_3339 :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;2024-04-10T00:12:49Z&quot;#</span>;
+</span><span class="kw">pub const </span>COMMIT_DATE_3339 :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;2024-04-14T23:58:05Z&quot;#</span>;
 
 <span class="attr">#[doc=<span class="string">r#&quot;
 The e-mail address of the author of the Git commit that this project was built from.
@@ -3150,7 +3148,7 @@ An abbreviated, but not necessarily unique, version of this is [`SHORT_COMMIT`].
 This constant will be empty if the last commit cannot be determined.&quot;#</span>]
 #[allow(dead_code)]
 #[allow(clippy::all)]
-</span><span class="kw">pub const </span>COMMIT_HASH :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;eb69f2402a0cc2c0bf718346bee665f60a0470ff&quot;#</span>;
+</span><span class="kw">pub const </span>COMMIT_HASH :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;51958d2adfc3e27d2e49668029af75988422d6dc&quot;#</span>;
 
 <span class="attr">#[doc=<span class="string">r#&quot;
 Whether the Git working tree was clean at the time of project build (`true`), or not (`false`).
@@ -3246,7 +3244,7 @@ Depending on the amount of commits in your project, this may not yield a unique 
 This constant will be empty if the last commit cannot be determined.&quot;#</span>]
 #[allow(dead_code)]
 #[allow(clippy::all)]
-</span><span class="kw">pub const </span>SHORT_COMMIT :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;eb69f240&quot;#</span>;
+</span><span class="kw">pub const </span>SHORT_COMMIT :<span class="kw-2">&amp;</span>str = <span class="string">r#&quot;51958d2a&quot;#</span>;
 
 <span class="attr">#[doc=<span class="string">r#&quot;
 The name of the Git tag that this project was built from.

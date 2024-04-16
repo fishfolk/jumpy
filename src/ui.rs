@@ -4,6 +4,7 @@ pub mod main_menu;
 pub mod map_select;
 pub mod pause_menu;
 pub mod player_image;
+pub mod scoring;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod network_game;
@@ -47,6 +48,7 @@ pub struct ImageMeta {
 #[repr(C)]
 pub struct UiThemeColors {
     pub positive: Color,
+    pub negative: Color,
 }
 
 #[derive(HasSchema, Default, Debug, Clone)]

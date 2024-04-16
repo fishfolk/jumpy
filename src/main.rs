@@ -158,6 +158,7 @@ fn main() {
         .install_plugin(core::game_plugin)
         .install_plugin(debug::game_plugin)
         .install_plugin(profiler::game_plugin)
+        .install_plugin(ui::scoring::game_plugin)
         // We initialize the asset server and register asset types
         .init_shared_resource::<AssetServer>()
         .register_default_assets();
@@ -171,6 +172,17 @@ fn main() {
     game.sessions
         .create(SessionNames::PAUSE_MENU)
         .install_plugin(ui::pause_menu::session_plugin);
+
+    // Set priority to ensure pause menu comes before scoring menu (drawn on top)
+    game.sessions
+        .get_mut(SessionNames::PAUSE_MENU)
+        .unwrap()
+        .priority = 1;
+
+    // Scoring menu plugin, activated by game between round tarnsitions when appropriate
+    game.sessions
+        .create(SessionNames::SCORING)
+        .install_plugin(ui::scoring::session_plugin);
 
     // Create a bevy renderer for the bones game and run it.
     BonesBevyRenderer {

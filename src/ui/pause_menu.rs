@@ -107,7 +107,7 @@ fn pause_menu_system(
         sessions.start_menu();
         pause_menu.menu_open = false;
     } else if restart_game {
-        sessions.restart_game(None);
+        sessions.restart_game(None, false);
         pause_menu.menu_open = false;
     } else if let Some(maps) = select_map {
         let match_info = sessions

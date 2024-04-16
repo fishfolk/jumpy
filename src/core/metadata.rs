@@ -114,4 +114,10 @@ pub struct CoreConfigMeta {
     #[serde(default)]
     #[serde(with = "humantime_serde")]
     pub round_end_post_score_linger_time: Duration,
+
+    /// How many rounds must be won to end match
+    pub winning_score_threshold: u32,
+
+    /// How many rounds between intermissions
+    pub rounds_between_intermission: u32,
 }

@@ -1,4 +1,4 @@
-use crate::{core::JumpyDefaultMatchRunner, prelude::*};
+use crate::{core::JumpyDefaultMatchRunner, prelude::*, ui::scoring::ScoringMenuState};
 
 pub struct SessionNames;
 impl SessionNames {
@@ -8,6 +8,7 @@ impl SessionNames {
     pub const MAIN_MENU: &'static str = "main_menu";
     pub const PAUSE_MENU: &'static str = "pause_menu";
     pub const PROFILER: &'static str = "profiler";
+    pub const SCORING: &'static str = "scoring";
 }
 
 pub trait SessionExt {
@@ -15,7 +16,7 @@ pub trait SessionExt {
     fn end_game(&mut self);
     /// Optionally provide map_pool to restart game with. If not provided,
     /// current game's [`MapPool`] will be used.
-    fn restart_game(&mut self, map_pool: Option<MapPool>);
+    fn restart_game(&mut self, map_pool: Option<MapPool>, reset_score: bool);
     fn start_game(&mut self, match_plugin: crate::core::MatchPlugin);
 }
 
@@ -27,11 +28,18 @@ impl SessionExt for Sessions {
 
     fn end_game(&mut self) {
         self.delete(SessionNames::GAME);
+
+        // Make sure that scoring menu closed if was open
+        if let Some(scoring_session) = self.get_mut(SessionNames::SCORING) {
+            if let Some(mut state) = scoring_session.world.get_resource_mut::<ScoringMenuState>() {
+                state.active = false;
+            }
+        }
     }
 
     #[track_caller]
     ///
-    fn restart_game(&mut self, map_pool: Option<MapPool>) {
+    fn restart_game(&mut self, map_pool: Option<MapPool>, reset_score: bool) {
         if let Some((existing_map_pool, player_info, plugins, mut session_runner, score)) =
             self.get_mut(SessionNames::GAME).map(|session| {
                 let existing_map_pool = (*session.world.resource::<MapPool>()).clone();
@@ -59,6 +67,11 @@ impl SessionExt for Sessions {
             session_runner.restart_session();
 
             let map_pool = map_pool.unwrap_or(existing_map_pool);
+            let score = if reset_score {
+                MatchScore::default()
+            } else {
+                score
+            };
 
             self.create(SessionNames::GAME)
                 .install_plugin(crate::core::MatchPlugin {

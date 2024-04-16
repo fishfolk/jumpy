@@ -16,6 +16,11 @@ pub fn session_plugin(session: &mut Session) {
     session.add_system_to_stage(Update, pause_menu_system);
 }
 
+#[derive(HasSchema, Debug, Clone, Default)]
+struct PauseMenu {
+    menu_open: bool,
+}
+
 fn pause_menu_system(
     meta: Root<GameMeta>,
     mut sessions: ResMut<Sessions>,
@@ -23,6 +28,7 @@ fn pause_menu_system(
     controls: Res<GlobalPlayerControls>,
     world: &World,
     assets: Res<AssetServer>,
+    mut pause_menu: ResMutInit<PauseMenu>,
 
     #[cfg(not(target_arch = "wasm32"))] socket: Option<Res<NetworkMatchSocket>>,
 ) {
@@ -34,11 +40,12 @@ fn pause_menu_system(
 
     let mut back_to_menu = false;
     let mut restart_game = false;
+    let mut close_pause_menu = false;
     let mut select_map = None;
     if let Some(session) = sessions.get_mut(SessionNames::GAME) {
         let pause_pressed = controls.values().any(|x| x.pause_just_pressed);
 
-        if !session.active {
+        if !session.active && pause_menu.menu_open {
             let page = ctx.get_state::<PauseMenuPage>();
 
             match page {
@@ -63,7 +70,13 @@ fn pause_menu_system(
 
                                     world.run_system(
                                         main_pause_menu,
-                                        (ui, session, &mut restart_game, &mut back_to_menu),
+                                        (
+                                            ui,
+                                            session,
+                                            &mut restart_game,
+                                            &mut back_to_menu,
+                                            &mut close_pause_menu,
+                                        ),
                                     );
                                 });
                         });
@@ -84,6 +97,7 @@ fn pause_menu_system(
                 }
             }
         } else if pause_pressed {
+            pause_menu.menu_open = true;
             session.active = false;
         }
     }
@@ -91,8 +105,10 @@ fn pause_menu_system(
     if back_to_menu {
         sessions.end_game();
         sessions.start_menu();
+        pause_menu.menu_open = false;
     } else if restart_game {
         sessions.restart_game(None);
+        pause_menu.menu_open = false;
     } else if let Some(maps) = select_map {
         let match_info = sessions
             .get(SessionNames::GAME)
@@ -112,19 +128,23 @@ fn pause_menu_system(
             plugins: meta.get_plugins(&assets),
             session_runner: Box::<JumpyDefaultMatchRunner>::default(),
             score: default(),
-        })
+        });
+    }
+
+    if close_pause_menu {
+        pause_menu.menu_open = false;
     }
 }
 
 fn main_pause_menu(
-    mut param: In<(&mut egui::Ui, &mut Session, &mut bool, &mut bool)>,
+    mut param: In<(&mut egui::Ui, &mut Session, &mut bool, &mut bool, &mut bool)>,
     meta: Root<GameMeta>,
     localization: Localization<GameMeta>,
     controls: Res<GlobalPlayerControls>,
 
     #[cfg(not(target_arch = "wasm32"))] socket: Option<Res<NetworkMatchSocket>>,
 ) {
-    let (ui, session, restart_game, back_to_menu) = &mut *param;
+    let (ui, session, restart_game, back_to_menu, close_pause_menu) = &mut *param;
 
     #[cfg(not(target_arch = "wasm32"))]
     let is_online = socket.is_some();
@@ -134,6 +154,7 @@ fn main_pause_menu(
     // Unpause the game
     if controls.values().any(|x| x.pause_just_pressed) {
         session.active = true;
+        **close_pause_menu = true;
     }
 
     ui.vertical_centered(|ui| {
@@ -168,6 +189,7 @@ fn main_pause_menu(
             .clicked()
         {
             session.active = true;
+            **close_pause_menu = true;
         }
 
         // Local game buttons
@@ -205,6 +227,7 @@ fn main_pause_menu(
             {
                 // TODO: show editor.
                 session.active = true;
+                **close_pause_menu = true;
             }
         });
 

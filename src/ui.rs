@@ -3,6 +3,7 @@ use crate::prelude::*;
 pub mod main_menu;
 pub mod map_select;
 pub mod pause_menu;
+pub mod player_image;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod network_game;

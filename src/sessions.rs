@@ -13,7 +13,9 @@ impl SessionNames {
 pub trait SessionExt {
     fn start_menu(&mut self);
     fn end_game(&mut self);
-    fn restart_game(&mut self);
+    /// Optionally provide map_pool to restart game with. If not provided,
+    /// current game's [`MapPool`] will be used.
+    fn restart_game(&mut self, map_pool: Option<MapPool>);
     fn start_game(&mut self, match_plugin: crate::core::MatchPlugin);
 }
 
@@ -28,11 +30,13 @@ impl SessionExt for Sessions {
     }
 
     #[track_caller]
-    fn restart_game(&mut self) {
-        if let Some((map, player_info, plugins, mut session_runner)) =
+    ///
+    fn restart_game(&mut self, map_pool: Option<MapPool>) {
+        if let Some((existing_map_pool, player_info, plugins, mut session_runner, score)) =
             self.get_mut(SessionNames::GAME).map(|session| {
-                let map = (*session.world.resource::<LoadedMap>().0).clone();
+                let existing_map_pool = (*session.world.resource::<MapPool>()).clone();
                 let match_inputs = session.world.resource::<MatchInputs>();
+                let score = (*session.world.resource::<MatchScore>()).clone();
 
                 // Take ownership of session runner (we want to preserve socket and such for network runner)
                 // by swapping a dummy one with session.
@@ -41,10 +45,11 @@ impl SessionExt for Sessions {
                 std::mem::swap(&mut session.runner, &mut session_runner);
 
                 (
-                    map,
+                    existing_map_pool,
                     match_inputs.players.clone(),
                     session.world.resource::<LuaPlugins>().0.clone(),
                     session_runner,
+                    score,
                 )
             })
         {
@@ -53,12 +58,15 @@ impl SessionExt for Sessions {
             // Reset session runner
             session_runner.restart_session();
 
+            let map_pool = map_pool.unwrap_or(existing_map_pool);
+
             self.create(SessionNames::GAME)
                 .install_plugin(crate::core::MatchPlugin {
-                    map,
+                    maps: map_pool,
                     player_info,
                     plugins,
                     session_runner,
+                    score,
                 });
         } else {
             panic!("Cannot restart game when game is not running");

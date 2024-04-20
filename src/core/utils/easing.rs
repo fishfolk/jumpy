@@ -1,6 +1,9 @@
 use std::f32::consts::PI;
 
+use crate::prelude::*;
+
 /// Simple easing calculator
+#[derive(Clone, Debug)]
 pub struct Ease {
     pub ease_in: bool,
     pub ease_out: bool,
@@ -8,7 +11,19 @@ pub struct Ease {
     pub progress: f32,
 }
 
+#[derive(HasSchema, Clone, Default)]
+#[type_data(metadata_asset("ease"))]
+#[repr(C)]
+pub struct EaseMeta {
+    pub ease_in: bool,
+    pub ease_out: bool,
+    pub function: EaseFunction,
+}
+
+#[derive(HasSchema, Copy, Clone, Debug, Default)]
+#[repr(u8)]
 pub enum EaseFunction {
+    #[default]
     Quadratic,
     Cubic,
     Sinusoidial,

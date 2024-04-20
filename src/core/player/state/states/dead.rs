@@ -95,7 +95,10 @@ pub fn handle_player_state(
         }
 
         if state.age >= 80 {
-            commands.add(PlayerCommand::despawn(player_ent));
+            // If only one player in match, we wont' score / transition rounds, so respawn player.
+            if player_indices.bitset().bit_count() == 1 {
+                commands.add(PlayerCommand::despawn(player_ent));
+            }
         }
     }
 }

@@ -165,6 +165,14 @@
 <a href="#70" id="70">70</a>
 <a href="#71" id="71">71</a>
 <a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub struct </span>SessionNames;
@@ -180,7 +188,9 @@
 <span class="kw">pub trait </span>SessionExt {
     <span class="kw">fn </span>start_menu(<span class="kw-2">&amp;mut </span><span class="self">self</span>);
     <span class="kw">fn </span>end_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>);
-    <span class="kw">fn </span>restart_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>);
+    <span class="doccomment">/// Optionally provide map_pool to restart game with. If not provided,
+    /// current game&#39;s [`MapPool`] will be used.
+    </span><span class="kw">fn </span>restart_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map_pool: <span class="prelude-ty">Option</span>&lt;MapPool&gt;);
     <span class="kw">fn </span>start_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>, match_plugin: <span class="kw">crate</span>::core::MatchPlugin);
 }
 
@@ -195,11 +205,13 @@
     }
 
     <span class="attr">#[track_caller]
-    </span><span class="kw">fn </span>restart_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>((map, player_info, plugins, <span class="kw-2">mut </span>session_runner)) =
+    </span><span class="doccomment">///
+    </span><span class="kw">fn </span>restart_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map_pool: <span class="prelude-ty">Option</span>&lt;MapPool&gt;) {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((existing_map_pool, player_info, plugins, <span class="kw-2">mut </span>session_runner, score)) =
             <span class="self">self</span>.get_mut(SessionNames::GAME).map(|session| {
-                <span class="kw">let </span>map = (<span class="kw-2">*</span>session.world.resource::&lt;LoadedMap&gt;().<span class="number">0</span>).clone();
+                <span class="kw">let </span>existing_map_pool = (<span class="kw-2">*</span>session.world.resource::&lt;MapPool&gt;()).clone();
                 <span class="kw">let </span>match_inputs = session.world.resource::&lt;MatchInputs&gt;();
+                <span class="kw">let </span>score = (<span class="kw-2">*</span>session.world.resource::&lt;MatchScore&gt;()).clone();
 
                 <span class="comment">// Take ownership of session runner (we want to preserve socket and such for network runner)
                 // by swapping a dummy one with session.
@@ -208,10 +220,11 @@
                 std::mem::swap(<span class="kw-2">&amp;mut </span>session.runner, <span class="kw-2">&amp;mut </span>session_runner);
 
                 (
-                    map,
+                    existing_map_pool,
                     match_inputs.players.clone(),
                     session.world.resource::&lt;LuaPlugins&gt;().<span class="number">0</span>.clone(),
                     session_runner,
+                    score,
                 )
             })
         {
@@ -220,12 +233,15 @@
             <span class="comment">// Reset session runner
             </span>session_runner.restart_session();
 
+            <span class="kw">let </span>map_pool = map_pool.unwrap_or(existing_map_pool);
+
             <span class="self">self</span>.create(SessionNames::GAME)
                 .install_plugin(<span class="kw">crate</span>::core::MatchPlugin {
-                    map,
+                    maps: map_pool,
                     player_info,
                     plugins,
                     session_runner,
+                    score,
                 });
         } <span class="kw">else </span>{
             <span class="macro">panic!</span>(<span class="string">&quot;Cannot restart game when game is not running&quot;</span>);

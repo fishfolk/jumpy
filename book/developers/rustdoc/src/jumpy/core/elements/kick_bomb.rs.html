@@ -661,14 +661,6 @@
         <span class="kw">let </span>transform = <span class="kw-2">*</span>transforms.get(spawner_ent).unwrap();
         <span class="kw">let </span>element_handle = <span class="kw-2">*</span>element_handles.get(spawner_ent).unwrap();
 
-        hydrated.insert(spawner_ent, MapElementHydrated);
-
-        <span class="kw">let </span>entity = entities.create();
-        hydrated.insert(entity, MapElementHydrated);
-        element_handles.insert(entity, element_handle);
-        respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
-        spawner_manager.create_spawner(spawner_ent, <span class="macro">vec!</span>[entity]);
-
         <span class="comment">// Check if spawner element handle is for kick bomb
         </span><span class="kw">let </span>element_meta = assets.get(element_handle.<span class="number">0</span>);
         <span class="kw">if </span>assets
@@ -676,6 +668,14 @@
             .try_cast_ref::&lt;KickBombMeta&gt;()
             .is_ok()
         {
+            hydrated.insert(spawner_ent, MapElementHydrated);
+
+            <span class="kw">let </span>entity = entities.create();
+            hydrated.insert(entity, MapElementHydrated);
+            element_handles.insert(entity, element_handle);
+            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
+            spawner_manager.create_spawner(spawner_ent, <span class="macro">vec!</span>[entity]);
+
             commands.add(KickBombCommand::spawn_kick_bomb(
                 <span class="prelude-val">Some</span>(entity),
                 transform,

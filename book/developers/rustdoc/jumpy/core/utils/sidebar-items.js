@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["EaseFunction","MetaHandleCastError"],"fn":["sine_between","try_cast_meta_handle"],"macro":["impl_system_param"],"mod":["easing","macros","math","metadata","rect"],"struct":["Ease","Rect"]};
+window.SIDEBAR_ITEMS = {"enum":["EaseFunction","MetaHandleCastError"],"fn":["sine_between","try_cast_meta_handle"],"macro":["impl_system_param"],"mod":["easing","macros","math","metadata","rect"],"struct":["Ease","EaseMeta","Rect"]};

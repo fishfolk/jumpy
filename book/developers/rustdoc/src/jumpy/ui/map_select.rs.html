@@ -214,6 +214,22 @@
 <a href="#119" id="119">119</a>
 <a href="#120" id="120">120</a>
 <a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, PackMeta};
 
 <span class="kw">use </span><span class="kw">super</span>::main_menu::MenuPage;
@@ -222,7 +238,7 @@
 </span><span class="kw">pub enum </span>MapSelectAction {
     <span class="attr">#[default]
     </span><span class="prelude-val">None</span>,
-    SelectMap(Handle&lt;MapMeta&gt;),
+    SelectMap(MapPool),
     GoBack,
 }
 
@@ -238,6 +254,7 @@
     ctx: Res&lt;EguiCtx&gt;,
     localization: Localization&lt;GameMeta&gt;,
     player_controls: Res&lt;GlobalPlayerControls&gt;,
+    rng: ResInit&lt;GlobalRng&gt;,
 ) -&gt; MapSelectAction {
     <span class="kw">if </span>player_controls.values().any(|x| x.menu_back_just_pressed) {
         <span class="kw">return </span>MapSelectAction::GoBack;
@@ -289,21 +306,34 @@
                         egui::ScrollArea::vertical()
                             .show(ui, |ui| {
                                 ui.vertical_centered_justified(|ui| {
-                                    <span class="kw">for </span>(i, handle) <span class="kw">in </span>meta.core.stable_maps.iter().enumerate() {
+                                    <span class="kw">let </span>all_maps_button = BorderedButton::themed(
+                                        <span class="kw-2">&amp;</span>meta.theme.buttons.small,
+                                        <span class="string">&quot;All Maps&quot;</span>.to_string(),
+                                    )
+                                    .show(ui)
+                                    .focus_by_default(ui);
+
+                                    <span class="kw">if </span>all_maps_button.clicked() {
+                                        <span class="comment">// TODO: Currently does not include packs, only stable maps.
+                                        </span><span class="kw">let </span><span class="kw-2">mut </span>map_pool =
+                                            MapPool::from_slice(<span class="kw-2">&amp;</span>meta.core.stable_maps);
+                                        map_pool.randomize_current_map(<span class="kw-2">&amp;</span>rng);
+                                        <span class="kw">return </span>MapSelectAction::SelectMap(map_pool);
+                                    }
+
+                                    <span class="kw">for </span>handle <span class="kw">in </span>meta.core.stable_maps.iter() {
                                         <span class="kw">let </span>map_meta = asset_server.get(<span class="kw-2">*</span>handle);
 
-                                        <span class="kw">let </span><span class="kw-2">mut </span>button = BorderedButton::themed(
+                                        <span class="kw">let </span>button = BorderedButton::themed(
                                             <span class="kw-2">&amp;</span>meta.theme.buttons.small,
                                             map_meta.name.to_string(),
                                         )
                                         .show(ui);
 
-                                        <span class="kw">if </span>i == <span class="number">0 </span>{
-                                            button = button.focus_by_default(ui);
-                                        }
-
                                         <span class="kw">if </span>button.clicked() {
-                                            <span class="kw">return </span>MapSelectAction::SelectMap(<span class="kw-2">*</span>handle);
+                                            <span class="kw">return </span>MapSelectAction::SelectMap(
+                                                MapPool::from_single_map(<span class="kw-2">*</span>handle),
+                                            );
                                         }
                                     }
 
@@ -319,7 +349,9 @@
                                             .show(ui);
 
                                             <span class="kw">if </span>button.clicked() {
-                                                <span class="kw">return </span>MapSelectAction::SelectMap(<span class="kw-2">*</span>map);
+                                                <span class="kw">return </span>MapSelectAction::SelectMap(
+                                                    MapPool::from_single_map(<span class="kw-2">*</span>map),
+                                                );
                                             }
                                         }
                                     }

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["WIN_INDICATOR_Z"],"fn":["game_plugin","spawn_win_indicator"],"struct":["WinIndicatorMeta"]};

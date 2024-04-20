@@ -297,6 +297,8 @@
 <a href="#202" id="202">202</a>
 <a href="#203" id="203">203</a>
 <a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Default, Debug, Clone)]
@@ -449,6 +451,8 @@
                             sync_color: <span class="bool-val">false</span>,
                             offset: Vec3::ZERO,
                             sync_animation: <span class="bool-val">true</span>,
+                            sync_flip: <span class="bool-val">true</span>,
+                            offset_inherits_rotation: <span class="bool-val">true</span>,
                         };
                         attachments.insert(attachment_ent, attachment);
                         sprites.insert(attachment_ent, AtlasSprite::new(player_decoration));

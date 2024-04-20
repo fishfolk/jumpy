@@ -264,6 +264,28 @@
 <a href="#169" id="169">169</a>
 <a href="#170" id="170">170</a>
 <a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
 </pre></div><pre class="rust"><code><span class="kw">pub mod </span>attachment;
 <span class="kw">pub mod </span>bullet;
 <span class="kw">pub mod </span>camera;
@@ -277,11 +299,14 @@
 <span class="kw">pub mod </span>lifetime;
 <span class="kw">pub mod </span>map;
 <span class="kw">pub mod </span>map_constructor;
+<span class="kw">pub mod </span>map_pool;
 <span class="kw">pub mod </span>metadata;
 <span class="kw">pub mod </span>physics;
 <span class="kw">pub mod </span>player;
 <span class="kw">pub mod </span>random;
+<span class="kw">pub mod </span>scoring;
 <span class="kw">pub mod </span>utils;
+<span class="kw">pub mod </span>win_indicator;
 
 <span class="doccomment">/// The target fixed frames-per-second that the game sumulation runs at.
 </span><span class="kw">pub const </span>FPS: f32 = <span class="number">60.0</span>;
@@ -297,8 +322,8 @@
     <span class="kw">pub use super</span>::{
         attachment::<span class="kw-2">*</span>, bullet::<span class="kw-2">*</span>, camera::<span class="kw-2">*</span>, damage::<span class="kw-2">*</span>, debug::<span class="kw-2">*</span>, editor::<span class="kw-2">*</span>, editor::<span class="kw-2">*</span>,
         elements::prelude::<span class="kw-2">*</span>, flappy_jellyfish::<span class="kw-2">*</span>, globals::<span class="kw-2">*</span>, input::<span class="kw-2">*</span>, item::<span class="kw-2">*</span>, lifetime::<span class="kw-2">*</span>,
-        map::<span class="kw-2">*</span>, map_constructor::<span class="kw-2">*</span>, metadata::<span class="kw-2">*</span>, physics::<span class="kw-2">*</span>, player::<span class="kw-2">*</span>, random::<span class="kw-2">*</span>, utils::<span class="kw-2">*</span>, FPS,
-        MAX_PLAYERS,
+        map::<span class="kw-2">*</span>, map_constructor::<span class="kw-2">*</span>, map_pool::<span class="kw-2">*</span>, metadata::<span class="kw-2">*</span>, physics::<span class="kw-2">*</span>, player::<span class="kw-2">*</span>, random::<span class="kw-2">*</span>,
+        scoring::<span class="kw-2">*</span>, utils::<span class="kw-2">*</span>, win_indicator::<span class="kw-2">*</span>, FPS, MAX_PLAYERS,
     };
 }
 
@@ -309,14 +334,20 @@
     MapMeta::register_schema();
     game.install_plugin(elements::game_plugin)
         .install_plugin(bullet::game_plugin)
+        .install_plugin(win_indicator::game_plugin)
         .init_shared_resource::&lt;AssetServer&gt;();
 }
 
 <span class="kw">pub struct </span>MatchPlugin {
-    <span class="kw">pub </span>map: MapMeta,
+    <span class="kw">pub </span>maps: MapPool,
     <span class="kw">pub </span>player_info: [PlayerInput; MAX_PLAYERS],
     <span class="doccomment">/// The lua plugins to enable for this match.
     </span><span class="kw">pub </span>plugins: Arc&lt;Vec&lt;Handle&lt;LuaPlugin&gt;&gt;&gt;,
+
+    <span class="doccomment">/// Tracks score for match. Should be default if installing for
+    /// new match, but if restarting MatchPlugin to transition between rounds,
+    /// should be inputted from previous session resourc.
+    </span><span class="kw">pub </span>score: MatchScore,
 
     <span class="kw">pub </span>session_runner: Box&lt;<span class="kw">dyn </span>SessionRunner&gt;,
 }
@@ -348,11 +379,24 @@
         attachment::install(session);
         bullet::session_plugin(session);
         editor::install(session);
+        scoring::session_plugin(session);
 
-        session.world.insert_resource(LoadedMap(Arc::new(<span class="self">self</span>.map)));
+        <span class="kw">let </span>current_map = <span class="self">self</span>.maps.current_map;
+        session.world.insert_resource(<span class="self">self</span>.maps);
+
+        <span class="comment">// Initialize LoadedMap on startup as we cannot access AssetServer during MatchPlugin install
+        // to get map meta.
+        </span>session.add_startup_system(
+            <span class="kw">move </span>|<span class="kw-2">mut </span>loaded_map: ResMutInit&lt;LoadedMap&gt;, assets: Res&lt;AssetServer&gt;| {
+                <span class="kw">let </span>map_meta = assets.get(current_map).clone();
+                <span class="kw-2">*</span>loaded_map = LoadedMap(Arc::new(map_meta))
+            },
+        );
+
         session.world.insert_resource(MatchInputs {
             players: <span class="self">self</span>.player_info,
         });
+        session.world.insert_resource(<span class="self">self</span>.score);
         session.runner = <span class="self">self</span>.session_runner;
     }
 }

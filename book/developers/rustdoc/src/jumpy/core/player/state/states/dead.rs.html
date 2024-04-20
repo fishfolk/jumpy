@@ -194,6 +194,9 @@
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub static </span>ID: Lazy&lt;Ustr&gt; = Lazy::new(|| ustr(<span class="string">&quot;core::dead&quot;</span>));
@@ -291,7 +294,10 @@
         }
 
         <span class="kw">if </span>state.age &gt;= <span class="number">80 </span>{
-            commands.add(PlayerCommand::despawn(player_ent));
+            <span class="comment">// If only one player in match, we wont&#39; score / transition rounds, so respawn player.
+            </span><span class="kw">if </span>player_indices.bitset().bit_count() == <span class="number">1 </span>{
+                commands.add(PlayerCommand::despawn(player_ent));
+            }
         }
     }
 }

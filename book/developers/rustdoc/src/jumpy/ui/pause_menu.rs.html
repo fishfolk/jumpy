@@ -313,7 +313,6 @@
 <a href="#218" id="218">218</a>
 <a href="#219" id="219">219</a>
 <a href="#220" id="220">220</a>
-<a href="#221" id="221">221</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
 
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
@@ -408,10 +407,8 @@
         sessions.end_game();
         sessions.start_menu();
     } <span class="kw">else if </span>restart_game {
-        sessions.restart_game();
-    } <span class="kw">else if let </span><span class="prelude-val">Some</span>(map_handle) = select_map {
-        <span class="kw">let </span>map = assets.get(map_handle).clone();
-
+        sessions.restart_game(<span class="prelude-val">None</span>);
+    } <span class="kw">else if let </span><span class="prelude-val">Some</span>(maps) = select_map {
         <span class="kw">let </span>match_info = sessions
             .get(SessionNames::GAME)
             .unwrap()
@@ -421,7 +418,7 @@
             .clone();
         sessions.end_game();
         sessions.start_game(<span class="kw">crate</span>::core::MatchPlugin {
-            map,
+            maps,
             player_info: std::array::from_fn(|i| PlayerInput {
                 control: default(),
                 editor_input: default(),
@@ -429,6 +426,7 @@
             }),
             plugins: meta.get_plugins(<span class="kw-2">&amp;</span>assets),
             session_runner: Box::&lt;JumpyDefaultMatchRunner&gt;::default(),
+            score: default(),
         })
     }
 }

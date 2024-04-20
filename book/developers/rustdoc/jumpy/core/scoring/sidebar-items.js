@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["round_end","session_plugin"],"struct":["MatchScore","RoundScoringState"]};

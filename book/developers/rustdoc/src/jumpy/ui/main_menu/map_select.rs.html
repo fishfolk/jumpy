@@ -239,6 +239,7 @@
 <a href="#144" id="144">144</a>
 <a href="#145" id="145">145</a>
 <a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::{JumpyDefaultMatchRunner, MatchPlugin};
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
@@ -253,7 +254,7 @@
 <span class="doccomment">/// Network message that may be sent when selecting a map.
 </span><span class="attr">#[derive(Serialize, Deserialize)]
 </span><span class="kw">pub enum </span>MapSelectMessage {
-    SelectMap(NetworkHandle&lt;MapMeta&gt;),
+    SelectMap(MapPoolNetwork),
 }
 
 <span class="kw">pub fn </span>widget(
@@ -287,7 +288,7 @@
 
     <span class="kw">match </span>select_action {
         MapSelectAction::None =&gt; (),
-        MapSelectAction::SelectMap(map_handle) =&gt; {
+        MapSelectAction::SelectMap(maps) =&gt; {
             session_options.delete = <span class="bool-val">true</span>;
             ui.ctx().set_state(MenuPage::Home);
 
@@ -306,11 +307,9 @@
             <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
             </span><span class="kw">let </span>session_runner = Box::&lt;JumpyDefaultMatchRunner&gt;::default();
 
-            <span class="kw">let </span>map_meta = assets.get(map_handle).clone();
-
             <span class="kw">let </span>player_select_state = ui.ctx().get_state::&lt;PlayerSelectState&gt;();
             sessions.start_game(MatchPlugin {
-                map: map_meta,
+                maps,
                 player_info: std::array::from_fn(|i| {
                     <span class="kw">let </span>slot = player_select_state.slots[i];
 
@@ -326,6 +325,7 @@
                 }),
                 plugins: meta.get_plugins(<span class="kw-2">&amp;</span>assets),
                 session_runner,
+                score: default(),
             });
             ui.ctx().set_state(PlayerSelectState::default());
         }
@@ -342,12 +342,12 @@
 ) {
     <span class="kw">use </span>bones_framework::networking::SocketTarget;
     <span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = socket {
-        <span class="kw">if let </span>MapSelectAction::SelectMap(map) = action {
+        <span class="kw">if let </span>MapSelectAction::SelectMap(maps) = action {
             <span class="macro">info!</span>(<span class="string">&quot;Sending network SelectMap message.&quot;</span>);
             socket.send_reliable(
                 SocketTarget::All,
                 <span class="kw-2">&amp;</span>postcard::to_allocvec(<span class="kw-2">&amp;</span>MapSelectMessage::SelectMap(
-                    map.network_handle(asset_server),
+                    maps.into_network(asset_server),
                 ))
                 .unwrap(),
             );
@@ -366,11 +366,13 @@
         <span class="kw">for </span>(_player, data) <span class="kw">in </span>datas {
             <span class="kw">match </span>postcard::from_bytes::&lt;MapSelectMessage&gt;(<span class="kw-2">&amp;</span>data) {
                 <span class="prelude-val">Ok</span>(message) =&gt; <span class="kw">match </span>message {
-                    MapSelectMessage::SelectMap(map_handle) =&gt; {
+                    MapSelectMessage::SelectMap(maps) =&gt; {
                         <span class="macro">info!</span>(<span class="string">&quot;Map select message received, starting game&quot;</span>);
 
-                        <span class="kw">let </span>handle = map_handle.into_handle(asset_server);
-                        <span class="kw">return </span><span class="prelude-val">Some</span>(MapSelectAction::SelectMap(handle));
+                        <span class="kw">return </span><span class="prelude-val">Some</span>(MapSelectAction::SelectMap(MapPool::from_network(
+                            maps,
+                            asset_server,
+                        )));
                     }
                 },
                 <span class="prelude-val">Err</span>(e) =&gt; {

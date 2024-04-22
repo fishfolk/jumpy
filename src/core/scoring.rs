@@ -42,7 +42,7 @@ impl RoundScoringState {
 #[derive(HasSchema, Clone, Default, Debug)]
 pub struct MatchScore {
     /// Map player to score, if no entry is 0.
-    player_score: HashMap<Entity, u32>,
+    player_score: HashMap<PlayerIdx, u32>,
 
     /// How many rounds have completed this match
     rounds_completed: u32,
@@ -50,13 +50,13 @@ pub struct MatchScore {
 
 impl MatchScore {
     /// Get player's score
-    pub fn score(&self, entity: Entity) -> u32 {
-        self.player_score.get(&entity).map_or(0, |s| *s)
+    pub fn score(&self, player: PlayerIdx) -> u32 {
+        self.player_score.get(&player).map_or(0, |s| *s)
     }
 
     /// Mark round as completed and increment score of winner. None should be provided
     /// on a draw.
-    pub fn complete_round(&mut self, winner: Option<Entity>) {
+    pub fn complete_round(&mut self, winner: Option<PlayerIdx>) {
         self.rounds_completed += 1;
 
         // Increment winner's score if not a draw
@@ -103,9 +103,9 @@ pub fn round_end(
     // Is Some if one player left, or none if all players dead.
     // Exits function if >= 2 players left: otherwise we handle continue to handle
     // round scoring.
-    let last_player_or_draw: Option<Entity> = {
-        let mut last_player: Option<Entity> = None;
-        for (ent, (_player_idx, killed)) in
+    let last_player_or_draw: Option<(PlayerIdx, Entity)> = {
+        let mut last_player: Option<(PlayerIdx, Entity)> = None;
+        for (ent, (player_idx, killed)) in
             entities.iter_with((&player_indices, &Optional(&killed_players)))
         {
             player_count += 1;
@@ -115,7 +115,7 @@ pub fn round_end(
                     return;
                 }
 
-                last_player = Some(ent);
+                last_player = Some((*player_idx, ent));
             }
         }
 
@@ -138,11 +138,11 @@ pub fn round_end(
     // Ready to score the round?
     if state.should_score_round() {
         state.round_scored = true;
-        score.complete_round(last_player_or_draw);
+        score.complete_round(last_player_or_draw.map(|x| x.0));
 
-        if let Some(winner) = last_player_or_draw {
+        if let Some((_, winner_ent)) = last_player_or_draw {
             // commands.add(PlayerCommand::won_round(winner));
-            commands.add(spawn_win_indicator(winner));
+            commands.add(spawn_win_indicator(winner_ent));
         }
 
         // Start the post-score linger timer before next round

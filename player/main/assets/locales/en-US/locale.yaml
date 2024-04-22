@@ -5,6 +5,7 @@ resources:
   - debug-tools.ftl
 
   - network-game.ftl
+  - scoring.ftl
   - settings.ftl
   - editor.ftl
   - player-select.ftl

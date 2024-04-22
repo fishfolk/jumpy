@@ -92,6 +92,7 @@ theme:
   scale: 1.2
   colors:
     positive: 3EC761
+    negative: F52A2A
 
   widgets:
     border_radius: 1.5
@@ -254,6 +255,8 @@ core:
     round_end_score_time: 3s
     # How long after scoring to wait before transitioning out of round
     round_end_post_score_linger_time: 3s
+    winning_score_threshold: 15
+    rounds_between_intermission: 7
 
   camera:
     default_height: 448

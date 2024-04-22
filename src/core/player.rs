@@ -31,7 +31,7 @@ pub fn plugin(session: &mut Session) {
 }
 
 /// The player index, for example Player 1, Player 2, and so on.
-#[derive(Clone, HasSchema, Deref, DerefMut, Default)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, HasSchema, Deref, DerefMut, Default)]
 pub struct PlayerIdx(pub u32);
 
 /// Contains the entities of the extra player layers, such as the player face and fin.

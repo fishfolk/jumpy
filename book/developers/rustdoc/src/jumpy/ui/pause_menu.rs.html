@@ -313,12 +313,46 @@
 <a href="#218" id="218">218</a>
 <a href="#219" id="219">219</a>
 <a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
 
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 </span><span class="kw">use </span>bones_framework::networking::NetworkMatchSocket;
 
 <span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>};
+
+<span class="kw">use </span><span class="kw">super</span>::scoring::ScoringMenuState;
 
 <span class="attr">#[derive(Clone, Debug, Copy, Default)]
 </span><span class="kw">enum </span>PauseMenuPage {
@@ -331,6 +365,11 @@
     session.add_system_to_stage(Update, pause_menu_system);
 }
 
+<span class="attr">#[derive(HasSchema, Debug, Clone, Default)]
+</span><span class="kw">struct </span>PauseMenu {
+    menu_open: bool,
+}
+
 <span class="kw">fn </span>pause_menu_system(
     meta: Root&lt;GameMeta&gt;,
     <span class="kw-2">mut </span>sessions: ResMut&lt;Sessions&gt;,
@@ -338,6 +377,7 @@
     controls: Res&lt;GlobalPlayerControls&gt;,
     world: <span class="kw-2">&amp;</span>World,
     assets: Res&lt;AssetServer&gt;,
+    <span class="kw-2">mut </span>pause_menu: ResMutInit&lt;PauseMenu&gt;,
 
     <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
 ) {
@@ -349,11 +389,12 @@
 
     <span class="kw">let </span><span class="kw-2">mut </span>back_to_menu = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>restart_game = <span class="bool-val">false</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>close_pause_menu = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>select_map = <span class="prelude-val">None</span>;
     <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = sessions.get_mut(SessionNames::GAME) {
         <span class="kw">let </span>pause_pressed = controls.values().any(|x| x.pause_just_pressed);
 
-        <span class="kw">if </span>!session.active {
+        <span class="kw">if </span>!session.active &amp;&amp; pause_menu.menu_open {
             <span class="kw">let </span>page = ctx.get_state::&lt;PauseMenuPage&gt;();
 
             <span class="kw">match </span>page {
@@ -378,7 +419,13 @@
 
                                     world.run_system(
                                         main_pause_menu,
-                                        (ui, session, <span class="kw-2">&amp;mut </span>restart_game, <span class="kw-2">&amp;mut </span>back_to_menu),
+                                        (
+                                            ui,
+                                            session,
+                                            <span class="kw-2">&amp;mut </span>restart_game,
+                                            <span class="kw-2">&amp;mut </span>back_to_menu,
+                                            <span class="kw-2">&amp;mut </span>close_pause_menu,
+                                        ),
                                     );
                                 });
                         });
@@ -399,6 +446,7 @@
                 }
             }
         } <span class="kw">else if </span>pause_pressed {
+            pause_menu.menu_open = <span class="bool-val">true</span>;
             session.active = <span class="bool-val">false</span>;
         }
     }
@@ -406,8 +454,10 @@
     <span class="kw">if </span>back_to_menu {
         sessions.end_game();
         sessions.start_menu();
+        pause_menu.menu_open = <span class="bool-val">false</span>;
     } <span class="kw">else if </span>restart_game {
-        sessions.restart_game(<span class="prelude-val">None</span>);
+        sessions.restart_game(<span class="prelude-val">None</span>, <span class="bool-val">false</span>);
+        pause_menu.menu_open = <span class="bool-val">false</span>;
     } <span class="kw">else if let </span><span class="prelude-val">Some</span>(maps) = select_map {
         <span class="kw">let </span>match_info = sessions
             .get(SessionNames::GAME)
@@ -427,19 +477,24 @@
             plugins: meta.get_plugins(<span class="kw-2">&amp;</span>assets),
             session_runner: Box::&lt;JumpyDefaultMatchRunner&gt;::default(),
             score: default(),
-        })
+        });
+    }
+
+    <span class="kw">if </span>close_pause_menu {
+        pause_menu.menu_open = <span class="bool-val">false</span>;
     }
 }
 
 <span class="kw">fn </span>main_pause_menu(
-    <span class="kw-2">mut </span>param: In&lt;(<span class="kw-2">&amp;mut </span>egui::Ui, <span class="kw-2">&amp;mut </span>Session, <span class="kw-2">&amp;mut </span>bool, <span class="kw-2">&amp;mut </span>bool)&gt;,
+    <span class="kw-2">mut </span>param: In&lt;(<span class="kw-2">&amp;mut </span>egui::Ui, <span class="kw-2">&amp;mut </span>Session, <span class="kw-2">&amp;mut </span>bool, <span class="kw-2">&amp;mut </span>bool, <span class="kw-2">&amp;mut </span>bool)&gt;,
     meta: Root&lt;GameMeta&gt;,
     localization: Localization&lt;GameMeta&gt;,
     controls: Res&lt;GlobalPlayerControls&gt;,
+    scoring_menu: Res&lt;ScoringMenuState&gt;,
 
     <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
 ) {
-    <span class="kw">let </span>(ui, session, restart_game, back_to_menu) = <span class="kw-2">&amp;mut *</span>param;
+    <span class="kw">let </span>(ui, session, restart_game, back_to_menu, close_pause_menu) = <span class="kw-2">&amp;mut *</span>param;
 
     <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
     </span><span class="kw">let </span>is_online = socket.is_some();
@@ -448,7 +503,14 @@
 
     <span class="comment">// Unpause the game
     </span><span class="kw">if </span>controls.values().any(|x| x.pause_just_pressed) {
-        session.active = <span class="bool-val">true</span>;
+        <span class="kw">if </span>!scoring_menu.active {
+            <span class="comment">// Do not unpause game session if scoring menu open.
+            // TODO: Use some kind of pause stack to track what different systems
+            // might want session to remain inactive.
+            </span>session.active = <span class="bool-val">true</span>;
+        }
+
+        <span class="kw-2">**</span>close_pause_menu = <span class="bool-val">true</span>;
     }
 
     ui.vertical_centered(|ui| {
@@ -483,6 +545,7 @@
             .clicked()
         {
             session.active = <span class="bool-val">true</span>;
+            <span class="kw-2">**</span>close_pause_menu = <span class="bool-val">true</span>;
         }
 
         <span class="comment">// Local game buttons
@@ -520,6 +583,7 @@
             {
                 <span class="comment">// TODO: show editor.
                 </span>session.active = <span class="bool-val">true</span>;
+                <span class="kw-2">**</span>close_pause_menu = <span class="bool-val">true</span>;
             }
         });
 

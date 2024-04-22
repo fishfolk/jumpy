@@ -288,33 +288,79 @@
 <a href="#193" id="193">193</a>
 <a href="#194" id="194">194</a>
 <a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Track scoring of rounds / tournament
 
-</span><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+</span><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, ui::scoring::ScoringMenuState};
 
 <span class="doccomment">/// Timer tracking how long until round is scored once one or fewer players are alive
 </span><span class="attr">#[derive(HasSchema, Clone, Default)]
 </span><span class="kw">pub struct </span>RoundScoringState {
     <span class="doccomment">/// Timer used to count down to scoring, or to round transition post scoring.
     /// Is `None` if round is in progress.
-    </span>timer: <span class="prelude-ty">Option</span>&lt;Timer&gt;,
+    </span><span class="kw">pub </span>timer: <span class="prelude-ty">Option</span>&lt;Timer&gt;,
 
     <span class="doccomment">/// If true: round has been scored, timer counts down to round transition.
-    </span>round_scored: bool,
+    </span><span class="kw">pub </span>round_scored: bool,
 
     <span class="doccomment">/// Save MapPool state to transitin with when determining round end.
-    </span>next_maps: <span class="prelude-ty">Option</span>&lt;MapPool&gt;,
+    </span><span class="kw">pub </span>next_maps: <span class="prelude-ty">Option</span>&lt;MapPool&gt;,
 
     <span class="doccomment">/// Save the frame round was marked to transition on in network play.
     /// Transition does not execute until this is confirmed by remote players.
-    </span>network_round_end_frame: <span class="prelude-ty">Option</span>&lt;i32&gt;,
+    </span><span class="kw">pub </span>network_round_end_frame: <span class="prelude-ty">Option</span>&lt;i32&gt;,
+}
+
+<span class="kw">impl </span>RoundScoringState {
+    <span class="doccomment">/// Are timers for round scoring + linger before transition complete?
+    </span><span class="kw">pub fn </span>transition_timers_done(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(timer) = <span class="self">self</span>.timer.as_ref() {
+            <span class="kw">return </span>timer.finished() &amp;&amp; <span class="self">self</span>.round_scored;
+        }
+        <span class="bool-val">false
+    </span>}
+
+    <span class="doccomment">/// Is scoring timer complete but round not yet scored?
+    </span><span class="kw">pub fn </span>should_score_round(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(timer) = <span class="self">self</span>.timer.as_ref() {
+            <span class="kw">return </span>timer.finished() &amp;&amp; !<span class="self">self</span>.round_scored;
+        }
+        <span class="bool-val">false
+    </span>}
 }
 
 <span class="doccomment">/// Store player&#39;s match score&#39;s (rounds won)
 </span><span class="attr">#[derive(HasSchema, Clone, Default, Debug)]
 </span><span class="kw">pub struct </span>MatchScore {
     <span class="doccomment">/// Map player to score, if no entry is 0.
-    </span>player_score: HashMap&lt;Entity, u32&gt;,
+    </span>player_score: HashMap&lt;PlayerIdx, u32&gt;,
 
     <span class="doccomment">/// How many rounds have completed this match
     </span>rounds_completed: u32,
@@ -322,13 +368,13 @@
 
 <span class="kw">impl </span>MatchScore {
     <span class="doccomment">/// Get player&#39;s score
-    </span><span class="kw">pub fn </span>score(<span class="kw-2">&amp;</span><span class="self">self</span>, entity: Entity) -&gt; u32 {
-        <span class="self">self</span>.player_score.get(<span class="kw-2">&amp;</span>entity).map_or(<span class="number">0</span>, |s| <span class="kw-2">*</span>s)
+    </span><span class="kw">pub fn </span>score(<span class="kw-2">&amp;</span><span class="self">self</span>, player: PlayerIdx) -&gt; u32 {
+        <span class="self">self</span>.player_score.get(<span class="kw-2">&amp;</span>player).map_or(<span class="number">0</span>, |s| <span class="kw-2">*</span>s)
     }
 
     <span class="doccomment">/// Mark round as completed and increment score of winner. None should be provided
     /// on a draw.
-    </span><span class="kw">pub fn </span>complete_round(<span class="kw-2">&amp;mut </span><span class="self">self</span>, winner: <span class="prelude-ty">Option</span>&lt;Entity&gt;) {
+    </span><span class="kw">pub fn </span>complete_round(<span class="kw-2">&amp;mut </span><span class="self">self</span>, winner: <span class="prelude-ty">Option</span>&lt;PlayerIdx&gt;) {
         <span class="self">self</span>.rounds_completed += <span class="number">1</span>;
 
         <span class="comment">// Increment winner&#39;s score if not a draw
@@ -361,8 +407,10 @@
     map_pool: Res&lt;MapPool&gt;,
     <span class="kw-2">mut </span>score: ResMutInit&lt;MatchScore&gt;,
     <span class="kw-2">mut </span>sessions: ResMut&lt;Sessions&gt;,
+    <span class="kw-2">mut </span>session_options: ResMut&lt;SessionOptions&gt;,
     time: Res&lt;Time&gt;,
     <span class="kw-2">mut </span>state: ResMutInit&lt;RoundScoringState&gt;,
+    <span class="kw-2">mut </span>scoring_menu: ResMut&lt;ScoringMenuState&gt;,
     killed_players: Comp&lt;PlayerKilled&gt;,
     player_indices: Comp&lt;PlayerIdx&gt;,
     <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>network_info: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkInfo&gt;&gt;,
@@ -373,9 +421,9 @@
     <span class="comment">// Is Some if one player left, or none if all players dead.
     // Exits function if &gt;= 2 players left: otherwise we handle continue to handle
     // round scoring.
-    </span><span class="kw">let </span>last_player_or_draw: <span class="prelude-ty">Option</span>&lt;Entity&gt; = {
-        <span class="kw">let </span><span class="kw-2">mut </span>last_player: <span class="prelude-ty">Option</span>&lt;Entity&gt; = <span class="prelude-val">None</span>;
-        <span class="kw">for </span>(ent, (_player_idx, killed)) <span class="kw">in
+    </span><span class="kw">let </span>last_player_or_draw: <span class="prelude-ty">Option</span>&lt;(PlayerIdx, Entity)&gt; = {
+        <span class="kw">let </span><span class="kw-2">mut </span>last_player: <span class="prelude-ty">Option</span>&lt;(PlayerIdx, Entity)&gt; = <span class="prelude-val">None</span>;
+        <span class="kw">for </span>(ent, (player_idx, killed)) <span class="kw">in
             </span>entities.iter_with((<span class="kw-2">&amp;</span>player_indices, <span class="kw-2">&amp;</span>Optional(<span class="kw-2">&amp;</span>killed_players)))
         {
             player_count += <span class="number">1</span>;
@@ -385,7 +433,7 @@
                     </span><span class="kw">return</span>;
                 }
 
-                last_player = <span class="prelude-val">Some</span>(ent);
+                last_player = <span class="prelude-val">Some</span>((<span class="kw-2">*</span>player_idx, ent));
             }
         }
 
@@ -404,83 +452,91 @@
     }
 
     <span class="comment">// There are one or fewer players alive if we have not already returned from function
-    </span><span class="kw">match </span>state.timer {
-        <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>t) <span class="kw">if </span>t.finished() &amp;&amp; !state.round_scored =&gt; {
-            <span class="comment">// Score the round
-            </span>state.round_scored = <span class="bool-val">true</span>;
-            score.complete_round(last_player_or_draw);
 
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(winner) = last_player_or_draw {
-                <span class="comment">// commands.add(PlayerCommand::won_round(winner));
-                </span>commands.add(spawn_win_indicator(winner));
-            }
+    // Ready to score the round?
+    </span><span class="kw">if </span>state.should_score_round() {
+        state.round_scored = <span class="bool-val">true</span>;
+        score.complete_round(last_player_or_draw.map(|x| x.<span class="number">0</span>));
 
-            <span class="comment">// Start the post-score linger timer before next round
-            </span>state.timer = <span class="prelude-val">Some</span>(Timer::new(
-                meta.core.config.round_end_post_score_linger_time,
-                TimerMode::Once,
-            ));
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, winner_ent)) = last_player_or_draw {
+            <span class="comment">// commands.add(PlayerCommand::won_round(winner));
+            </span>commands.add(spawn_win_indicator(winner_ent));
         }
-        <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>t) <span class="kw">if </span>t.finished() &amp;&amp; state.round_scored =&gt; {
-            <span class="comment">// post-score linger timer complete, go to next round if all players confirmed transition
 
-            // Is round transition sycnrhonized on all clients in network play?
-            // Will evaluate to true in local play.
-            </span><span class="kw">let </span><span class="kw-2">mut </span>round_transition_synchronized = <span class="bool-val">false</span>;
+        <span class="comment">// Start the post-score linger timer before next round
+        </span>state.timer = <span class="prelude-val">Some</span>(Timer::new(
+            meta.core.config.round_end_post_score_linger_time,
+            TimerMode::Once,
+        ));
+    } <span class="kw">else if </span>state.transition_timers_done() {
+        <span class="comment">// post-score linger timer complete, go to next round if all players confirmed transition
 
-            <span class="comment">// If in network play and determined a prev frame round should end on:
-            </span><span class="attr">#[allow(unused_variables)]
-            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(end_net_frame) = state.network_round_end_frame {
-                <span class="comment">// check if this frame is confirmed by all players.
-                </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(network_info) = network_info {
-                    round_transition_synchronized =
-                        end_net_frame &lt;= network_info.last_confirmed_frame;
-                }
+        // Is round transition sycnrhonized on all clients in network play?
+        // Will evaluate to true in local play.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>round_transition_synchronized = <span class="bool-val">false</span>;
+
+        <span class="comment">// If in network play and determined a prev frame round should end on:
+        </span><span class="attr">#[allow(unused_variables)]
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(end_net_frame) = state.network_round_end_frame {
+            <span class="comment">// check if this frame is confirmed by all players.
+            </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(network_info) = network_info {
+                round_transition_synchronized = end_net_frame &lt;= network_info.last_confirmed_frame;
+            }
+        } <span class="kw">else </span>{
+            <span class="comment">// Network frame for round end not yet recorded (or in local only)
+
+            // Randomize map and save MapPool to be used for transition
+            </span><span class="kw">let </span><span class="kw-2">mut </span>map_pool = map_pool.clone();
+            map_pool.randomize_current_map(<span class="kw-2">&amp;</span>rng);
+            state.next_maps = <span class="prelude-val">Some</span>(map_pool);
+
+            <span class="comment">// Save current predicted frame for round end.
+            // Will not follow through with transition until this frame is confirmed
+            // by all players in network play. If local, safe to transition now.
+            </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(network_info) = network_info {
+                state.network_round_end_frame = <span class="prelude-val">Some</span>(network_info.current_frame);
             } <span class="kw">else </span>{
-                <span class="comment">// Network frame for round end not yet recorded (or in local only)
-
-                // Randomize map and save MapPool to be used for transition
-                </span><span class="kw">let </span><span class="kw-2">mut </span>map_pool = map_pool.clone();
-                map_pool.randomize_current_map(<span class="kw-2">&amp;</span>rng);
-                state.next_maps = <span class="prelude-val">Some</span>(map_pool);
-
-                <span class="comment">// Save current predicted frame for round end.
-                // Will not follow through with transition until this frame is confirmed
-                // by all players in network play. If local, safe to transition now.
-                </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(network_info) = network_info {
-                    state.network_round_end_frame = <span class="prelude-val">Some</span>(network_info.current_frame);
-                } <span class="kw">else </span>{
-                    <span class="comment">// `Option&lt;Res&lt;NetworkInfo&gt;&gt;` always available in network play,
-                    // we are local and can transition now.
-                    </span>round_transition_synchronized = <span class="bool-val">true</span>;
-                }
-
-                <span class="comment">// Wasm32 is always local, can transition now.
-                </span><span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
-                </span>{
-                    round_transition_synchronized = <span class="bool-val">true</span>;
-                }
+                <span class="comment">// `Option&lt;Res&lt;NetworkInfo&gt;&gt;` always available in network play,
+                // we are local and can transition now.
+                </span>round_transition_synchronized = <span class="bool-val">true</span>;
             }
 
-            <span class="kw">if </span>round_transition_synchronized {
-                <span class="comment">// Use maps originally determined on synchronized transition frame
+            <span class="comment">// Wasm32 is always local, can transition now.
+            </span><span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+            </span>{
+                round_transition_synchronized = <span class="bool-val">true</span>;
+            }
+        }
+
+        <span class="kw">if </span>round_transition_synchronized {
+            <span class="kw">if </span>score.rounds_completed % meta.core.config.rounds_between_intermission == <span class="number">0 </span>{
+                scoring_menu.active = <span class="bool-val">true</span>;
+                scoring_menu.match_score = score.clone();
+                scoring_menu.next_maps = state.next_maps.clone();
+
+                session_options.active = <span class="bool-val">false</span>;
+            } <span class="kw">else </span>{
+                <span class="comment">// Not at intermission, tranisition immediately
+
+                // Use maps originally determined on synchronized transition frame
                 </span><span class="kw">let </span>next_maps = state.next_maps.clone().unwrap();
                 sessions.add_command(Box::new(|sessions: <span class="kw-2">&amp;mut </span>Sessions| {
-                    sessions.restart_game(<span class="prelude-val">Some</span>(next_maps));
+                    sessions.restart_game(<span class="prelude-val">Some</span>(next_maps), <span class="bool-val">false</span>);
                 }));
             }
         }
-        <span class="prelude-val">None </span>=&gt; {
-            <span class="comment">// Scoring timer does not exist, start a new one
-            </span>state.timer = <span class="prelude-val">Some</span>(Timer::new(
-                meta.core.config.round_end_score_time,
-                TimerMode::Once,
-            ));
-            state.round_scored = <span class="bool-val">false</span>;
-        }
-        <span class="kw">_ </span>=&gt; (), <span class="comment">// Timer still ticking
-    </span>};
+    } <span class="kw">else if </span>state.timer.is_none() {
+        <span class="comment">// Scoring timer does not exist, start a new one
+
+        </span>state.timer = <span class="prelude-val">Some</span>(Timer::new(
+            meta.core.config.round_end_score_time,
+            TimerMode::Once,
+        ));
+        state.round_scored = <span class="bool-val">false</span>;
+    } <span class="kw">else </span>{
+        <span class="comment">// Timer still ticking
+    </span>}
 }
 </code></pre></div></section></main></body></html>

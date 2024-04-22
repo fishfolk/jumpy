@@ -210,6 +210,12 @@
 <a href="#115" id="115">115</a>
 <a href="#116" id="116">116</a>
 <a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Core game metadata
 
 </span><span class="kw">use </span>serde::Deserializer;
@@ -326,5 +332,11 @@
     </span><span class="attr">#[serde(default)]
     #[serde(with = <span class="string">&quot;humantime_serde&quot;</span>)]
     </span><span class="kw">pub </span>round_end_post_score_linger_time: Duration,
+
+    <span class="doccomment">/// How many rounds must be won to end match
+    </span><span class="kw">pub </span>winning_score_threshold: u32,
+
+    <span class="doccomment">/// How many rounds between intermissions
+    </span><span class="kw">pub </span>rounds_between_intermission: u32,
 }
 </code></pre></div></section></main></body></html>

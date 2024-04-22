@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["PLAYER_PANEL_WIDTH","SCORING_MESSAGE_MAGIC"],"enum":["PlayerWon","ScoringMessageEnum"],"fn":["game_plugin","handle_scoring_messages","player_score_panel","scoring_menu","scoring_menu_system","session_plugin"],"struct":["PlayerScoreInfo","ScoringMenuState","ScoringMessage"]};

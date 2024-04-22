@@ -173,7 +173,20 @@
 <a href="#78" id="78">78</a>
 <a href="#79" id="79">79</a>
 <a href="#80" id="80">80</a>
-</pre></div><pre class="rust"><code><span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>};
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+</pre></div><pre class="rust"><code><span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>, ui::scoring::ScoringMenuState};
 
 <span class="kw">pub struct </span>SessionNames;
 <span class="kw">impl </span>SessionNames {
@@ -183,6 +196,7 @@
     <span class="kw">pub const </span>MAIN_MENU: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;main_menu&quot;</span>;
     <span class="kw">pub const </span>PAUSE_MENU: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;pause_menu&quot;</span>;
     <span class="kw">pub const </span>PROFILER: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;profiler&quot;</span>;
+    <span class="kw">pub const </span>SCORING: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;scoring&quot;</span>;
 }
 
 <span class="kw">pub trait </span>SessionExt {
@@ -190,7 +204,7 @@
     <span class="kw">fn </span>end_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>);
     <span class="doccomment">/// Optionally provide map_pool to restart game with. If not provided,
     /// current game&#39;s [`MapPool`] will be used.
-    </span><span class="kw">fn </span>restart_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map_pool: <span class="prelude-ty">Option</span>&lt;MapPool&gt;);
+    </span><span class="kw">fn </span>restart_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map_pool: <span class="prelude-ty">Option</span>&lt;MapPool&gt;, reset_score: bool);
     <span class="kw">fn </span>start_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>, match_plugin: <span class="kw">crate</span>::core::MatchPlugin);
 }
 
@@ -202,11 +216,18 @@
 
     <span class="kw">fn </span>end_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="self">self</span>.delete(SessionNames::GAME);
+
+        <span class="comment">// Make sure that scoring menu closed if was open
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(scoring_session) = <span class="self">self</span>.get_mut(SessionNames::SCORING) {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>state) = scoring_session.world.get_resource_mut::&lt;ScoringMenuState&gt;() {
+                state.active = <span class="bool-val">false</span>;
+            }
+        }
     }
 
     <span class="attr">#[track_caller]
     </span><span class="doccomment">///
-    </span><span class="kw">fn </span>restart_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map_pool: <span class="prelude-ty">Option</span>&lt;MapPool&gt;) {
+    </span><span class="kw">fn </span>restart_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map_pool: <span class="prelude-ty">Option</span>&lt;MapPool&gt;, reset_score: bool) {
         <span class="kw">if let </span><span class="prelude-val">Some</span>((existing_map_pool, player_info, plugins, <span class="kw-2">mut </span>session_runner, score)) =
             <span class="self">self</span>.get_mut(SessionNames::GAME).map(|session| {
                 <span class="kw">let </span>existing_map_pool = (<span class="kw-2">*</span>session.world.resource::&lt;MapPool&gt;()).clone();
@@ -234,6 +255,11 @@
             </span>session_runner.restart_session();
 
             <span class="kw">let </span>map_pool = map_pool.unwrap_or(existing_map_pool);
+            <span class="kw">let </span>score = <span class="kw">if </span>reset_score {
+                MatchScore::default()
+            } <span class="kw">else </span>{
+                score
+            };
 
             <span class="self">self</span>.create(SessionNames::GAME)
                 .install_plugin(<span class="kw">crate</span>::core::MatchPlugin {

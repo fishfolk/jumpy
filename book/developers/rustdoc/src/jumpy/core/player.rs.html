@@ -1212,7 +1212,7 @@
 }
 
 <span class="doccomment">/// The player index, for example Player 1, Player 2, and so on.
-</span><span class="attr">#[derive(Clone, HasSchema, Deref, DerefMut, Default)]
+</span><span class="attr">#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, HasSchema, Deref, DerefMut, Default)]
 </span><span class="kw">pub struct </span>PlayerIdx(<span class="kw">pub </span>u32);
 
 <span class="doccomment">/// Contains the entities of the extra player layers, such as the player face and fin.

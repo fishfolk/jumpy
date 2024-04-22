@@ -1,0 +1,4 @@
+image: ./buss.png
+tile_size: [62, 24]
+rows: 1
+columns: 1

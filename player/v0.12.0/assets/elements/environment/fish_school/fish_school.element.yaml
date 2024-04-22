@@ -1,0 +1,5 @@
+name: Fish School
+category: Critters
+editor:
+  grab_size: [50, 50]
+data: fish_school.yaml

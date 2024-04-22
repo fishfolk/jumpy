@@ -1,0 +1,5 @@
+name: Fisherman Hat
+atlas: ./fisherman.atlas.yaml
+
+offset: [-2, 26]
+body_size: [37, 28]

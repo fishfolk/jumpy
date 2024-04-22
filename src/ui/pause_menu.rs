@@ -5,6 +5,8 @@ use bones_framework::networking::NetworkMatchSocket;
 
 use crate::{core::JumpyDefaultMatchRunner, prelude::*};
 
+use super::scoring::ScoringMenuState;
+
 #[derive(Clone, Debug, Copy, Default)]
 enum PauseMenuPage {
     #[default]
@@ -141,6 +143,7 @@ fn main_pause_menu(
     meta: Root<GameMeta>,
     localization: Localization<GameMeta>,
     controls: Res<GlobalPlayerControls>,
+    scoring_menu: Res<ScoringMenuState>,
 
     #[cfg(not(target_arch = "wasm32"))] socket: Option<Res<NetworkMatchSocket>>,
 ) {
@@ -153,7 +156,13 @@ fn main_pause_menu(
 
     // Unpause the game
     if controls.values().any(|x| x.pause_just_pressed) {
-        session.active = true;
+        if !scoring_menu.active {
+            // Do not unpause game session if scoring menu open.
+            // TODO: Use some kind of pause stack to track what different systems
+            // might want session to remain inactive.
+            session.active = true;
+        }
+
         **close_pause_menu = true;
     }
 

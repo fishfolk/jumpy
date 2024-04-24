@@ -10,12 +10,16 @@ pub struct KickBombMeta {
     pub damage_region_size: Vec2,
     pub damage_region_lifetime: f32,
     pub kick_velocity: Vec2,
+    pub kickable: bool,
     pub throw_velocity: f32,
     pub explosion_lifetime: f32,
     pub explosion_frames: u32,
     pub explosion_fps: f32,
     pub explosion_sound: Handle<AudioSource>,
     pub explosion_volume: f64,
+    pub lit_frames_start: u32,
+    pub lit_frames_end: u32,
+    pub lit_fps: f32,
     pub fuse_sound: Handle<AudioSource>,
     pub fuse_sound_volume: f64,
     /// The time in seconds before a grenade explodes
@@ -27,6 +31,7 @@ pub struct KickBombMeta {
     pub bounciness: f32,
     pub angular_velocity: f32,
     pub arm_delay: Duration,
+    pub explode_on_contact: bool,
 }
 
 pub fn game_plugin(_game: &mut Game) {
@@ -212,15 +217,21 @@ fn update_idle_kick_bombs(
             fuse_sound_volume,
             arm_delay,
             fuse_time,
+            lit_frames_start,
+            lit_frames_end,
+            lit_fps,
             ..
         } = *kick_bomb_meta;
 
         if items_used.remove(entity).is_some() {
             audio_center.play_sound(fuse_sound, fuse_sound_volume);
             let animated_sprite = animated_sprites.get_mut(entity).unwrap();
-            animated_sprite.frames = [3, 4, 5].into_iter().collect();
+            animated_sprite.frames = ( lit_frames_start..lit_frames_end ).into_iter().collect();
+            // animated_sprite.frames = [lit_frames_start..lit_frames_end];
+            // animated_sprite.frames = lit_frames.into_iter().collect();
+            // animated_sprite.frames = lit_frames.clone();
             animated_sprite.repeat = true;
-            animated_sprite.fps = 8.0;
+            animated_sprite.fps = lit_fps;
             commands.add(
                 move |mut idle: CompMut<IdleKickBomb>, mut lit: CompMut<LitKickBomb>| {
                     idle.remove(entity);
@@ -265,7 +276,9 @@ fn update_lit_kick_bombs(
         let KickBombMeta {
             explosion_sound,
             explosion_volume,
+            explode_on_contact,
             kick_velocity,
+            kickable,
             damage_region_lifetime,
             damage_region_size,
             explosion_lifetime,
@@ -283,55 +296,74 @@ fn update_lit_kick_bombs(
                 break 'should_explode true;
             }
 
+            if explode_on_contact {
+                let players = entities
+                    .iter_with(&player_indexes)
+                    .map(|x| x.0)
+                    .collect::<Vec<_>>();
+
+                let colliding_with_players = collision_world
+                    .actor_collisions_filtered(entity, |e| {
+                        players.contains(&e) && invincibles.get(e).is_none()
+                    })
+                    .into_iter()
+                    .collect::<Vec<_>>();
+
+                if !colliding_with_players.is_empty() && kick_bomb.arm_delay.finished() {
+                    break 'should_explode true;
+                }
+            }
+
             // If the item is being held
             if player_inventories.find_item(entity).is_some() {
                 kick_bomb.kicking = false;
                 break 'should_explode false;
             }
 
-            // If the item is colliding with a non-invincible player
-            if let Some(player_entity) = collision_world
-                .actor_collisions_filtered(entity, |e| !invincibles.contains(e))
-                .into_iter()
-                .find(|&x| player_indexes.contains(x))
-            {
-                if !std::mem::replace(&mut kick_bomb.kicking, true) {
-                    kick_bomb.kicks += 1;
-                }
-
-                // Explode on the 3rd kick.
-                // Dropping the bomb is detected as a kick so we explode when
-                // the counter reaches 4.
-                if kick_bomb.kicks > 3 {
-                    break 'should_explode true;
-                }
-
-                let body = bodies.get_mut(entity).unwrap();
-                let translation = transforms.get_mut(entity).unwrap().translation;
-
-                let player_sprite = sprites.get_mut(player_entity).unwrap();
-                let player_translation = transforms.get(player_entity).unwrap().translation;
-
-                let player_standing_left = player_translation.x <= translation.x;
-
-                if body.velocity.x == 0.0 {
-                    body.velocity = kick_velocity;
-                    if player_sprite.flip_x {
-                        body.velocity.x *= -1.0;
+            if kickable {
+                // If the item is colliding with a non-invincible player
+                if let Some(player_entity) = collision_world
+                    .actor_collisions_filtered(entity, |e| !invincibles.contains(e))
+                    .into_iter()
+                    .find(|&x| player_indexes.contains(x))
+                {
+                    if !std::mem::replace(&mut kick_bomb.kicking, true) {
+                        kick_bomb.kicks += 1;
                     }
-                } else if player_standing_left && !player_sprite.flip_x {
-                    body.velocity.x = kick_velocity.x;
-                    body.velocity.y = kick_velocity.y;
-                } else if !player_standing_left && player_sprite.flip_x {
-                    body.velocity.x = -kick_velocity.x;
-                    body.velocity.y = kick_velocity.y;
-                } else if kick_bomb.arm_delay.finished() {
-                    break 'should_explode true;
-                }
-            } else {
-                kick_bomb.kicking = false;
-            }
 
+                    // Explode on the 3rd kick.
+                    // Dropping the bomb is detected as a kick so we explode when
+                    // the counter reaches 4.
+                    if kick_bomb.kicks > 3 {
+                        break 'should_explode true;
+                    }
+
+                    let body = bodies.get_mut(entity).unwrap();
+                    let translation = transforms.get_mut(entity).unwrap().translation;
+
+                    let player_sprite = sprites.get_mut(player_entity).unwrap();
+                    let player_translation = transforms.get(player_entity).unwrap().translation;
+
+                    let player_standing_left = player_translation.x <= translation.x;
+
+                    if body.velocity.x == 0.0 {
+                        body.velocity = kick_velocity;
+                        if player_sprite.flip_x {
+                            body.velocity.x *= -1.0;
+                        }
+                    } else if player_standing_left && !player_sprite.flip_x {
+                        body.velocity.x = kick_velocity.x;
+                        body.velocity.y = kick_velocity.y;
+                    } else if !player_standing_left && player_sprite.flip_x {
+                        body.velocity.x = -kick_velocity.x;
+                        body.velocity.y = kick_velocity.y;
+                    } else if kick_bomb.arm_delay.finished() {
+                        break 'should_explode true;
+                    }
+                } else {
+                    kick_bomb.kicking = false;
+                }
+            }
             false
         };
 

@@ -83,6 +83,7 @@ impl PlayerControlMapping {
 #[repr(C)]
 pub struct PlayerControlSetting {
     pub movement: VirtualDPad,
+    pub movement_alt: VirtualDPad,
     pub pause: InputKind,
     pub jump: InputKind,
     pub grab: InputKind,

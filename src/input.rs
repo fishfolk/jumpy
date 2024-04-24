@@ -367,16 +367,42 @@ impl<'a>
                 }
             }
 
-            if let Some(left) = get_input_value(&mapping.movement.left, source) {
+            // helper for merging two inputs (like dpad + joystick for example) allowing multiple bindings
+            // for same control
+            let merge_inputs = |input1: &InputKind, input2: &InputKind| -> Option<f32> {
+                let mut out: Option<f32> = None;
+                if let Some(value1) = get_input_value(input1, source) {
+                    out = Some(value1.abs());
+                }
+                if let Some(value2) = get_input_value(input2, source) {
+                    match out {
+                        Some(prev) if prev == 0.0 => {
+                            // If first input is 0.0, override with second input
+                            out = Some(value2.abs());
+                        }
+                        None => {
+                            // No input from first, use second
+                            out = Some(value2.abs());
+                        }
+                        // If first input is non-zero input, use it and ignore second.
+                        Some(_) => {}
+                    }
+                }
+
+                out
+            };
+
+            if let Some(left) = merge_inputs(&mapping.movement.left, &mapping.movement_alt.left) {
                 control.left = left.abs();
             }
-            if let Some(right) = get_input_value(&mapping.movement.right, source) {
+            if let Some(right) = merge_inputs(&mapping.movement.right, &mapping.movement_alt.right)
+            {
                 control.right = right.abs();
             }
-            if let Some(up) = get_input_value(&mapping.movement.up, source) {
+            if let Some(up) = merge_inputs(&mapping.movement.up, &mapping.movement_alt.up) {
                 control.up = up.abs();
             }
-            if let Some(down) = get_input_value(&mapping.movement.down, source) {
+            if let Some(down) = merge_inputs(&mapping.movement.down, &mapping.movement_alt.down) {
                 control.down = down.abs();
             }
         };

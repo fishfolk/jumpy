@@ -226,10 +226,7 @@ fn update(
                           mut lifetimes: CompMut<Lifetime>,
                           mut sprites: CompMut<AtlasSprite>,
                           mut transforms: CompMut<Transform>,
-                          mut kick_bomb_handles: CompMut<KickBombHandle>,
-                        //   mut bullets: CompMut<Bullet>,
-                        //   mut bullet_handles: CompMut<BulletHandle>,
-                          mut animated_sprites: CompMut<AnimatedSprite>| {
+                          mut animated_sprites: CompMut<AnimatedSprite>,| {
                         // spawn fire animation
                         {
                             let ent = entities.create();
@@ -254,20 +251,14 @@ fn update(
                             );
                             lifetimes.insert(ent, Lifetime::new(shoot_lifetime));
                         }
-
-                        // spawn bomb
-                        {   
-                            let ent = entities.create();
-                            kick_bomb_handles.insert(ent, KickBombHandle(bomb_meta));
-                            KickBombCommand::spawn_kick_bomb(
-                                Some(ent),
-                                shoot_animation_transform,
-                                bomb_meta.untyped(),
-                            );
-                            
-                        }
                     },
                 );
+                //Spawn bomb
+                commands.add(KickBombCommand::spawn_kick_bomb(
+                    None,
+                    shoot_animation_transform,
+                    bomb_meta.untyped(),
+                ));
             }
         }
 

@@ -73,6 +73,7 @@ impl KickBombCommand {
     /// `kick_bomb_handle` must cast to `Handle<KickBombMeta>` or `Handle<ElementMeta>` where [`ElementMeta`]
     /// contains handle that casts to `Handle<KickBombMeta>`.
     /// [`Handle::untyped`] should be used to convert to [`UntypedHandle`].
+    #[must_use]
     pub fn spawn_kick_bomb(
         entity: Option<Entity>,
         transform: Transform,

@@ -44,6 +44,11 @@ default_settings:
         left: !AxisNegative LeftStickX
         down: !AxisNegative LeftStickY
         right: !AxisPositive LeftStickX
+      movement_alt:
+        up: !Button DPadUp
+        left: !Button DPadLeft
+        down: !Button DPadDown
+        right: !Button DPadRight
       jump: !Button South
       grab: !Button East
       shoot: !Button West

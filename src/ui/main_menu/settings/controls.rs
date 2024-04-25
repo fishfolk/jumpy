@@ -72,6 +72,38 @@ pub(super) fn widget(
             ],
         ),
         (
+            localization.get("move-up-alt"),
+            [
+                &mut mapping.keyboard1.movement_alt.up,
+                &mut mapping.keyboard2.movement_alt.up,
+                &mut mapping.gamepad.movement_alt.up,
+            ],
+        ),
+        (
+            localization.get("move-down-alt"),
+            [
+                &mut mapping.keyboard1.movement_alt.down,
+                &mut mapping.keyboard2.movement_alt.down,
+                &mut mapping.gamepad.movement_alt.down,
+            ],
+        ),
+        (
+            localization.get("move-left-alt"),
+            [
+                &mut mapping.keyboard1.movement_alt.left,
+                &mut mapping.keyboard2.movement_alt.left,
+                &mut mapping.gamepad.movement_alt.left,
+            ],
+        ),
+        (
+            localization.get("move-right-alt"),
+            [
+                &mut mapping.keyboard1.movement_alt.right,
+                &mut mapping.keyboard2.movement_alt.right,
+                &mut mapping.gamepad.movement_alt.right,
+            ],
+        ),
+        (
             localization.get("jump"),
             [
                 &mut mapping.keyboard1.jump,

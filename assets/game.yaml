@@ -348,6 +348,8 @@ core:
     - /elements/environment/slippery/slippery.element.yaml
     - /elements/environment/slippery_seaweed/slippery_seaweed.element.yaml
     - /elements/item/crate/crate.element.yaml
+    - /elements/item/cannon/cannon.element.yaml
+    - /elements/item/cannonball/cannonball.element.yaml
     - /elements/item/grenade/grenade.element.yaml
     - /elements/item/jellyfish/jellyfish.element.yaml
     - /elements/item/kick_bomb/kick_bomb.element.yaml

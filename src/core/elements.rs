@@ -9,6 +9,7 @@ use crate::{impl_system_param, prelude::*};
 pub mod buss;
 pub mod crab;
 pub mod crate_item;
+pub mod cannon;
 pub mod decoration;
 pub mod fish_school;
 pub mod flappy_jellyfish;
@@ -311,6 +312,7 @@ macro_rules! install_plugins {
 install_plugins!(
     crab,
     crate_item,
+    cannon,
     decoration,
     fish_school,
     grenade,

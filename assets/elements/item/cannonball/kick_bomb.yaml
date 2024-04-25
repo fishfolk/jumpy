@@ -26,7 +26,7 @@ body_diameter: 16
 grab_offset: [5, -2]
 fin_anim: grab_2
 can_rotate: true
-bounciness: 0.4
+bounciness: 0.7
 angular_velocity: 0.1
 # arm_delay: 0.02
 arm_delay: 1000ms

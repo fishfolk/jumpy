@@ -220,6 +220,7 @@
 <a href="#125" id="125">125</a>
 <a href="#126" id="126">126</a>
 <a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>strum::IntoEnumIterator;
 
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
@@ -305,6 +306,7 @@
 #[repr(C)]
 </span><span class="kw">pub struct </span>PlayerControlSetting {
     <span class="kw">pub </span>movement: VirtualDPad,
+    <span class="kw">pub </span>movement_alt: VirtualDPad,
     <span class="kw">pub </span>pause: InputKind,
     <span class="kw">pub </span>jump: InputKind,
     <span class="kw">pub </span>grab: InputKind,

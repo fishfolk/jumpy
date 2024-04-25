@@ -226,7 +226,7 @@ fn update(
                           mut lifetimes: CompMut<Lifetime>,
                           mut sprites: CompMut<AtlasSprite>,
                           mut transforms: CompMut<Transform>,
-                          mut animated_sprites: CompMut<AnimatedSprite>,| {
+                          mut animated_sprites: CompMut<AnimatedSprite>| {
                         // spawn fire animation
                         {
                             let ent = entities.create();
@@ -258,6 +258,8 @@ fn update(
                     None,
                     shoot_animation_transform,
                     bomb_meta.untyped(),
+                    true,
+                    Some(player_flip_x),
                 ));
             }
         }

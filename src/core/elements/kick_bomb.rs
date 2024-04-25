@@ -78,6 +78,8 @@ impl KickBombCommand {
         entity: Option<Entity>,
         transform: Transform,
         kick_bomb_meta_handle: UntypedHandle,
+        lit: bool,
+        player_flip_f: Option<bool>,
     ) -> StaticSystem<(), ()> {
         (move |game_meta: Root<GameMeta>,
                assets: Res<AssetServer>,
@@ -86,6 +88,7 @@ impl KickBombCommand {
                mut bodies: CompMut<KinematicBody>,
                mut entities: ResMutInit<Entities>,
                mut idle_bombs: CompMut<IdleKickBomb>,
+               mut lit_bombs: CompMut<LitKickBomb>,
                mut items: CompMut<Item>,
                mut item_throws: CompMut<ItemThrow>,
                mut item_grabs: CompMut<ItemGrab>,
@@ -113,8 +116,11 @@ impl KickBombCommand {
                 bounciness,
                 throw_velocity,
                 angular_velocity,
+                arm_delay,
+                fuse_time,
                 ..
             } = *assets.get(kick_bomb_meta_handle);
+
             kick_bomb_handles.insert(entity, KickBombHandle(kick_bomb_meta_handle));
             items.insert(entity, Item);
             item_throws.insert(
@@ -129,7 +135,6 @@ impl KickBombCommand {
                     grab_offset,
                 },
             );
-            idle_bombs.insert(entity, IdleKickBomb);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas));
             transforms.insert(entity, transform);
             animated_sprites.insert(entity, default());
@@ -147,6 +152,34 @@ impl KickBombCommand {
                     ..default()
                 },
             );
+
+            if lit {
+                lit_bombs.insert(
+                    entity,
+                    LitKickBomb {
+                        arm_delay: Timer::new(arm_delay, TimerMode::Once),
+                        fuse_time: Timer::new(fuse_time, TimerMode::Once),
+                        kicking: false,
+                        kicks: 0,
+                    },
+                );
+
+                if let Some(body) = bodies.get_mut(entity) {
+                    let horizontal_flip_factor = if player_flip_f.unwrap() {
+                        Vec2::new(-1.0, 1.0)
+                    } else {
+                        Vec2::ONE
+                    };
+
+                    body.velocity = Vec2::new(
+                        horizontal_flip_factor.x * throw_velocity,
+                        horizontal_flip_factor.y * throw_velocity / 2.5,
+                    );
+                    body.angular_velocity = angular_velocity;
+                }
+            } else {
+                idle_bombs.insert(entity, IdleKickBomb);
+            }
         })
         .system()
     }
@@ -193,6 +226,8 @@ fn hydrate(
                 Some(entity),
                 transform,
                 element_meta.data.untyped(),
+                false,
+                None,
             ));
         }
     }
@@ -227,7 +262,7 @@ fn update_idle_kick_bombs(
         if items_used.remove(entity).is_some() {
             audio_center.play_sound(fuse_sound, fuse_sound_volume);
             let animated_sprite = animated_sprites.get_mut(entity).unwrap();
-            animated_sprite.frames = ( lit_frames_start..lit_frames_end ).into_iter().collect();
+            animated_sprite.frames = (lit_frames_start..lit_frames_end).into_iter().collect();
             animated_sprite.repeat = true;
             animated_sprite.fps = lit_fps;
             commands.add(

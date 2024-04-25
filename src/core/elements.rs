@@ -7,9 +7,9 @@ use std::sync::Mutex;
 use crate::{impl_system_param, prelude::*};
 
 pub mod buss;
+pub mod cannon;
 pub mod crab;
 pub mod crate_item;
-pub mod cannon;
 pub mod decoration;
 pub mod fish_school;
 pub mod flappy_jellyfish;

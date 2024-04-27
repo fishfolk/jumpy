@@ -13,6 +13,7 @@ pub struct CannonMeta {
     pub throw_velocity: f32,
     pub angular_velocity: f32,
     pub atlas: Handle<Atlas>,
+    pub animation_fps: u32,
 
     pub max_ammo: u32,
     pub bomb_meta: Handle<KickBombMeta>,
@@ -46,6 +47,7 @@ pub fn session_plugin(session: &mut Session) {
 pub struct Cannon {
     pub ammo: u32,
     pub cooldown: Timer,
+    pub animation_cooldown: Timer,
 }
 
 fn hydrate(
@@ -113,6 +115,7 @@ fn hydrate(
                 Cannon {
                     ammo: *max_ammo,
                     cooldown: Timer::new(Duration::from_millis(0), TimerMode::Once),
+                    animation_cooldown: Timer::new(Duration::from_millis(0), TimerMode::Once),
                 },
             );
             atlas_sprites.insert(entity, AtlasSprite::new(*atlas));
@@ -160,6 +163,7 @@ fn update(
 
         let asset = assets.get(element_meta.data);
         let Ok(CannonMeta {
+            animation_fps,
             max_ammo,
             shoot_fps,
             shoot_atlas,
@@ -180,6 +184,20 @@ fn update(
         };
 
         cannon.cooldown.tick(time.delta());
+        cannon.animation_cooldown.tick(time.delta());
+
+        let sprite = sprites.get_mut(entity).unwrap();
+        if sprite.index != 0 && cannon.animation_cooldown.finished() {
+            // Reset animation cooldown & turn FPS into MS
+            cannon.animation_cooldown = Timer::new( Duration::from_millis((1000/animation_fps).into()), TimerMode::Once);
+            // Update sprite
+            match sprite.index {
+                1 => { sprite.index = 2 },
+                2 => { sprite.index = 3 },
+                3 => { sprite.index = 0 },
+                _ => (),
+            };
+        }
 
         // If the item is being held
         if let Some(Inv { player, .. }) = player_inventories.find_item(entity) {
@@ -193,6 +211,11 @@ fn update(
                     audio_center.play_sound(*empty_shoot_sound, *empty_shoot_sound_volume);
                     continue;
                 }
+                
+                // Update sprite
+                sprite.index = 1;
+                // Reset animation cooldown & turn FPS into MS
+                cannon.animation_cooldown = Timer::new( Duration::from_millis((1000/animation_fps).into()), TimerMode::Once);
 
                 // Subtract ammo
                 cannon.ammo = cannon.ammo.saturating_sub(1).clamp(0, cannon.ammo);
@@ -208,6 +231,7 @@ fn update(
                 let mut shoot_animation_transform = *transforms.get(entity).unwrap();
                 let bullet_spawn_offset = *bullet_spawn_offset;
                 shoot_animation_transform.translation.z += 1.0;
+                shoot_animation_transform.translation.y += bullet_spawn_offset.y;
                 shoot_animation_transform.translation.x += if player_sprite.flip_x {
                     -bullet_spawn_offset.x
                 } else {

@@ -1,4 +1,4 @@
 image: ./cannon_fire.png
-tile_size: [25, 30]
+tile_size: [30, 48]
 rows: 1
-columns: 4
+columns: 5

@@ -1,8 +1,8 @@
-fuse_time: 4s
+fuse_time: 2s
 kick_velocity: [0.0, 0.0]
 kickable: false
 throw_velocity: 800
-damage_region_size: [60, 60]
+damage_region_size: [70, 70]
 damage_region_lifetime: 0.5
 
 atlas: ./cannonball.atlas.yaml
@@ -23,7 +23,7 @@ fuse_sound: ./fuse.ogg
 fuse_sound_volume: 0.1
 
 body_diameter: 16
-grab_offset: [5, -2]
+grab_offset: [0, -2]
 fin_anim: grab_2
 can_rotate: true
 bounciness: 0.5

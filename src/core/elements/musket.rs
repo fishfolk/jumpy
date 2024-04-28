@@ -208,6 +208,7 @@ fn update(
                 let mut shoot_animation_transform = *transforms.get(entity).unwrap();
                 let bullet_spawn_offset = *bullet_spawn_offset;
                 shoot_animation_transform.translation.z += 1.0;
+                shoot_animation_transform.translation.y += bullet_spawn_offset.y;
                 shoot_animation_transform.translation.x += if player_sprite.flip_x {
                     -bullet_spawn_offset.x
                 } else {

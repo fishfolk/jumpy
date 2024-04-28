@@ -189,12 +189,15 @@ fn update(
         let sprite = sprites.get_mut(entity).unwrap();
         if sprite.index != 0 && cannon.animation_cooldown.finished() {
             // Reset animation cooldown & turn FPS into MS
-            cannon.animation_cooldown = Timer::new( Duration::from_millis((1000/animation_fps).into()), TimerMode::Once);
+            cannon.animation_cooldown = Timer::new(
+                Duration::from_millis((1000 / animation_fps).into()),
+                TimerMode::Once,
+            );
             // Update sprite
             match sprite.index {
-                1 => { sprite.index = 2 },
-                2 => { sprite.index = 3 },
-                3 => { sprite.index = 0 },
+                1 => sprite.index = 2,
+                2 => sprite.index = 3,
+                3 => sprite.index = 0,
                 _ => (),
             };
         }
@@ -211,11 +214,14 @@ fn update(
                     audio_center.play_sound(*empty_shoot_sound, *empty_shoot_sound_volume);
                     continue;
                 }
-                
+
                 // Update sprite
                 sprite.index = 1;
                 // Reset animation cooldown & turn FPS into MS
-                cannon.animation_cooldown = Timer::new( Duration::from_millis((1000/animation_fps).into()), TimerMode::Once);
+                cannon.animation_cooldown = Timer::new(
+                    Duration::from_millis((1000 / animation_fps).into()),
+                    TimerMode::Once,
+                );
 
                 // Subtract ammo
                 cannon.ammo = cannon.ammo.saturating_sub(1).clamp(0, cannon.ammo);

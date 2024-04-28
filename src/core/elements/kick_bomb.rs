@@ -262,7 +262,7 @@ fn update_idle_kick_bombs(
         if items_used.remove(entity).is_some() {
             audio_center.play_sound(fuse_sound, fuse_sound_volume);
             let animated_sprite = animated_sprites.get_mut(entity).unwrap();
-            animated_sprite.frames = (lit_frames_start..lit_frames_end).into_iter().collect();
+            animated_sprite.frames = (lit_frames_start..lit_frames_end).collect();
             animated_sprite.repeat = true;
             animated_sprite.fps = lit_fps;
             commands.add(

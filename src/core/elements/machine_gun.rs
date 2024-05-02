@@ -191,15 +191,14 @@ fn update(
         machine_gun.cooldown.tick(time.delta());
         machine_gun.empty_cooldown.tick(time.delta());
 
+        let sprite = sprites.get_mut(entity).unwrap();
+        // Reset machine gun animation
+        if let MachineGunState::Idle = machine_gun.state {
+            sprite.index = 0;
+        }
+
         // If the item is being held
         if let Some(Inv { player, .. }) = player_inventories.find_item(entity) {
-            let sprite = sprites.get_mut(entity).unwrap();
-
-            // Reset machine gun animation
-            if let MachineGunState::Idle = machine_gun.state {
-                sprite.index = 0;
-            }
-
             // If the item is being used
             let item_used = items_used.remove(entity).is_some();
             if item_used {
@@ -294,6 +293,8 @@ fn update(
                     }
                 }
             }
+        } else {
+            machine_gun.state = MachineGunState::Idle;
         }
 
         // If the item was dropped

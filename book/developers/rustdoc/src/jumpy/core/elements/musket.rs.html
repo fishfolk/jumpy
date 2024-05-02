@@ -386,6 +386,7 @@
 <a href="#291" id="291">291</a>
 <a href="#292" id="292">292</a>
 <a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Default, Debug, Clone)]
@@ -596,6 +597,7 @@
                 <span class="kw">let </span><span class="kw-2">mut </span>shoot_animation_transform = <span class="kw-2">*</span>transforms.get(entity).unwrap();
                 <span class="kw">let </span>bullet_spawn_offset = <span class="kw-2">*</span>bullet_spawn_offset;
                 shoot_animation_transform.translation.z += <span class="number">1.0</span>;
+                shoot_animation_transform.translation.y += bullet_spawn_offset.y;
                 shoot_animation_transform.translation.x += <span class="kw">if </span>player_sprite.flip_x {
                     -bullet_spawn_offset.x
                 } <span class="kw">else </span>{

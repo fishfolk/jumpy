@@ -7,6 +7,7 @@ use std::sync::Mutex;
 use crate::{impl_system_param, prelude::*};
 
 pub mod buss;
+pub mod cannon;
 pub mod crab;
 pub mod crate_item;
 pub mod decoration;
@@ -311,6 +312,7 @@ macro_rules! install_plugins {
 install_plugins!(
     crab,
     crate_item,
+    cannon,
     decoration,
     fish_school,
     grenade,

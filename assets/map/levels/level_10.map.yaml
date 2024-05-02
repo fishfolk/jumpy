@@ -1367,7 +1367,7 @@ layers:
   - pos:
     - 800.0
     - 406.5
-    element: /elements/item/musket/musket.element.yaml
+    element: /elements/item/cannon/cannon.element.yaml
   - pos:
     - 64.0
     - 406.5

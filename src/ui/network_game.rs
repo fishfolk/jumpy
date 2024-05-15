@@ -346,7 +346,9 @@ pub fn network_game_menu(
                                     });
                                 });
 
-                                let (is_recreated, service_info) = lan::prepare_to_host(host_info, service_name);
+                                let (is_recreated, service_info) = RUNTIME.block_on(async {
+                                    lan::prepare_to_host(host_info, service_name).await
+                                });
                                 if is_recreated {
                                     *status = NetworkGameStatus::Idle;
                                 }
@@ -456,7 +458,8 @@ pub fn network_game_menu(
                                 .clicked()
                                 {
                                     *status = NetworkGameStatus::Searching;
-                                    online::start_search_for_game(matchmaking_server.clone(), *player_count);
+                                    let server = matchmaking_server.parse().expect("invalid server id");
+                                    online::start_search_for_game(server, *player_count);
                                 }
                             } else if *status == NetworkGameStatus::Searching {
                                 if let Some(online_socket) = online::update_search_for_game(&mut search_state) {

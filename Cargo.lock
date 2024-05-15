@@ -1246,7 +1246,7 @@ dependencies = [
 [[package]]
 name = "bones_asset"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "anyhow",
  "append-only-vec",
@@ -1277,7 +1277,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_renderer"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "anyhow",
  "bevy",
@@ -1294,7 +1294,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "anyhow",
  "atomicell",
@@ -1311,7 +1311,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs_macros"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "bones_ecs_macros_core",
  "proc-macro2",
@@ -1320,7 +1320,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs_macros_core"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1330,7 +1330,7 @@ dependencies = [
 [[package]]
 name = "bones_framework"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -1380,7 +1380,7 @@ dependencies = [
 [[package]]
 name = "bones_lib"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "bones_ecs",
  "instant",
@@ -1389,15 +1389,16 @@ dependencies = [
 [[package]]
 name = "bones_matchmaker_proto"
 version = "0.2.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
+ "iroh-net",
  "serde",
 ]
 
 [[package]]
 name = "bones_schema"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "append-only-vec",
  "bones_schema_macros",
@@ -1415,7 +1416,7 @@ dependencies = [
 [[package]]
 name = "bones_schema_macros"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1425,7 +1426,7 @@ dependencies = [
 [[package]]
 name = "bones_scripting"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "async-channel",
  "bevy_tasks",
@@ -1442,7 +1443,7 @@ dependencies = [
 [[package]]
 name = "bones_utils"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "bones_utils_macros",
  "branches",
@@ -1463,7 +1464,7 @@ dependencies = [
 [[package]]
 name = "bones_utils_macros"
 version = "0.3.0"
-source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#13a51476b09ce8abbc9643454b7a8274b55fb6e1"
+source = "git+https://github.com/dignifiedquire/bones?branch=feat-iroh-networking#61955baad692c7f0a2ca36aaae5ecbe639e1ed1a"
 dependencies = [
  "quote",
  "venial",
@@ -3528,7 +3529,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.4.10",
+ "socket2 0.5.6",
  "tokio",
  "tower-service",
  "tracing",

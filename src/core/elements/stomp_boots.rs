@@ -202,7 +202,7 @@ fn update_wearer(
                 }
             }
             // We don't need to proceed because the player is dead
-            return;
+            continue;
         }
 
         let kinematic_body = kinematic_bodies.get(entity).unwrap();

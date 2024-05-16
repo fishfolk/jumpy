@@ -253,7 +253,8 @@ pub fn network_game_menu(
                                                 .show(ui)
                                                 .clicked()
                                                 {
-                                                    lan::join_server(server);
+                                                    // TODO: show error message
+                                                    lan::join_server(server).expect("failed to join lan");
                                                     *status = NetworkGameStatus::Joining;
                                                 }
 

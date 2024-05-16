@@ -27,10 +27,15 @@ pub fn session_plugin(session: &mut Session) {
 /// Marker component added to things ( presumably players, but not necessarily! ) that are wearing
 /// stomp boots
 #[derive(Debug, Clone, Copy, Default, HasSchema)]
-pub struct WearingStompBoots;
+pub struct WearingStompBoots {
+    stomp_boots: Entity,
+}
 
 #[derive(Copy, Clone, Debug, HasSchema, Default)]
 pub struct StompBoots;
+
+#[derive(Copy, Clone, Debug, HasSchema, Default)]
+pub struct WornStompBoots;
 
 fn hydrate(
     game_meta: Root<GameMeta>,
@@ -110,7 +115,6 @@ fn update(
     items_used: Comp<ItemUsed>,
     player_inventories: PlayerInventories,
     mut inventoris: CompMut<Inventory>,
-    mut hydrated: CompMut<MapElementHydrated>,
     mut commands: Commands,
     spawners: Comp<DehydrateOutOfBounds>,
 ) {
@@ -134,13 +138,16 @@ fn update(
             let player_decoration = *player_decoration;
 
             if is_item_used {
-                hydrated.remove(**spawner);
                 inventoris.insert(player, Inventory(None));
+                let spawner = spawner.clone();
+
                 commands.add(
                     move |mut entities: ResMutInit<Entities>,
                           mut sprites: CompMut<AtlasSprite>,
                           mut attachments: CompMut<Attachment>,
                           mut transforms: CompMut<Transform>,
+                          mut worn_stomp_boots: CompMut<WornStompBoots>,
+                          mut respawn_points: CompMut<DehydrateOutOfBounds>,
                           mut wearing_stomp_boots: CompMut<WearingStompBoots>| {
                         entities.kill(entity);
 
@@ -153,10 +160,18 @@ fn update(
                             sync_flip: true,
                             offset_inherits_rotation: true,
                         };
+
+                        worn_stomp_boots.insert(attachment_ent, WornStompBoots);
                         attachments.insert(attachment_ent, attachment);
                         sprites.insert(attachment_ent, AtlasSprite::new(player_decoration));
                         transforms.insert(attachment_ent, Transform::default());
-                        wearing_stomp_boots.insert(player, WearingStompBoots);
+                        respawn_points.insert(attachment_ent, spawner.clone());
+                        wearing_stomp_boots.insert(
+                            player,
+                            WearingStompBoots {
+                                stomp_boots: attachment_ent,
+                            },
+                        );
                     },
                 );
             }
@@ -167,13 +182,29 @@ fn update(
 fn update_wearer(
     entities: Res<Entities>,
     mut commands: Commands,
-    wearing_stomp_boots: Comp<WearingStompBoots>,
+    wearing_stomp_boots: CompMut<WearingStompBoots>,
+    mut worn_stomp_boots: CompMut<WornStompBoots>,
     player_indexes: Comp<PlayerIdx>,
     collision_world: CollisionWorld,
     kinematic_bodies: Comp<KinematicBody>,
+    killed_players: Comp<PlayerKilled>,
+    mut hydrated: CompMut<MapElementHydrated>,
+    spawners: Comp<DehydrateOutOfBounds>,
     transforms: Comp<Transform>,
 ) {
-    for (entity, _) in entities.iter_with(&wearing_stomp_boots) {
+    for (entity, WearingStompBoots { stomp_boots }) in entities.iter_with(&wearing_stomp_boots) {
+        if killed_players.get(entity).is_some() {
+            // Respawn the boots worn by the player who was just killed
+            if let Some(spawner) = spawners.get(*stomp_boots) {
+                if worn_stomp_boots.get(*stomp_boots).is_some() {
+                    worn_stomp_boots.remove(*stomp_boots);
+                    hydrated.remove(**spawner);
+                }
+            }
+            // We don't need to proceed because the player is dead
+            continue;
+        }
+
         let kinematic_body = kinematic_bodies.get(entity).unwrap();
         if kinematic_body.velocity.y > 0.
             || kinematic_body.is_on_ground

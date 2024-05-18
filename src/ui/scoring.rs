@@ -163,7 +163,7 @@ fn scoring_menu_system(
 
         #[cfg(not(target_arch = "wasm32"))]
         if let Some(socket) = network_socket.as_ref() {
-            handle_scoring_messages((**socket).deref(), &mut state);
+            handle_scoring_messages(socket, &mut state);
         }
 
         // Check if all non-ai players are ready

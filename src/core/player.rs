@@ -632,7 +632,7 @@ fn hydrate_players(
         let meta = assets.get(player_handle);
 
         let animation_bank_sprite = AnimationBankSprite {
-            current: "idle".try_into().unwrap(),
+            current: "idle".into(),
             animations: meta.layers.body.animations.frames.clone(),
             last_animation: default(),
         };
@@ -686,7 +686,7 @@ fn hydrate_players(
         animation_bank_sprites.insert(
             fin_entity,
             AnimationBankSprite {
-                current: "idle".try_into().unwrap(),
+                current: "idle".into(),
                 animations: meta.layers.fin.animations.clone(),
                 last_animation: default(),
             },
@@ -714,7 +714,7 @@ fn hydrate_players(
         animation_bank_sprites.insert(
             face_entity,
             AnimationBankSprite {
-                current: "idle".try_into().unwrap(),
+                current: "idle".into(),
                 animations: meta.layers.face.animations.clone(),
                 last_animation: default(),
             },

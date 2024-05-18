@@ -35,7 +35,7 @@ network:
 
 default_settings:
   main_volume: 1.0
-  matchmaking_server: matchmaker.bones.fishfolk.org:65534
+  matchmaking_server: lokmcpce2uzezmh2iq3vf23cbu3grzrct66qcpdfrizmcrrlk5uq
   player_controls:
     # Gamepad controls
     gamepad:

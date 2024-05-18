@@ -30,6 +30,7 @@ mod prelude {
     pub use once_cell::sync::Lazy;
     pub use serde::{Deserialize, Serialize};
     pub use std::{sync::Arc, time::Duration};
+    #[allow(unused)]
     pub use tracing::{debug, error, info, trace, warn};
 }
 use crate::prelude::*;

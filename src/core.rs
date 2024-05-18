@@ -32,10 +32,10 @@ use crate::{prelude::*, settings::PlayerControlMapping};
 
 pub mod prelude {
     pub use super::{
-        attachment::*, bullet::*, camera::*, damage::*, debug::*, editor::*, editor::*,
-        elements::prelude::*, flappy_jellyfish::*, globals::*, input::*, item::*, lifetime::*,
-        map::*, map_constructor::*, map_pool::*, metadata::*, physics::*, player::*, random::*,
-        scoring::*, utils::*, win_indicator::*, FPS, MAX_PLAYERS,
+        attachment::*, bullet::*, camera::*, damage::*, debug::*, editor::*, elements::prelude::*,
+        flappy_jellyfish::*, globals::*, input::*, item::*, lifetime::*, map::*,
+        map_constructor::*, map_pool::*, metadata::*, physics::*, player::*, random::*, scoring::*,
+        utils::*, win_indicator::*, FPS, MAX_PLAYERS,
     };
 }
 

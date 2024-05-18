@@ -106,7 +106,7 @@ fn use_drop_or_grab_items_system(id: Ustr) -> StaticSystem<(), ()> {
                         .collect::<Vec<_>>();
 
                     // Grab the first item we are touching
-                    if let Some(item) = colliders.get(0) {
+                    if let Some(item) = colliders.first() {
                         // Add the item to the player inventory
                         commands.add(PlayerCommand::set_inventory(player_ent, Some(*item)));
 

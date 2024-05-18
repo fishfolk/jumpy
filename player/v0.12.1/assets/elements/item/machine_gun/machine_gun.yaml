@@ -1,0 +1,22 @@
+atlas: ./machine_gun.atlas.yaml
+
+max_ammo: 25
+cooldown: 125ms
+empty_cooldown: 600ms
+bullet_meta: ./bullet/machine_gun.bullet.yaml
+bullet_spread: 0.1
+bullet_spawn_offset: [30, 8]
+
+shoot_sound_volume: 0.1
+shoot_sound: ./shoot/shoot.ogg
+empty_shoot_sound_volume: 0.1
+empty_shoot_sound: ./shoot/gun_empty.ogg
+
+bounciness: 0.3
+can_rotate: true
+body_size: [32, 8]
+fin_anim: grab_2
+angular_velocity: 0.1
+throw_velocity: 360
+grab_offset: [13, -3]
+kickback: 75

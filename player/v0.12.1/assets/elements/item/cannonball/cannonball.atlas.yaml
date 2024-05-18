@@ -1,0 +1,4 @@
+image: ./cannonball.png
+tile_size: [17, 17]
+rows: 1
+columns: 1

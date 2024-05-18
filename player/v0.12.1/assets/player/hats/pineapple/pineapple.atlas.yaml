@@ -1,0 +1,4 @@
+image: ./pineapple.png
+tile_size: [34, 39]
+columns: 1
+rows: 1

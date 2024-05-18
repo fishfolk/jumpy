@@ -1,0 +1,26 @@
+atlas: ./cannon.atlas.yaml
+animation_fps: 12
+
+max_ammo: 4
+cooldown: 600ms
+bullet_spawn_offset: [22, 2]
+
+shoot_fps: 10
+shoot_frames: 5
+shoot_lifetime: 0.5
+shoot_sound_volume: 0.1
+shoot_sound: ./shoot/shoot.ogg
+empty_shoot_sound_volume: 0.1
+empty_shoot_sound: ./shoot/gun_empty.ogg
+shoot_atlas: ./shoot/cannon_shoot.atlas.yaml
+
+bomb_meta: ../cannonball/kick_bomb.yaml
+
+bounciness: 0.3
+can_rotate: true
+fin_anim: grab_2
+body_size: [32, 18]
+angular_velocity: 0.1
+throw_velocity: 360
+grab_offset: [12, 0]
+kickback: 0

@@ -1,0 +1,4 @@
+image: ./stomp_boots_icon.png
+tile_size: [31, 18]
+rows: 1
+columns: 1

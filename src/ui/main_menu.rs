@@ -5,7 +5,7 @@ use super::ImageMeta;
 mod credits;
 mod map_select;
 pub mod player_select;
-mod settings;
+pub(super) mod settings;
 use shadow_rs::shadow;
 
 // Generate build info.
@@ -104,12 +104,15 @@ static VERSION_STRING: Lazy<String> = Lazy::new(|| {
 
 fn main_menu_system(world: &World) {
     let ctx = (*world.resource::<EguiCtx>()).clone();
+    let mut close_settings_menu = false;
 
     egui::CentralPanel::default()
         .frame(egui::Frame::none())
         .show(&ctx, |ui| match ctx.get_state::<MenuPage>() {
             MenuPage::Home => world.run_system(home_menu, ui),
-            MenuPage::Settings => world.run_system(settings::widget, ui),
+            MenuPage::Settings => {
+                world.run_system(settings::widget, (ui, &mut close_settings_menu))
+            }
             MenuPage::PlayerSelect => world.run_system(player_select::widget, ui),
             MenuPage::MapSelect { .. } => world.run_system(map_select::widget, ui),
             MenuPage::Credits => world.run_system(credits::widget, ui),
@@ -119,6 +122,10 @@ fn main_menu_system(world: &World) {
                 world.run_system(network_game::widget, ui)
             }
         });
+
+    if close_settings_menu {
+        ctx.set_state(MenuPage::Home);
+    }
 
     egui::CentralPanel::default()
         .frame(egui::Frame::none())

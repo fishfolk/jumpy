@@ -3,8 +3,6 @@ use crate::{
     settings::{PlayerControlMapping, Settings},
 };
 
-use super::MenuPage;
-
 mod audio;
 mod controls;
 mod graphics;
@@ -38,7 +36,7 @@ impl SettingsTab {
 }
 
 pub fn widget(
-    mut ui: In<&mut egui::Ui>,
+    mut ui: In<(&mut egui::Ui, &mut bool)>,
     meta: Root<GameMeta>,
     localization: Localization<GameMeta>,
     input: Res<GlobalPlayerControls>,
@@ -46,7 +44,7 @@ pub fn widget(
     mut storage: ResMut<Storage>,
     world: &World,
 ) {
-    let ui = &mut *ui;
+    let (ui, close_settings_menu) = &mut *ui;
     let mut state = ui.ctx().get_state::<SettingsState>();
     let screen_rect = ui.max_rect();
 
@@ -132,7 +130,7 @@ pub fn widget(
                             || input.values().any(|x| x.menu_back_just_pressed))
                             && state.currently_binding_input_idx.is_none()
                         {
-                            ui.ctx().set_state(MenuPage::Home);
+                            **close_settings_menu = true;
                             // Reset the modified settings to their stored settings.
                             state.modified_settings = storage.get::<Settings>().unwrap().clone();
                             // Run cancel callbacks
@@ -170,7 +168,7 @@ pub fn widget(
                             *mapping = state.modified_settings.player_controls.clone();
                             storage.insert(state.modified_settings.clone());
                             storage.save();
-                            ui.ctx().set_state(MenuPage::Home);
+                            **close_settings_menu = true;
                         }
                     });
 

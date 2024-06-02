@@ -12,6 +12,7 @@ enum PauseMenuPage {
     #[default]
     Pause,
     MapSelect,
+    Settings,
 }
 
 pub fn session_plugin(session: &mut Session) {
@@ -43,6 +44,7 @@ fn pause_menu_system(
     let mut back_to_menu = false;
     let mut restart_game = false;
     let mut close_pause_menu = false;
+    let mut close_settings_menu = false;
     let mut select_map = None;
     if let Some(session) = sessions.get_mut(SessionNames::GAME) {
         let pause_pressed = controls.values().any(|x| x.pause_just_pressed);
@@ -97,6 +99,16 @@ fn pause_menu_system(
                         }
                     }
                 }
+                PauseMenuPage::Settings => {
+                    egui::CentralPanel::default()
+                        .frame(egui::Frame::none())
+                        .show(&ctx, |ui| {
+                            world.run_system(
+                                super::main_menu::settings::widget,
+                                (ui, &mut close_settings_menu),
+                            );
+                        });
+                }
             }
         } else if pause_pressed {
             pause_menu.menu_open = true;
@@ -135,6 +147,10 @@ fn pause_menu_system(
 
     if close_pause_menu {
         pause_menu.menu_open = false;
+    }
+
+    if close_settings_menu {
+        ctx.set_state(PauseMenuPage::Pause);
     }
 }
 
@@ -215,6 +231,15 @@ fn main_pause_menu(
             .clicked()
             {
                 ui.ctx().set_state(PauseMenuPage::MapSelect);
+            }
+
+            // Settings button
+            if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("settings"))
+                .min_size(vec2(width, 0.0))
+                .show(ui)
+                .clicked()
+            {
+                ui.ctx().set_state(PauseMenuPage::Settings);
             }
 
             // Restart button

@@ -291,14 +291,10 @@
 <a href="#196" id="196">196</a>
 <a href="#197" id="197">197</a>
 <a href="#198" id="198">198</a>
-<a href="#199" id="199">199</a>
-<a href="#200" id="200">200</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     prelude::<span class="kw-2">*</span>,
     settings::{PlayerControlMapping, Settings},
 };
-
-<span class="kw">use </span><span class="kw">super</span>::MenuPage;
 
 <span class="kw">mod </span>audio;
 <span class="kw">mod </span>controls;
@@ -333,7 +329,7 @@
 }
 
 <span class="kw">pub fn </span>widget(
-    <span class="kw-2">mut </span>ui: In&lt;<span class="kw-2">&amp;mut </span>egui::Ui&gt;,
+    <span class="kw-2">mut </span>ui: In&lt;(<span class="kw-2">&amp;mut </span>egui::Ui, <span class="kw-2">&amp;mut </span>bool)&gt;,
     meta: Root&lt;GameMeta&gt;,
     localization: Localization&lt;GameMeta&gt;,
     input: Res&lt;GlobalPlayerControls&gt;,
@@ -341,7 +337,7 @@
     <span class="kw-2">mut </span>storage: ResMut&lt;Storage&gt;,
     world: <span class="kw-2">&amp;</span>World,
 ) {
-    <span class="kw">let </span>ui = <span class="kw-2">&amp;mut *</span>ui;
+    <span class="kw">let </span>(ui, close_settings_menu) = <span class="kw-2">&amp;mut *</span>ui;
     <span class="kw">let </span><span class="kw-2">mut </span>state = ui.ctx().get_state::&lt;SettingsState&gt;();
     <span class="kw">let </span>screen_rect = ui.max_rect();
 
@@ -427,7 +423,7 @@
                             || input.values().any(|x| x.menu_back_just_pressed))
                             &amp;&amp; state.currently_binding_input_idx.is_none()
                         {
-                            ui.ctx().set_state(MenuPage::Home);
+                            <span class="kw-2">**</span>close_settings_menu = <span class="bool-val">true</span>;
                             <span class="comment">// Reset the modified settings to their stored settings.
                             </span>state.modified_settings = storage.get::&lt;Settings&gt;().unwrap().clone();
                             <span class="comment">// Run cancel callbacks
@@ -465,7 +461,7 @@
                             </span><span class="kw-2">*</span>mapping = state.modified_settings.player_controls.clone();
                             storage.insert(state.modified_settings.clone());
                             storage.save();
-                            ui.ctx().set_state(MenuPage::Home);
+                            <span class="kw-2">**</span>close_settings_menu = <span class="bool-val">true</span>;
                         }
                     });
 

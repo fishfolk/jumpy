@@ -315,6 +315,13 @@
 <a href="#220" id="220">220</a>
 <a href="#221" id="221">221</a>
 <a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">use </span><span class="kw">super</span>::ImageMeta;
@@ -322,7 +329,7 @@
 <span class="kw">mod </span>credits;
 <span class="kw">mod </span>map_select;
 <span class="kw">pub mod </span>player_select;
-<span class="kw">mod </span>settings;
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">mod </span>settings;
 <span class="kw">use </span>shadow_rs::shadow;
 
 <span class="comment">// Generate build info.
@@ -421,12 +428,15 @@
 
 <span class="kw">fn </span>main_menu_system(world: <span class="kw-2">&amp;</span>World) {
     <span class="kw">let </span>ctx = (<span class="kw-2">*</span>world.resource::&lt;EguiCtx&gt;()).clone();
+    <span class="kw">let </span><span class="kw-2">mut </span>close_settings_menu = <span class="bool-val">false</span>;
 
     egui::CentralPanel::default()
         .frame(egui::Frame::none())
         .show(<span class="kw-2">&amp;</span>ctx, |ui| <span class="kw">match </span>ctx.get_state::&lt;MenuPage&gt;() {
             MenuPage::Home =&gt; world.run_system(home_menu, ui),
-            MenuPage::Settings =&gt; world.run_system(settings::widget, ui),
+            MenuPage::Settings =&gt; {
+                world.run_system(settings::widget, (ui, <span class="kw-2">&amp;mut </span>close_settings_menu))
+            }
             MenuPage::PlayerSelect =&gt; world.run_system(player_select::widget, ui),
             MenuPage::MapSelect { .. } =&gt; world.run_system(map_select::widget, ui),
             MenuPage::Credits =&gt; world.run_system(credits::widget, ui),
@@ -436,6 +446,10 @@
                 </span>world.run_system(network_game::widget, ui)
             }
         });
+
+    <span class="kw">if </span>close_settings_menu {
+        ctx.set_state(MenuPage::Home);
+    }
 
     egui::CentralPanel::default()
         .frame(egui::Frame::none())

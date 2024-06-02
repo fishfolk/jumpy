@@ -345,6 +345,31 @@
 <a href="#250" id="250">250</a>
 <a href="#251" id="251">251</a>
 <a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
 
 <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
@@ -359,6 +384,7 @@
     <span class="attr">#[default]
     </span>Pause,
     MapSelect,
+    Settings,
 }
 
 <span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>Session) {
@@ -390,6 +416,7 @@
     <span class="kw">let </span><span class="kw-2">mut </span>back_to_menu = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>restart_game = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>close_pause_menu = <span class="bool-val">false</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>close_settings_menu = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>select_map = <span class="prelude-val">None</span>;
     <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = sessions.get_mut(SessionNames::GAME) {
         <span class="kw">let </span>pause_pressed = controls.values().any(|x| x.pause_just_pressed);
@@ -444,6 +471,16 @@
                         }
                     }
                 }
+                PauseMenuPage::Settings =&gt; {
+                    egui::CentralPanel::default()
+                        .frame(egui::Frame::none())
+                        .show(<span class="kw-2">&amp;</span>ctx, |ui| {
+                            world.run_system(
+                                <span class="kw">super</span>::main_menu::settings::widget,
+                                (ui, <span class="kw-2">&amp;mut </span>close_settings_menu),
+                            );
+                        });
+                }
             }
         } <span class="kw">else if </span>pause_pressed {
             pause_menu.menu_open = <span class="bool-val">true</span>;
@@ -482,6 +519,10 @@
 
     <span class="kw">if </span>close_pause_menu {
         pause_menu.menu_open = <span class="bool-val">false</span>;
+    }
+
+    <span class="kw">if </span>close_settings_menu {
+        ctx.set_state(PauseMenuPage::Pause);
     }
 }
 
@@ -562,6 +603,15 @@
             .clicked()
             {
                 ui.ctx().set_state(PauseMenuPage::MapSelect);
+            }
+
+            <span class="comment">// Settings button
+            </span><span class="kw">if </span>BorderedButton::themed(<span class="kw-2">&amp;</span>meta.theme.buttons.normal, localization.get(<span class="string">&quot;settings&quot;</span>))
+                .min_size(vec2(width, <span class="number">0.0</span>))
+                .show(ui)
+                .clicked()
+            {
+                ui.ctx().set_state(PauseMenuPage::Settings);
             }
 
             <span class="comment">// Restart button

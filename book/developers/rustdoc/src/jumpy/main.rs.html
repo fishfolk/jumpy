@@ -355,6 +355,11 @@
 <a href="#260" id="260">260</a>
 <a href="#261" id="261">261</a>
 <a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
 </pre></div><pre class="rust"><code><span class="attr">#![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
 </span><span class="attr">#![cfg_attr(doc, allow(unknown_lints))]
@@ -541,6 +546,11 @@
     </span>game.sessions
         .create(SessionNames::SCORING)
         .install_plugin(ui::scoring::session_plugin);
+
+    <span class="comment">// session for pop-ups / nofication UI
+    </span>game.sessions
+        .create(SessionNames::NOTIFICATION)
+        .install_plugin(ui::notification::session_plugin);
 
     <span class="comment">// Create a bevy renderer for the bones game and run it.
     </span>BonesBevyRenderer {

@@ -185,6 +185,11 @@ fn main() {
         .create(SessionNames::SCORING)
         .install_plugin(ui::scoring::session_plugin);
 
+    // session for pop-ups / nofication UI
+    game.sessions
+        .create(SessionNames::NOTIFICATION)
+        .install_plugin(ui::notification::session_plugin);
+
     // Create a bevy renderer for the bones game and run it.
     BonesBevyRenderer {
         game,

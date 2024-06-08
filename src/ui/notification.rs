@@ -2,6 +2,7 @@ use std::borrow::BorrowMut;
 
 use crate::prelude::*;
 
+#[allow(unused_variables)]
 pub fn session_plugin(session: &mut Session) {
     #[cfg(not(target_arch = "wasm32"))]
     session.add_system_to_stage(Update, network_disconnect_notify);
@@ -14,7 +15,7 @@ pub fn network_disconnect_notify(
     world: &World,
 ) {
     let sessions = sessions.borrow_mut();
-    #[allow(unused_assignments)]
+    #[allow(unused_assignments, unused_mut)]
     let mut all_players_disconnected = false;
 
     #[cfg(not(target_arch = "wasm32"))]

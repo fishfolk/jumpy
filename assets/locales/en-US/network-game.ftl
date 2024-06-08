@@ -20,3 +20,8 @@ connected-and-querying = Connected
 waiting-for-players = Waiting for Players: { $current } / { $total }
 match-ready = Match Ready!
 error = Error
+
+# Pop-ups
+disconnected = Disconnected
+disconnected-from-all = Disconnected from all other players.
+exit-match = Exit Match

@@ -9,6 +9,7 @@ impl SessionNames {
     pub const PAUSE_MENU: &'static str = "pause_menu";
     pub const PROFILER: &'static str = "profiler";
     pub const SCORING: &'static str = "scoring";
+    pub const NOTIFICATION: &'static str = "notification";
 }
 
 pub trait SessionExt {

@@ -281,6 +281,8 @@ fn pause_session(paused: bool, is_online: bool, session: &mut Session, remain_in
         // Instead we disable the input so it is not captured by game while paused.
         session.runner.disable_local_input(paused);
     } else if !paused && !remain_inactive {
-        session.active = !paused;
+        session.active = true;
+    } else if paused {
+        session.active = false;
     }
 }

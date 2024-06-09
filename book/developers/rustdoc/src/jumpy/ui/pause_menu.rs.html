@@ -370,10 +370,18 @@
 <a href="#275" id="275">275</a>
 <a href="#276" id="276">276</a>
 <a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
-
-<span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-</span><span class="kw">use </span>bones_framework::networking::NetworkMatchSocket;
 
 <span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>};
 
@@ -404,15 +412,7 @@
     world: <span class="kw-2">&amp;</span>World,
     assets: Res&lt;AssetServer&gt;,
     <span class="kw-2">mut </span>pause_menu: ResMutInit&lt;PauseMenu&gt;,
-
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
 ) {
-    <span class="comment">// TODO allow pause menu in online game
-    </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-    </span><span class="kw">if </span>socket.is_some() {
-        <span class="kw">return</span>;
-    }
-
     <span class="kw">let </span><span class="kw-2">mut </span>back_to_menu = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>restart_game = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>close_pause_menu = <span class="bool-val">false</span>;
@@ -421,7 +421,12 @@
     <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = sessions.get_mut(SessionNames::GAME) {
         <span class="kw">let </span>pause_pressed = controls.values().any(|x| x.pause_just_pressed);
 
-        <span class="kw">if </span>!session.active &amp;&amp; pause_menu.menu_open {
+        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+        </span><span class="kw">let </span>is_online = session.world.get_resource::&lt;NetworkInfo&gt;().is_some();
+        <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+        </span><span class="kw">let </span>is_online = <span class="bool-val">false</span>;
+
+        <span class="kw">if </span>pause_menu.menu_open {
             <span class="kw">let </span>page = ctx.get_state::&lt;PauseMenuPage&gt;();
 
             <span class="kw">match </span>page {
@@ -452,6 +457,7 @@
                                             <span class="kw-2">&amp;mut </span>restart_game,
                                             <span class="kw-2">&amp;mut </span>back_to_menu,
                                             <span class="kw-2">&amp;mut </span>close_pause_menu,
+                                            is_online,
                                         ),
                                     );
                                 });
@@ -482,9 +488,15 @@
                         });
                 }
             }
+
+            <span class="comment">// When pause menu is open (and not about to be closed), we -re-pause every frame regardless of if just pressed
+            // because in online, if menu is open during a map transition, we need to make sure new net session
+            // disables input to re-pause itself.
+            </span><span class="kw">if </span>!close_pause_menu {
+                pause_session(<span class="bool-val">true</span>, is_online, session, <span class="bool-val">false</span>);
+            }
         } <span class="kw">else if </span>pause_pressed {
             pause_menu.menu_open = <span class="bool-val">true</span>;
-            session.active = <span class="bool-val">false</span>;
         }
     }
 
@@ -527,30 +539,27 @@
 }
 
 <span class="kw">fn </span>main_pause_menu(
-    <span class="kw-2">mut </span>param: In&lt;(<span class="kw-2">&amp;mut </span>egui::Ui, <span class="kw-2">&amp;mut </span>Session, <span class="kw-2">&amp;mut </span>bool, <span class="kw-2">&amp;mut </span>bool, <span class="kw-2">&amp;mut </span>bool)&gt;,
+    <span class="kw-2">mut </span>param: In&lt;(
+        <span class="kw-2">&amp;mut </span>egui::Ui,
+        <span class="kw-2">&amp;mut </span>Session,
+        <span class="kw-2">&amp;mut </span>bool,
+        <span class="kw-2">&amp;mut </span>bool,
+        <span class="kw-2">&amp;mut </span>bool,
+        bool,
+    )&gt;,
     meta: Root&lt;GameMeta&gt;,
     localization: Localization&lt;GameMeta&gt;,
     controls: Res&lt;GlobalPlayerControls&gt;,
     scoring_menu: Res&lt;ScoringMenuState&gt;,
-
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
 ) {
-    <span class="kw">let </span>(ui, session, restart_game, back_to_menu, close_pause_menu) = <span class="kw-2">&amp;mut *</span>param;
-
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-    </span><span class="kw">let </span>is_online = socket.is_some();
-    <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
-    </span><span class="kw">let </span>is_online = <span class="bool-val">false</span>;
+    <span class="kw">let </span>(ui, session, restart_game, back_to_menu, close_pause_menu, is_online) = <span class="kw-2">&amp;mut *</span>param;
 
     <span class="comment">// Unpause the game
     </span><span class="kw">if </span>controls.values().any(|x| x.pause_just_pressed) {
-        <span class="kw">if </span>!scoring_menu.active {
-            <span class="comment">// Do not unpause game session if scoring menu open.
-            // TODO: Use some kind of pause stack to track what different systems
-            // might want session to remain inactive.
-            </span>session.active = <span class="bool-val">true</span>;
-        }
-
+        <span class="comment">// Do not unpause game session if scoring menu open.
+        // TODO: Use some kind of pause stack to track what different systems
+        // might want session to remain inactive.
+        </span>pause_session(<span class="bool-val">false</span>, <span class="kw-2">*</span>is_online, session, scoring_menu.active);
         <span class="kw-2">**</span>close_pause_menu = <span class="bool-val">true</span>;
     }
 
@@ -585,14 +594,12 @@
             .focus_by_default(ui)
             .clicked()
         {
-            session.active = <span class="bool-val">true</span>;
+            pause_session(<span class="bool-val">false</span>, <span class="kw-2">*</span>is_online, session, <span class="bool-val">false</span>);
             <span class="kw-2">**</span>close_pause_menu = <span class="bool-val">true</span>;
         }
 
         <span class="comment">// Local game buttons
         </span>ui.scope(|ui| {
-            ui.set_enabled(!is_online);
-
             <span class="comment">// Map select button
             </span><span class="kw">if </span>BorderedButton::themed(
                 <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
@@ -632,7 +639,7 @@
                 .clicked()
             {
                 <span class="comment">// TODO: show editor.
-                </span>session.active = <span class="bool-val">true</span>;
+                </span>pause_session(<span class="bool-val">false</span>, <span class="kw-2">*</span>is_online, session, <span class="bool-val">false</span>);
                 <span class="kw-2">**</span>close_pause_menu = <span class="bool-val">true</span>;
             }
         });
@@ -646,5 +653,20 @@
             <span class="kw-2">**</span>back_to_menu = <span class="bool-val">true</span>;
         }
     });
+}
+
+<span class="doccomment">/// Helper for pausing session depending on if online or offline match.
+/// `remain_inactive` is used if other systems like scoring have set session inactive and wish to
+/// prevent that change.
+</span><span class="kw">fn </span>pause_session(paused: bool, is_online: bool, session: <span class="kw-2">&amp;mut </span>Session, remain_inactive: bool) {
+    <span class="kw">if </span>is_online {
+        <span class="comment">// Online session remains active so that it will not timeout with other players.
+        // Instead we disable the input so it is not captured by game while paused.
+        </span>session.runner.disable_local_input(paused);
+    } <span class="kw">else if </span>!paused &amp;&amp; !remain_inactive {
+        session.active = <span class="bool-val">true</span>;
+    } <span class="kw">else if </span>paused {
+        session.active = <span class="bool-val">false</span>;
+    }
 }
 </code></pre></div></section></main></body></html>

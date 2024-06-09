@@ -32,15 +32,7 @@ fn pause_menu_system(
     world: &World,
     assets: Res<AssetServer>,
     mut pause_menu: ResMutInit<PauseMenu>,
-
-    #[cfg(not(target_arch = "wasm32"))] socket: Option<Res<NetworkMatchSocket>>,
 ) {
-    // TODO allow pause menu in online game
-    #[cfg(not(target_arch = "wasm32"))]
-    if socket.is_some() {
-        return;
-    }
-
     let mut back_to_menu = false;
     let mut restart_game = false;
     let mut close_pause_menu = false;
@@ -48,6 +40,14 @@ fn pause_menu_system(
     let mut select_map = None;
     if let Some(session) = sessions.get_mut(SessionNames::GAME) {
         let pause_pressed = controls.values().any(|x| x.pause_just_pressed);
+
+        #[cfg(not(target_arch = "wasm32"))]
+        let is_online = {
+            let socket = session.world.get_resource::<NetworkMatchSocket>().clone();
+            socket.is_some()
+        };
+        #[cfg(target_arch = "wasm32")]
+        let is_online = false;
 
         if !session.active && pause_menu.menu_open {
             let page = ctx.get_state::<PauseMenuPage>();
@@ -80,6 +80,7 @@ fn pause_menu_system(
                                             &mut restart_game,
                                             &mut back_to_menu,
                                             &mut close_pause_menu,
+                                            is_online,
                                         ),
                                     );
                                 });
@@ -155,20 +156,20 @@ fn pause_menu_system(
 }
 
 fn main_pause_menu(
-    mut param: In<(&mut egui::Ui, &mut Session, &mut bool, &mut bool, &mut bool)>,
+    mut param: In<(
+        &mut egui::Ui,
+        &mut Session,
+        &mut bool,
+        &mut bool,
+        &mut bool,
+        bool,
+    )>,
     meta: Root<GameMeta>,
     localization: Localization<GameMeta>,
     controls: Res<GlobalPlayerControls>,
     scoring_menu: Res<ScoringMenuState>,
-
-    #[cfg(not(target_arch = "wasm32"))] socket: Option<Res<NetworkMatchSocket>>,
 ) {
-    let (ui, session, restart_game, back_to_menu, close_pause_menu) = &mut *param;
-
-    #[cfg(not(target_arch = "wasm32"))]
-    let is_online = socket.is_some();
-    #[cfg(target_arch = "wasm32")]
-    let is_online = false;
+    let (ui, session, restart_game, back_to_menu, close_pause_menu, is_online) = &mut *param;
 
     // Unpause the game
     if controls.values().any(|x| x.pause_just_pressed) {
@@ -219,8 +220,6 @@ fn main_pause_menu(
 
         // Local game buttons
         ui.scope(|ui| {
-            ui.set_enabled(!is_online);
-
             // Map select button
             if BorderedButton::themed(
                 &meta.theme.buttons.normal,

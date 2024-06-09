@@ -120,6 +120,8 @@ pub struct JumpyDefaultMatchRunner {
     pub input_collector: PlayerInputCollector,
     pub accumulator: f64,
     pub last_run: Option<Instant>,
+    /// Disables local input for session.
+    disable_local_input: bool,
 }
 
 impl SessionRunner for JumpyDefaultMatchRunner {
@@ -153,7 +155,13 @@ impl SessionRunner for JumpyDefaultMatchRunner {
                     let Some(source) = &player_input.control_source else {
                         return;
                     };
-                    player_input.control = *input.get(source).unwrap();
+                    if !self.disable_local_input {
+                        player_input.control = *input.get(source).unwrap();
+                    } else {
+                        // This runner is only used for offline play, use default control for all to
+                        // disable input by using default (no input).
+                        player_input.control = PlayerControl::default();
+                    }
                 });
             }
 
@@ -189,5 +197,9 @@ impl SessionRunner for JumpyDefaultMatchRunner {
 
     fn restart_session(&mut self) {
         *self = JumpyDefaultMatchRunner::default();
+    }
+
+    fn disable_local_input(&mut self, disable_input: bool) {
+        self.disable_local_input = disable_input;
     }
 }

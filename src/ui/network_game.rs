@@ -17,13 +17,13 @@ pub enum LanMode {
     Join,
     Host {
         service_name: String,
-        player_count: usize,
+        player_count: u32,
     },
 }
 
 #[derive(Eq, PartialEq, Clone)]
 pub struct OnlineState {
-    player_count: usize,
+    player_count: u32,
     matchmaking_server: String,
     search_state: SearchState,
 }

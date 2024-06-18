@@ -13,7 +13,7 @@ pub fn install(session: &mut Session) {
 /// The inputs for each player in this simulation frame.
 #[derive(Clone, Debug, HasSchema)]
 pub struct MatchInputs {
-    pub players: [PlayerInput; MAX_PLAYERS],
+    pub players: [PlayerInput; MAX_PLAYERS as usize],
 }
 
 impl Default for MatchInputs {
@@ -30,7 +30,7 @@ impl PlayerControls<'_, PlayerControl> for MatchInputs {
     type InputCollector = PlayerInputCollector;
 
     fn update_controls(&mut self, collector: &mut PlayerInputCollector) {
-        (0..MAX_PLAYERS).for_each(|i| {
+        (0..MAX_PLAYERS as usize).for_each(|i| {
             let player_input = &mut self.players[i];
             if let Some(source) = &player_input.control_source {
                 player_input.control = *collector.get_control(i, *source);

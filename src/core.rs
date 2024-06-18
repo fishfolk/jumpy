@@ -24,7 +24,7 @@ pub mod win_indicator;
 pub const FPS: f32 = 60.0;
 
 /// The maximum number of players per match.
-pub const MAX_PLAYERS: usize = 4;
+pub const MAX_PLAYERS: u32 = 4;
 
 use std::time::Duration;
 
@@ -52,7 +52,7 @@ pub fn game_plugin(game: &mut Game) {
 
 pub struct MatchPlugin {
     pub maps: MapPool,
-    pub player_info: [PlayerInput; MAX_PLAYERS],
+    pub player_info: [PlayerInput; MAX_PLAYERS as usize],
     /// The lua plugins to enable for this match.
     pub plugins: Arc<Vec<Handle<LuaPlugin>>>,
 
@@ -150,7 +150,7 @@ impl SessionRunner for JumpyDefaultMatchRunner {
             let input = self.input_collector.get_current_controls();
             {
                 let mut player_inputs = world.resource_mut::<MatchInputs>();
-                (0..MAX_PLAYERS).for_each(|i| {
+                (0..MAX_PLAYERS as usize).for_each(|i| {
                     let player_input = &mut player_inputs.players[i];
                     let Some(source) = &player_input.control_source else {
                         return;

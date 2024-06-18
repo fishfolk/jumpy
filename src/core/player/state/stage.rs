@@ -45,7 +45,8 @@ impl SystemStage for PlayerStateStageImpl {
                 |entities: Res<Entities>,
                  player_indexes: Comp<PlayerIdx>,
                  player_states: Comp<PlayerState>| {
-                    let mut states: [Option<Ustr>; MAX_PLAYERS] = std::array::from_fn(|_| None);
+                    let mut states: [Option<Ustr>; MAX_PLAYERS as usize] =
+                        std::array::from_fn(|_| None);
                     for (_ent, (idx, state)) in
                         entities.iter_with((&player_indexes, &player_states))
                     {

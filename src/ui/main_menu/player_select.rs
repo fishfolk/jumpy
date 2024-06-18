@@ -10,7 +10,7 @@ use super::*;
 
 #[derive(Default, Clone, Debug, HasSchema)]
 pub struct PlayerSelectState {
-    pub slots: [PlayerSlot; MAX_PLAYERS],
+    pub slots: [PlayerSlot; MAX_PLAYERS as usize],
     /// Cache of available players from the game and packs.
     pub players: Vec<Handle<PlayerMeta>>,
     /// Cache of available hats from the game and packs.
@@ -177,9 +177,12 @@ pub fn widget(
             ui.vertical_centered(|ui| {
                 ui.set_width(ui.available_width() - normal_button_style.font.size * 2.0);
 
-                ui.columns(MAX_PLAYERS, |columns| {
+                ui.columns(MAX_PLAYERS as usize, |columns| {
                     for (i, ui) in columns.iter_mut().enumerate() {
-                        world.run_system(player_select_panel, (ui, i, &mut state))
+                        world.run_system(
+                            player_select_panel,
+                            (ui, u32::try_from(i).unwrap(), &mut state),
+                        )
                     }
                 });
             });
@@ -197,21 +200,21 @@ fn handle_match_setup_messages(
     player_select_state: &mut PlayerSelectState,
     asset_server: &AssetServer,
 ) {
-    let datas: Vec<(usize, Vec<u8>)> = network_socket.recv_reliable();
+    let datas: Vec<(u32, Vec<u8>)> = network_socket.recv_reliable();
 
     for (player, data) in datas {
         match postcard::from_bytes::<PlayerSelectMessage>(&data) {
             Ok(message) => match message {
                 PlayerSelectMessage::SelectPlayer(player_handle) => {
                     let player_handle = player_handle.into_handle(asset_server);
-                    player_select_state.slots[player].selected_player = player_handle;
+                    player_select_state.slots[player as usize].selected_player = player_handle;
                 }
                 PlayerSelectMessage::ConfirmSelection(confirmed) => {
-                    player_select_state.slots[player].confirmed = confirmed;
+                    player_select_state.slots[player as usize].confirmed = confirmed;
                 }
                 PlayerSelectMessage::SelectHat(hat) => {
                     let hat = hat.map(|hat| hat.into_handle(asset_server));
-                    player_select_state.slots[player].selected_hat = hat;
+                    player_select_state.slots[player as usize].selected_hat = hat;
                 }
             },
             Err(e) => warn!("Ignoring network message that was not understood: {e}"),
@@ -220,7 +223,7 @@ fn handle_match_setup_messages(
 }
 
 fn player_select_panel(
-    mut params: In<(&mut egui::Ui, usize, &mut PlayerSelectState)>,
+    mut params: In<(&mut egui::Ui, u32, &mut PlayerSelectState)>,
     meta: Root<GameMeta>,
     controls: Res<GlobalPlayerControls>,
     asset_server: Res<AssetServer>,
@@ -272,7 +275,7 @@ fn player_select_panel(
         if *slot_id + 1 > socket.player_count() {
             return;
         } else {
-            state.slots[*slot_id].active = true;
+            state.slots[*slot_id as usize].active = true;
         }
     }
 
@@ -280,10 +283,10 @@ fn player_select_panel(
         .slots
         .iter()
         .enumerate()
-        .any(|(i, slot)| (!slot.active && i == *slot_id));
+        .any(|(i, slot)| (!slot.active && u32::try_from(i).unwrap() == *slot_id));
 
     #[cfg(not(target_arch = "wasm32"))]
-    let mut network_local_player_slot: Option<usize> = None;
+    let mut network_local_player_slot: Option<u32> = None;
 
     #[cfg(not(target_arch = "wasm32"))]
     let slot_allows_new_player = if is_network {
@@ -332,7 +335,7 @@ fn player_select_panel(
         sources
     };
 
-    let slot = &mut state.slots[*slot_id];
+    let slot = &mut state.slots[*slot_id as usize];
     let player_handle = &mut slot.selected_player;
 
     // If the handle is empty

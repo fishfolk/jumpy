@@ -119,7 +119,7 @@ fn handle_match_setup_messages(
     asset_server: &AssetServer,
 ) -> Option<MapSelectAction> {
     if let Some(socket) = socket {
-        let datas: Vec<(usize, Vec<u8>)> = socket.recv_reliable();
+        let datas: Vec<(u32, Vec<u8>)> = socket.recv_reliable();
 
         for (_player, data) in datas {
             match postcard::from_bytes::<MapSelectMessage>(&data) {

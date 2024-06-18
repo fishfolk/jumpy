@@ -197,7 +197,7 @@ impl Default for PlayerInputCollector {
             // We always have the keyboard controls "plugged in"
             m.insert(ControlSource::Keyboard1, default());
             m.insert(ControlSource::Keyboard2, default());
-            for i in 0..MAX_PLAYERS as u32 {
+            for i in 0..MAX_PLAYERS {
                 m.insert(ControlSource::Gamepad(i), default());
             }
             m

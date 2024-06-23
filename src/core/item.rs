@@ -44,7 +44,7 @@ pub struct Inv {
 
 /// System param that can be used to conveniently get the inventory of each player.
 #[derive(Deref, DerefMut, Debug)]
-pub struct PlayerInventories<'a>(&'a [Option<Inv>; MAX_PLAYERS]);
+pub struct PlayerInventories<'a>(&'a [Option<Inv>; MAX_PLAYERS as usize]);
 
 impl PlayerInventories<'_> {
     pub fn find_item(&self, item: Entity) -> Option<Inv> {
@@ -55,7 +55,7 @@ impl PlayerInventories<'_> {
 }
 
 impl<'a> SystemParam for PlayerInventories<'a> {
-    type State = [Option<Inv>; MAX_PLAYERS];
+    type State = [Option<Inv>; MAX_PLAYERS as usize];
     type Param<'s> = PlayerInventories<'s>;
 
     fn get_state(world: &World) -> Self::State {
@@ -63,7 +63,7 @@ impl<'a> SystemParam for PlayerInventories<'a> {
             |entities: Res<Entities>,
              player_indexes: Comp<PlayerIdx>,
              inventories: Comp<Inventory>| {
-                let mut player_inventories = [None; MAX_PLAYERS];
+                let mut player_inventories = [None; MAX_PLAYERS as usize];
                 for (player, (idx, inventory)) in
                     entities.iter_with((&player_indexes, &inventories))
                 {

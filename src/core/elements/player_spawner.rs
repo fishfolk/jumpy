@@ -72,7 +72,7 @@ fn update(
         .collect::<Vec<_>>();
 
     // For every player
-    for i in 0..MAX_PLAYERS as u32 {
+    for i in 0..MAX_PLAYERS {
         let player = &player_inputs.players[i as usize];
 
         // If the player is active, but not alive

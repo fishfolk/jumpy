@@ -420,13 +420,13 @@ fn handle_scoring_messages(
     state: &mut ScoringMenuState,
 ) {
     // TODO handle disconnects
-    let datas: Vec<(usize, Vec<u8>)> = network_socket.recv_reliable();
-    let local_players = network_socket.player_is_local();
+    let datas: Vec<(u32, Vec<u8>)> = network_socket.recv_reliable();
+    let local_player_idx = network_socket.player_idx();
     for (_, data) in datas {
         match postcard::from_bytes::<ScoringMessage>(&data) {
             Ok(message) => match message.data {
                 ScoringMessageEnum::PlayerReady(player) => {
-                    if message.magic == SCORING_MESSAGE_MAGIC && !local_players[player as usize] {
+                    if message.magic == SCORING_MESSAGE_MAGIC && player != local_player_idx {
                         state.ready_players.insert(PlayerIdx(player));
                         debug!("Received message player {} ready", player);
                     }

@@ -569,7 +569,7 @@ fn player_ai_system(
 #[derive(Debug, Clone, HasSchema, Default)]
 struct PlayersHaveSpawned {
     /// For each player, whether they have spawned before.
-    pub players: [bool; MAX_PLAYERS],
+    pub players: [bool; MAX_PLAYERS as usize],
 }
 
 /// Marker component for a player hat.

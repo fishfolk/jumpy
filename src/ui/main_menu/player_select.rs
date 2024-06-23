@@ -262,7 +262,7 @@ fn player_select_panel(
     }
 
     #[cfg(target_arch = "wasm32")]
-    let network_local_player_slot: Option<usize> = None;
+    let network_local_player_slot: Option<u32> = None;
 
     #[cfg(target_arch = "wasm32")]
     let is_network = false;

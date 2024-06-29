@@ -207,6 +207,7 @@ fn main() {
             .unwrap_or_else(|_| "packs".into())
             .into(),
         custom_load_progress: Some(Box::new(load_progress)),
+        preload: true,
     }
     .app()
     .run();

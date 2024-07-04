@@ -1750,7 +1750,7 @@
 </span><span class="attr">#[derive(Debug, Clone, HasSchema, Default)]
 </span><span class="kw">struct </span>PlayersHaveSpawned {
     <span class="doccomment">/// For each player, whether they have spawned before.
-    </span><span class="kw">pub </span>players: [bool; MAX_PLAYERS],
+    </span><span class="kw">pub </span>players: [bool; MAX_PLAYERS <span class="kw">as </span>usize],
 }
 
 <span class="doccomment">/// Marker component for a player hat.

@@ -723,6 +723,9 @@
 <a href="#628" id="628">628</a>
 <a href="#629" id="629">629</a>
 <a href="#630" id="630">630</a>
+<a href="#631" id="631">631</a>
+<a href="#632" id="632">632</a>
+<a href="#633" id="633">633</a>
 </pre></div><pre class="rust"><code><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 </span><span class="kw">use </span>bones_framework::networking::{NetworkMatchSocket, SocketTarget};
 
@@ -735,7 +738,7 @@
 
 </span><span class="attr">#[derive(Default, Clone, Debug, HasSchema)]
 </span><span class="kw">pub struct </span>PlayerSelectState {
-    <span class="kw">pub </span>slots: [PlayerSlot; MAX_PLAYERS],
+    <span class="kw">pub </span>slots: [PlayerSlot; MAX_PLAYERS <span class="kw">as </span>usize],
     <span class="doccomment">/// Cache of available players from the game and packs.
     </span><span class="kw">pub </span>players: Vec&lt;Handle&lt;PlayerMeta&gt;&gt;,
     <span class="doccomment">/// Cache of available hats from the game and packs.
@@ -902,9 +905,12 @@
             ui.vertical_centered(|ui| {
                 ui.set_width(ui.available_width() - normal_button_style.font.size * <span class="number">2.0</span>);
 
-                ui.columns(MAX_PLAYERS, |columns| {
+                ui.columns(MAX_PLAYERS <span class="kw">as </span>usize, |columns| {
                     <span class="kw">for </span>(i, ui) <span class="kw">in </span>columns.iter_mut().enumerate() {
-                        world.run_system(player_select_panel, (ui, i, <span class="kw-2">&amp;mut </span>state))
+                        world.run_system(
+                            player_select_panel,
+                            (ui, u32::try_from(i).unwrap(), <span class="kw-2">&amp;mut </span>state),
+                        )
                     }
                 });
             });
@@ -922,21 +928,21 @@
     player_select_state: <span class="kw-2">&amp;mut </span>PlayerSelectState,
     asset_server: <span class="kw-2">&amp;</span>AssetServer,
 ) {
-    <span class="kw">let </span>datas: Vec&lt;(usize, Vec&lt;u8&gt;)&gt; = network_socket.recv_reliable();
+    <span class="kw">let </span>datas: Vec&lt;(u32, Vec&lt;u8&gt;)&gt; = network_socket.recv_reliable();
 
     <span class="kw">for </span>(player, data) <span class="kw">in </span>datas {
         <span class="kw">match </span>postcard::from_bytes::&lt;PlayerSelectMessage&gt;(<span class="kw-2">&amp;</span>data) {
             <span class="prelude-val">Ok</span>(message) =&gt; <span class="kw">match </span>message {
                 PlayerSelectMessage::SelectPlayer(player_handle) =&gt; {
                     <span class="kw">let </span>player_handle = player_handle.into_handle(asset_server);
-                    player_select_state.slots[player].selected_player = player_handle;
+                    player_select_state.slots[player <span class="kw">as </span>usize].selected_player = player_handle;
                 }
                 PlayerSelectMessage::ConfirmSelection(confirmed) =&gt; {
-                    player_select_state.slots[player].confirmed = confirmed;
+                    player_select_state.slots[player <span class="kw">as </span>usize].confirmed = confirmed;
                 }
                 PlayerSelectMessage::SelectHat(hat) =&gt; {
                     <span class="kw">let </span>hat = hat.map(|hat| hat.into_handle(asset_server));
-                    player_select_state.slots[player].selected_hat = hat;
+                    player_select_state.slots[player <span class="kw">as </span>usize].selected_hat = hat;
                 }
             },
             <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(<span class="string">&quot;Ignoring network message that was not understood: {e}&quot;</span>),
@@ -945,7 +951,7 @@
 }
 
 <span class="kw">fn </span>player_select_panel(
-    <span class="kw-2">mut </span>params: In&lt;(<span class="kw-2">&amp;mut </span>egui::Ui, usize, <span class="kw-2">&amp;mut </span>PlayerSelectState)&gt;,
+    <span class="kw-2">mut </span>params: In&lt;(<span class="kw-2">&amp;mut </span>egui::Ui, u32, <span class="kw-2">&amp;mut </span>PlayerSelectState)&gt;,
     meta: Root&lt;GameMeta&gt;,
     controls: Res&lt;GlobalPlayerControls&gt;,
     asset_server: Res&lt;AssetServer&gt;,
@@ -984,7 +990,7 @@
     }
 
     <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
-    </span><span class="kw">let </span>network_local_player_slot: <span class="prelude-ty">Option</span>&lt;usize&gt; = <span class="prelude-val">None</span>;
+    </span><span class="kw">let </span>network_local_player_slot: <span class="prelude-ty">Option</span>&lt;u32&gt; = <span class="prelude-val">None</span>;
 
     <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
     </span><span class="kw">let </span>is_network = <span class="bool-val">false</span>;
@@ -997,7 +1003,7 @@
         </span><span class="kw">if </span><span class="kw-2">*</span>slot_id + <span class="number">1 </span>&gt; socket.player_count() {
             <span class="kw">return</span>;
         } <span class="kw">else </span>{
-            state.slots[<span class="kw-2">*</span>slot_id].active = <span class="bool-val">true</span>;
+            state.slots[<span class="kw-2">*</span>slot_id <span class="kw">as </span>usize].active = <span class="bool-val">true</span>;
         }
     }
 
@@ -1005,10 +1011,10 @@
         .slots
         .iter()
         .enumerate()
-        .any(|(i, slot)| (!slot.active &amp;&amp; i == <span class="kw-2">*</span>slot_id));
+        .any(|(i, slot)| (!slot.active &amp;&amp; u32::try_from(i).unwrap() == <span class="kw-2">*</span>slot_id));
 
     <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-    </span><span class="kw">let </span><span class="kw-2">mut </span>network_local_player_slot: <span class="prelude-ty">Option</span>&lt;usize&gt; = <span class="prelude-val">None</span>;
+    </span><span class="kw">let </span><span class="kw-2">mut </span>network_local_player_slot: <span class="prelude-ty">Option</span>&lt;u32&gt; = <span class="prelude-val">None</span>;
 
     <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
     </span><span class="kw">let </span>slot_allows_new_player = <span class="kw">if </span>is_network {
@@ -1057,7 +1063,7 @@
         sources
     };
 
-    <span class="kw">let </span>slot = <span class="kw-2">&amp;mut </span>state.slots[<span class="kw-2">*</span>slot_id];
+    <span class="kw">let </span>slot = <span class="kw-2">&amp;mut </span>state.slots[<span class="kw-2">*</span>slot_id <span class="kw">as </span>usize];
     <span class="kw">let </span>player_handle = <span class="kw-2">&amp;mut </span>slot.selected_player;
 
     <span class="comment">// If the handle is empty

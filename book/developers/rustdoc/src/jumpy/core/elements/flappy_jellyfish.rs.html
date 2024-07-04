@@ -453,6 +453,7 @@
 <a href="#358" id="358">358</a>
 <a href="#359" id="359">359</a>
 <a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Default, Debug, Clone)]
@@ -689,7 +690,8 @@
     <span class="kw-2">mut </span>dehydrate_jellyfish: CompMut&lt;DehydrateJellyfish&gt;,
 ) {
     <span class="comment">// Collect the hitboxes of all players
-    </span><span class="kw">let </span><span class="kw-2">mut </span>player_hitboxes = SmallVec::&lt;[Rect; MAX_PLAYERS]&gt;::with_capacity(MAX_PLAYERS);
+    </span><span class="kw">let </span><span class="kw-2">mut </span>player_hitboxes =
+        SmallVec::&lt;[Rect; MAX_PLAYERS <span class="kw">as </span>usize]&gt;::with_capacity(MAX_PLAYERS <span class="kw">as </span>usize);
     player_hitboxes.extend(
         entities
             .iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>transforms, <span class="kw-2">&amp;</span>bodies))

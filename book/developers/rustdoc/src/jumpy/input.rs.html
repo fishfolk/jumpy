@@ -794,7 +794,7 @@
             <span class="comment">// We always have the keyboard controls &quot;plugged in&quot;
             </span>m.insert(ControlSource::Keyboard1, default());
             m.insert(ControlSource::Keyboard2, default());
-            <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..MAX_PLAYERS <span class="kw">as </span>u32 {
+            <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..MAX_PLAYERS {
                 m.insert(ControlSource::Gamepad(i), default());
             }
             m

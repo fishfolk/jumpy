@@ -360,6 +360,7 @@
 <a href="#265" id="265">265</a>
 <a href="#266" id="266">266</a>
 <a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
 </pre></div><pre class="rust"><code><span class="attr">#![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
 </span><span class="attr">#![cfg_attr(doc, allow(unknown_lints))]
@@ -569,6 +570,7 @@
             .unwrap_or_else(|<span class="kw">_</span>| <span class="string">&quot;packs&quot;</span>.into())
             .into(),
         custom_load_progress: <span class="prelude-val">Some</span>(Box::new(load_progress)),
+        preload: <span class="bool-val">true</span>,
     }
     .app()
     .run();

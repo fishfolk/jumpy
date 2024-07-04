@@ -264,7 +264,7 @@
 <span class="doccomment">/// The inputs for each player in this simulation frame.
 </span><span class="attr">#[derive(Clone, Debug, HasSchema)]
 </span><span class="kw">pub struct </span>MatchInputs {
-    <span class="kw">pub </span>players: [PlayerInput; MAX_PLAYERS],
+    <span class="kw">pub </span>players: [PlayerInput; MAX_PLAYERS <span class="kw">as </span>usize],
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>MatchInputs {
@@ -281,7 +281,7 @@
     <span class="kw">type </span>InputCollector = PlayerInputCollector;
 
     <span class="kw">fn </span>update_controls(<span class="kw-2">&amp;mut </span><span class="self">self</span>, collector: <span class="kw-2">&amp;mut </span>PlayerInputCollector) {
-        (<span class="number">0</span>..MAX_PLAYERS).for_each(|i| {
+        (<span class="number">0</span>..MAX_PLAYERS <span class="kw">as </span>usize).for_each(|i| {
             <span class="kw">let </span>player_input = <span class="kw-2">&amp;mut </span><span class="self">self</span>.players[i];
             <span class="kw">if let </span><span class="prelude-val">Some</span>(source) = <span class="kw-2">&amp;</span>player_input.control_source {
                 player_input.control = <span class="kw-2">*</span>collector.get_control(i, <span class="kw-2">*</span>source);

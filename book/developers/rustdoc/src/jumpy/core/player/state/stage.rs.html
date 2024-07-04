@@ -195,6 +195,7 @@
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
 <a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(Debug)]
@@ -242,7 +243,8 @@
                 |entities: Res&lt;Entities&gt;,
                  player_indexes: Comp&lt;PlayerIdx&gt;,
                  player_states: Comp&lt;PlayerState&gt;| {
-                    <span class="kw">let </span><span class="kw-2">mut </span>states: [<span class="prelude-ty">Option</span>&lt;Ustr&gt;; MAX_PLAYERS] = std::array::from_fn(|<span class="kw">_</span>| <span class="prelude-val">None</span>);
+                    <span class="kw">let </span><span class="kw-2">mut </span>states: [<span class="prelude-ty">Option</span>&lt;Ustr&gt;; MAX_PLAYERS <span class="kw">as </span>usize] =
+                        std::array::from_fn(|<span class="kw">_</span>| <span class="prelude-val">None</span>);
                     <span class="kw">for </span>(_ent, (idx, state)) <span class="kw">in
                         </span>entities.iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>player_states))
                     {

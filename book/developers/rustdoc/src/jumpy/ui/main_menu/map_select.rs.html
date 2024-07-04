@@ -361,7 +361,7 @@
     asset_server: <span class="kw-2">&amp;</span>AssetServer,
 ) -&gt; <span class="prelude-ty">Option</span>&lt;MapSelectAction&gt; {
     <span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = socket {
-        <span class="kw">let </span>datas: Vec&lt;(usize, Vec&lt;u8&gt;)&gt; = socket.recv_reliable();
+        <span class="kw">let </span>datas: Vec&lt;(u32, Vec&lt;u8&gt;)&gt; = socket.recv_reliable();
 
         <span class="kw">for </span>(_player, data) <span class="kw">in </span>datas {
             <span class="kw">match </span>postcard::from_bytes::&lt;MapSelectMessage&gt;(<span class="kw-2">&amp;</span>data) {

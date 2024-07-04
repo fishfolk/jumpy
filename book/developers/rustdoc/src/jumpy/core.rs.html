@@ -324,7 +324,7 @@
 </span><span class="kw">pub const </span>FPS: f32 = <span class="number">60.0</span>;
 
 <span class="doccomment">/// The maximum number of players per match.
-</span><span class="kw">pub const </span>MAX_PLAYERS: usize = <span class="number">4</span>;
+</span><span class="kw">pub const </span>MAX_PLAYERS: u32 = <span class="number">4</span>;
 
 <span class="kw">use </span>std::time::Duration;
 
@@ -352,7 +352,7 @@
 
 <span class="kw">pub struct </span>MatchPlugin {
     <span class="kw">pub </span>maps: MapPool,
-    <span class="kw">pub </span>player_info: [PlayerInput; MAX_PLAYERS],
+    <span class="kw">pub </span>player_info: [PlayerInput; MAX_PLAYERS <span class="kw">as </span>usize],
     <span class="doccomment">/// The lua plugins to enable for this match.
     </span><span class="kw">pub </span>plugins: Arc&lt;Vec&lt;Handle&lt;LuaPlugin&gt;&gt;&gt;,
 
@@ -450,7 +450,7 @@
             <span class="kw">let </span>input = <span class="self">self</span>.input_collector.get_current_controls();
             {
                 <span class="kw">let </span><span class="kw-2">mut </span>player_inputs = world.resource_mut::&lt;MatchInputs&gt;();
-                (<span class="number">0</span>..MAX_PLAYERS).for_each(|i| {
+                (<span class="number">0</span>..MAX_PLAYERS <span class="kw">as </span>usize).for_each(|i| {
                     <span class="kw">let </span>player_input = <span class="kw-2">&amp;mut </span>player_inputs.players[i];
                     <span class="kw">let </span><span class="prelude-val">Some</span>(source) = <span class="kw-2">&amp;</span>player_input.control_source <span class="kw">else </span>{
                         <span class="kw">return</span>;

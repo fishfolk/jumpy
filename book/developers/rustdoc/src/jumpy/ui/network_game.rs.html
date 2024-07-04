@@ -661,13 +661,13 @@
     </span>Join,
     Host {
         service_name: String,
-        player_count: usize,
+        player_count: u32,
     },
 }
 
 <span class="attr">#[derive(Eq, PartialEq, Clone)]
 </span><span class="kw">pub struct </span>OnlineState {
-    player_count: usize,
+    player_count: u32,
     matchmaking_server: String,
     search_state: SearchState,
 }

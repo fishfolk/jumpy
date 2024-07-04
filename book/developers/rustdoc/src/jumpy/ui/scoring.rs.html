@@ -953,13 +953,13 @@
     state: <span class="kw-2">&amp;mut </span>ScoringMenuState,
 ) {
     <span class="comment">// TODO handle disconnects
-    </span><span class="kw">let </span>datas: Vec&lt;(usize, Vec&lt;u8&gt;)&gt; = network_socket.recv_reliable();
-    <span class="kw">let </span>local_players = network_socket.player_is_local();
+    </span><span class="kw">let </span>datas: Vec&lt;(u32, Vec&lt;u8&gt;)&gt; = network_socket.recv_reliable();
+    <span class="kw">let </span>local_player_idx = network_socket.player_idx();
     <span class="kw">for </span>(<span class="kw">_</span>, data) <span class="kw">in </span>datas {
         <span class="kw">match </span>postcard::from_bytes::&lt;ScoringMessage&gt;(<span class="kw-2">&amp;</span>data) {
             <span class="prelude-val">Ok</span>(message) =&gt; <span class="kw">match </span>message.data {
                 ScoringMessageEnum::PlayerReady(player) =&gt; {
-                    <span class="kw">if </span>message.magic == SCORING_MESSAGE_MAGIC &amp;&amp; !local_players[player <span class="kw">as </span>usize] {
+                    <span class="kw">if </span>message.magic == SCORING_MESSAGE_MAGIC &amp;&amp; player != local_player_idx {
                         state.ready_players.insert(PlayerIdx(player));
                         <span class="macro">debug!</span>(<span class="string">&quot;Received message player {} ready&quot;</span>, player);
                     }

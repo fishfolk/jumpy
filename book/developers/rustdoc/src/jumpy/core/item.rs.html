@@ -469,7 +469,7 @@
 
 <span class="doccomment">/// System param that can be used to conveniently get the inventory of each player.
 </span><span class="attr">#[derive(Deref, DerefMut, Debug)]
-</span><span class="kw">pub struct </span>PlayerInventories&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[<span class="prelude-ty">Option</span>&lt;Inv&gt;; MAX_PLAYERS]);
+</span><span class="kw">pub struct </span>PlayerInventories&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[<span class="prelude-ty">Option</span>&lt;Inv&gt;; MAX_PLAYERS <span class="kw">as </span>usize]);
 
 <span class="kw">impl </span>PlayerInventories&lt;<span class="lifetime">&#39;_</span>&gt; {
     <span class="kw">pub fn </span>find_item(<span class="kw-2">&amp;</span><span class="self">self</span>, item: Entity) -&gt; <span class="prelude-ty">Option</span>&lt;Inv&gt; {
@@ -480,7 +480,7 @@
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; SystemParam <span class="kw">for </span>PlayerInventories&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">type </span>State = [<span class="prelude-ty">Option</span>&lt;Inv&gt;; MAX_PLAYERS];
+    <span class="kw">type </span>State = [<span class="prelude-ty">Option</span>&lt;Inv&gt;; MAX_PLAYERS <span class="kw">as </span>usize];
     <span class="kw">type </span>Param&lt;<span class="lifetime">&#39;s</span>&gt; = PlayerInventories&lt;<span class="lifetime">&#39;s</span>&gt;;
 
     <span class="kw">fn </span>get_state(world: <span class="kw-2">&amp;</span>World) -&gt; <span class="self">Self</span>::State {
@@ -488,7 +488,7 @@
             |entities: Res&lt;Entities&gt;,
              player_indexes: Comp&lt;PlayerIdx&gt;,
              inventories: Comp&lt;Inventory&gt;| {
-                <span class="kw">let </span><span class="kw-2">mut </span>player_inventories = [<span class="prelude-val">None</span>; MAX_PLAYERS];
+                <span class="kw">let </span><span class="kw-2">mut </span>player_inventories = [<span class="prelude-val">None</span>; MAX_PLAYERS <span class="kw">as </span>usize];
                 <span class="kw">for </span>(player, (idx, inventory)) <span class="kw">in
                     </span>entities.iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>inventories))
                 {

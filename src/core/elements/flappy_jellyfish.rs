@@ -234,7 +234,8 @@ fn explode_flappy_jellyfish(
     mut dehydrate_jellyfish: CompMut<DehydrateJellyfish>,
 ) {
     // Collect the hitboxes of all players
-    let mut player_hitboxes = SmallVec::<[Rect; MAX_PLAYERS]>::with_capacity(MAX_PLAYERS);
+    let mut player_hitboxes =
+        SmallVec::<[Rect; MAX_PLAYERS as usize]>::with_capacity(MAX_PLAYERS as usize);
     player_hitboxes.extend(
         entities
             .iter_with((&player_indexes, &transforms, &bodies))

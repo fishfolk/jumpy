@@ -248,18 +248,20 @@ fn main_pause_menu(
             }
         });
 
+        // Re-add edit button once map editor is back in game.
+        //
         // Edit button
-        ui.scope(|ui| {
-            if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("edit"))
-                .min_size(vec2(width, 0.0))
-                .show(ui)
-                .clicked()
-            {
-                // TODO: show editor.
-                pause_session(false, *is_online, session, false);
-                **close_pause_menu = true;
-            }
-        });
+        // ui.scope(|ui| {
+        //     if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("edit"))
+        //         .min_size(vec2(width, 0.0))
+        //         .show(ui)
+        //         .clicked()
+        //     {
+        //         // TODO: show editor.
+        //         pause_session(false, *is_online, session, false);
+        //         **close_pause_menu = true;
+        //     }
+        // });
 
         // Main menu button
         if BorderedButton::themed(&meta.theme.buttons.normal, localization.get("main-menu"))

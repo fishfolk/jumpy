@@ -613,12 +613,13 @@ fn player_select_panel(
 
                     if !is_network {
                         ui.add_space(meta.theme.font_styles.bigger.size);
-                        if BorderedButton::themed(
-                            &meta.theme.buttons.normal,
-                            localization.get("add-ai-player"),
-                        )
-                        .show(ui)
-                        .clicked()
+                        if *slot_id != 0
+                            && BorderedButton::themed(
+                                &meta.theme.buttons.normal,
+                                localization.get("add-ai-player"),
+                            )
+                            .show(ui)
+                            .clicked()
                         {
                             slot.is_ai = true;
                             slot.confirmed = true;

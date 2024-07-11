@@ -135,10 +135,8 @@ fn main_menu_system(world: &World) {
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Max), |ui| {
                     ui.add_space(5.0);
 
-                    ui.add(
-                        egui::TextEdit::singleline(&mut VERSION_STRING.as_str())
-                            .text_color(egui::Color32::WHITE)
-                            .horizontal_align(egui::Align::Max),
+                    ui.label(
+                        egui::RichText::new(VERSION_STRING.as_str()).color(egui::Color32::WHITE),
                     );
                 })
             });

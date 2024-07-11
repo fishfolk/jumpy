@@ -66,14 +66,18 @@ pub fn widget(
     let mut ready_players = 0;
     let mut unconfirmed_players = 0;
 
+    let mut at_least_one_non_ai_ready = false;
     for slot in &state.slots {
         if slot.confirmed {
             ready_players += 1;
+            if !slot.is_ai {
+                at_least_one_non_ai_ready = true;
+            }
         } else if slot.active {
             unconfirmed_players += 1;
         }
     }
-    let may_continue = ready_players >= 1 && unconfirmed_players == 0;
+    let may_continue = ready_players >= 1 && unconfirmed_players == 0 && at_least_one_non_ai_ready;
 
     #[cfg(not(target_arch = "wasm32"))]
     if let Some(socket) = network_socket.as_ref() {

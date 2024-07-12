@@ -381,6 +381,8 @@
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
 <a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
 
 <span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>};
@@ -631,20 +633,22 @@
             }
         });
 
-        <span class="comment">// Edit button
-        </span>ui.scope(|ui| {
-            <span class="kw">if </span>BorderedButton::themed(<span class="kw-2">&amp;</span>meta.theme.buttons.normal, localization.get(<span class="string">&quot;edit&quot;</span>))
-                .min_size(vec2(width, <span class="number">0.0</span>))
-                .show(ui)
-                .clicked()
-            {
-                <span class="comment">// TODO: show editor.
-                </span>pause_session(<span class="bool-val">false</span>, <span class="kw-2">*</span>is_online, session, <span class="bool-val">false</span>);
-                <span class="kw-2">**</span>close_pause_menu = <span class="bool-val">true</span>;
-            }
-        });
+        <span class="comment">// Re-add edit button once map editor is back in game.
+        //
+        // Edit button
+        // ui.scope(|ui| {
+        //     if BorderedButton::themed(&amp;meta.theme.buttons.normal, localization.get(&quot;edit&quot;))
+        //         .min_size(vec2(width, 0.0))
+        //         .show(ui)
+        //         .clicked()
+        //     {
+        //         // TODO: show editor.
+        //         pause_session(false, *is_online, session, false);
+        //         **close_pause_menu = true;
+        //     }
+        // });
 
-        <span class="comment">// Main menu button
+        // Main menu button
         </span><span class="kw">if </span>BorderedButton::themed(<span class="kw-2">&amp;</span>meta.theme.buttons.normal, localization.get(<span class="string">&quot;main-menu&quot;</span>))
             .min_size(vec2(width, <span class="number">0.0</span>))
             .show(ui)

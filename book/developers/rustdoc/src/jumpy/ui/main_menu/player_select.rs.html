@@ -726,6 +726,11 @@
 <a href="#631" id="631">631</a>
 <a href="#632" id="632">632</a>
 <a href="#633" id="633">633</a>
+<a href="#634" id="634">634</a>
+<a href="#635" id="635">635</a>
+<a href="#636" id="636">636</a>
+<a href="#637" id="637">637</a>
+<a href="#638" id="638">638</a>
 </pre></div><pre class="rust"><code><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 </span><span class="kw">use </span>bones_framework::networking::{NetworkMatchSocket, SocketTarget};
 
@@ -794,14 +799,18 @@
     </span><span class="kw">let </span><span class="kw-2">mut </span>ready_players = <span class="number">0</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>unconfirmed_players = <span class="number">0</span>;
 
+    <span class="kw">let </span><span class="kw-2">mut </span>at_least_one_non_ai_ready = <span class="bool-val">false</span>;
     <span class="kw">for </span>slot <span class="kw">in </span><span class="kw-2">&amp;</span>state.slots {
         <span class="kw">if </span>slot.confirmed {
             ready_players += <span class="number">1</span>;
+            <span class="kw">if </span>!slot.is_ai {
+                at_least_one_non_ai_ready = <span class="bool-val">true</span>;
+            }
         } <span class="kw">else if </span>slot.active {
             unconfirmed_players += <span class="number">1</span>;
         }
     }
-    <span class="kw">let </span>may_continue = ready_players &gt;= <span class="number">1 </span>&amp;&amp; unconfirmed_players == <span class="number">0</span>;
+    <span class="kw">let </span>may_continue = ready_players &gt;= <span class="number">1 </span>&amp;&amp; unconfirmed_players == <span class="number">0 </span>&amp;&amp; at_least_one_non_ai_ready;
 
     <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
@@ -1341,12 +1350,13 @@
 
                     <span class="kw">if </span>!is_network {
                         ui.add_space(meta.theme.font_styles.bigger.size);
-                        <span class="kw">if </span>BorderedButton::themed(
-                            <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
-                            localization.get(<span class="string">&quot;add-ai-player&quot;</span>),
-                        )
-                        .show(ui)
-                        .clicked()
+                        <span class="kw">if </span><span class="kw-2">*</span>slot_id != <span class="number">0
+                            </span>&amp;&amp; BorderedButton::themed(
+                                <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
+                                localization.get(<span class="string">&quot;add-ai-player&quot;</span>),
+                            )
+                            .show(ui)
+                            .clicked()
                         {
                             slot.is_ai = <span class="bool-val">true</span>;
                             slot.confirmed = <span class="bool-val">true</span>;

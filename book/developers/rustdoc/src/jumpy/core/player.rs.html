@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/player.rs`."><title>player.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/player.rs`."><title>player.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -93,7 +93,8 @@
     }
 </style>
 
-</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><a class="sub-logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1298,13 +1299,13 @@
 <span class="kw">impl </span>Emote {
     <span class="kw">pub fn </span>face_animation_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ustr {
         <span class="kw">match </span><span class="self">self </span>{
-            Emote::Alarm =&gt; ustr(<span class="string">&quot;emote_alarm&quot;</span>),
+            Emote::Alarm =&gt; ustr(<span class="string">"emote_alarm"</span>),
         }
     }
 
     <span class="kw">pub fn </span>emote_animation_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ustr {
         <span class="kw">match </span><span class="self">self </span>{
-            Emote::Alarm =&gt; ustr(<span class="string">&quot;alarm&quot;</span>),
+            Emote::Alarm =&gt; ustr(<span class="string">"alarm"</span>),
         }
     }
 }
@@ -1393,7 +1394,7 @@
 <span class="kw">impl </span>PlayerCommand {
     <span class="doccomment">/// Kill a player.
     ///
-    /// &gt; **Note:** This doesn&#39;t despawn the player, it just puts the player into it&#39;s death animation.
+    /// &gt; **Note:** This doesn't despawn the player, it just puts the player into it's death animation.
     </span><span class="kw">pub fn </span>kill(player: Entity, hit_from: <span class="prelude-ty">Option</span>&lt;Vec2&gt;) -&gt; StaticSystem&lt;(), ()&gt; {
         (<span class="kw">move </span>|entities: Res&lt;Entities&gt;,
                <span class="kw-2">mut </span>players_killed: CompMut&lt;PlayerKilled&gt;,
@@ -1407,11 +1408,11 @@
 
             <span class="kw">let </span><span class="prelude-val">Some</span>(idx) = player_indexes.get(player) <span class="kw">else </span>{
                 <span class="comment">// Not a player, just ignore it.
-                </span><span class="macro">warn!</span>(<span class="string">&quot;Tried to kill non-player entity.&quot;</span>);
+                </span><span class="macro">warn!</span>(<span class="string">"Tried to kill non-player entity."</span>);
                 <span class="kw">return</span>;
             };
 
-            <span class="macro">debug!</span>(<span class="string">&quot;Killing player: {}&quot;</span>, idx.<span class="number">0</span>);
+            <span class="macro">debug!</span>(<span class="string">"Killing player: {}"</span>, idx.<span class="number">0</span>);
 
             <span class="comment">// Drop any items the player was carrying
             </span><span class="kw">let </span>inventory = inventories.get(player).cloned().unwrap_or_default();
@@ -1465,13 +1466,13 @@
                     <span class="kw-2">&amp;</span>entities,
                 );
             } <span class="kw">else </span>{
-                <span class="macro">warn!</span>(<span class="string">&quot;Tried to despawn non-player entity.&quot;</span>);
+                <span class="macro">warn!</span>(<span class="string">"Tried to despawn non-player entity."</span>);
             }
         })
         .system()
     }
 
-    <span class="doccomment">/// Set the player&#39;s inventory
+    <span class="doccomment">/// Set the player's inventory
     </span><span class="kw">pub fn </span>set_inventory(player: Entity, item: <span class="prelude-ty">Option</span>&lt;Entity&gt;) -&gt; StaticSystem&lt;(), ()&gt; {
         (<span class="kw">move </span>|<span class="kw-2">mut </span>items_grabbed: CompMut&lt;ItemGrabbed&gt;,
                <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
@@ -1506,7 +1507,7 @@
         .system()
     }
 
-    <span class="doccomment">/// Drop the player&#39;s hat and reset its state.
+    <span class="doccomment">/// Drop the player's hat and reset its state.
     </span><span class="kw">pub fn </span>drop_hat(player: Entity) -&gt; StaticSystem&lt;(), ()&gt; {
         (<span class="kw">move </span>|player_layers: Comp&lt;PlayerLayers&gt;,
                <span class="kw-2">mut </span>player_body_attachments: CompMut&lt;PlayerBodyAttachment&gt;,
@@ -1607,7 +1608,7 @@
 
         <span class="comment">// If a tick has elapsed
         </span><span class="kw">if </span>ai_player.tick.just_finished() {
-            <span class="comment">// If the player isn&#39;t pausing, then there&#39;s a 40% chance
+            <span class="comment">// If the player isn't pausing, then there's a 40% chance
             </span><span class="kw">if </span>ai_player.pausing == <span class="number">0 </span>&amp;&amp; rng.chance(<span class="number">0.4</span>) {
                 <span class="comment">// That we will pause for a random number of ticks between 0 and 2
                 </span>ai_player.pausing = (rng.f32_normalized() * <span class="number">2.0</span>).round() <span class="kw">as </span>u32
@@ -1620,7 +1621,7 @@
             }
         }
 
-        <span class="comment">// If the player is pausing, don&#39;t have the AI move this frame.
+        <span class="comment">// If the player is pausing, don't have the AI move this frame.
         </span><span class="kw">if </span>ai_player.pausing &gt; <span class="number">0 </span>{
             <span class="kw">continue</span>;
         }
@@ -1695,9 +1696,9 @@
                 </span>first_movement.move_direction <span class="kw-2">*</span>= vec2(AI_SPEED_MULTIPLIER, <span class="number">1.0</span>);
 
                 <span class="comment">// This is a hack to prevent us from getting stuck when we think we should be falling
-                // straight down and we actually need to move off of the block we&#39;re half-standing on.
+                // straight down and we actually need to move off of the block we're half-standing on.
                 //
-                // If we aren&#39;t moving at all, just move in the direction of player 1
+                // If we aren't moving at all, just move in the direction of player 1
                 </span><span class="kw">if </span>bodies.get(ai_ent).unwrap().velocity == Vec2::ZERO
                     &amp;&amp; first_movement.move_direction == Vec2::ZERO
                 {
@@ -1800,7 +1801,7 @@
         .map(|<span class="kw">_</span>| entities.create())
         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
         .into_iter();
-    <span class="comment">// If a player doesn&#39;t have a hat we&#39;ll kill the entity we allocated for it.
+    <span class="comment">// If a player doesn't have a hat we'll kill the entity we allocated for it.
     </span><span class="kw">let </span><span class="kw-2">mut </span>to_kill = Vec::with_capacity(entity_count / <span class="number">3</span>);
 
     <span class="kw">for </span>player_entity <span class="kw">in </span>entities.iter_with_bitset(<span class="kw-2">&amp;</span>not_hydrated_bitset) {
@@ -1813,7 +1814,7 @@
         <span class="kw">let </span>meta = assets.get(player_handle);
 
         <span class="kw">let </span>animation_bank_sprite = AnimationBankSprite {
-            current: <span class="string">&quot;idle&quot;</span>.into(),
+            current: <span class="string">"idle"</span>.into(),
             animations: meta.layers.body.animations.frames.clone(),
             last_animation: default(),
         };
@@ -1851,7 +1852,7 @@
         );
         camera_subjects.insert(player_entity, default());
 
-        <span class="comment">// Spawn the player&#39;s fin and face
+        <span class="comment">// Spawn the player's fin and face
         </span><span class="kw">let </span>fin_entity = new_entities.next().unwrap();
         <span class="kw">let </span>face_entity = new_entities.next().unwrap();
 
@@ -1867,7 +1868,7 @@
         animation_bank_sprites.insert(
             fin_entity,
             AnimationBankSprite {
-                current: <span class="string">&quot;idle&quot;</span>.into(),
+                current: <span class="string">"idle"</span>.into(),
                 animations: meta.layers.fin.animations.clone(),
                 last_animation: default(),
             },
@@ -1895,7 +1896,7 @@
         animation_bank_sprites.insert(
             face_entity,
             AnimationBankSprite {
-                current: <span class="string">&quot;idle&quot;</span>.into(),
+                current: <span class="string">"idle"</span>.into(),
                 animations: meta.layers.face.animations.clone(),
                 last_animation: default(),
             },
@@ -1948,7 +1949,7 @@
                 item_grabs.insert(
                     hat_ent,
                     ItemGrab {
-                        fin_anim: <span class="string">&quot;grab_2&quot;</span>.into(),
+                        fin_anim: <span class="string">"grab_2"</span>.into(),
                         grab_offset: Vec2::ZERO,
                         sync_animation: <span class="bool-val">false</span>,
                     },
@@ -1968,10 +1969,10 @@
         </span>player_layers.insert(
             player_entity,
             PlayerLayers {
-                fin_anim: <span class="string">&quot;idle&quot;</span>.into(),
+                fin_anim: <span class="string">"idle"</span>.into(),
                 fin_ent: fin_entity,
                 fin_offset: Vec2::ZERO,
-                face_anim: <span class="string">&quot;idle&quot;</span>.into(),
+                face_anim: <span class="string">"idle"</span>.into(),
                 face_ent: face_entity,
                 hat_ent,
             },
@@ -1983,9 +1984,9 @@
         </span><span class="kw">if </span>is_ai {
             ai_players.insert(player_entity, default());
 
-            <span class="comment">// Give the player a sword NOTE: It&#39;s not good that we&#39;re duplicating the sword hydrate
+            <span class="comment">// Give the player a sword NOTE: It's not good that we're duplicating the sword hydrate
             // functionality here, and this is pretty hacky, but the AI as it stands is temporary
-            // anyway, so it&#39;s fine for now.
+            // anyway, so it's fine for now.
             </span>commands.add(
                 <span class="kw">move </span>|<span class="kw-2">mut </span>entities: ResMutInit&lt;Entities&gt;,
                       <span class="kw-2">mut </span>swords: CompMut&lt;sword::Sword&gt;,
@@ -2100,7 +2101,7 @@
     }
 }
 
-<span class="doccomment">/// Animate the player&#39;s fins while
+<span class="doccomment">/// Animate the player's fins while
 </span><span class="kw">fn </span>play_itemless_fin_animations(
     entities: Res&lt;Entities&gt;,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,

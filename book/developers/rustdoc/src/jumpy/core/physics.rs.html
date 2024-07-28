@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/physics.rs`."><title>physics.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/physics.rs`."><title>physics.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -93,7 +93,8 @@
     }
 </style>
 
-</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><a class="sub-logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -519,7 +520,7 @@
 
 <span class="kw">impl </span>StageLabel <span class="kw">for </span>PhysicsStage {
     <span class="kw">fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{self:?}&quot;</span>)
+        <span class="macro">format!</span>(<span class="string">"{self:?}"</span>)
     }
 
     <span class="kw">fn </span>id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ulid {
@@ -537,7 +538,7 @@
         .stages
         <span class="comment">// TODO: Think again about exactly how to organize the physics sync systems. At the time of
         // writing, we have to do an extra `collision_world.step()` when debug rendering to make
-        // sure everything is synced. It&#39;d be good to avoid this and maybe take inspiration from
+        // sure everything is synced. It'd be good to avoid this and maybe take inspiration from
         // bevy_rapier.
         </span>.insert_stage_after(
             CoreStage::PostUpdate,
@@ -566,7 +567,7 @@
     <span class="doccomment">/// Sets a 1 frame override for the body friction. It will be re-set to `None` every frame so if
     /// you wish to apply a continuous friction change, you must re-set it every frame.
     ///
-    /// This is useful for things like slippery blocks or other things that want to modify a body&#39;s
+    /// This is useful for things like slippery blocks or other things that want to modify a body's
     /// friction while it is on the block.
     </span><span class="attr">#[schema(opaque)]
     </span><span class="kw">pub </span>frame_friction_override: <span class="prelude-ty">Option</span>&lt;f32&gt;,
@@ -592,7 +593,7 @@
     /// Allows us to make safe optimizations of non-controlled kinematics that have not moved.
     </span><span class="kw">pub </span>is_controlled: bool,
 
-    <span class="doccomment">/// Position cached from last kinematic body update, used to determine if object is &quot;sleeping&quot;
+    <span class="doccomment">/// Position cached from last kinematic body update, used to determine if object is "sleeping"
     /// (is not moving) to avoid collision detection / resolution against static objects.
     </span><span class="kw">pub </span>last_update_position: Vec2,
     <span class="doccomment">/// See comment for `last_update_position`, this tracks previous rotation to detect if object has moved.
@@ -600,12 +601,12 @@
 }
 
 <span class="kw">impl </span>KinematicBody {
-    <span class="doccomment">/// Get the body&#39;s axis-aligned-bounding-box ( AABB ).
+    <span class="doccomment">/// Get the body's axis-aligned-bounding-box ( AABB ).
     ///
     /// An AABB is the smallest non-rotated rectangle that completely contains the the collision
     /// shape.
     ///
-    /// By passing in the body&#39;s global transform you will get the world-space bounding box.
+    /// By passing in the body's global transform you will get the world-space bounding box.
     </span><span class="kw">pub fn </span>bounding_box(<span class="kw-2">&amp;</span><span class="self">self</span>, transform: Transform) -&gt; Rect {
         <span class="kw">let </span>aabb = <span class="self">self</span>.shape.compute_aabb(transform);
 
@@ -686,7 +687,7 @@
             <span class="kw">let </span>rotation = transform.rotation.to_euler(EulerRot::XYZ).<span class="number">2</span>;
             body.last_update_position != transform.translation.xy()
                 || body.last_update_rotation != rotation
-                || body.is_spawning <span class="comment">// Don&#39;t consider new objects
+                || body.is_spawning <span class="comment">// Don't consider new objects
         </span>};
 
         <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
@@ -694,7 +695,7 @@
         body.last_update_rotation = transform.rotation.to_euler(EulerRot::XYZ).<span class="number">2</span>;
 
         <span class="kw">if </span>body.has_mass &amp;&amp; has_moved {
-            <span class="macro">puffin::profile_scope!</span>(<span class="string">&quot;Shove objects out of walls&quot;</span>);
+            <span class="macro">puffin::profile_scope!</span>(<span class="string">"Shove objects out of walls"</span>);
 
             <span class="comment">// Shove objects out of walls
             </span><span class="kw">loop </span>{
@@ -707,7 +708,7 @@
 
                 <span class="kw">let </span>rect = body.bounding_box(transform);
                 <span class="comment">// We add a small border, because rapier will consider the collision box colliding
-                // if it is perfectly lined up along the edge of a tile, and `solid_at` won&#39;t.
+                // if it is perfectly lined up along the edge of a tile, and `solid_at` won't.
                 </span><span class="kw">let </span>border = <span class="number">0.1</span>;
 
                 <span class="kw">let </span>collisions = (
@@ -722,8 +723,8 @@
                         <span class="comment">// For some reason the `tile_collision` test did detect a collision, but
                         // `solid_at` did not detect a collision at any of the corners of the aabb.
                         </span><span class="macro">warn!</span>(
-                            <span class="string">&quot;Collision test error resulting in physics \
-                            body stuck in wall at {rect:?}&quot;</span>,
+                            <span class="string">"Collision test error resulting in physics \
+                            body stuck in wall at {rect:?}"</span>,
                         );
                         <span class="kw">break</span>;
                     }
@@ -732,7 +733,7 @@
                     (<span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="kw">_</span>) =&gt; transform.translation.x += <span class="number">1.0</span>,
                     (<span class="kw">_</span>, <span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; transform.translation.y -= <span class="number">1.0</span>,
                     (<span class="bool-val">false</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="bool-val">false</span>) =&gt; transform.translation.x -= <span class="number">1.0</span>,
-                    <span class="comment">// If none of the sides of the rectangle are un-collided, then we don&#39;t know
+                    <span class="comment">// If none of the sides of the rectangle are un-collided, then we don't know
                     // which direction to move to get out of the wall, and we just give up.
                     </span><span class="kw">_ </span>=&gt; {
                         <span class="kw">break</span>;
@@ -759,14 +760,14 @@
         }
 
         {
-            <span class="macro">puffin::profile_scope!</span>(<span class="string">&quot;move body&quot;</span>);
+            <span class="macro">puffin::profile_scope!</span>(<span class="string">"move body"</span>);
 
             <span class="kw">if </span>collision_world.move_vertical(<span class="kw-2">&amp;mut </span>transforms, entity, body.velocity.y * time_factor)
             {
                 body.velocity.y <span class="kw-2">*</span>= -body.bounciness;
             }
 
-            <span class="comment">// NOTE: It&#39;s important that we move horizontally after we move vertically, or else the
+            <span class="comment">// NOTE: It's important that we move horizontally after we move vertically, or else the
             // horizontal movement will clear our `descent` and `seen_wood` flags and we may not go
             // through drop through platforms while moving horizontally.
             </span><span class="kw">if </span>collision_world.move_horizontal(
@@ -786,8 +787,8 @@
             // for controlled bodies, fall_through may be modified based on inputs, and we may actually want this to be set again here,
             // so only skip if not moving for bodies that are not controlled.
             </span><span class="kw">if </span>has_moved || !body.is_controlled {
-                <span class="macro">puffin::profile_scope!</span>(<span class="string">&quot;fall through check&quot;</span>);
-                <span class="comment">// Don&#39;t get stuck floating in fall-through platforms
+                <span class="macro">puffin::profile_scope!</span>(<span class="string">"fall through check"</span>);
+                <span class="comment">// Don't get stuck floating in fall-through platforms
                 </span><span class="kw">if </span>body.velocity == Vec2::ZERO
                     &amp;&amp; collision_world.tile_collision_filtered(transform, body.shape, |ent| {
                         collision_world

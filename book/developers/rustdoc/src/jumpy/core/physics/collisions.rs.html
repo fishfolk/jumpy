@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/physics/collisions.rs`."><title>collisions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/core/physics/collisions.rs`."><title>collisions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -93,7 +93,8 @@
     }
 </style>
 
-</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><a class="sub-logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1596,7 +1597,7 @@
 <span class="kw">impl </span>Clone <span class="kw">for </span>RapierContext {
     <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            <span class="comment">// The collision pipeline is just a cache and while we can&#39;t clone it, creating a new one is
+            <span class="comment">// The collision pipeline is just a cache and while we can't clone it, creating a new one is
             // perfectly valid.
             </span>collision_pipeline: default(),
             broad_phase: <span class="self">self</span>.broad_phase.clone(),
@@ -1607,7 +1608,7 @@
             collider_shape_cache: <span class="self">self</span>.collider_shape_cache.clone(),
             collision_cache: <span class="self">self</span>.collision_cache.clone(),
             physics_hooks: <span class="self">self</span>.physics_hooks.clone(),
-            <span class="comment">// Probably should keep this around, it&#39;s safe to drop data as only temp buffers,
+            <span class="comment">// Probably should keep this around, it's safe to drop data as only temp buffers,
             // but re-creating may hurt performance.
             </span>physics_pipeline: rapier::PhysicsPipeline::default(),
             islands: <span class="self">self</span>.islands.clone(),
@@ -1631,7 +1632,7 @@
     ///
     /// Colliders should be added here on removal for event processing, this is cleared each frame.
     ///
-    /// TODO: Consider a safer way to handle this that doesn&#39;t involve remembering to update this on
+    /// TODO: Consider a safer way to handle this that doesn't involve remembering to update this on
     /// removal.
     </span>removed_colliders: IndexMap&lt;rapier::ColliderHandle, Entity&gt;,
 }
@@ -1662,14 +1663,14 @@
             <span class="self">self</span>.data[<span class="self">self</span>.bytes_so_far..(<span class="self">self</span>.bytes_so_far + bytes.len())].copy_from_slice(bytes);
             <span class="self">self</span>.bytes_so_far += bytes.len()
         } <span class="kw">else </span>{
-            <span class="macro">panic!</span>(<span class="string">&quot;Too much data for `EntityHasher`. Will only accept 64 bits.&quot;</span>)
+            <span class="macro">panic!</span>(<span class="string">"Too much data for `EntityHasher`. Will only accept 64 bits."</span>)
         }
     }
 }
 
 <span class="kw">impl </span>CollisionCache {
     <span class="doccomment">/// Get the set of entities that the given `entity` is intersecting.
-    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, entity: Entity) -&gt; RefMut&lt;<span class="lifetime">&#39;_</span>, Vec&lt;Entity&gt;&gt; {
+    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, entity: Entity) -&gt; RefMut&lt;<span class="lifetime">'_</span>, Vec&lt;Entity&gt;&gt; {
         RefMut::map(<span class="self">self</span>.collisions.borrow_mut(), |x| {
             x.entry(entity).or_default()
         })
@@ -1771,7 +1772,7 @@
 <span class="doccomment">/// Errors produced from physics system
 </span><span class="attr">#[derive(thiserror::Error, Debug)]
 </span><span class="kw">pub enum </span>PhysicsError {
-    <span class="attr">#[error(<span class="string">&quot;Physics body not initialized: {0}&quot;</span>)]
+    <span class="attr">#[error(<span class="string">"Physics body not initialized: {0}"</span>)]
     </span>BodyNotInitialized(String),
 }
 
@@ -1832,46 +1833,46 @@
 }
 
 <span class="macro">impl_system_param! </span>{
-    <span class="kw">pub struct </span>CollisionWorld&lt;<span class="lifetime">&#39;a</span>&gt; {
-        entities: Res&lt;<span class="lifetime">&#39;a</span>, Entities&gt;,
+    <span class="kw">pub struct </span>CollisionWorld&lt;<span class="lifetime">'a</span>&gt; {
+        entities: Res&lt;<span class="lifetime">'a</span>, Entities&gt;,
 
         <span class="doccomment">/// The rapier context.
-        </span>ctx: ResMutInit&lt;<span class="lifetime">&#39;a</span>, RapierContext&gt;,
+        </span>ctx: ResMutInit&lt;<span class="lifetime">'a</span>, RapierContext&gt;,
 
-        <span class="doccomment">/// Actors are things like players that move around and detect collisions, but don&#39;t collide
+        <span class="doccomment">/// Actors are things like players that move around and detect collisions, but don't collide
         /// with other actors.
-        </span>actors: CompMut&lt;<span class="lifetime">&#39;a</span>, Actor&gt;,
-        <span class="doccomment">/// Solids are things like walls and platforms, that aren&#39;t tiles, that have solid
+        </span>actors: CompMut&lt;<span class="lifetime">'a</span>, Actor&gt;,
+        <span class="doccomment">/// Solids are things like walls and platforms, that aren't tiles, that have solid
         /// collisions.
-        </span>solids: CompMut&lt;<span class="lifetime">&#39;a</span>, Solid&gt;,
+        </span>solids: CompMut&lt;<span class="lifetime">'a</span>, Solid&gt;,
         <span class="doccomment">/// A collider is anything that can detect collisions in the world other than tiles, and
         /// must either be an [`Actor`] or [`Solid`] to participate in collision detection.
-        </span>colliders: CompMut&lt;<span class="lifetime">&#39;a</span>, Collider&gt;,
+        </span>colliders: CompMut&lt;<span class="lifetime">'a</span>, Collider&gt;,
         <span class="doccomment">/// Contains the rapier collider handles for each map tile.
-        </span>tile_rapier_handles: CompMut&lt;<span class="lifetime">&#39;a</span>, TileRapierHandle&gt;,
+        </span>tile_rapier_handles: CompMut&lt;<span class="lifetime">'a</span>, TileRapierHandle&gt;,
 
-        tile_layers: Comp&lt;<span class="lifetime">&#39;a</span>, TileLayer&gt;,
-        tile_collision_kinds: Comp&lt;<span class="lifetime">&#39;a</span>, TileCollisionKind&gt;,
-        tile_dynamic_colliders: Comp&lt;<span class="lifetime">&#39;a</span>, TileDynamicCollider&gt;,
-        spawned_map_layer_metas: Comp&lt;<span class="lifetime">&#39;a</span>, SpawnedMapLayerMeta&gt;,
+        tile_layers: Comp&lt;<span class="lifetime">'a</span>, TileLayer&gt;,
+        tile_collision_kinds: Comp&lt;<span class="lifetime">'a</span>, TileCollisionKind&gt;,
+        tile_dynamic_colliders: Comp&lt;<span class="lifetime">'a</span>, TileDynamicCollider&gt;,
+        spawned_map_layer_metas: Comp&lt;<span class="lifetime">'a</span>, SpawnedMapLayerMeta&gt;,
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; CollisionWorld&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="doccomment">/// Update shape of actor&#39;s [`Collider`]. Warns if entity does not have an [`Actor`] component.
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; CollisionWorld&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="doccomment">/// Update shape of actor's [`Collider`]. Warns if entity does not have an [`Actor`] component.
     ///
-    /// Updates shape on `Collider` and rebuilds rapier&#39;s collider on rigidbody.
+    /// Updates shape on `Collider` and rebuilds rapier's collider on rigidbody.
     ///
-    /// Use [`Self::set_actor_shape_from_builder`] for more control over new collider&#39;s settings.
+    /// Use [`Self::set_actor_shape_from_builder`] for more control over new collider's settings.
     </span><span class="kw">pub fn </span>set_actor_shape(<span class="kw-2">&amp;mut </span><span class="self">self</span>, entity: Entity, shape: ColliderShape) {
         <span class="kw">let </span>shared_shape = <span class="self">self</span>.ctx.collider_shape_cache.shared_shape(shape);
         <span class="kw">let </span>new_collider = build_actor_rapier_collider(entity, shared_shape.clone());
         <span class="self">self</span>.set_actor_shape_from_builder(entity, new_collider, shape);
     }
 
-    <span class="doccomment">/// Update shape of actor&#39;s [`Collider`]. Warns if entity does not have an [`Actor`] component.
+    <span class="doccomment">/// Update shape of actor's [`Collider`]. Warns if entity does not have an [`Actor`] component.
     ///
-    /// Updates shape on `Collider` and rebuilds rapier&#39;s collider on rigidbody.
+    /// Updates shape on `Collider` and rebuilds rapier's collider on rigidbody.
     ///
     /// Accepts a [`rapier::ColliderBuilder`] (can get one with [`build_actor_rapier_collider`]) so
     /// other settings may be configured on new collider.
@@ -1882,9 +1883,9 @@
         shape: ColliderShape,
     ) {
         <span class="kw">if </span>!<span class="self">self</span>.actors.contains(entity) {
-            <span class="comment">// This doesn&#39;t technically need be restricted, however we use default settings of collider for Actor,
+            <span class="comment">// This doesn't technically need be restricted, however we use default settings of collider for Actor,
             // and function would need to be updated to do this correctly for Solids, Tiles, or other classes of body.
-            </span><span class="macro">warn!</span>(<span class="string">&quot;CollisionWorld::set_actor_shape called on entity that is not an Actor.&quot;</span>);
+            </span><span class="macro">warn!</span>(<span class="string">"CollisionWorld::set_actor_shape called on entity that is not an Actor."</span>);
             <span class="kw">return</span>;
         }
 
@@ -1909,7 +1910,7 @@
                     <span class="comment">// Update new collider with any settings that need to be synchronized
                     </span>collider_builder = collider_builder.sensor(current_rapier_collider.is_sensor());
 
-                    <span class="comment">// Remove body&#39;s current collider
+                    <span class="comment">// Remove body's current collider
                     </span><span class="kw">let </span>wake_up = <span class="bool-val">true</span>;
                     collider_set.remove(collider_handle, islands, rigid_body_set, wake_up);
 
@@ -1920,7 +1921,7 @@
                     </span>collision_cache.collider_removed(entity, collider_handle);
                 }
 
-                <span class="comment">// Insert body&#39;s new collider
+                <span class="comment">// Insert body's new collider
                 </span>collider_set.insert_with_parent(collider_builder, handle, rigid_body_set);
             } <span class="kw">else </span>{
                 <span class="comment">// We have an existing Collider but no rapier body yet, shape was updated on Collider
@@ -1957,17 +1958,17 @@
                     <span class="prelude-val">Ok</span>(())
                 } <span class="kw">else </span>{
                     <span class="prelude-val">Err</span>(PhysicsError::BodyNotInitialized(
-                        <span class="string">&quot;Rigidbody handle found but not in rigid body set.&quot;</span>.to_string(),
+                        <span class="string">"Rigidbody handle found but not in rigid body set."</span>.to_string(),
                     ))
                 }
             } <span class="kw">else </span>{
                 <span class="prelude-val">Err</span>(PhysicsError::BodyNotInitialized(
-                    <span class="string">&quot;Entity has collider that is missing rapier handle.&quot;</span>.to_string(),
+                    <span class="string">"Entity has collider that is missing rapier handle."</span>.to_string(),
                 ))
             }
         } <span class="kw">else </span>{
             <span class="prelude-val">Err</span>(PhysicsError::BodyNotInitialized(
-                <span class="string">&quot;Entity does not have a Collider component.&quot;</span>.to_string(),
+                <span class="string">"Entity does not have a Collider component."</span>.to_string(),
             ))
         }
     }
@@ -2119,8 +2120,8 @@
     </span><span class="kw">pub </span>terminal_velocity: <span class="prelude-ty">Option</span>&lt;f32&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; CollisionWorld&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="doccomment">/// Updates the collision world with the entity&#39;s actual transforms.
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; CollisionWorld&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="doccomment">/// Updates the collision world with the entity's actual transforms.
     /// Advance physics, synchronize position of dynamic bodies.
     ///
     /// If the transform of an entity is changed without calling `update()`, then collision queries
@@ -2157,7 +2158,7 @@
             ..
         } = <span class="kw-2">&amp;mut *</span><span class="self">self</span>.ctx;
 
-        <span class="comment">// Delete any bodies that don&#39;t have alive entities
+        <span class="comment">// Delete any bodies that don't have alive entities
         </span><span class="kw">let </span><span class="kw-2">mut </span>to_delete = Vec::new();
         <span class="kw">for </span>(handle, body) <span class="kw">in </span>rigid_body_set.iter() {
             <span class="kw">let </span>entity = RapierUserData::entity(body.user_data);
@@ -2247,10 +2248,10 @@
                     // next frame.
                     </span>dynamic_body.update_last_rapier_synced_transform(translation, rotation)
                 } <span class="kw">else </span>{
-                    <span class="macro">warn!</span>(<span class="string">&quot;Active dynamic bodies contained DynamicBody that is not simulating&quot;</span>);
+                    <span class="macro">warn!</span>(<span class="string">"Active dynamic bodies contained DynamicBody that is not simulating"</span>);
                 }
             } <span class="kw">else </span>{
-                <span class="macro">warn!</span>(<span class="string">&quot;Active dynamic bodies contained entity that does not have a DynamicBody.&quot;</span>);
+                <span class="macro">warn!</span>(<span class="string">"Active dynamic bodies contained entity that does not have a DynamicBody."</span>);
             }
         }
 
@@ -2262,10 +2263,10 @@
     /// Creates rapier bodies for any object with collision.
     ///
     /// Handle [`DynamicBody`] toggling between simulation and kinematic mode.
-    </span><span class="kw">pub fn </span>sync_bodies&lt;<span class="lifetime">&#39;b</span>, Tq&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, transforms: Tq, dynamic_bodies: <span class="kw-2">&amp;mut </span>CompMut&lt;DynamicBody&gt;)
+    </span><span class="kw">pub fn </span>sync_bodies&lt;<span class="lifetime">'b</span>, Tq&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, transforms: Tq, dynamic_bodies: <span class="kw-2">&amp;mut </span>CompMut&lt;DynamicBody&gt;)
     <span class="kw">where
         </span>Tq: QueryItem,
-        Tq::Iter: Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span>Transform&gt;,
+        Tq::Iter: Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">'b </span>Transform&gt;,
     {
         <span class="macro">puffin::profile_function!</span>();
 
@@ -2291,7 +2292,7 @@
                 <span class="prelude-val">None </span>=&gt; <span class="bool-val">false</span>,
             };
 
-            <span class="comment">// Get the handle to the rapier collider, creating it if it doesn&#39;t exist.
+            <span class="comment">// Get the handle to the rapier collider, creating it if it doesn't exist.
             </span><span class="kw">let </span>rapier_handle = collider.rapier_handle.get_or_insert_with(|| {
                 <span class="comment">// Initialize body
                 </span><span class="kw">let </span>body_handle = rigid_body_set.insert(<span class="kw">if </span>is_dynamic {
@@ -2326,7 +2327,7 @@
                     </span>rapier_body.set_linvel(Vector::zeros(), <span class="bool-val">true</span>);
                     rapier_body.set_angvel(<span class="number">0.0</span>, <span class="bool-val">true</span>);
 
-                    <span class="comment">// TODO: We may want to synchronize kinematic body&#39;s gravity, mass, and other properties.
+                    <span class="comment">// TODO: We may want to synchronize kinematic body's gravity, mass, and other properties.
 
                     </span>rapier_collider.set_sensor(<span class="bool-val">false</span>);
 
@@ -2354,7 +2355,7 @@
                 //
                 // TODO: we may want to use rapier::RigidBody::set_next_kinematic_position
                 // so rapier computes velocity of kinematics for better interaction with dynamics,
-                // however we don&#39;t currently have any kinematic &lt;-&gt; dynamic interaction.
+                // however we don't currently have any kinematic &lt;-&gt; dynamic interaction.
                 </span>rapier_body.set_position(
                     rapier::Isometry::new(
                         transform.translation.truncate().to_array().into(),
@@ -2417,10 +2418,10 @@
     ///
     /// This should be called after bodies are initialized, [`DynamicBody`] must have
     /// a [`Collider`] with valid `rapier::RigidBodyHandle` otherwise will panic.
-    </span><span class="kw">fn </span>apply_simulation_commands&lt;<span class="lifetime">&#39;b</span>, Dq&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, dynamic_bodies: Dq)
+    </span><span class="kw">fn </span>apply_simulation_commands&lt;<span class="lifetime">'b</span>, Dq&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, dynamic_bodies: Dq)
     <span class="kw">where
         </span>Dq: QueryItem,
-        Dq::Iter: Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span><span class="kw-2">mut </span>DynamicBody&gt;,
+        Dq::Iter: Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">'b </span><span class="kw-2">mut </span>DynamicBody&gt;,
     {
         <span class="kw">for </span>(ent, dynamic_body) <span class="kw">in </span><span class="self">self</span>.entities.iter_with(dynamic_bodies) {
             <span class="comment">// This will consume commands even if body is_dynamic is false.
@@ -2508,7 +2509,7 @@
                             <span class="kw">let </span>simulation_filter = SolverGroup::ALL;
 
                             <span class="comment">// Sim group for default tile collider. This is not used for collision
-                            // (only used for events) if an additional &quot;dynamic&quot; collider is present
+                            // (only used for events) if an additional "dynamic" collider is present
                             // to be used for collision response.
                             </span><span class="kw">let </span><span class="kw-2">mut </span>default_collider_sim_membership = simulation_membership;
                             <span class="kw">if </span>dynamic_collider.is_some() {
@@ -2535,7 +2536,7 @@
                                     collider_shape_cache.shared_shape(dynamic_collider.shape);
                                 collider_set.insert_with_parent(
                                     rapier::ColliderBuilder::new(shared_shape.clone())
-                                        <span class="comment">// Don&#39;t generate events for this collider
+                                        <span class="comment">// Don't generate events for this collider
                                         </span>.active_events(rapier::ActiveEvents::empty())
                                         <span class="comment">// Only needs to collide with dynamics
                                         </span>.active_collision_types(
@@ -2565,7 +2566,7 @@
     }
 
     <span class="doccomment">/// When spawning or teleporting an entity, this should be called to make sure the entity
-    /// doesn&#39;t get stuck in semi-solid platforms, and properly falls out of them if it happens to
+    /// doesn't get stuck in semi-solid platforms, and properly falls out of them if it happens to
     /// be colliding with one when spawned.
     </span><span class="comment">//
     // TODO: I believe we can make this method unnecessary by correctly detecting when a body is
@@ -2624,7 +2625,7 @@
             .collect()
     }
 
-    <span class="doccomment">/// Put the entity&#39;s collider into descent mode so that it will fall through jump-through
+    <span class="doccomment">/// Put the entity's collider into descent mode so that it will fall through jump-through
     /// platforms.
     </span><span class="kw">pub fn </span>descent(<span class="kw-2">&amp;mut </span><span class="self">self</span>, entity: Entity) {
         <span class="kw">if </span><span class="self">self</span>.actors.contains(entity) {
@@ -2721,7 +2722,7 @@
                     collider.descent = <span class="bool-val">true</span>;
                 }
 
-                <span class="comment">// If we hit a solid block, or a jumpthrough tile that we aren&#39;t falling through
+                <span class="comment">// If we hit a solid block, or a jumpthrough tile that we aren't falling through
                 </span><span class="kw">if </span>!(tile_kind == TileCollisionKind::JumpThrough
                     &amp;&amp; (collider.descent || dy &gt; <span class="number">0.0 </span>|| collider.seen_wood))
                 {
@@ -2732,7 +2733,7 @@
             <span class="comment">// If there is no collision
             </span>} <span class="kw">else </span>{
                 movement += dy;
-                <span class="comment">// Indicate we didn&#39;t run into anything and stop processing
+                <span class="comment">// Indicate we didn't run into anything and stop processing
                 </span><span class="kw">break </span><span class="bool-val">false</span>;
             }
         };
@@ -2743,7 +2744,7 @@
 
         <span class="comment">// Final check, if we are out of woods after the move - reset wood flags
         </span>{
-            <span class="macro">puffin::profile_scope!</span>(<span class="string">&quot;out of woods check&quot;</span>);
+            <span class="macro">puffin::profile_scope!</span>(<span class="string">"out of woods check"</span>);
             <span class="kw">let </span>is_in_jump_through = query_pipeline
                 .intersection_with_shape(
                     rigid_body_set,
@@ -2803,11 +2804,11 @@
         <span class="kw">let </span>shape = collider_shape_cache.shared_shape(collider.shape);
 
         <span class="kw">let </span><span class="kw-2">mut </span>movement = <span class="number">0.0</span>;
-        <span class="kw">let </span>collided = <span class="lifetime">&#39;collision</span>: <span class="kw">loop </span>{
+        <span class="kw">let </span>collided = <span class="lifetime">'collision</span>: <span class="kw">loop </span>{
             <span class="comment">// Do a shape cast in the direction of movement
             </span><span class="kw">let </span>velocity = rapier::Vector::new(dx, <span class="number">0.0</span>);
             <span class="kw">let </span>collision = {
-                <span class="macro">puffin::profile_scope!</span>(<span class="string">&quot;cast shape&quot;</span>);
+                <span class="macro">puffin::profile_scope!</span>(<span class="string">"cast shape"</span>);
                 query_pipeline.cast_shape(
                     rigid_body_set,
                     collider_set,
@@ -2860,14 +2861,14 @@
                 <span class="comment">// If we ran into any other kind of tile
                 </span>} <span class="kw">else </span>{
                     <span class="comment">// Indicate we ran into something and stop processing
-                    </span><span class="kw">break </span><span class="lifetime">&#39;collision </span><span class="bool-val">true</span>;
+                    </span><span class="kw">break </span><span class="lifetime">'collision </span><span class="bool-val">true</span>;
                 }
 
             <span class="comment">// If there is no collision
             </span>} <span class="kw">else </span>{
                 movement += dx;
-                <span class="comment">// Indicate we didn&#39;t run into anything and stop processing
-                </span><span class="kw">break </span><span class="lifetime">&#39;collision </span><span class="bool-val">false</span>;
+                <span class="comment">// Indicate we didn't run into anything and stop processing
+                </span><span class="kw">break </span><span class="lifetime">'collision </span><span class="bool-val">false</span>;
             }
         };
 
@@ -2877,7 +2878,7 @@
 
         <span class="comment">// Final check, if we are out of woods after the move - reset wood flags
         </span>{
-            <span class="macro">puffin::profile_scope!</span>(<span class="string">&quot;out of woods check&quot;</span>);
+            <span class="macro">puffin::profile_scope!</span>(<span class="string">"out of woods check"</span>);
             <span class="kw">let </span>is_in_jump_through = query_pipeline
                 .intersection_with_shape(
                     rigid_body_set,
@@ -2910,7 +2911,7 @@
     /// &gt; [`tile_collision`][Self::tile_collision] reports collisions.
     /// &gt;
     /// &gt; [`tile_collision`][Self::tile_collision] will report a collision if the collider shape is
-    /// &gt; perfectly lined up along the edge of a tile, but `tile_collision_point` won&#39;t.
+    /// &gt; perfectly lined up along the edge of a tile, but `tile_collision_point` won't.
     </span><span class="attr">#[allow(unused)]
     </span><span class="kw">pub fn </span>solid_at(<span class="kw-2">&amp;</span><span class="self">self</span>, pos: Vec2) -&gt; bool {
         <span class="self">self</span>.solid_collision_point(pos)
@@ -2936,7 +2937,7 @@
     /// &gt; [`tile_collision`][Self::tile_collision] reports collisions.
     /// &gt;
     /// &gt; [`tile_collision`][Self::tile_collision] will report a collision if the collider shape is
-    /// &gt; perfectly lined up along the edge of a tile, but `tile_collision_point` won&#39;t.
+    /// &gt; perfectly lined up along the edge of a tile, but `tile_collision_point` won't.
     </span><span class="attr">#[allow(unused)]
     </span><span class="kw">pub fn </span>tile_collision_point(<span class="kw-2">&amp;</span><span class="self">self</span>, pos: Vec2) -&gt; TileCollisionKind {
         <span class="kw">for </span>(entity, tile_layer) <span class="kw">in </span><span class="self">self</span>.entities.iter_with(<span class="kw-2">&amp;</span><span class="self">self</span>.tile_layers) {

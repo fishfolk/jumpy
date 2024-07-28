@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/main_menu.rs`."><title>main_menu.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/main_menu.rs`."><title>main_menu.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -93,7 +93,8 @@
     }
 </style>
 
-</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><a class="sub-logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -333,7 +334,7 @@
 <span class="comment">// Generate build info.
 </span><span class="macro">shadow!</span>(build_info);
 
-<span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+<span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
 </span><span class="kw">mod </span>network_game;
 
 <span class="attr">#[derive(HasSchema, Debug, Default, Clone)]
@@ -406,16 +407,16 @@
 
 <span class="kw">static </span>VERSION_STRING: Lazy&lt;String&gt; = Lazy::new(|| {
     <span class="macro">format!</span>(
-        <span class="string">&quot;{}{}&quot;</span>,
+        <span class="string">"{}{}"</span>,
         build_info::PKG_VERSION,
         <span class="kw">if </span>!build_info::SHORT_COMMIT.is_empty() {
             <span class="macro">format!</span>(
-                <span class="string">&quot;-{}{}&quot;</span>,
+                <span class="string">"-{}{}"</span>,
                 build_info::SHORT_COMMIT,
                 <span class="kw">if </span>build_info::GIT_CLEAN {
-                    <span class="string">&quot;&quot;
+                    <span class="string">""
                 </span>} <span class="kw">else </span>{
-                    <span class="string">&quot; (dirty)&quot;
+                    <span class="string">" (dirty)"
                 </span>}
             )
         } <span class="kw">else </span>{
@@ -440,7 +441,7 @@
             MenuPage::Credits =&gt; world.run_system(credits::widget, ui),
             MenuPage::NetworkGame =&gt;
             {
-                <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
                 </span>world.run_system(network_game::widget, ui)
             }
         });
@@ -474,11 +475,11 @@
     <span class="kw">let </span>ui = <span class="kw-2">&amp;mut *</span>ui;
     ui.vertical_centered(|ui| {
         ui.add_space(meta.main_menu.title_font.size / <span class="number">2.0</span>);
-        ui.label(meta.main_menu.title_font.rich(localization.get(<span class="string">&quot;title&quot;</span>)));
+        ui.label(meta.main_menu.title_font.rich(localization.get(<span class="string">"title"</span>)));
         ui.label(
             meta.main_menu
                 .subtitle_font
-                .rich(localization.get(<span class="string">&quot;subtitle&quot;</span>)),
+                .rich(localization.get(<span class="string">"subtitle"</span>)),
         );
 
         ui.add_space(meta.main_menu.subtitle_font.size / <span class="number">2.0</span>);
@@ -491,7 +492,7 @@
                 <span class="comment">// Local game
                 </span><span class="kw">if </span>BorderedButton::themed(
                     <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
-                    localization.get(<span class="string">&quot;local-game&quot;</span>),
+                    localization.get(<span class="string">"local-game"</span>),
                 )
                 .min_size(vec2(ui.available_width(), <span class="number">0.0</span>))
                 .show(ui)
@@ -502,10 +503,10 @@
                 }
 
                 <span class="comment">// Online game
-                </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                </span><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
                 </span><span class="kw">if </span>BorderedButton::themed(
                     <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
-                    localization.get(<span class="string">&quot;online-game&quot;</span>),
+                    localization.get(<span class="string">"online-game"</span>),
                 )
                 .min_size(vec2(ui.available_width(), <span class="number">0.0</span>))
                 .show(ui)
@@ -515,7 +516,7 @@
                 }
 
                 <span class="comment">// Settings
-                </span><span class="kw">if </span>BorderedButton::themed(<span class="kw-2">&amp;</span>meta.theme.buttons.normal, localization.get(<span class="string">&quot;settings&quot;</span>))
+                </span><span class="kw">if </span>BorderedButton::themed(<span class="kw-2">&amp;</span>meta.theme.buttons.normal, localization.get(<span class="string">"settings"</span>))
                     .min_size(vec2(ui.available_width(), <span class="number">0.0</span>))
                     .show(ui)
                     .clicked()
@@ -524,7 +525,7 @@
                 }
 
                 <span class="comment">// Credits
-                </span><span class="kw">if </span>BorderedButton::themed(<span class="kw-2">&amp;</span>meta.theme.buttons.normal, localization.get(<span class="string">&quot;credits&quot;</span>))
+                </span><span class="kw">if </span>BorderedButton::themed(<span class="kw-2">&amp;</span>meta.theme.buttons.normal, localization.get(<span class="string">"credits"</span>))
                     .min_size(vec2(ui.available_width(), <span class="number">0.0</span>))
                     .show(ui)
                     .clicked()
@@ -532,14 +533,14 @@
                     ui.ctx().set_state(MenuPage::Credits);
                 }
 
-                <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
-                </span><span class="kw">if </span>BorderedButton::themed(<span class="kw-2">&amp;</span>meta.theme.buttons.normal, localization.get(<span class="string">&quot;quit&quot;</span>))
+                <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
+                </span><span class="kw">if </span>BorderedButton::themed(<span class="kw-2">&amp;</span>meta.theme.buttons.normal, localization.get(<span class="string">"quit"</span>))
                     .min_size(vec2(ui.available_width(), <span class="number">0.0</span>))
                     .show(ui)
                     .clicked()
                 {
                     <span class="comment">// TODO: Gracefully exit game on quit.
-                    // Right now we don&#39;t have a way for bones to trigger a Bevy graceful shutdown.
+                    // Right now we don't have a way for bones to trigger a Bevy graceful shutdown.
                     // We need to have a way for bones games to communicate that they want to exit,
                     // and then the Bones Bevy Renderer can gracefully shutdown.
                     </span>std::process::exit(<span class="number">0</span>);

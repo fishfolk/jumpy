@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/network_game.rs`."><title>network_game.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/network_game.rs`."><title>network_game.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -93,7 +93,8 @@
     }
 </style>
 
-</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><a class="sub-logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -755,8 +756,8 @@
         .show(<span class="kw-2">&amp;</span>ctx, |ui| {
             ui.vertical_centered(|ui| {
                 ui.add_space(heading_text_style.size / <span class="number">4.0</span>);
-                ui.label(heading_text_style.rich(localization.get(<span class="string">&quot;network-game&quot;</span>)));
-                ui.label(bigger_text_style.rich(localization.get(<span class="string">&quot;configure-match&quot;</span>)));
+                ui.label(heading_text_style.rich(localization.get(<span class="string">"network-game"</span>)));
+                ui.label(bigger_text_style.rich(localization.get(<span class="string">"configure-match"</span>)));
                 ui.add_space(heading_text_style.size * <span class="number">4.0</span>);
             });
 
@@ -776,7 +777,7 @@
 
                     ui.horizontal(|ui| {
                         <span class="comment">// Lan tab
-                        </span><span class="kw">let </span><span class="kw-2">mut </span>lan = egui::RichText::new(localization.get(<span class="string">&quot;lan&quot;</span>));
+                        </span><span class="kw">let </span><span class="kw-2">mut </span>lan = egui::RichText::new(localization.get(<span class="string">"lan"</span>));
                         <span class="kw">if </span><span class="macro">matches!</span>(state.match_kind, MatchKind::Lan(..)) {
                             lan = lan.underline();
                         }
@@ -789,7 +790,7 @@
                         }
 
                         <span class="comment">// Online tab
-                        </span><span class="kw">let </span><span class="kw-2">mut </span>online = egui::RichText::new(localization.get(<span class="string">&quot;online&quot;</span>));
+                        </span><span class="kw">let </span><span class="kw-2">mut </span>online = egui::RichText::new(localization.get(<span class="string">"online"</span>));
                         <span class="kw">if </span><span class="macro">matches!</span>(state.match_kind, MatchKind::Online(..)) {
                             online = online.underline();
                         }
@@ -807,7 +808,7 @@
                                         ui.horizontal(|ui| {
                                             <span class="comment">// Host tab
                                             </span><span class="kw">let </span><span class="kw-2">mut </span>host =
-                                                egui::RichText::new(localization.get(<span class="string">&quot;host&quot;</span>));
+                                                egui::RichText::new(localization.get(<span class="string">"host"</span>));
                                             <span class="kw">if </span><span class="macro">matches!</span>(mode, LanMode::Host { .. }) {
                                                 host = host.underline();
                                             }
@@ -819,14 +820,14 @@
                                             .clicked()
                                             {
                                                 <span class="kw-2">*</span>mode = LanMode::Host {
-                                                    service_name: localization.get(<span class="string">&quot;fish-fight&quot;</span>).into_owned(),
+                                                    service_name: localization.get(<span class="string">"fish-fight"</span>).into_owned(),
                                                     player_count: <span class="number">2</span>,
                                                 };
                                             }
 
                                             <span class="comment">// Join tab
                                             </span><span class="kw">let </span><span class="kw-2">mut </span>join =
-                                                egui::RichText::new(localization.get(<span class="string">&quot;join&quot;</span>));
+                                                egui::RichText::new(localization.get(<span class="string">"join"</span>));
                                             <span class="kw">if </span><span class="macro">matches!</span>(mode, LanMode::Join) {
                                                 join = join.underline();
                                             }
@@ -848,7 +849,7 @@
                                     egui::Layout::right_to_left(egui::Align::Center),
                                     |ui| {
                                         ui.label(
-                                            normal_text_style.rich(localization.get(<span class="string">&quot;search-for-match&quot;</span>))
+                                            normal_text_style.rich(localization.get(<span class="string">"search-for-match"</span>))
                                         );
                                     },
                                 );
@@ -882,32 +883,32 @@
 
                                 <span class="kw">if </span><span class="kw-2">*</span>status != NetworkGameStatus::Joining {
                                     ui.label(
-                                        normal_text_style.rich(localization.get(<span class="string">&quot;servers&quot;</span>))
+                                        normal_text_style.rich(localization.get(<span class="string">"servers"</span>))
                                     );
                                     ui.add_space(normal_text_style.size / <span class="number">2.0</span>);
 
-                                    ui.indent(<span class="string">&quot;servers&quot;</span>, |ui| {
+                                    ui.indent(<span class="string">"servers"</span>, |ui| {
                                         <span class="kw">for </span>server <span class="kw">in </span>lan_servers.iter() {
                                             ui.horizontal(|ui| {
                                                 <span class="kw">if </span>BorderedButton::themed(
                                                     <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
-                                                    server.service.get_hostname().trim_end_matches(<span class="string">&#39;.&#39;</span>),
+                                                    server.service.get_hostname().trim_end_matches(<span class="string">'.'</span>),
                                                 )
                                                 .min_size(vec2(ui.available_width() * <span class="number">0.8</span>, <span class="number">0.0</span>))
                                                 .show(ui)
                                                 .clicked()
                                                 {
                                                     <span class="comment">// TODO: show error message
-                                                    </span>lan::join_server(server).expect(<span class="string">&quot;failed to join lan&quot;</span>);
+                                                    </span>lan::join_server(server).expect(<span class="string">"failed to join lan"</span>);
                                                     <span class="kw-2">*</span>status = NetworkGameStatus::Joining;
                                                 }
 
                                                 <span class="kw">let </span>label_text = egui::RichText::new(<span class="macro">format!</span>(
-                                                    <span class="string">&quot;🖧 {}ms&quot;</span>,
+                                                    <span class="string">"🖧 {}ms"</span>,
                                                     server
                                                         .ping
                                                         .map(|x| x.to_string())
-                                                        .unwrap_or(<span class="string">&quot;?&quot;</span>.into())
+                                                        .unwrap_or(<span class="string">"?"</span>.into())
                                                 ))
                                                 .size(normal_text_style.size);
                                                 ui.label(label_text)
@@ -917,7 +918,7 @@
                                         <span class="kw">if </span>lan_servers.is_empty() {
                                             ui.label(
                                                 normal_text_style.rich(
-                                                localization.get(<span class="string">&quot;no-servers&quot;</span>)),
+                                                localization.get(<span class="string">"no-servers"</span>)),
                                             );
                                         }
                                     });
@@ -926,7 +927,7 @@
                                 </span>} <span class="kw">else </span>{
                                     ui.label(
                                         normal_text_style.rich(
-                                        localization.get(<span class="string">&quot;joining&quot;</span>))
+                                        localization.get(<span class="string">"joining"</span>))
                                     );
 
                                     <span class="kw">if let </span><span class="prelude-val">Some</span>(lan_socket) = lan::wait_game_start() {
@@ -947,23 +948,23 @@
                                     ui.horizontal(|ui| {
                                         ui.label(
                                             normal_text_style.rich(
-                                            localization.get(<span class="string">&quot;server-name&quot;</span>))
+                                            localization.get(<span class="string">"server-name"</span>))
                                         );
                                         ui.add(
                                             egui::TextEdit::singleline(service_name)
                                                 .font(normal_text_style.id()),
                                         );
-                                        <span class="kw-2">*</span>service_name = service_name.replace(<span class="string">&#39; &#39;</span>, <span class="string">&quot;-&quot;</span>);
+                                        <span class="kw-2">*</span>service_name = service_name.replace(<span class="string">' '</span>, <span class="string">"-"</span>);
                                     });
                                     ui.add_space(normal_text_style.size / <span class="number">2.0</span>);
                                     ui.horizontal(|ui| {
                                         ui.label(
-                                            normal_text_style.rich(localization.get(<span class="string">&quot;player-count&quot;</span>))
+                                            normal_text_style.rich(localization.get(<span class="string">"player-count"</span>))
                                         );
                                         ui.add_space(normal_text_style.size);
                                         ui.scope(|ui| {
                                             ui.set_enabled(<span class="kw-2">*</span>player_count &gt; <span class="number">2</span>);
-                                            <span class="kw">if </span>BorderedButton::themed(small_button_style, <span class="string">&quot;-&quot;</span>)
+                                            <span class="kw">if </span>BorderedButton::themed(small_button_style, <span class="string">"-"</span>)
                                                 .min_size(vec2(normal_text_style.size * <span class="number">2.0</span>, <span class="number">0.0</span>))
                                                 .show(ui)
                                                 .clicked()
@@ -976,7 +977,7 @@
                                         ui.label(normal_text_style.rich(player_count.to_string()));
                                         ui.scope(|ui| {
                                             ui.set_enabled(<span class="kw-2">*</span>player_count &lt; MAX_PLAYERS);
-                                            <span class="kw">if </span>BorderedButton::themed(small_button_style, <span class="string">&quot;+&quot;</span>)
+                                            <span class="kw">if </span>BorderedButton::themed(small_button_style, <span class="string">"+"</span>)
                                           .min_size(vec2(normal_text_style.size * <span class="number">2.0</span>, <span class="number">0.0</span>))
                                                 .show(ui)
                                                 .clicked()
@@ -987,7 +988,7 @@
                                             }
                                         });
 
-                                        <span class="kw-2">*</span>service_name = service_name.replace(<span class="string">&#39; &#39;</span>, <span class="string">&quot;-&quot;</span>);
+                                        <span class="kw-2">*</span>service_name = service_name.replace(<span class="string">' '</span>, <span class="string">"-"</span>);
                                     });
                                 });
 
@@ -1003,7 +1004,7 @@
                                 <span class="kw">if </span><span class="kw-2">*</span>status == NetworkGameStatus::Idle {
                                     <span class="kw">if </span>BorderedButton::themed(
                                         small_button_style,
-                                        localization.get(<span class="string">&quot;start-server&quot;</span>),
+                                        localization.get(<span class="string">"start-server"</span>),
                                     )
                                     .show(ui)
                                     .clicked()
@@ -1023,7 +1024,7 @@
                                     ui.horizontal(|ui| {
                                         <span class="kw">if </span>BorderedButton::themed(
                                             small_button_style,
-                                            localization.get(<span class="string">&quot;stop-server&quot;</span>),
+                                            localization.get(<span class="string">"stop-server"</span>),
                                         )
                                         .show(ui)
                                         .clicked()
@@ -1035,8 +1036,8 @@
                                         ui.label(
                                             normal_text_style.rich(
                                             <span class="macro">format!</span>(
-                                                <span class="string">&quot;{} {} / {}&quot;</span>,
-                                                localization.get(<span class="string">&quot;players&quot;</span>),
+                                                <span class="string">"{} {} / {}"</span>,
+                                                localization.get(<span class="string">"players"</span>),
                                                 <span class="kw-2">*</span>joined_players + <span class="number">1</span>, <span class="comment">// Add one to count the host.
                                                 </span>player_count
                                             ))
@@ -1064,12 +1065,12 @@
                             ui.horizontal(|ui| {
                                 ui.set_enabled(<span class="kw-2">*</span>status == NetworkGameStatus::Idle);
                                 ui.label(
-                                    normal_text_style.rich(localization.get(<span class="string">&quot;player-count&quot;</span>))
+                                    normal_text_style.rich(localization.get(<span class="string">"player-count"</span>))
                                 );
 
                                 ui.scope(|ui| {
                                     ui.set_enabled(<span class="kw-2">*</span>player_count &gt; <span class="number">2</span>);
-                                    <span class="kw">if </span>BorderedButton::themed(small_button_style, <span class="string">&quot;-&quot;</span>)
+                                    <span class="kw">if </span>BorderedButton::themed(small_button_style, <span class="string">"-"</span>)
                                         .min_size(vec2(normal_text_style.size * <span class="number">2.0</span>, <span class="number">0.0</span>))
                                         .show(ui)
                                         .clicked()
@@ -1081,7 +1082,7 @@
                                 ui.label(normal_text_style.rich(player_count.to_string()));
                                 ui.scope(|ui| {
                                     ui.set_enabled(<span class="kw-2">*</span>player_count &lt; MAX_PLAYERS);
-                                    <span class="kw">if </span>BorderedButton::themed(small_button_style, <span class="string">&quot;+&quot;</span>)
+                                    <span class="kw">if </span>BorderedButton::themed(small_button_style, <span class="string">"+"</span>)
                                         .min_size(vec2(normal_text_style.size * <span class="number">2.0</span>, <span class="number">0.0</span>))
                                         .show(ui)
                                         .clicked()
@@ -1097,13 +1098,13 @@
                             <span class="kw">if </span><span class="kw-2">*</span>status == NetworkGameStatus::Idle {
                                 <span class="kw">if </span>BorderedButton::themed(
                                     small_button_style,
-                                    localization.get(<span class="string">&quot;search&quot;</span>),
+                                    localization.get(<span class="string">"search"</span>),
                                 )
                                 .show(ui)
                                 .clicked()
                                 {
                                     <span class="kw-2">*</span>status = NetworkGameStatus::Searching;
-                                    <span class="kw">let </span>server = matchmaking_server.parse().expect(<span class="string">&quot;invalid server id&quot;</span>);
+                                    <span class="kw">let </span>server = matchmaking_server.parse().expect(<span class="string">"invalid server id"</span>);
                                     online::start_search_for_game(server, <span class="kw-2">*</span>player_count);
                                 }
                             } <span class="kw">else if </span><span class="kw-2">*</span>status == NetworkGameStatus::Searching {
@@ -1119,13 +1120,13 @@
                                 ui.horizontal(|ui| {
                                     <span class="kw">if </span>BorderedButton::themed(
                                         small_button_style,
-                                        localization.get(<span class="string">&quot;cancel&quot;</span>),
+                                        localization.get(<span class="string">"cancel"</span>),
                                     )
                                     .show(ui)
                                     .clicked()
                                     {
                                         <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = online::stop_search_for_game() {
-                                            <span class="macro">error!</span>(<span class="string">&quot;Failed to stop searching for online game: {err}&quot;</span>);
+                                            <span class="macro">error!</span>(<span class="string">"Failed to stop searching for online game: {err}"</span>);
                                         }
                                         search_state = default();
                                         <span class="kw-2">*</span>status = NetworkGameStatus::Idle;
@@ -1135,14 +1136,14 @@
                                         smaller_text_style.rich(
                                         <span class="kw">match </span>search_state {
                                             SearchState::Connecting =&gt; {
-                                                localization.get(<span class="string">&quot;connecting&quot;</span>).to_string()
+                                                localization.get(<span class="string">"connecting"</span>).to_string()
                                             }
                                             SearchState::Searching =&gt; {
-                                                localization.get(<span class="string">&quot;searching&quot;</span>).to_string()
+                                                localization.get(<span class="string">"searching"</span>).to_string()
                                             }
                                             SearchState::WaitingForPlayers(current) =&gt; {
                                                 localization.get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                                                    <span class="string">&quot;waiting-for-players?current={current}&amp;total={player_count}&quot;</span>,
+                                                    <span class="string">"waiting-for-players?current={current}&amp;total={player_count}"</span>,
                                                 )).to_string()
                                             }
                                         }),
@@ -1153,7 +1154,7 @@
                     }
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
-                    <span class="kw">if </span>BorderedButton::themed(normal_button_style, localization.get(<span class="string">&quot;back&quot;</span>))
+                    <span class="kw">if </span>BorderedButton::themed(normal_button_style, localization.get(<span class="string">"back"</span>))
                         .show(ui)
                         .clicked()
                         || player_controls.values().any(|x| x.menu_back_just_pressed)
@@ -1162,7 +1163,7 @@
                             NetworkGameStatus::Idle =&gt; (),
                             NetworkGameStatus::Searching =&gt; {
                                 <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = online::stop_search_for_game() {
-                                    <span class="macro">error!</span>(<span class="string">&quot;Error stopping search: {:?}&quot;</span>, err);
+                                    <span class="macro">error!</span>(<span class="string">"Error stopping search: {:?}"</span>, err);
                                 }
 
                                 <span class="kw-2">*</span>status = NetworkGameStatus::Idle;

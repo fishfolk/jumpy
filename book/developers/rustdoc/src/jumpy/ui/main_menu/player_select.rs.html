@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/main_menu/player_select.rs`."><title>player_select.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/main_menu/player_select.rs`."><title>player_select.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -93,7 +93,8 @@
     }
 </style>
 
-</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><a class="sub-logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -731,7 +732,7 @@
 <a href="#636" id="636">636</a>
 <a href="#637" id="637">637</a>
 <a href="#638" id="638">638</a>
-</pre></div><pre class="rust"><code><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</pre></div><pre class="rust"><code><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
 </span><span class="kw">use </span>bones_framework::networking::{NetworkMatchSocket, SocketTarget};
 
 <span class="kw">use crate</span>::{ui::player_image::player_image, PackMeta};
@@ -781,8 +782,8 @@
     controls: Res&lt;GlobalPlayerControls&gt;,
     world: <span class="kw-2">&amp;</span>World,
 
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>asset_server: Res&lt;AssetServer&gt;,
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>network_socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
+    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))] </span>asset_server: Res&lt;AssetServer&gt;,
+    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))] </span>network_socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>state = ui.ctx().get_state::&lt;PlayerSelectState&gt;();
     ui.ctx().set_state(EguiInputSettings {
@@ -790,7 +791,7 @@
         disable_gamepad_input: <span class="bool-val">true</span>,
     });
 
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
         handle_match_setup_messages(socket, <span class="kw-2">&amp;mut </span>state, <span class="kw-2">&amp;</span>asset_server);
     }
@@ -812,7 +813,7 @@
     }
     <span class="kw">let </span>may_continue = ready_players &gt;= <span class="number">1 </span>&amp;&amp; unconfirmed_players == <span class="number">0 </span>&amp;&amp; at_least_one_non_ai_ready;
 
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
         <span class="kw">if </span>may_continue {
             <span class="comment">// The first player picks the map
@@ -837,19 +838,19 @@
     ui.vertical_centered(|ui| {
         ui.add_space(heading_text_style.size / <span class="number">4.0</span>);
 
-        <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+        <span class="attr">#[cfg(target_arch = <span class="string">"wasm32"</span>)]
         </span><span class="kw">let </span>is_network = <span class="bool-val">false</span>;
-        <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+        <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
         </span><span class="kw">let </span>is_network = network_socket.is_some();
 
         <span class="comment">// Title
         </span><span class="kw">if </span>is_network {
-            ui.label(heading_text_style.rich(localization.get(<span class="string">&quot;online-game&quot;</span>)));
+            ui.label(heading_text_style.rich(localization.get(<span class="string">"online-game"</span>)));
         } <span class="kw">else </span>{
-            ui.label(heading_text_style.rich(localization.get(<span class="string">&quot;local-game&quot;</span>)));
+            ui.label(heading_text_style.rich(localization.get(<span class="string">"local-game"</span>)));
         }
 
-        ui.label(bigger_text_style.rich(localization.get(<span class="string">&quot;player-select-title&quot;</span>)));
+        ui.label(bigger_text_style.rich(localization.get(<span class="string">"player-select-title"</span>)));
         ui.add_space(normal_button_style.font.size);
 
         ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
@@ -865,7 +866,7 @@
 
                 <span class="comment">// Back button
                 </span><span class="kw">let </span>back_button =
-                    BorderedButton::themed(normal_button_style, localization.get(<span class="string">&quot;back&quot;</span>))
+                    BorderedButton::themed(normal_button_style, localization.get(<span class="string">"back"</span>))
                         .min_size(button_min_size)
                         .show(ui)
                         .focus_by_default(ui);
@@ -879,7 +880,7 @@
                     ui.ctx().set_state(EguiInputSettings::default());
                     ui.ctx().set_state(PlayerSelectState::default());
 
-                    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
                     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket {
                         socket.close();
                     }
@@ -892,7 +893,7 @@
                     .scope(|ui| {
                         ui.set_enabled(may_continue);
 
-                        BorderedButton::themed(normal_button_style, localization.get(<span class="string">&quot;continue&quot;</span>))
+                        BorderedButton::themed(normal_button_style, localization.get(<span class="string">"continue"</span>))
                             .min_size(button_min_size)
                             .show(ui)
                     })
@@ -931,7 +932,7 @@
 
 <span class="comment">// }
 
-</span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+</span><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
 </span><span class="kw">fn </span>handle_match_setup_messages(
     network_socket: <span class="kw-2">&amp;</span>NetworkMatchSocket,
     player_select_state: <span class="kw-2">&amp;mut </span>PlayerSelectState,
@@ -954,7 +955,7 @@
                     player_select_state.slots[player <span class="kw">as </span>usize].selected_hat = hat;
                 }
             },
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(<span class="string">&quot;Ignoring network message that was not understood: {e}&quot;</span>),
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(<span class="string">"Ignoring network message that was not understood: {e}"</span>),
         }
     }
 }
@@ -967,7 +968,7 @@
     localization: Localization&lt;GameMeta&gt;,
     mapping: Res&lt;PlayerControlMapping&gt;,
     world: <span class="kw-2">&amp;</span>World,
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>network_socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
+    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))] </span>network_socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
 ) {
     <span class="kw">let </span>(ui, slot_id, state) = <span class="kw-2">&amp;mut *</span>params;
 
@@ -998,17 +999,17 @@
         }
     }
 
-    <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+    <span class="attr">#[cfg(target_arch = <span class="string">"wasm32"</span>)]
     </span><span class="kw">let </span>network_local_player_slot: <span class="prelude-ty">Option</span>&lt;u32&gt; = <span class="prelude-val">None</span>;
 
-    <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+    <span class="attr">#[cfg(target_arch = <span class="string">"wasm32"</span>)]
     </span><span class="kw">let </span>is_network = <span class="bool-val">false</span>;
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
     </span><span class="kw">let </span>is_network = network_socket.is_some();
 
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
-        <span class="comment">// Don&#39;t show panels for non-connected players.
+        <span class="comment">// Don't show panels for non-connected players.
         </span><span class="kw">if </span><span class="kw-2">*</span>slot_id + <span class="number">1 </span>&gt; socket.player_count() {
             <span class="kw">return</span>;
         } <span class="kw">else </span>{
@@ -1022,10 +1023,10 @@
         .enumerate()
         .any(|(i, slot)| (!slot.active &amp;&amp; u32::try_from(i).unwrap() == <span class="kw-2">*</span>slot_id));
 
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
     </span><span class="kw">let </span><span class="kw-2">mut </span>network_local_player_slot: <span class="prelude-ty">Option</span>&lt;u32&gt; = <span class="prelude-val">None</span>;
 
-    <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
     </span><span class="kw">let </span>slot_allows_new_player = <span class="kw">if </span>is_network {
         {
             network_local_player_slot = <span class="prelude-val">Some</span>(network_socket.as_ref().unwrap().player_idx());
@@ -1034,7 +1035,7 @@
     } <span class="kw">else </span>{
         is_next_open_slot
     };
-    <span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)]
+    <span class="attr">#[cfg(target_arch = <span class="string">"wasm32"</span>)]
     </span><span class="kw">let </span>slot_allows_new_player = is_next_open_slot;
 
     <span class="comment">// Check if a new player is trying to join
@@ -1098,7 +1099,7 @@
         <span class="kw">if </span>player_control.menu_confirm_just_pressed {
             slot.confirmed = <span class="bool-val">true</span>;
 
-            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
                 socket.send_reliable(
                     SocketTarget::All,
@@ -1118,7 +1119,7 @@
                 slot.confirmed = <span class="bool-val">false</span>;
             }
 
-            <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
                 socket.send_reliable(
                     SocketTarget::All,
@@ -1151,7 +1152,7 @@
                 };
                 slot.selected_hat = state.hats[next_idx];
 
-                <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
                 </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
                     socket.send_reliable(
                         SocketTarget::All,
@@ -1183,7 +1184,7 @@
                 };
                 <span class="kw-2">*</span>player_handle = state.players[next_idx];
 
-                <span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+                <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
                 </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
                     socket.send_reliable(
                         SocketTarget::All,
@@ -1209,11 +1210,11 @@
             <span class="kw">let </span>heading_font = <span class="kw-2">&amp;</span>meta.theme.font_styles.heading.with_color(panel.font_color);
 
             <span class="comment">// Marker for current player in online matches
-            </span><span class="attr">#[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+            </span><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket {
                 <span class="kw">if </span>socket.player_idx() == <span class="kw-2">*</span>slot_id {
                     ui.vertical_centered(|ui| {
-                        ui.label(normal_font.rich(localization.get(<span class="string">&quot;you-marker&quot;</span>)));
+                        ui.label(normal_font.rich(localization.get(<span class="string">"you-marker"</span>)));
                     });
                 } <span class="kw">else </span>{
                     ui.add_space(normal_font.size);
@@ -1231,7 +1232,7 @@
                         .iter()
                         .map(|s| mapping.map_control_source(<span class="kw-2">*</span>s).menu_confirm.to_string())
                         .collect::&lt;SmallVec&lt;[<span class="kw">_</span>; <span class="number">3</span>]&gt;&gt;()
-                        .join(<span class="string">&quot;/&quot;</span>),
+                        .join(<span class="string">"/"</span>),
                 };
 
                 <span class="kw">let </span>back_binding = <span class="kw">match </span>slot.control_source {
@@ -1240,7 +1241,7 @@
                         .iter()
                         .map(|s| mapping.map_control_source(<span class="kw-2">*</span>s).menu_back.to_string())
                         .collect::&lt;SmallVec&lt;[<span class="kw">_</span>; <span class="number">3</span>]&gt;&gt;()
-                        .join(<span class="string">&quot;/&quot;</span>),
+                        .join(<span class="string">"/"</span>),
                 };
                 ui.vertical_centered(|ui| {
                     <span class="kw">let </span>player_meta = asset_server.get(slot.selected_player);
@@ -1251,28 +1252,28 @@
 
                     <span class="kw">if </span>!slot.confirmed {
                         <span class="kw">if </span>slot.control_source.is_some() {
-                            ui.label(normal_font.rich(localization.get(<span class="string">&quot;pick-a-fish&quot;</span>)));
+                            ui.label(normal_font.rich(localization.get(<span class="string">"pick-a-fish"</span>)));
                         }
 
                         <span class="kw">if </span>network_local_player_slot.is_some_and(|s| s == <span class="kw-2">*</span>slot_id) || !is_network {
                             ui.label(normal_font.rich(localization.get_with(
-                                <span class="string">&quot;press-button-to-lock-in&quot;</span>,
+                                <span class="string">"press-button-to-lock-in"</span>,
                                 <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
-                                    <span class="string">&quot;button&quot; </span>=&gt; confirm_binding.as_str()
+                                    <span class="string">"button" </span>=&gt; confirm_binding.as_str()
                                 },
                             )));
                         }
 
                         <span class="kw">if </span>!is_network {
                             ui.label(normal_font.rich(localization.get_with(
-                                <span class="string">&quot;press-button-to-remove&quot;</span>,
+                                <span class="string">"press-button-to-remove"</span>,
                                 <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
-                                    <span class="string">&quot;button&quot; </span>=&gt; back_binding.as_str()
+                                    <span class="string">"button" </span>=&gt; back_binding.as_str()
                                 },
                             )));
                         }
                     } <span class="kw">else </span>{
-                        ui.label(normal_font.rich(localization.get(<span class="string">&quot;waiting&quot;</span>)));
+                        ui.label(normal_font.rich(localization.get(<span class="string">"waiting"</span>)));
                     }
 
                     ui.vertical_centered(|ui| {
@@ -1282,13 +1283,13 @@
                             ui.label(
                                 heading_font
                                     .with_color(meta.theme.colors.positive)
-                                    .rich(localization.get(<span class="string">&quot;player-select-ready&quot;</span>)),
+                                    .rich(localization.get(<span class="string">"player-select-ready"</span>)),
                             );
                             ui.add_space(normal_font.size / <span class="number">2.0</span>);
                             ui.label(normal_font.rich(localization.get_with(
-                                <span class="string">&quot;player-select-unready&quot;</span>,
+                                <span class="string">"player-select-unready"</span>,
                                 <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
-                                    <span class="string">&quot;button&quot; </span>=&gt; back_binding.as_str()
+                                    <span class="string">"button" </span>=&gt; back_binding.as_str()
                                 },
                             )));
                         }
@@ -1296,12 +1297,12 @@
                             ui.label(
                                 heading_font
                                     .with_color(meta.theme.colors.positive)
-                                    .rich(localization.get(<span class="string">&quot;ai-player&quot;</span>)),
+                                    .rich(localization.get(<span class="string">"ai-player"</span>)),
                             );
                             ui.add_space(normal_font.size / <span class="number">2.0</span>);
                             <span class="kw">if </span>BorderedButton::themed(
                                 <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
-                                localization.get(<span class="string">&quot;remove-ai-player&quot;</span>),
+                                localization.get(<span class="string">"remove-ai-player"</span>),
                             )
                             .show(ui)
                             .clicked()
@@ -1315,18 +1316,18 @@
                     });
 
                     ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                        <span class="kw">let </span>name_with_arrows = <span class="macro">format!</span>(<span class="string">&quot;&lt;  {}  &gt;&quot;</span>, player_meta.name);
+                        <span class="kw">let </span>name_with_arrows = <span class="macro">format!</span>(<span class="string">"&lt;  {}  &gt;"</span>, player_meta.name);
                         ui.label(normal_font.rich(<span class="kw">if </span>slot.confirmed {
                             player_meta.name.to_string()
                         } <span class="kw">else </span>{
                             name_with_arrows
                         }));
                         <span class="kw">let </span>hat_label = <span class="kw">if let </span><span class="prelude-val">Some</span>(hat_meta) = <span class="kw-2">&amp;</span>hat_meta {
-                            <span class="macro">format!</span>(<span class="string">&quot;&lt; {} &gt;&quot;</span>, hat_meta.name)
+                            <span class="macro">format!</span>(<span class="string">"&lt; {} &gt;"</span>, hat_meta.name)
                         } <span class="kw">else </span>{
-                            <span class="macro">format!</span>(<span class="string">&quot;&lt; {} &gt;&quot;</span>, localization.get(<span class="string">&quot;no-hat&quot;</span>))
+                            <span class="macro">format!</span>(<span class="string">"&lt; {} &gt;"</span>, localization.get(<span class="string">"no-hat"</span>))
                         };
-                        ui.label(smaller_font.rich(<span class="kw">if </span>slot.confirmed { <span class="kw-2">&amp;</span>hat_label } <span class="kw">else </span>{ <span class="string">&quot;&quot; </span>}));
+                        ui.label(smaller_font.rich(<span class="kw">if </span>slot.confirmed { <span class="kw-2">&amp;</span>hat_label } <span class="kw">else </span>{ <span class="string">"" </span>}));
 
                         world.run_system(player_image, (ui, <span class="kw-2">&amp;</span>player_meta, hat_meta.as_deref()));
                     });
@@ -1338,13 +1339,13 @@
                     .iter()
                     .map(|s| mapping.map_control_source(<span class="kw-2">*</span>s).menu_confirm.to_string())
                     .collect::&lt;SmallVec&lt;[<span class="kw">_</span>; <span class="number">3</span>]&gt;&gt;()
-                    .join(<span class="string">&quot;/&quot;</span>);
+                    .join(<span class="string">"/"</span>);
 
                 ui.vertical_centered(|ui| {
                     ui.label(normal_font.rich(localization.get_with(
-                        <span class="string">&quot;press-button-to-join&quot;</span>,
+                        <span class="string">"press-button-to-join"</span>,
                         <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
-                            <span class="string">&quot;button&quot; </span>=&gt; bindings
+                            <span class="string">"button" </span>=&gt; bindings
                         },
                     )));
 
@@ -1353,7 +1354,7 @@
                         <span class="kw">if </span><span class="kw-2">*</span>slot_id != <span class="number">0
                             </span>&amp;&amp; BorderedButton::themed(
                                 <span class="kw-2">&amp;</span>meta.theme.buttons.normal,
-                                localization.get(<span class="string">&quot;add-ai-player&quot;</span>),
+                                localization.get(<span class="string">"add-ai-player"</span>),
                             )
                             .show(ui)
                             .clicked()

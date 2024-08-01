@@ -384,6 +384,7 @@
 <a href="#288" id="288">288</a>
 <a href="#289" id="289">289</a>
 <a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
 
 <span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>};
@@ -530,6 +531,7 @@
             session_runner: Box::&lt;JumpyDefaultMatchRunner&gt;::default(),
             score: default(),
         });
+        pause_menu.menu_open = <span class="bool-val">false</span>;
     }
 
     <span class="kw">if </span>close_pause_menu {

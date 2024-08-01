@@ -144,6 +144,7 @@ fn pause_menu_system(
             session_runner: Box::<JumpyDefaultMatchRunner>::default(),
             score: default(),
         });
+        pause_menu.menu_open = false;
     }
 
     if close_pause_menu {

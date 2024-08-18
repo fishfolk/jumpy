@@ -15,7 +15,7 @@ default = []
 # profiling-full = ["bevy/trace", "dep:tracing-tracy"]
 
 [dependencies]
-bones_framework     = { git = "https://github.com/fishfolk/bones" }
+bones_framework     = { git = "https://github.com/fishfolk/bones", features = ["net-debug"] }
 bones_bevy_renderer = { git = "https://github.com/fishfolk/bones" }
 bevy_tasks          = "0.11"
 bitflags            = "2.4"

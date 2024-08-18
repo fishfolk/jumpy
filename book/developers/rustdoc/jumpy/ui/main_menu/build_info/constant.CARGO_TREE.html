@@ -94,7 +94,7 @@
 </style>
 
 </head><body class="rustdoc constant"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><h2><a href="../../../../jumpy/index.html">jumpy</a><span class="version">0.12.1</span></h2></div><div class="sidebar-elems"><h2><a href="index.html">In jumpy::ui::main_menu::build_info</a></h2></div></nav><div class="sidebar-resizer"></div>
-    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../jumpy/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Constant <a href="../../../index.html">jumpy</a>::<wbr><a href="../../index.html">ui</a>::<wbr><a href="../index.html">main_menu</a>::<wbr><a href="index.html">build_info</a>::<wbr><a class="constant" href="#">CARGO_TREE</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../../../src/jumpy/home/runner/work/jumpy/jumpy/target/debug/build/jumpy-bd28ad7482d00bb3/out/shadow.rs.html#74-2028">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub const CARGO_TREE: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.str.html">str</a> = r#&quot;
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../jumpy/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Constant <a href="../../../index.html">jumpy</a>::<wbr><a href="../../index.html">ui</a>::<wbr><a href="../index.html">main_menu</a>::<wbr><a href="index.html">build_info</a>::<wbr><a class="constant" href="#">CARGO_TREE</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../../../src/jumpy/home/runner/work/jumpy/jumpy/target/debug/build/jumpy-bd28ad7482d00bb3/out/shadow.rs.html#74-2035">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub const CARGO_TREE: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.str.html">str</a> = r#&quot;
 ├── async-channel v1.9.0
 │   ├── concurrent-queue v2.5.0
 │   │   └── crossbeam-utils v0.8.20
@@ -916,8 +916,18 @@
 │   │   │   │   └── thiserror v1.0.63 (*)
 │   │   │   └── instant v0.1.13 (*)
 │   │   ├── bones_matchmaker_proto v0.2.0 (* git)
-│   │   │   ├── iroh-net v0.21.0
+│   │   │   ├── iroh-net v0.22.0
 │   │   │   │   ├── anyhow v1.0.86
+│   │   │   │   ├── async-channel v2.3.1
+│   │   │   │   │   ├── concurrent-queue v2.5.0 (*)
+│   │   │   │   │   ├── event-listener-strategy v0.5.2
+│   │   │   │   │   │   ├── event-listener v5.3.1
+│   │   │   │   │   │   │   ├── concurrent-queue v2.5.0 (*)
+│   │   │   │   │   │   │   ├── parking v2.2.0
+│   │   │   │   │   │   │   └── pin-project-lite v0.2.14
+│   │   │   │   │   │   └── pin-project-lite v0.2.14
+│   │   │   │   │   ├── futures-core v0.3.30
+│   │   │   │   │   └── pin-project-lite v0.2.14
 │   │   │   │   ├── backoff v0.4.0
 │   │   │   │   │   ├── getrandom v0.2.15 (*)
 │   │   │   │   │   ├── instant v0.1.13 (*)
@@ -929,18 +939,12 @@
 │   │   │   │   │       ├── proc-macro2 v1.0.86 (*)
 │   │   │   │   │       ├── quote v1.0.36 (*)
 │   │   │   │   │       └── syn v2.0.72 (*)
-│   │   │   │   ├── derive_more v1.0.0-beta.6
-│   │   │   │   │   └── derive_more-impl v1.0.0-beta.6 (proc-macro)
+│   │   │   │   ├── derive_more v1.0.0-beta.7
+│   │   │   │   │   └── derive_more-impl v1.0.0-beta.7 (proc-macro)
 │   │   │   │   │       ├── proc-macro2 v1.0.86 (*)
 │   │   │   │   │       ├── quote v1.0.36 (*)
 │   │   │   │   │       ├── syn v2.0.72 (*)
 │   │   │   │   │       └── unicode-xid v0.2.4
-│   │   │   │   ├── flume v0.11.0
-│   │   │   │   │   ├── futures-core v0.3.30
-│   │   │   │   │   ├── futures-sink v0.3.30
-│   │   │   │   │   ├── nanorand v0.7.0
-│   │   │   │   │   │   └── getrandom v0.2.15 (*)
-│   │   │   │   │   └── spin v0.9.8 (*)
 │   │   │   │   ├── futures-buffered v0.2.6
 │   │   │   │   │   ├── futures-core v0.3.30
 │   │   │   │   │   ├── futures-util v0.3.30
@@ -1168,7 +1172,7 @@
 │   │   │   │   │   ├── url v2.5.2 (*)
 │   │   │   │   │   └── xmltree v0.10.3
 │   │   │   │   │       └── xml-rs v0.8.20
-│   │   │   │   ├── iroh-base v0.21.0
+│   │   │   │   ├── iroh-base v0.22.0
 │   │   │   │   │   ├── aead v0.5.2
 │   │   │   │   │   │   ├── bytes v1.6.1
 │   │   │   │   │   │   ├── crypto-common v0.1.6 (*)
@@ -1219,7 +1223,7 @@
 │   │   │   │   │   │   ├── subtle v2.6.1
 │   │   │   │   │   │   └── zeroize v1.8.1
 │   │   │   │   │   ├── data-encoding v2.6.0
-│   │   │   │   │   ├── derive_more v1.0.0-beta.6 (*)
+│   │   │   │   │   ├── derive_more v1.0.0-beta.7 (*)
 │   │   │   │   │   ├── ed25519-dalek v2.1.1
 │   │   │   │   │   │   ├── curve25519-dalek v4.1.3 (*)
 │   │   │   │   │   │   ├── ed25519 v2.2.3
@@ -1292,7 +1296,7 @@
 │   │   │   │   │   │   └── linked-hash-map v0.5.6
 │   │   │   │   │   ├── url v2.5.2 (*)
 │   │   │   │   │   └── zeroize v1.8.1
-│   │   │   │   ├── iroh-metrics v0.21.0
+│   │   │   │   ├── iroh-metrics v0.22.0
 │   │   │   │   │   ├── anyhow v1.0.86
 │   │   │   │   │   ├── erased_set v0.7.0
 │   │   │   │   │   ├── http-body-util v0.1.2 (*)
@@ -1443,11 +1447,9 @@
 │   │   │   │   │   └── tokio v1.39.1 (*)
 │   │   │   │   ├── num_enum v0.7.2
 │   │   │   │   │   └── num_enum_derive v0.7.2 (proc-macro)
-│   │   │   │   │       ├── proc-macro-crate v3.1.0
-│   │   │   │   │       │   └── toml_edit v0.21.1
-│   │   │   │   │       │       ├── indexmap v2.2.6 (*)
-│   │   │   │   │       │       ├── toml_datetime v0.6.7
-│   │   │   │   │       │       └── winnow v0.5.40
+│   │   │   │   │       ├── proc-macro-crate v1.3.1
+│   │   │   │   │       │   ├── once_cell v1.19.0
+│   │   │   │   │       │   └── toml_edit v0.19.15 (*)
 │   │   │   │   │       ├── proc-macro2 v1.0.86 (*)
 │   │   │   │   │       ├── quote v1.0.36 (*)
 │   │   │   │   │       └── syn v2.0.72 (*)
@@ -1458,7 +1460,12 @@
 │   │   │   │   │   ├── bytes v1.6.1
 │   │   │   │   │   ├── document-features v0.2.10 (proc-macro) (*)
 │   │   │   │   │   ├── ed25519-dalek v2.1.1 (*)
-│   │   │   │   │   ├── flume v0.11.0 (*)
+│   │   │   │   │   ├── flume v0.11.0
+│   │   │   │   │   │   ├── futures-core v0.3.30
+│   │   │   │   │   │   ├── futures-sink v0.3.30
+│   │   │   │   │   │   ├── nanorand v0.7.0
+│   │   │   │   │   │   │   └── getrandom v0.2.15 (*)
+│   │   │   │   │   │   └── spin v0.9.8 (*)
 │   │   │   │   │   ├── lru v0.12.3
 │   │   │   │   │   ├── self_cell v1.0.4
 │   │   │   │   │   ├── simple-dns v0.6.2
@@ -1781,7 +1788,7 @@
 │   │   ├── image v0.24.9 (*)
 │   │   ├── instant v0.1.13 (*)
 │   │   ├── intl-memoizer v0.5.2 (*)
-│   │   ├── iroh-net v0.21.0 (*)
+│   │   ├── iroh-net v0.22.0 (*)
 │   │   ├── iroh-quinn v0.10.5 (*)
 │   │   ├── kira v0.8.7
 │   │   │   ├── atomic-arena v0.1.1

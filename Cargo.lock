@@ -307,6 +307,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-channel"
+version = "2.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "89b47800b0be77592da0afd425cc03468052844aff33b84e33cc696f64e77b6a"
+dependencies = [
+ "concurrent-queue",
+ "event-listener-strategy",
+ "futures-core",
+ "pin-project-lite",
+]
+
+[[package]]
 name = "async-executor"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -468,7 +480,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9714af523da4cdf58c42a317e5ed40349708ad954a18533991fd64c8ae0a6f68"
 dependencies = [
  "anyhow",
- "async-channel",
+ "async-channel 1.9.0",
  "bevy_app",
  "bevy_diagnostic",
  "bevy_ecs",
@@ -566,7 +578,7 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "266144b36df7e834d5198049e037ecdf2a2310a76ce39ed937d1b0a6a2c4e8c6"
 dependencies = [
- "async-channel",
+ "async-channel 1.9.0",
  "bevy_ecs_macros",
  "bevy_ptr",
  "bevy_reflect",
@@ -739,7 +751,7 @@ dependencies = [
  "quote",
  "rustc-hash",
  "syn 2.0.72",
- "toml_edit 0.19.15",
+ "toml_edit",
 ]
 
 [[package]]
@@ -844,7 +856,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39df4824b760928c27afc7b00fb649c7a63c9d76661ab014ff5c86537ee906cb"
 dependencies = [
  "anyhow",
- "async-channel",
+ "async-channel 1.9.0",
  "bevy_app",
  "bevy_asset",
  "bevy_core",
@@ -950,7 +962,7 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c73bbb847c83990d3927005090df52f8ac49332e1643d2ad9aac3cd2974e66bf"
 dependencies = [
- "async-channel",
+ "async-channel 1.9.0",
  "async-executor",
  "async-task",
  "concurrent-queue",
@@ -1071,7 +1083,7 @@ dependencies = [
  "bitflags 2.6.0",
  "cexpr",
  "clang-sys",
- "itertools 0.12.1",
+ "itertools",
  "lazy_static",
  "lazycell",
  "proc-macro2",
@@ -1192,11 +1204,11 @@ dependencies = [
 [[package]]
 name = "bones_asset"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "anyhow",
  "append-only-vec",
- "async-channel",
+ "async-channel 1.9.0",
  "bevy_tasks",
  "bones_schema",
  "bones_utils",
@@ -1223,7 +1235,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_renderer"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "anyhow",
  "bevy",
@@ -1240,7 +1252,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "anyhow",
  "atomicell",
@@ -1257,7 +1269,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "bones_ecs_macros_core",
  "proc-macro2",
@@ -1266,7 +1278,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs_macros_core"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1276,10 +1288,10 @@ dependencies = [
 [[package]]
 name = "bones_framework"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "anyhow",
- "async-channel",
+ "async-channel 1.9.0",
  "bevy_tasks",
  "bones_asset",
  "bones_lib",
@@ -1325,7 +1337,7 @@ dependencies = [
 [[package]]
 name = "bones_lib"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "bones_ecs",
  "instant",
@@ -1334,7 +1346,7 @@ dependencies = [
 [[package]]
 name = "bones_matchmaker_proto"
 version = "0.2.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "iroh-net",
  "serde",
@@ -1343,7 +1355,7 @@ dependencies = [
 [[package]]
 name = "bones_schema"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "append-only-vec",
  "bones_schema_macros",
@@ -1361,7 +1373,7 @@ dependencies = [
 [[package]]
 name = "bones_schema_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1371,9 +1383,9 @@ dependencies = [
 [[package]]
 name = "bones_scripting"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
- "async-channel",
+ "async-channel 1.9.0",
  "bevy_tasks",
  "bones_asset",
  "bones_lib",
@@ -1388,7 +1400,7 @@ dependencies = [
 [[package]]
 name = "bones_utils"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "bones_utils_macros",
  "branches",
@@ -1409,7 +1421,7 @@ dependencies = [
 [[package]]
 name = "bones_utils_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#f495e07250004a13c7492d81881b53427086a8d7"
+source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
 dependencies = [
  "quote",
  "venial",
@@ -2060,18 +2072,18 @@ dependencies = [
 
 [[package]]
 name = "derive_more"
-version = "1.0.0-beta.6"
+version = "1.0.0-beta.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7abbfc297053be59290e3152f8cbcd52c8642e0728b69ee187d991d4c1af08d"
+checksum = "3249c0372e72f5f93b5c0ca54c0ab76bbf6216b6f718925476fd9bc4ffabb4fe"
 dependencies = [
  "derive_more-impl",
 ]
 
 [[package]]
 name = "derive_more-impl"
-version = "1.0.0-beta.6"
+version = "1.0.0-beta.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bba3e9872d7c58ce7ef0fcf1844fcc3e23ef2a58377b50df35dd98e42a5726e"
+checksum = "27d919ced7590fc17b5d5a3c63b662e8a7d2324212c4e4dbbed975cafd22d16d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2512,6 +2524,27 @@ checksum = "67b215c49b2b248c855fb73579eb1f4f26c38ffdc12973e20e07b91d78d5646e"
 dependencies = [
  "concurrent-queue",
  "parking",
+ "pin-project-lite",
+]
+
+[[package]]
+name = "event-listener"
+version = "5.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6032be9bd27023a771701cc49f9f053c751055f71efb2e0ae5c15809093675ba"
+dependencies = [
+ "concurrent-queue",
+ "parking",
+ "pin-project-lite",
+]
+
+[[package]]
+name = "event-listener-strategy"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f214dc438f977e6d4e3500aaa277f5ad94ca83fbbd9b1a15713ce2344ccc5a1"
+dependencies = [
+ "event-listener 5.3.1",
  "pin-project-lite",
 ]
 
@@ -3733,9 +3766,9 @@ checksum = "8f518f335dce6725a761382244631d86cf0ccb2863413590b31338feb467f9c3"
 
 [[package]]
 name = "iroh-base"
-version = "0.21.0"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f31f493beda1c4f8c7be999eff8a80cd1e2428da4c61f5cdd14990af8122342e"
+checksum = "24ddb47e8160fb1d563a6f541c813c2f185423a0ad1c9260a6c76891a2300c26"
 dependencies = [
  "aead",
  "anyhow",
@@ -3774,9 +3807,9 @@ dependencies = [
 
 [[package]]
 name = "iroh-metrics"
-version = "0.21.0"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "472ec21d59b34c8fbebbd8fcecfdc0f4b00a7af2d6453b303a1e9c9499674f67"
+checksum = "3ab017d2786c0b77583371cef016d3e76bdbc7d13b66532023cb7e854f65d15a"
 dependencies = [
  "anyhow",
  "erased_set",
@@ -3795,18 +3828,18 @@ dependencies = [
 
 [[package]]
 name = "iroh-net"
-version = "0.21.0"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a3e2e9b2a555736a82cb53d16037b0ba0233034ac5042efce129b1460b0a50a"
+checksum = "372fbf01dc303be5427b6ea33b80411b3cfb6443d6389ce1ffc43231f244a51c"
 dependencies = [
  "anyhow",
+ "async-channel 2.3.1",
  "backoff",
  "base64 0.22.1",
  "bytes",
  "der",
  "derive_more",
  "duct",
- "flume",
  "futures-buffered",
  "futures-concurrency",
  "futures-lite 2.3.0",
@@ -3934,15 +3967,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "itertools"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
-dependencies = [
- "either",
-]
-
-[[package]]
 name = "itoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3998,7 +4022,7 @@ dependencies = [
 name = "jumpy"
 version = "0.12.1"
 dependencies = [
- "async-channel",
+ "async-channel 1.9.0",
  "bevy_dylib",
  "bevy_tasks",
  "bitfield",
@@ -4868,7 +4892,7 @@ version = "0.5.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dcbff9bc912032c62bf65ef1d5aea88983b420f4f839db1e9b0c281a25c9c799"
 dependencies = [
- "proc-macro-crate 1.3.1",
+ "proc-macro-crate",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
@@ -4880,7 +4904,7 @@ version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96667db765a921f7b295ffee8b60472b686a51d4f21c2ee4ffdb94c7013b65a6"
 dependencies = [
- "proc-macro-crate 1.3.1",
+ "proc-macro-crate",
  "proc-macro2",
  "quote",
  "syn 2.0.72",
@@ -4892,7 +4916,7 @@ version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "681030a937600a36906c185595136d26abfebb4aa9c65701cefcaf8578bb982b"
 dependencies = [
- "proc-macro-crate 3.1.0",
+ "proc-macro-crate",
  "proc-macro2",
  "quote",
  "syn 2.0.72",
@@ -5734,16 +5758,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f4c021e1093a56626774e81216a4ce732a735e5bad4868a03f3ed65ca0c3919"
 dependencies = [
  "once_cell",
- "toml_edit 0.19.15",
-]
-
-[[package]]
-name = "proc-macro-crate"
-version = "3.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d37c51ca738a55da99dc0c4a34860fd675453b8b36209178c2249bb13651284"
-dependencies = [
- "toml_edit 0.21.1",
+ "toml_edit",
 ]
 
 [[package]]
@@ -6652,7 +6667,7 @@ checksum = "9635466532d454fa020acbb12f629f1fc02fc9b4d5b39cc72ca478be37e314bc"
 dependencies = [
  "bitvec",
  "fastrand 1.9.0",
- "itertools 0.10.5",
+ "itertools",
  "log",
  "nohash-hasher",
 ]
@@ -7399,17 +7414,6 @@ name = "toml_edit"
 version = "0.19.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b5bb770da30e5cbfde35a2d7b9b8a2c4b8ef89548a7a6aeab5c9a576e3e7421"
-dependencies = [
- "indexmap 2.2.6",
- "toml_datetime",
- "winnow",
-]
-
-[[package]]
-name = "toml_edit"
-version = "0.21.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a8534fd7f78b5405e860340ad6575217ce99f38d4d5c8f2442cb5ecb50090e1"
 dependencies = [
  "indexmap 2.2.6",
  "toml_datetime",

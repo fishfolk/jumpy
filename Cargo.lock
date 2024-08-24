@@ -349,12 +349,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "atomic-arena"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5450eca8ce5abcfd5520727e975ebab30ccca96030550406b0ca718b224ead10"
-
-[[package]]
 name = "atomic-polyfill"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1204,7 +1198,7 @@ dependencies = [
 [[package]]
 name = "bones_asset"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "anyhow",
  "append-only-vec",
@@ -1235,7 +1229,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_renderer"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "anyhow",
  "bevy",
@@ -1252,7 +1246,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "anyhow",
  "atomicell",
@@ -1269,7 +1263,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "bones_ecs_macros_core",
  "proc-macro2",
@@ -1278,7 +1272,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs_macros_core"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1288,7 +1282,7 @@ dependencies = [
 [[package]]
 name = "bones_framework"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "anyhow",
  "async-channel 1.9.0",
@@ -1337,7 +1331,7 @@ dependencies = [
 [[package]]
 name = "bones_lib"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "bones_ecs",
  "instant",
@@ -1346,7 +1340,7 @@ dependencies = [
 [[package]]
 name = "bones_matchmaker_proto"
 version = "0.2.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "iroh-net",
  "serde",
@@ -1355,7 +1349,7 @@ dependencies = [
 [[package]]
 name = "bones_schema"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "append-only-vec",
  "bones_schema_macros",
@@ -1373,7 +1367,7 @@ dependencies = [
 [[package]]
 name = "bones_schema_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1383,7 +1377,7 @@ dependencies = [
 [[package]]
 name = "bones_scripting"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "async-channel 1.9.0",
  "bevy_tasks",
@@ -1400,7 +1394,7 @@ dependencies = [
 [[package]]
 name = "bones_utils"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "bones_utils_macros",
  "branches",
@@ -1421,7 +1415,7 @@ dependencies = [
 [[package]]
 name = "bones_utils_macros"
 version = "0.3.0"
-source = "git+https://github.com/fishfolk/bones#71878a27a4969848e33f92867adccf0e1e10971a"
+source = "git+https://github.com/fishfolk/bones#66f35a5efeec0391deda3d8be6327809f278c051"
 dependencies = [
  "quote",
  "venial",
@@ -3052,9 +3046,9 @@ dependencies = [
 
 [[package]]
 name = "glam"
-version = "0.25.0"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "151665d9be52f9bb40fc7966565d39666f2d1e69233571b71b87791c7e0528b3"
+checksum = "779ae4bf7e8421cf91c0b3b64e7e8b40b862fba4d393f59150042de7c4965a94"
 dependencies = [
  "mint",
 ]
@@ -4065,17 +4059,18 @@ dependencies = [
 
 [[package]]
 name = "kira"
-version = "0.8.7"
+version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8968f1eda49cdf4f6406fd5ffe590c3ca2778a1b0e50b5684974b138a99dfb2f"
+checksum = "5c48d4719537e9af8467214f42c76425afbde24fb33e8d06686ab764e2a98e0b"
 dependencies = [
- "atomic-arena",
  "cpal",
- "glam 0.25.0",
+ "glam 0.28.0",
  "mint",
+ "paste",
  "ringbuf",
  "send_wrapper",
  "symphonia",
+ "triple_buffer",
 ]
 
 [[package]]
@@ -7529,6 +7524,15 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "triple_buffer"
+version = "8.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e66931c8eca6381f0d34656a9341f09bd462010488c1a3bc0acd3f2d08dffce"
+dependencies = [
+ "crossbeam-utils",
 ]
 
 [[package]]

@@ -8,16 +8,16 @@ trait SettingsExts {
 
 impl SettingsExts for Settings {
     fn volume_change_event(&self) -> AudioEvent {
-        AudioEvent::VolumeChange {
-            main_volume: self.main_volume,
-            music_volume: self.music_volume,
-            effects_volume: self.effects_volume,
+        AudioEvent::VolumeScaleUpdate {
+            main_volume_scale: self.main_volume,
+            music_volume_scale: self.music_volume,
+            effects_volume_scale: self.effects_volume,
         }
     }
 }
 
 pub(super) fn on_cancel(In(state): In<&SettingsState>, mut audio_center: ResMut<AudioCenter>) {
-    audio_center.event(state.modified_settings.volume_change_event());
+    audio_center.push_event(state.modified_settings.volume_change_event());
 }
 
 pub(super) fn widget(
@@ -39,7 +39,7 @@ pub(super) fn widget(
 
     if should_reset {
         state.modified_settings.main_volume = meta.default_settings.main_volume;
-        audio_center.event(state.modified_settings.volume_change_event());
+        audio_center.push_event(state.modified_settings.volume_change_event());
     }
 
     ui.add_space(normal_font.size);
@@ -85,7 +85,7 @@ pub(super) fn widget(
                 ui.end_row();
 
                 if main_changed || music_changed || effects_changed {
-                    audio_center.event(state.modified_settings.volume_change_event());
+                    audio_center.push_event(state.modified_settings.volume_change_event());
                 }
             });
         });
@@ -95,7 +95,7 @@ pub(super) fn widget(
 fn volume_control_widget(
     ui: &mut egui::Ui,
     label: impl Into<egui::WidgetText>,
-    value: &mut f64,
+    value: &mut f32,
 ) -> egui::Response {
     ui.label(label);
     let slider = egui::Slider::new(value, 0.0..=1.0)

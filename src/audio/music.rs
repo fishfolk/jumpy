@@ -64,10 +64,10 @@ pub(super) fn music_system(
         if let MusicState::Fight { idx } = &mut *music_state {
             if let Some(PlaybackState::Stopped) = audio.music_state() {
                 *idx = (*idx + 1) % shuffled_fight_music.len();
-                audio.play_music(shuffled_fight_music[*idx], play_settings);
+                audio.play_music_from_settings(shuffled_fight_music[*idx], play_settings, true);
             }
         } else if let Some(song) = shuffled_fight_music.get(0) {
-            audio.play_music(*song, play_settings);
+            audio.play_music_from_settings(*song, play_settings, false);
             *music_state = MusicState::Fight { idx: 0 };
         }
 
@@ -77,22 +77,23 @@ pub(super) fn music_system(
         match menu_page {
             MenuPage::PlayerSelect | MenuPage::MapSelect { .. } | MenuPage::NetworkGame => {
                 if *music_state != MusicState::CharacterSelect {
-                    audio.play_music(
+                    audio.play_music_from_settings(
                         meta.music.title_screen,
                         play_settings.loop_region(Region::default()),
+                        false,
                     );
                     *music_state = MusicState::CharacterSelect;
                 }
             }
             MenuPage::Home | MenuPage::Settings => {
                 if *music_state != MusicState::MainMenu {
-                    audio.play_music(meta.music.title_screen, play_settings);
+                    audio.play_music_from_settings(meta.music.title_screen, play_settings, false);
                     *music_state = MusicState::MainMenu;
                 }
             }
             MenuPage::Credits => {
                 if *music_state != MusicState::Credits {
-                    audio.play_music(meta.music.credits, play_settings);
+                    audio.play_music_from_settings(meta.music.credits, play_settings, false);
                     *music_state = MusicState::Credits;
                 }
             }

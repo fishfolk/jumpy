@@ -2,7 +2,7 @@ use crate::{core::JumpyDefaultMatchRunner, prelude::*, ui::scoring::ScoringMenuS
 
 pub struct SessionNames;
 impl SessionNames {
-    pub const AUDIO: &'static str = "audio";
+    pub const AUDIO: &'static str = DEFAULT_BONES_AUDIO_SESSION;
     pub const DEBUG: &'static str = "debug";
     pub const GAME: &'static str = "game";
     pub const MAIN_MENU: &'static str = "main_menu";

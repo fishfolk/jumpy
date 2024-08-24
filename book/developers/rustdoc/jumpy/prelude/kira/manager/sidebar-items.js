@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["MainPlaybackState"],"mod":["backend","error"],"struct":["AudioManager","AudioManagerSettings","Capacities"]};
+window.SIDEBAR_ITEMS = {"mod":["backend","error"],"struct":["AudioManager","AudioManagerSettings","Capacities"],"type":["DefaultBackend"]};

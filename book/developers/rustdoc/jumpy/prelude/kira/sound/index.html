@@ -100,9 +100,11 @@
 <a href="trait.SoundData.html" title="trait jumpy::prelude::kira::sound::SoundData"><code>SoundData</code></a> implementations:</p>
 <ul>
 <li><a href="../../struct.StaticSoundData.html" title="struct jumpy::prelude::StaticSoundData"><code>StaticSoundData</code></a>, which loads an entire chunk of audio
-into memory</li>
+into memory. This is more appropriate for short sounds, sounds you want to play multiple times,
+or sounds where consistent start times are important.</li>
 <li><a href="streaming/struct.StreamingSoundData.html" title="struct jumpy::prelude::kira::sound::streaming::StreamingSoundData"><code>StreamingSoundData</code></a>, which streams audio from a file or cursor
-(only available on desktop platforms)</li>
+(only available on desktop platforms). This is more appropriate for long sounds that you only
+play once at a time, like background music. Streaming sounds use less memory than static sounds.</li>
 </ul>
 <p>These two sound types should cover most use cases, but if you need something else, you can
 create your own types that implement the <a href="trait.SoundData.html" title="trait jumpy::prelude::kira::sound::SoundData"><code>SoundData</code></a> and <a href="trait.Sound.html" title="trait jumpy::prelude::kira::sound::Sound"><code>Sound</code></a> traits.</p>

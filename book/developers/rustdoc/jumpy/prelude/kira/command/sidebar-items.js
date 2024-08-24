@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["command_writer_and_reader"],"struct":["CommandReader","CommandWriter","ValueChangeCommand"]};

@@ -108,7 +108,7 @@ clock, use <a href="../manager/struct.AudioManager.html#method.add_clock" title=
 
 <span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
 <span class="kw">let </span><span class="kw-2">mut </span>clock = manager.add_clock(ClockSpeed::SecondsPerTick(<span class="number">1.0</span>))<span class="question-mark">?</span>;
-clock.start()<span class="question-mark">?</span>;</code></pre></div>
+clock.start();</code></pre></div>
 <p>You can specify the speed of the clock as seconds per tick, ticks per second, or
 ticks per minute.</p>
 <p>Clocks are stopped when you first create them, so be sure to explicitly call
@@ -131,24 +131,26 @@ or <a href="../sound/streaming/struct.StreamingSoundSettings.html#method.start_t
 
 <span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
 <span class="kw">let </span><span class="kw-2">mut </span>clock = manager.add_clock(ClockSpeed::SecondsPerTick(<span class="number">1.0</span>))<span class="question-mark">?</span>;
-manager.play(StaticSoundData::from_file(
-	<span class="string">"sound.ogg"</span>,
-	StaticSoundSettings::new().start_time(StartTime::ClockTime(ClockTime {
-		clock: clock.id(),
-		ticks: <span class="number">4</span>,
-	})),
-)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-clock.start()<span class="question-mark">?</span>;</code></pre></div>
+manager.play(
+	StaticSoundData::from_file(<span class="string">"sound.ogg"</span>)<span class="question-mark">?
+		</span>.start_time(StartTime::ClockTime(ClockTime {
+			clock: clock.id(),
+			ticks: <span class="number">4</span>,
+			fraction: <span class="number">0.0</span>,
+		}))
+)<span class="question-mark">?</span>;
+clock.start();</code></pre></div>
 <p>As a shorthand, you can pass the <a href="struct.ClockTime.html" title="struct jumpy::prelude::kira::clock::ClockTime"><code>ClockTime</code></a> directly into
 the <code>start_time</code> function.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code>manager.play(StaticSoundData::from_file(
-	<span class="string">"sound.ogg"</span>,
-	StaticSoundSettings::new().start_time(ClockTime {
-		clock: clock.id(),
-		ticks: <span class="number">4</span>,
-	}),
-)<span class="question-mark">?</span>)<span class="question-mark">?</span>;</code></pre></div>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>manager.play(
+	StaticSoundData::from_file(<span class="string">"sound.ogg"</span>)<span class="question-mark">?
+		</span>.start_time(ClockTime {
+			clock: clock.id(),
+			ticks: <span class="number">4</span>,
+			fraction: <span class="number">0.0</span>,
+		})
+)<span class="question-mark">?</span>;</code></pre></div>
 <p>As an even shorter hand, you can use <a href="struct.ClockHandle.html#method.time" title="method jumpy::prelude::kira::clock::ClockHandle::time"><code>ClockHandle::time</code></a> to get the clock’s
 current <a href="struct.ClockTime.html" title="struct jumpy::prelude::kira::clock::ClockTime"><code>ClockTime</code></a>, and then add to it to get a time in the future:</p>
 
@@ -161,10 +163,10 @@ current <a href="struct.ClockTime.html" title="struct jumpy::prelude::kira::cloc
 	clock::ClockSpeed,
 };
 
-manager.play(StaticSoundData::from_file(
-	<span class="string">"sound.ogg"</span>,
-	StaticSoundSettings::new().start_time(clock.time() + <span class="number">4</span>),
-)<span class="question-mark">?</span>)<span class="question-mark">?</span>;</code></pre></div>
+manager.play(
+	StaticSoundData::from_file(<span class="string">"sound.ogg"</span>)<span class="question-mark">?
+		</span>.start_time(clock.time() + <span class="number">4</span>)
+)<span class="question-mark">?</span>;</code></pre></div>
 <h3 id="starting-tweens-on-clock-ticks"><a href="#starting-tweens-on-clock-ticks">Starting tweens on clock ticks</a></h3>
 <p>You can also use clocks to set the start time of tweens. In this example, we set
 the playback rate of a sound to start tweening when a clock reaches its third
@@ -185,10 +187,7 @@ tick.</p>
 
 <span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
 <span class="kw">let </span><span class="kw-2">mut </span>clock = manager.add_clock(ClockSpeed::SecondsPerTick(<span class="number">1.0</span>))<span class="question-mark">?</span>;
-<span class="kw">let </span><span class="kw-2">mut </span>sound = manager.play(StaticSoundData::from_file(
-	<span class="string">"sound.ogg"</span>,
-	StaticSoundSettings::default(),
-)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+<span class="kw">let </span><span class="kw-2">mut </span>sound = manager.play(StaticSoundData::from_file(<span class="string">"sound.ogg"</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 sound.set_playback_rate(
 	<span class="number">0.5</span>,
 	Tween {
@@ -196,6 +195,6 @@ sound.set_playback_rate(
 		duration: Duration::from_secs(<span class="number">2</span>),
 		..Default::default()
 	},
-)<span class="question-mark">?</span>;
-clock.start()<span class="question-mark">?</span>;</code></pre></div>
+);
+clock.start();</code></pre></div>
 </div></details><h2 id="modules" class="section-header"><a href="#modules">Modules</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="clock_info/index.html" title="mod jumpy::prelude::kira::clock::clock_info">clock_info</a></div><div class="desc docblock-short">Contains types for reporting information about clocks.</div></li></ul><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.ClockHandle.html" title="struct jumpy::prelude::kira::clock::ClockHandle">ClockHandle</a></div><div class="desc docblock-short">Controls a clock.</div></li><li><div class="item-name"><a class="struct" href="struct.ClockId.html" title="struct jumpy::prelude::kira::clock::ClockId">ClockId</a></div><div class="desc docblock-short">A unique identifier for a clock.</div></li><li><div class="item-name"><a class="struct" href="struct.ClockTime.html" title="struct jumpy::prelude::kira::clock::ClockTime">ClockTime</a></div><div class="desc docblock-short">An instant in time associated with a clock.</div></li></ul><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.ClockSpeed.html" title="enum jumpy::prelude::kira::clock::ClockSpeed">ClockSpeed</a></div><div class="desc docblock-short">The rate that a <a href="index.html" title="mod jumpy::prelude::kira::clock">clock</a> ticks at.</div></li></ul></section></div></main></body></html>

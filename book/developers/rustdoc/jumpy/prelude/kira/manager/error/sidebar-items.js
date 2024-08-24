@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["AddClockError","AddModulatorError","AddSpatialSceneError","AddSubTrackError","PlaySoundError"]};
+window.SIDEBAR_ITEMS = {"enum":["PlaySoundError"]};

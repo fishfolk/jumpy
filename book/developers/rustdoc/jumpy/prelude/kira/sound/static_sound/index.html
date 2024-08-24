@@ -107,7 +107,7 @@
 };
 
 <span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
-<span class="kw">let </span>sound_data = StaticSoundData::from_file(<span class="string">"sound.ogg"</span>, StaticSoundSettings::default())<span class="question-mark">?</span>;
+<span class="kw">let </span>sound_data = StaticSoundData::from_file(<span class="string">"sound.ogg"</span>)<span class="question-mark">?</span>;
 manager.play(sound_data)<span class="question-mark">?</span>;</code></pre></div>
 <p>Compared to streaming sounds, static sounds have lower CPU usage and shorter delays
 when starting and seeking, but they use a lot more memory.</p>

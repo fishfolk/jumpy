@@ -177,10 +177,8 @@ playing through the emitter. Let’s play a sound:</p>
 <span class="kw">let </span><span class="kw-2">mut </span>scene = manager.add_spatial_scene(SpatialSceneSettings::default())<span class="question-mark">?</span>;
 <span class="kw">let </span>listener = scene.add_listener(Vec3::ZERO, Quat::IDENTITY, ListenerSettings::default())<span class="question-mark">?</span>;
 <span class="kw">let </span>emitter = scene.add_emitter(Vec3::new(<span class="number">100.0</span>, <span class="number">100.0</span>, <span class="number">0.0</span>), EmitterSettings::default())<span class="question-mark">?</span>;
-<span class="kw">let </span>sound = StaticSoundData::from_file(
-	<span class="string">"sound.ogg"</span>,
-	StaticSoundSettings::new().output_destination(<span class="kw-2">&amp;</span>emitter)
-)<span class="question-mark">?</span>;
+<span class="kw">let </span>sound = StaticSoundData::from_file(<span class="string">"sound.ogg"</span>)<span class="question-mark">?
+	</span>.output_destination(<span class="kw-2">&amp;</span>emitter);
 manager.play(sound)<span class="question-mark">?</span>;</code></pre></div>
 <p>Now you can move the emitter or the listener using
 <a href="emitter/struct.EmitterHandle.html#method.set_position" title="method jumpy::prelude::kira::spatial::emitter::EmitterHandle::set_position"><code>EmitterHandle::set_position</code></a>

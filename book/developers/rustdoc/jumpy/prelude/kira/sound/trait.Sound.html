@@ -102,7 +102,7 @@
         dt: <a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.f64.html">f64</a>,
         clock_info_provider: &amp;<a class="struct" href="../clock/clock_info/struct.ClockInfoProvider.html" title="struct jumpy::prelude::kira::clock::clock_info::ClockInfoProvider">ClockInfoProvider</a>&lt;'_&gt;,
         modulator_value_provider: &amp;<a class="struct" href="../modulator/value_provider/struct.ModulatorValueProvider.html" title="struct jumpy::prelude::kira::modulator::value_provider::ModulatorValueProvider">ModulatorValueProvider</a>&lt;'_&gt;
-    ) -&gt; <a class="struct" href="../dsp/struct.Frame.html" title="struct jumpy::prelude::kira::dsp::Frame">Frame</a>;
+    ) -&gt; <a class="struct" href="../struct.Frame.html" title="struct jumpy::prelude::kira::Frame">Frame</a>;
 <span class="item-spacer"></span>    fn <a href="#tymethod.finished" class="fn">finished</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.bool.html">bool</a>;
 
     // Provided method
@@ -118,7 +118,7 @@ to the <a href="trait.SoundData.html" title="trait jumpy::prelude::kira::sound::
     dt: <a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.f64.html">f64</a>,
     clock_info_provider: &amp;<a class="struct" href="../clock/clock_info/struct.ClockInfoProvider.html" title="struct jumpy::prelude::kira::clock::clock_info::ClockInfoProvider">ClockInfoProvider</a>&lt;'_&gt;,
     modulator_value_provider: &amp;<a class="struct" href="../modulator/value_provider/struct.ModulatorValueProvider.html" title="struct jumpy::prelude::kira::modulator::value_provider::ModulatorValueProvider">ModulatorValueProvider</a>&lt;'_&gt;
-) -&gt; <a class="struct" href="../dsp/struct.Frame.html" title="struct jumpy::prelude::kira::dsp::Frame">Frame</a></h4></section></summary><div class="docblock"><p>Produces the next <a href="../dsp/struct.Frame.html" title="struct jumpy::prelude::kira::dsp::Frame"><code>Frame</code></a> of audio.</p>
+) -&gt; <a class="struct" href="../struct.Frame.html" title="struct jumpy::prelude::kira::Frame">Frame</a></h4></section></summary><div class="docblock"><p>Produces the next <a href="../struct.Frame.html" title="struct jumpy::prelude::kira::Frame"><code>Frame</code></a> of audio.</p>
 <p><code>dt</code> is the time that’s elapsed since the previous round of
 processing (in seconds).</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="tymethod.finished" class="method"><h4 class="code-header">fn <a href="#tymethod.finished" class="fn">finished</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.bool.html">bool</a></h4></section></summary><div class="docblock"><p>Returns <code>true</code> if the sound is finished and can be unloaded.</p>

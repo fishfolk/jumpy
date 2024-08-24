@@ -1,0 +1,128 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Receives input audio from a mixer track and outputs modified audio."><title>Effect in jumpy::prelude::kira::effect - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function (e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move;
+        position: relative;
+    }
+
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
+    .code .nodeLabel {
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><h2><a href="../../../../jumpy/index.html">jumpy</a><span class="version">0.12.1</span></h2></div><h2 class="location"><a href="#">Effect</a></h2><div class="sidebar-elems"><section><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.process">process</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.init">init</a></li><li><a href="#method.on_change_sample_rate">on_change_sample_rate</a></li><li><a href="#method.on_start_processing">on_start_processing</a></li></ul><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In jumpy::prelude::kira::effect</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../jumpy/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="../../../index.html">jumpy</a>::<wbr><a href="../../index.html">prelude</a>::<wbr><a href="../index.html">kira</a>::<wbr><a href="index.html">effect</a>::<wbr><a class="trait" href="#">Effect</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait Effect: <a class="trait" href="https://doc.rust-lang.org/1.76.0/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> + <a class="trait" href="https://doc.rust-lang.org/1.76.0/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> {
+    // Required method
+    fn <a href="#tymethod.process" class="fn">process</a>(
+        &amp;mut self,
+        input: <a class="struct" href="../struct.Frame.html" title="struct jumpy::prelude::kira::Frame">Frame</a>,
+        dt: <a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.f64.html">f64</a>,
+        clock_info_provider: &amp;<a class="struct" href="../clock/clock_info/struct.ClockInfoProvider.html" title="struct jumpy::prelude::kira::clock::clock_info::ClockInfoProvider">ClockInfoProvider</a>&lt;'_&gt;,
+        modulator_value_provider: &amp;<a class="struct" href="../modulator/value_provider/struct.ModulatorValueProvider.html" title="struct jumpy::prelude::kira::modulator::value_provider::ModulatorValueProvider">ModulatorValueProvider</a>&lt;'_&gt;
+    ) -&gt; <a class="struct" href="../struct.Frame.html" title="struct jumpy::prelude::kira::Frame">Frame</a>;
+
+    // Provided methods
+    fn <a href="#method.init" class="fn">init</a>(&amp;mut self, sample_rate: <a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.u32.html">u32</a>) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.on_change_sample_rate" class="fn">on_change_sample_rate</a>(&amp;mut self, sample_rate: <a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.u32.html">u32</a>) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.on_start_processing" class="fn">on_start_processing</a>(&amp;mut self) { ... }
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Receives input audio from a mixer track and outputs modified audio.</p>
+<p>For performance reasons, avoid allocating and deallocating in any methods
+of this trait besides <a href="trait.Effect.html#method.on_change_sample_rate" title="method jumpy::prelude::kira::effect::Effect::on_change_sample_rate"><code>on_change_sample_rate</code></a>.</p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="tymethod.process" class="method"><h4 class="code-header">fn <a href="#tymethod.process" class="fn">process</a>(
+    &amp;mut self,
+    input: <a class="struct" href="../struct.Frame.html" title="struct jumpy::prelude::kira::Frame">Frame</a>,
+    dt: <a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.f64.html">f64</a>,
+    clock_info_provider: &amp;<a class="struct" href="../clock/clock_info/struct.ClockInfoProvider.html" title="struct jumpy::prelude::kira::clock::clock_info::ClockInfoProvider">ClockInfoProvider</a>&lt;'_&gt;,
+    modulator_value_provider: &amp;<a class="struct" href="../modulator/value_provider/struct.ModulatorValueProvider.html" title="struct jumpy::prelude::kira::modulator::value_provider::ModulatorValueProvider">ModulatorValueProvider</a>&lt;'_&gt;
+) -&gt; <a class="struct" href="../struct.Frame.html" title="struct jumpy::prelude::kira::Frame">Frame</a></h4></section></summary><div class="docblock"><p>Transforms an input <a href="../struct.Frame.html" title="struct jumpy::prelude::kira::Frame"><code>Frame</code></a>.</p>
+<p><code>dt</code> is the time that’s elapsed since the previous round of
+processing (in seconds).</p>
+</div></details></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.init" class="method"><h4 class="code-header">fn <a href="#method.init" class="fn">init</a>(&amp;mut self, sample_rate: <a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.u32.html">u32</a>)</h4></section></summary><div class="docblock"><p>Called when the effect is first sent to the renderer.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.on_change_sample_rate" class="method"><h4 class="code-header">fn <a href="#method.on_change_sample_rate" class="fn">on_change_sample_rate</a>(&amp;mut self, sample_rate: <a class="primitive" href="https://doc.rust-lang.org/1.76.0/std/primitive.u32.html">u32</a>)</h4></section></summary><div class="docblock"><p>Called when the sample rate of the renderer is changed.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.on_start_processing" class="method"><h4 class="code-header">fn <a href="#method.on_start_processing" class="fn">on_start_processing</a>(&amp;mut self)</h4></section></summary><div class="docblock"><p>Called whenever a new batch of audio samples is requested by the backend.</p>
+<p>This is a good place to put code that needs to run fairly frequently,
+but not for every single audio sample.</p>
+</div></details></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"></div><script src="../../../../trait.impl/kira/effect/trait.Effect.js" async></script></section></div></main></body></html>

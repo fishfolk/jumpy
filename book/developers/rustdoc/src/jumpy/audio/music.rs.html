@@ -195,6 +195,7 @@
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bones_framework::prelude::kira::{
     sound::{static_sound::StaticSoundSettings, PlaybackState, Region},
     tween::Tween,
@@ -261,10 +262,10 @@
         <span class="kw">if let </span>MusicState::Fight { idx } = <span class="kw-2">&amp;mut *</span>music_state {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(PlaybackState::Stopped) = audio.music_state() {
                 <span class="kw-2">*</span>idx = (<span class="kw-2">*</span>idx + <span class="number">1</span>) % shuffled_fight_music.len();
-                audio.play_music(shuffled_fight_music[<span class="kw-2">*</span>idx], play_settings);
+                audio.play_music_from_settings(shuffled_fight_music[<span class="kw-2">*</span>idx], play_settings, <span class="bool-val">true</span>);
             }
         } <span class="kw">else if let </span><span class="prelude-val">Some</span>(song) = shuffled_fight_music.get(<span class="number">0</span>) {
-            audio.play_music(<span class="kw-2">*</span>song, play_settings);
+            audio.play_music_from_settings(<span class="kw-2">*</span>song, play_settings, <span class="bool-val">false</span>);
             <span class="kw-2">*</span>music_state = MusicState::Fight { idx: <span class="number">0 </span>};
         }
 
@@ -274,22 +275,23 @@
         <span class="kw">match </span>menu_page {
             MenuPage::PlayerSelect | MenuPage::MapSelect { .. } | MenuPage::NetworkGame =&gt; {
                 <span class="kw">if </span><span class="kw-2">*</span>music_state != MusicState::CharacterSelect {
-                    audio.play_music(
+                    audio.play_music_from_settings(
                         meta.music.title_screen,
                         play_settings.loop_region(Region::default()),
+                        <span class="bool-val">false</span>,
                     );
                     <span class="kw-2">*</span>music_state = MusicState::CharacterSelect;
                 }
             }
             MenuPage::Home | MenuPage::Settings =&gt; {
                 <span class="kw">if </span><span class="kw-2">*</span>music_state != MusicState::MainMenu {
-                    audio.play_music(meta.music.title_screen, play_settings);
+                    audio.play_music_from_settings(meta.music.title_screen, play_settings, <span class="bool-val">false</span>);
                     <span class="kw-2">*</span>music_state = MusicState::MainMenu;
                 }
             }
             MenuPage::Credits =&gt; {
                 <span class="kw">if </span><span class="kw-2">*</span>music_state != MusicState::Credits {
-                    audio.play_music(meta.music.credits, play_settings);
+                    audio.play_music_from_settings(meta.music.credits, play_settings, <span class="bool-val">false</span>);
                     <span class="kw-2">*</span>music_state = MusicState::Credits;
                 }
             }

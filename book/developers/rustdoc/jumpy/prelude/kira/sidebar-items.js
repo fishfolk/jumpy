@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["CommandError","OutputDestination","StartTime","Volume"],"mod":["clock","dsp","manager","modulator","sound","spatial","track","tween"]};
+window.SIDEBAR_ITEMS = {"enum":["OutputDestination","StartTime","Volume"],"fn":["interpolate_frame"],"macro":["command_writers_and_readers"],"mod":["clock","command","effect","manager","modulator","sound","spatial","track","tween"],"struct":["Frame","ResourceLimitReached"]};

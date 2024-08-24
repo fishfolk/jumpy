@@ -94,11 +94,11 @@
 </style>
 
 </head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><h2><a href="../../../jumpy/index.html">jumpy</a><span class="version">0.12.1</span></h2></div><div class="sidebar-elems"><ul class="block">
-            <li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#enums">Enums</a></li></ul></section><h2><a href="../index.html">In jumpy::prelude</a></h2></div></nav><div class="sidebar-resizer"></div>
+            <li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></section><h2><a href="../index.html">In jumpy::prelude</a></h2></div></nav><div class="sidebar-resizer"></div>
     <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../jumpy/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Crate <a href="../../index.html">jumpy</a>::<wbr><a href="../index.html">prelude</a>::<wbr><a class="mod" href="#">kira</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="kira"><a href="#kira">Kira</a></h2>
 <p>Kira is a backend-agnostic library to create expressive audio for games. It provides
 <a href="tween/index.html" title="mod jumpy::prelude::kira::tween">tweens</a> for smoothly adjusting properties of sounds, a flexible <a href="track/index.html" title="mod jumpy::prelude::kira::track">mixer</a>
-for applying effects to audio, a <a href="clock/index.html" title="mod jumpy::prelude::kira::clock">clock</a> system for precisely timing audio events,
+for applying <a href="effect/index.html" title="mod jumpy::prelude::kira::effect">effects</a> to audio, a <a href="clock/index.html" title="mod jumpy::prelude::kira::clock">clock</a> system for precisely timing audio events,
 and <a href="spatial/index.html" title="mod jumpy::prelude::kira::spatial">spatial audio</a> support.</p>
 <p>To get started, create an <a href="manager/struct.AudioManager.html" title="struct jumpy::prelude::kira::manager::AudioManager"><code>AudioManager</code></a> and use it to
 <a href="manager/struct.AudioManager.html#method.play" title="method jumpy::prelude::kira::manager::AudioManager::play">play</a> a
@@ -117,7 +117,7 @@ and <a href="spatial/index.html" title="mod jumpy::prelude::kira::spatial">spati
 
 <span class="comment">// Create an audio manager. This plays sounds and manages resources.
 </span><span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
-<span class="kw">let </span>sound_data = StaticSoundData::from_file(<span class="string">"sound.ogg"</span>, StaticSoundSettings::default())<span class="question-mark">?</span>;
+<span class="kw">let </span>sound_data = StaticSoundData::from_file(<span class="string">"sound.ogg"</span>)<span class="question-mark">?</span>;
 manager.play(sound_data.clone())<span class="question-mark">?</span>;
 <span class="comment">// After a couple seconds...
 </span>manager.play(sound_data.clone())<span class="question-mark">?</span>;
@@ -136,7 +136,7 @@ manager.play(sound_data.clone())<span class="question-mark">?</span>;
 };
 
 <span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
-<span class="kw">let </span>sound_data = StaticSoundData::from_file(<span class="string">"sound.ogg"</span>, StaticSoundSettings::new())<span class="question-mark">?</span>;
+<span class="kw">let </span>sound_data = StaticSoundData::from_file(<span class="string">"sound.ogg"</span>)<span class="question-mark">?</span>;
 <span class="kw">let </span><span class="kw-2">mut </span>sound = manager.play(sound_data)<span class="question-mark">?</span>;
 <span class="comment">// Start smoothly adjusting the playback rate parameter.
 </span>sound.set_playback_rate(
@@ -155,10 +155,8 @@ audio sound muffled):</p>
 		backend::DefaultBackend,
 	},
 	sound::static_sound::{StaticSoundData, StaticSoundSettings},
-	track::{
-		TrackBuilder,
-		effect::filter::FilterBuilder,
-	},
+	track::TrackBuilder,
+	effect::filter::FilterBuilder,
 };
 
 <span class="kw">let </span><span class="kw-2">mut </span>manager = AudioManager::&lt;DefaultBackend&gt;::new(AudioManagerSettings::default())<span class="question-mark">?</span>;
@@ -169,10 +167,8 @@ audio sound muffled):</p>
 	builder
 })<span class="question-mark">?</span>;
 <span class="comment">// Play the sound on the track.
-</span><span class="kw">let </span>sound_data = StaticSoundData::from_file(
-	<span class="string">"sound.ogg"</span>,
-	StaticSoundSettings::new().output_destination(<span class="kw-2">&amp;</span>track),
-)<span class="question-mark">?</span>;
+</span><span class="kw">let </span>sound_data = StaticSoundData::from_file(<span class="string">"sound.ogg"</span>)<span class="question-mark">?
+	</span>.output_destination(<span class="kw-2">&amp;</span>track);
 manager.play(sound_data)<span class="question-mark">?</span>;</code></pre></div>
 <p>Playing sounds in time with a musical beat:</p>
 
@@ -193,19 +189,15 @@ manager.play(sound_data)<span class="question-mark">?</span>;</code></pre></div>
 // arbitrary amount of time.
 </span><span class="kw">let </span><span class="kw-2">mut </span>clock = manager.add_clock(ClockSpeed::TicksPerMinute(TEMPO))<span class="question-mark">?</span>;
 <span class="comment">// Play a sound 2 ticks (beats) from now.
-</span><span class="kw">let </span>sound_data_1 = StaticSoundData::from_file(
-	<span class="string">"sound1.ogg"</span>,
-	StaticSoundSettings::new().start_time(clock.time() + <span class="number">2</span>),
-)<span class="question-mark">?</span>;
+</span><span class="kw">let </span>sound_data_1 = StaticSoundData::from_file(<span class="string">"sound1.ogg"</span>)<span class="question-mark">?
+	</span>.start_time(clock.time() + <span class="number">2</span>);
 manager.play(sound_data_1)<span class="question-mark">?</span>;
 <span class="comment">// Play a different sound 4 ticks (beats) from now.
-</span><span class="kw">let </span>sound_data_2 = StaticSoundData::from_file(
-	<span class="string">"sound2.ogg"</span>,
-	StaticSoundSettings::new().start_time(clock.time() + <span class="number">4</span>),
-)<span class="question-mark">?</span>;
+</span><span class="kw">let </span>sound_data_2 = StaticSoundData::from_file(<span class="string">"sound2.ogg"</span>)<span class="question-mark">?
+	</span>.start_time(clock.time() + <span class="number">4</span>);
 manager.play(sound_data_2)<span class="question-mark">?</span>;
 <span class="comment">// Start the clock.
-</span>clock.start()<span class="question-mark">?</span>;</code></pre></div>
+</span>clock.start();</code></pre></div>
 <h3 id="features"><a href="#features">Features</a></h3>
 <p>The Kira crate has the following feature flags:</p>
 <ul>
@@ -229,13 +221,12 @@ the <code>symphonia</code> feature automatically)</li>
 <ul>
 <li><a href="manager/struct.Capacities.html" title="struct jumpy::prelude::kira::manager::Capacities"><code>Capacities</code></a></li>
 <li><a href="clock/enum.ClockSpeed.html" title="enum jumpy::prelude::kira::clock::ClockSpeed"><code>ClockSpeed</code></a></li>
-<li><a href="track/effect/distortion/enum.DistortionKind.html" title="enum jumpy::prelude::kira::track::effect::distortion::DistortionKind"><code>DistortionKind</code></a></li>
+<li><a href="effect/distortion/enum.DistortionKind.html" title="enum jumpy::prelude::kira::effect::distortion::DistortionKind"><code>DistortionKind</code></a></li>
 <li><a href="tween/enum.Easing.html" title="enum jumpy::prelude::kira::tween::Easing"><code>Easing</code></a></li>
 <li><a href="sound/enum.EndPosition.html" title="enum jumpy::prelude::kira::sound::EndPosition"><code>EndPosition</code></a></li>
-<li><a href="track/effect/eq_filter/enum.EqFilterKind.html" title="enum jumpy::prelude::kira::track::effect::eq_filter::EqFilterKind"><code>EqFilterKind</code></a></li>
-<li><a href="track/effect/filter/enum.FilterMode.html" title="enum jumpy::prelude::kira::track::effect::filter::FilterMode"><code>FilterMode</code></a></li>
-<li><a href="dsp/struct.Frame.html" title="struct jumpy::prelude::kira::dsp::Frame"><code>Frame</code></a></li>
-<li><a href="manager/enum.MainPlaybackState.html" title="enum jumpy::prelude::kira::manager::MainPlaybackState"><code>MainPlaybackState</code></a></li>
+<li><a href="effect/eq_filter/enum.EqFilterKind.html" title="enum jumpy::prelude::kira::effect::eq_filter::EqFilterKind"><code>EqFilterKind</code></a></li>
+<li><a href="effect/filter/enum.FilterMode.html" title="enum jumpy::prelude::kira::effect::filter::FilterMode"><code>FilterMode</code></a></li>
+<li><a href="struct.Frame.html" title="struct jumpy::prelude::kira::Frame"><code>Frame</code></a></li>
 <li><a href="tween/struct.ModulatorMapping.html" title="struct jumpy::prelude::kira::tween::ModulatorMapping"><code>ModulatorMapping</code></a></li>
 <li><a href="sound/enum.PlaybackPosition.html" title="enum jumpy::prelude::kira::sound::PlaybackPosition"><code>PlaybackPosition</code></a></li>
 <li><a href="sound/enum.PlaybackRate.html" title="enum jumpy::prelude::kira::sound::PlaybackRate"><code>PlaybackRate</code></a></li>
@@ -248,6 +239,8 @@ the <code>symphonia</code> feature automatically)</li>
 <li><code>assert_no_alloc</code> - uses the <a href="https://crates.io/crates/assert_no_alloc"><code>assert_no_alloc</code></a> crate
 to cause panics if memory is allocated or deallocated on the audio thread. This is mainly useful
 for people developing Kira itself.</li>
+<li><code>android_shared_stdcxx</code> - enables cpal’s <code>oboe-shared-stdcxx</code> which can be helpful
+for Android compilation</li>
 </ul>
 <h3 id="loading-other-audio-file-formats"><a href="#loading-other-audio-file-formats">Loading other audio file formats</a></h3>
 <p>Kira will be able to load any audio format that Symphonia supports with its
@@ -302,4 +295,13 @@ changes to your crate, you’re not recompiling the dependencies, so you don’t
 suffer from the longer compilation step in that case. Building dependencies
 optimized and the main crate unoptimized can be a good balance of performance
 and compile times for games.</p>
-</div></details><h2 id="modules" class="section-header"><a href="#modules">Modules</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="clock/index.html" title="mod jumpy::prelude::kira::clock">clock</a></div><div class="desc docblock-short">Precise timing for audio events.</div></li><li><div class="item-name"><a class="mod" href="dsp/index.html" title="mod jumpy::prelude::kira::dsp">dsp</a></div><div class="desc docblock-short">Tools for manipulating audio signals.</div></li><li><div class="item-name"><a class="mod" href="manager/index.html" title="mod jumpy::prelude::kira::manager">manager</a></div><div class="desc docblock-short">The main entrypoint for controlling audio from gameplay code.</div></li><li><div class="item-name"><a class="mod" href="modulator/index.html" title="mod jumpy::prelude::kira::modulator">modulator</a></div><div class="desc docblock-short">Global values that parameters (like volume and playback rate) can be linked to.</div></li><li><div class="item-name"><a class="mod" href="sound/index.html" title="mod jumpy::prelude::kira::sound">sound</a></div><div class="desc docblock-short">Sources of audio.</div></li><li><div class="item-name"><a class="mod" href="spatial/index.html" title="mod jumpy::prelude::kira::spatial">spatial</a></div><div class="desc docblock-short">Positions audio in 3D space.</div></li><li><div class="item-name"><a class="mod" href="track/index.html" title="mod jumpy::prelude::kira::track">track</a></div><div class="desc docblock-short">Organizes and applies effects to audio.</div></li><li><div class="item-name"><a class="mod" href="tween/index.html" title="mod jumpy::prelude::kira::tween">tween</a></div><div class="desc docblock-short">Smooth interpolation between values.</div></li></ul><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.CommandError.html" title="enum jumpy::prelude::kira::CommandError">CommandError</a></div><div class="desc docblock-short">Errors that can occur when sending a command to the audio thread.</div></li><li><div class="item-name"><a class="enum" href="enum.OutputDestination.html" title="enum jumpy::prelude::kira::OutputDestination">OutputDestination</a></div><div class="desc docblock-short">Where a source of audio should be routed to.</div></li><li><div class="item-name"><a class="enum" href="enum.StartTime.html" title="enum jumpy::prelude::kira::StartTime">StartTime</a></div><div class="desc docblock-short">Describes when an action should occur.</div></li><li><div class="item-name"><a class="enum" href="enum.Volume.html" title="enum jumpy::prelude::kira::Volume">Volume</a></div><div class="desc docblock-short">A change in volume of a sound.</div></li></ul></section></div></main></body></html>
+</div></details><h2 id="modules" class="section-header"><a href="#modules">Modules</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="clock/index.html" title="mod jumpy::prelude::kira::clock">clock</a></div><div class="desc docblock-short">Precise timing for audio events.</div></li><li><div class="item-name"><a class="mod" href="command/index.html" title="mod jumpy::prelude::kira::command">command</a></div><div class="desc docblock-short">Helpers for sending commands from the gameplay thread to the audio thread.
+You’ll only need to use this if you’re making your own implementation of
+<a href="sound/trait.Sound.html" title="trait jumpy::prelude::kira::sound::Sound"><code>Sound</code></a>, <a href="effect/trait.Effect.html" title="trait jumpy::prelude::kira::effect::Effect"><code>Effect</code></a>,
+or <a href="modulator/trait.Modulator.html" title="trait jumpy::prelude::kira::modulator::Modulator"><code>Modulator</code></a>.</div></li><li><div class="item-name"><a class="mod" href="effect/index.html" title="mod jumpy::prelude::kira::effect">effect</a></div><div class="desc docblock-short">Modifies audio signals.</div></li><li><div class="item-name"><a class="mod" href="manager/index.html" title="mod jumpy::prelude::kira::manager">manager</a></div><div class="desc docblock-short">The main entrypoint for controlling audio from gameplay code.</div></li><li><div class="item-name"><a class="mod" href="modulator/index.html" title="mod jumpy::prelude::kira::modulator">modulator</a></div><div class="desc docblock-short">Global values that parameters (like volume and playback rate) can be linked to.</div></li><li><div class="item-name"><a class="mod" href="sound/index.html" title="mod jumpy::prelude::kira::sound">sound</a></div><div class="desc docblock-short">Sources of audio.</div></li><li><div class="item-name"><a class="mod" href="spatial/index.html" title="mod jumpy::prelude::kira::spatial">spatial</a></div><div class="desc docblock-short">Positions audio in 3D space.</div></li><li><div class="item-name"><a class="mod" href="track/index.html" title="mod jumpy::prelude::kira::track">track</a></div><div class="desc docblock-short">Organizes and applies effects to audio.</div></li><li><div class="item-name"><a class="mod" href="tween/index.html" title="mod jumpy::prelude::kira::tween">tween</a></div><div class="desc docblock-short">Smooth interpolation between values.</div></li></ul><h2 id="macros" class="section-header"><a href="#macros">Macros</a></h2><ul class="item-table"><li><div class="item-name"><a class="macro" href="macro.command_writers_and_readers.html" title="macro jumpy::prelude::kira::command_writers_and_readers">command_writers_and_readers</a></div><div class="desc docblock-short">Creates a set of command writers and readers and a constructor for them.
+You’ll only need to use this if you’re making your own implementation of
+<a href="sound/trait.Sound.html" title="trait jumpy::prelude::kira::sound::Sound"><code>Sound</code></a>, <a href="effect/trait.Effect.html" title="trait jumpy::prelude::kira::effect::Effect"><code>Effect</code></a>,
+or <a href="modulator/trait.Modulator.html" title="trait jumpy::prelude::kira::modulator::Modulator"><code>Modulator</code></a>.</div></li></ul><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.Frame.html" title="struct jumpy::prelude::kira::Frame">Frame</a></div><div class="desc docblock-short">A stereo audio sample.</div></li><li><div class="item-name"><a class="struct" href="struct.ResourceLimitReached.html" title="struct jumpy::prelude::kira::ResourceLimitReached">ResourceLimitReached</a></div><div class="desc docblock-short">An error that is returned when a resource cannot be added because the
+maximum capacity for that resource has been reached.</div></li></ul><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.OutputDestination.html" title="enum jumpy::prelude::kira::OutputDestination">OutputDestination</a></div><div class="desc docblock-short">Where a source of audio should be routed to.</div></li><li><div class="item-name"><a class="enum" href="enum.StartTime.html" title="enum jumpy::prelude::kira::StartTime">StartTime</a></div><div class="desc docblock-short">Describes when an action should occur.</div></li><li><div class="item-name"><a class="enum" href="enum.Volume.html" title="enum jumpy::prelude::kira::Volume">Volume</a></div><div class="desc docblock-short">A change in volume of a sound.</div></li></ul><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2><ul class="item-table"><li><div class="item-name"><a class="fn" href="fn.interpolate_frame.html" title="fn jumpy::prelude::kira::interpolate_frame">interpolate_frame</a></div><div class="desc docblock-short">Given a previous frame, a current frame, the two next frames,
+and a position <code>x</code> from 0.0 to 1.0 between the current frame
+and next frame, get an approximated frame.</div></li></ul></section></div></main></body></html>

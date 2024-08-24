@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["SetRouteError","TrackId"],"mod":["effect"],"struct":["SubTrackId","TrackBuilder","TrackHandle","TrackRoutes"]};
+window.SIDEBAR_ITEMS = {"enum":["TrackId"],"struct":["NonexistentRoute","SubTrackId","TrackBuilder","TrackHandle","TrackRoutes"]};

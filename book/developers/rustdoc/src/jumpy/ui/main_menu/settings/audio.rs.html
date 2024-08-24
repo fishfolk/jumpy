@@ -212,16 +212,16 @@
 
 <span class="kw">impl </span>SettingsExts <span class="kw">for </span>Settings {
     <span class="kw">fn </span>volume_change_event(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AudioEvent {
-        AudioEvent::VolumeChange {
-            main_volume: <span class="self">self</span>.main_volume,
-            music_volume: <span class="self">self</span>.music_volume,
-            effects_volume: <span class="self">self</span>.effects_volume,
+        AudioEvent::VolumeScaleUpdate {
+            main_volume_scale: <span class="self">self</span>.main_volume,
+            music_volume_scale: <span class="self">self</span>.music_volume,
+            effects_volume_scale: <span class="self">self</span>.effects_volume,
         }
     }
 }
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>on_cancel(In(state): In&lt;<span class="kw-2">&amp;</span>SettingsState&gt;, <span class="kw-2">mut </span>audio_center: ResMut&lt;AudioCenter&gt;) {
-    audio_center.event(state.modified_settings.volume_change_event());
+    audio_center.push_event(state.modified_settings.volume_change_event());
 }
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>widget(
@@ -243,7 +243,7 @@
 
     <span class="kw">if </span>should_reset {
         state.modified_settings.main_volume = meta.default_settings.main_volume;
-        audio_center.event(state.modified_settings.volume_change_event());
+        audio_center.push_event(state.modified_settings.volume_change_event());
     }
 
     ui.add_space(normal_font.size);
@@ -289,7 +289,7 @@
                 ui.end_row();
 
                 <span class="kw">if </span>main_changed || music_changed || effects_changed {
-                    audio_center.event(state.modified_settings.volume_change_event());
+                    audio_center.push_event(state.modified_settings.volume_change_event());
                 }
             });
         });
@@ -299,7 +299,7 @@
 <span class="kw">fn </span>volume_control_widget(
     ui: <span class="kw-2">&amp;mut </span>egui::Ui,
     label: <span class="kw">impl </span>Into&lt;egui::WidgetText&gt;,
-    value: <span class="kw-2">&amp;mut </span>f64,
+    value: <span class="kw-2">&amp;mut </span>f32,
 ) -&gt; egui::Response {
     ui.label(label);
     <span class="kw">let </span>slider = egui::Slider::new(value, <span class="number">0.0</span>..=<span class="number">1.0</span>)

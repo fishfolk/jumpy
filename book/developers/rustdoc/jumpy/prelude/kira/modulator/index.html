@@ -137,11 +137,7 @@ the drums volume and piano filter frequency. When the tweener is set to
 <p>Next, we’ll create a mixer track with a low-pass filter effect. The piano will play
 on this track so we can make it sound more or less muffled.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>kira::{
-	track::{TrackBuilder, effect::filter::FilterBuilder},
-	tween::{ModulatorMapping, Value},
-};
-
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>
 <span class="kw">let </span>filter_builder = FilterBuilder::new()
 	.cutoff(Value::from_modulator(<span class="kw-2">&amp;</span>tweener, ModulatorMapping {
 		input_range: (<span class="number">0.0</span>, <span class="number">1.0</span>),
@@ -153,20 +149,19 @@ on this track so we can make it sound more or less muffled.</p>
 of the filter cutoff frequency.</p>
 <p>Finally, we’ll play the sounds:</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>kira::{
-	sound::static_sound::{StaticSoundData, StaticSoundSettings},
-	Volume,
-};
-
-<span class="kw">let </span>piano_settings = StaticSoundSettings::new().output_destination(<span class="kw-2">&amp;</span>piano_track);
-manager.play(StaticSoundData::from_file(<span class="string">"piano.ogg"</span>, piano_settings)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-<span class="kw">let </span>drums_settings = StaticSoundSettings::new()
-	.volume(Value::from_modulator(<span class="kw-2">&amp;</span>tweener, ModulatorMapping {
-		input_range: (<span class="number">0.0</span>, <span class="number">1.0</span>),
-		output_range: (Volume::Amplitude(<span class="number">1.0</span>), Volume::Amplitude(<span class="number">0.0</span>)),
-		..Default::default()
-	}));
-manager.play(StaticSoundData::from_file(<span class="string">"drums.ogg"</span>, drums_settings)<span class="question-mark">?</span>)<span class="question-mark">?</span>;</code></pre></div>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>
+manager.play(
+	StaticSoundData::from_file(<span class="string">"piano.ogg"</span>)<span class="question-mark">?
+		</span>.output_destination(<span class="kw-2">&amp;</span>piano_track)
+)<span class="question-mark">?</span>;
+manager.play(
+	StaticSoundData::from_file(<span class="string">"drums.ogg"</span>)<span class="question-mark">?
+		</span>.volume(Value::from_modulator(<span class="kw-2">&amp;</span>tweener, ModulatorMapping {
+			input_range: (<span class="number">0.0</span>, <span class="number">1.0</span>),
+			output_range: (Volume::Amplitude(<span class="number">1.0</span>), Volume::Amplitude(<span class="number">0.0</span>)),
+			..Default::default()
+		}))
+)<span class="question-mark">?</span>;</code></pre></div>
 <p>Notice how we also use a <code>ModulatorMapping</code> to map the input range of the tweener to the
 output values of the sound volume.</p>
 <p>Once the player goes underwater, we can smoothly transition the tweener’s value from
@@ -178,5 +173,5 @@ output values of the sound volume.</p>
 tweener.set(<span class="number">1.0</span>, Tween {
 	duration: Duration::from_secs(<span class="number">3</span>),
 	..Default::default()
-})<span class="question-mark">?</span>;</code></pre></div>
+});</code></pre></div>
 </div></details><h2 id="modules" class="section-header"><a href="#modules">Modules</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="lfo/index.html" title="mod jumpy::prelude::kira::modulator::lfo">lfo</a></div><div class="desc docblock-short">Oscillates back and forth.</div></li><li><div class="item-name"><a class="mod" href="tweener/index.html" title="mod jumpy::prelude::kira::modulator::tweener">tweener</a></div><div class="desc docblock-short">Smoothly transitions values to other values.</div></li><li><div class="item-name"><a class="mod" href="value_provider/index.html" title="mod jumpy::prelude::kira::modulator::value_provider">value_provider</a></div><div class="desc docblock-short">Contains types for reporting values of modulators.</div></li></ul><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.ModulatorId.html" title="struct jumpy::prelude::kira::modulator::ModulatorId">ModulatorId</a></div><div class="desc docblock-short">A unique identifier for a modulator.</div></li></ul><h2 id="traits" class="section-header"><a href="#traits">Traits</a></h2><ul class="item-table"><li><div class="item-name"><a class="trait" href="trait.Modulator.html" title="trait jumpy::prelude::kira::modulator::Modulator">Modulator</a></div><div class="desc docblock-short">Produces a stream of values that a parameter can be linked to.</div></li><li><div class="item-name"><a class="trait" href="trait.ModulatorBuilder.html" title="trait jumpy::prelude::kira::modulator::ModulatorBuilder">ModulatorBuilder</a></div><div class="desc docblock-short">Configures a modulator.</div></li></ul></section></div></main></body></html>

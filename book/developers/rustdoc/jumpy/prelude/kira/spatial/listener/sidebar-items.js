@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["ListenerHandle","ListenerId","ListenerSettings"]};
+window.SIDEBAR_ITEMS = {"struct":["ListenerHandle","ListenerSettings"]};

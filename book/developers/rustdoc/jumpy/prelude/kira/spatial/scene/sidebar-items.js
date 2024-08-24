@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["AddEmitterError","AddListenerError"],"struct":["SpatialSceneHandle","SpatialSceneId","SpatialSceneSettings"]};
+window.SIDEBAR_ITEMS = {"struct":["SpatialSceneHandle","SpatialSceneId","SpatialSceneSettings"]};

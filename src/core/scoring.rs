@@ -95,7 +95,7 @@ pub fn round_end(
     mut scoring_menu: ResMut<ScoringMenuState>,
     killed_players: Comp<PlayerKilled>,
     player_indices: Comp<PlayerIdx>,
-    #[cfg(not(target_arch = "wasm32"))] network_info: Option<Res<NetworkInfo>>,
+    #[cfg(not(target_arch = "wasm32"))] syncing_info: Option<Res<SyncingInfo>>,
 ) {
     // Count players so we can avoid ending round if it's a one player match
     let mut player_count = 0;
@@ -155,6 +155,7 @@ pub fn round_end(
 
         // Is round transition sycnrhonized on all clients in network play?
         // Will evaluate to true in local play.
+        #[allow(unused_assignments)]
         let mut round_transition_synchronized = false;
 
         // If in network play and determined a prev frame round should end on:
@@ -162,8 +163,11 @@ pub fn round_end(
         if let Some(end_net_frame) = state.network_round_end_frame {
             // check if this frame is confirmed by all players.
             #[cfg(not(target_arch = "wasm32"))]
-            if let Some(network_info) = network_info {
-                round_transition_synchronized = end_net_frame <= network_info.last_confirmed_frame;
+            {
+                round_transition_synchronized = match syncing_info {
+                    Some(syncing_info) => end_net_frame <= syncing_info.last_confirmed_frame(),
+                    None => true,
+                };
             }
         } else {
             // Network frame for round end not yet recorded (or in local only)
@@ -175,21 +179,20 @@ pub fn round_end(
 
             // Save current predicted frame for round end.
             // Will not follow through with transition until this frame is confirmed
-            // by all players in network play. If local, safe to transition now.
+            // by all players in network play.
             #[cfg(not(target_arch = "wasm32"))]
-            if let Some(network_info) = network_info {
-                state.network_round_end_frame = Some(network_info.current_frame);
+            if let Some(syncing_info) = syncing_info {
+                state.network_round_end_frame = Some(syncing_info.current_frame());
             } else {
-                // `Option<Res<NetworkInfo>>` always available in network play,
-                // we are local and can transition now.
+                // No sync info - must be local and sychronized.
                 round_transition_synchronized = true;
             }
+        }
 
-            // Wasm32 is always local, can transition now.
-            #[cfg(target_arch = "wasm32")]
-            {
-                round_transition_synchronized = true;
-            }
+        // Wasm32 is always local, can transition now.
+        #[cfg(target_arch = "wasm32")]
+        {
+            round_transition_synchronized = true;
         }
 
         if round_transition_synchronized {

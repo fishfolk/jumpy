@@ -39,7 +39,11 @@ fn pause_menu_system(
         let pause_pressed = controls.values().any(|x| x.pause_just_pressed);
 
         #[cfg(not(target_arch = "wasm32"))]
-        let is_online = session.world.get_resource::<NetworkInfo>().is_some();
+        let is_online = session
+            .world
+            .get_resource::<SyncingInfo>()
+            .map_or(false, |x| x.is_online());
+
         #[cfg(target_arch = "wasm32")]
         let is_online = false;
 

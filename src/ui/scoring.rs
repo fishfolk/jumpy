@@ -2,7 +2,7 @@
 use std::ops::Deref;
 
 #[cfg(not(target_arch = "wasm32"))]
-use bones_framework::networking::{NetworkInfo, NetworkSocket, SocketTarget};
+use bones_framework::networking::{socket::Socket, NetworkSocket, SocketTarget, SyncingInfo};
 
 use crate::prelude::*;
 
@@ -91,11 +91,10 @@ fn scoring_menu_system(
         let match_inputs = session.world.get_resource::<MatchInputs>().unwrap();
 
         #[cfg(not(target_arch = "wasm32"))]
-        let network_socket = session
+        let network_socket: Option<Socket> = session
             .world
-            .get_resource::<NetworkInfo>()
-            .as_deref()
-            .map(|x| x.socket.clone());
+            .get_resource::<SyncingInfo>()
+            .and_then(|x| x.socket().cloned());
 
         // Build Vec<PlayerScoreInfo> sorted by player indices
         let mut player_entities: Vec<(Entity, &PlayerIdx)> =

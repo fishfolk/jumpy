@@ -385,6 +385,10 @@
 <a href="#289" id="289">289</a>
 <a href="#290" id="290">290</a>
 <a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
 
 <span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>};
@@ -426,7 +430,11 @@
         <span class="kw">let </span>pause_pressed = controls.values().any(|x| x.pause_just_pressed);
 
         <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
-        </span><span class="kw">let </span>is_online = session.world.get_resource::&lt;NetworkInfo&gt;().is_some();
+        </span><span class="kw">let </span>is_online = session
+            .world
+            .get_resource::&lt;SyncingInfo&gt;()
+            .map_or(<span class="bool-val">false</span>, |x| x.is_online());
+
         <span class="attr">#[cfg(target_arch = <span class="string">"wasm32"</span>)]
         </span><span class="kw">let </span>is_online = <span class="bool-val">false</span>;
 

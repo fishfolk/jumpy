@@ -317,6 +317,9 @@
 <a href="#221" id="221">221</a>
 <a href="#222" id="222">222</a>
 <a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Track scoring of rounds / tournament
 
 </span><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, ui::scoring::ScoringMenuState};
@@ -414,7 +417,7 @@
     <span class="kw-2">mut </span>scoring_menu: ResMut&lt;ScoringMenuState&gt;,
     killed_players: Comp&lt;PlayerKilled&gt;,
     player_indices: Comp&lt;PlayerIdx&gt;,
-    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))] </span>network_info: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkInfo&gt;&gt;,
+    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))] </span>syncing_info: <span class="prelude-ty">Option</span>&lt;Res&lt;SyncingInfo&gt;&gt;,
 ) {
     <span class="comment">// Count players so we can avoid ending round if it's a one player match
     </span><span class="kw">let </span><span class="kw-2">mut </span>player_count = <span class="number">0</span>;
@@ -474,6 +477,7 @@
 
         // Is round transition sycnrhonized on all clients in network play?
         // Will evaluate to true in local play.
+        </span><span class="attr">#[allow(unused_assignments)]
         </span><span class="kw">let </span><span class="kw-2">mut </span>round_transition_synchronized = <span class="bool-val">false</span>;
 
         <span class="comment">// If in network play and determined a prev frame round should end on:
@@ -481,8 +485,11 @@
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(end_net_frame) = state.network_round_end_frame {
             <span class="comment">// check if this frame is confirmed by all players.
             </span><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
-            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(network_info) = network_info {
-                round_transition_synchronized = end_net_frame &lt;= network_info.last_confirmed_frame;
+            </span>{
+                round_transition_synchronized = <span class="kw">match </span>syncing_info {
+                    <span class="prelude-val">Some</span>(syncing_info) =&gt; end_net_frame &lt;= syncing_info.last_confirmed_frame(),
+                    <span class="prelude-val">None </span>=&gt; <span class="bool-val">true</span>,
+                };
             }
         } <span class="kw">else </span>{
             <span class="comment">// Network frame for round end not yet recorded (or in local only)
@@ -494,21 +501,20 @@
 
             <span class="comment">// Save current predicted frame for round end.
             // Will not follow through with transition until this frame is confirmed
-            // by all players in network play. If local, safe to transition now.
+            // by all players in network play.
             </span><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
-            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(network_info) = network_info {
-                state.network_round_end_frame = <span class="prelude-val">Some</span>(network_info.current_frame);
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(syncing_info) = syncing_info {
+                state.network_round_end_frame = <span class="prelude-val">Some</span>(syncing_info.current_frame());
             } <span class="kw">else </span>{
-                <span class="comment">// `Option&lt;Res&lt;NetworkInfo&gt;&gt;` always available in network play,
-                // we are local and can transition now.
+                <span class="comment">// No sync info - must be local and sychronized.
                 </span>round_transition_synchronized = <span class="bool-val">true</span>;
             }
+        }
 
-            <span class="comment">// Wasm32 is always local, can transition now.
-            </span><span class="attr">#[cfg(target_arch = <span class="string">"wasm32"</span>)]
-            </span>{
-                round_transition_synchronized = <span class="bool-val">true</span>;
-            }
+        <span class="comment">// Wasm32 is always local, can transition now.
+        </span><span class="attr">#[cfg(target_arch = <span class="string">"wasm32"</span>)]
+        </span>{
+            round_transition_synchronized = <span class="bool-val">true</span>;
         }
 
         <span class="kw">if </span>round_transition_synchronized {

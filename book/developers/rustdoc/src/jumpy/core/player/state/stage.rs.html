@@ -197,6 +197,10 @@
 <a href="#101" id="101">101</a>
 <a href="#102" id="102">102</a>
 <a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(Debug)]
@@ -298,6 +302,10 @@
 
     <span class="kw">fn </span>add_system(<span class="kw-2">&amp;mut </span><span class="self">self</span>, system: StaticSystem&lt;(), ()&gt;) {
         <span class="self">self</span>.systems.push(system.system())
+    }
+
+    <span class="kw">fn </span>remove_all_systems(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.systems.clear();
     }
 }
 </code></pre></div></section></main></body></html>

@@ -100,4 +100,8 @@ impl SystemStage for PlayerStateStageImpl {
     fn add_system(&mut self, system: StaticSystem<(), ()>) {
         self.systems.push(system.system())
     }
+
+    fn remove_all_systems(&mut self) {
+        self.systems.clear();
+    }
 }

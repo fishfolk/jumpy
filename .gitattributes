@@ -1,3 +1,25 @@
 web/* linguist-vendored
 
-* text eol=lf
+# Set default behavior to automatically normalize line endings.
+* text=auto eol=lf
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.{txt,md,rs,py,js,jsx,ts,tsx,css,scss,html,xml,json,yaml,yml,toml} text
+
+# Declare files that will always have LF line endings on checkout.
+*.sh text eol=lf
+
+# Git files
+.gitattributes text
+.gitignore text
+
+# Denote all files that are truly binary and should not be modified.
+*.{png,jpg,jpeg,gif,ico,webp,woff,woff2,ttf,otf,eot,mp3,mp4,wav,webm,ogg} binary
+
+# Treat all files in the assets directory as binary
+assets/** binary
+old_assets/** binary
+
+# If you have other directories with mostly binary files, add them like this:
+# other_binary_directory/** binary

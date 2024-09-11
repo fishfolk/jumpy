@@ -581,7 +581,7 @@ dependencies = [
  "downcast-rs",
  "event-listener 2.5.3",
  "fixedbitset",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "serde",
  "thiserror",
  "thread_local",
@@ -743,7 +743,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23ddc18d489b4e57832d4958cde7cd2f349f0ad91e5892ac9e2f2ee16546b981"
 dependencies = [
  "quote",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "syn 2.0.72",
  "toml_edit",
 ]
@@ -1083,7 +1083,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "regex",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "shlex",
  "syn 2.0.72",
 ]
@@ -2642,7 +2642,7 @@ dependencies = [
  "fluent-syntax",
  "intl-memoizer",
  "intl_pluralrules",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "self_cell 0.10.3",
  "smallvec",
  "unic-langid",
@@ -3907,7 +3907,7 @@ dependencies = [
  "iroh-quinn-proto",
  "iroh-quinn-udp",
  "pin-project-lite",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "rustls 0.21.12",
  "thiserror",
  "tokio",
@@ -3923,7 +3923,7 @@ dependencies = [
  "bytes",
  "rand",
  "ring",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "rustls 0.21.12",
  "rustls-native-certs",
  "slab",
@@ -4143,7 +4143,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4979f22fdb869068da03c9f7528f8297c6fd2606bc3a4affe42e6a823fdb8da4"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.6",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -4451,7 +4451,7 @@ dependencies = [
  "log",
  "num-traits",
  "pp-rs",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "spirv",
  "termcolor",
  "thiserror",
@@ -4472,7 +4472,7 @@ dependencies = [
  "once_cell",
  "regex",
  "regex-syntax 0.6.29",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "thiserror",
  "tracing",
  "unicode-ident",
@@ -5278,7 +5278,7 @@ dependencies = [
  "nalgebra",
  "num-derive",
  "num-traits",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "simba",
  "slab",
  "smallvec",
@@ -5859,7 +5859,7 @@ dependencies = [
  "pin-project-lite",
  "quinn-proto",
  "quinn-udp",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "rustls 0.23.12",
  "thiserror",
  "tokio",
@@ -5868,14 +5868,14 @@ dependencies = [
 
 [[package]]
 name = "quinn-proto"
-version = "0.11.3"
+version = "0.11.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ddf517c03a109db8100448a4be38d498df8a210a99fe0e1b9eaf39e78c640efe"
+checksum = "fadfaed2cd7f389d0161bb73eeb07b7b78f8691047a6f3e73caaeae55310a4a6"
 dependencies = [
  "bytes",
  "rand",
  "ring",
- "rustc-hash",
+ "rustc-hash 2.0.0",
  "rustls 0.23.12",
  "slab",
  "thiserror",
@@ -5986,7 +5986,7 @@ dependencies = [
  "num-derive",
  "num-traits",
  "parry2d",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "simba",
 ]
 
@@ -6277,6 +6277,12 @@ name = "rustc-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
+
+[[package]]
+name = "rustc-hash"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "583034fd73374156e66797ed8e5b0d5690409c9226b22d87cb7f19821c05d152"
 
 [[package]]
 name = "rustc_version"
@@ -7591,7 +7597,7 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "deb68604048ff8fa93347f02441e4487594adc20bb8a084f9e564d2b827a0a9f"
 dependencies = [
- "rustc-hash",
+ "rustc-hash 1.1.0",
 ]
 
 [[package]]
@@ -8077,7 +8083,7 @@ dependencies = [
  "parking_lot",
  "profiling",
  "raw-window-handle",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "smallvec",
  "thiserror",
  "web-sys",
@@ -8118,7 +8124,7 @@ dependencies = [
  "range-alloc",
  "raw-window-handle",
  "renderdoc-sys",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "smallvec",
  "thiserror",
  "wasm-bindgen",

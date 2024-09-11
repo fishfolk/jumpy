@@ -136,6 +136,9 @@ pub struct GameMusic {
 }
 
 fn main() {
+    // Init logging
+    setup_logs!("org", "fishfolk", "jumpy");
+
     // Initialize the Bevy task pool manually so that we can use it during startup.
     bevy_tasks::IoTaskPool::init(bevy_tasks::TaskPool::new);
 

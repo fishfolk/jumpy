@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Derive macro for the `HasSchema` trait."><title>HasSchema in jumpy::prelude::bones_schema::prelude - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Derive macro for the HasSchema trait."><title>HasSchema in jumpy::prelude::bones_schema::prelude - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -102,39 +102,54 @@
     #[type_data]
     #[schema_module]
 }
-</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Derive macro for the <code>HasSchema</code> trait.</p>
-<h3 id="example"><a href="#example">Example</a></h3>
-<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="doccomment">/// This is a custom type data.
-///
-/// While it must implement [`HasSchema`] it is fine to just make it opaque.
-///
-/// In this case we want to store the name of the type in our custom type data.
-</span><span class="attr">#[derive(HasSchema, Clone, Default)]
-</span><span class="doccomment">/// struct TypeName(String);
+</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Derive macro for the HasSchema trait.</p>
+<h3 id="usage-with-reprc"><a href="#usage-with-reprc">Usage with #[repr(C)]</a></h3>
+<p>HasSchema works with the #[repr(C)] annotation to fully implement its features.</p>
+<p>If there is no #[repr(C)] annotation, the SchemaKind of your type’s schema will be Opaque.</p>
+<p>This means if you don’t know the kind of type, like in the case of a SchemaBox, you’ll be unable
+to read the fields.</p>
+<p>This applies to bones’ lua scripting since SchemaBox is effectively the “lua type”.
+See SchemaBox.</p>
+<p>If you intend a type to be opaque even though it has #[repr(C)] you can use #[schema(opaque)]
+to force an opaque schema representation.</p>
+<p>Keep in mind, enums deriving HasSchema with a #[repr(C)] annotation must also specify an
+enum tag type like #[repr(C, u8)] where u8 could be either u16 or u32 if you need
+more than 256 enum variants.</p>
+<h3 id="no_default--no_clone-attributes"><a href="#no_default--no_clone-attributes">no_default &amp; no_clone attributes</a></h3>
+<p>HasSchema derive requires the type to implement Default &amp; Clone, if either of these cannot be
+implemented you can use the no_default &amp; no_clone schema attributes respectively to ignore
+these requirements.</p>
 
-/// In order to make [`TypeName`] derivable, we must implement [`FromType`] for it.
-</span><span class="kw">impl</span>&lt;T&gt; FromType&lt;T&gt; <span class="kw">for </span>TypeName {
-    <span class="kw">fn </span>from_type() -&gt; <span class="self">Self </span>{
-        <span class="self">Self</span>(std::any::type_name::&lt;T&gt;().to_string())
-    }
-}
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(HasSchema, Default)]
+#[schema(no_clone)]
+</span><span class="kw">struct </span>DoesntImplClone;
 
-<span class="doccomment">/// Finally we can derive our type data on other types that implement [`HasSchema`] by using the
-/// `#[derive_type_data()]` attribute with one or more type datas to derive.
-</span><span class="attr">#[derive(HasSchema, Debug, Default, Clone)]
-#[derive_type_data(TypeName)]
-#[repr(C)]
-</span><span class="kw">struct </span>MyStruct {
-    x: f32,
-    y: f32,
-}
+<span class="attr">#[derive(HasSchema, Clone)]
+#[schema(no_default)]
+</span><span class="kw">struct </span>DoesntImplDefault;</code></pre></div>
+<p>The caveat for putting no_default on your type is that it cannot be created from a Schema.
+This is necessary if you want to create your type within a bones lua script.</p>
+<p>Since the fields that need to be initialized to create a complete version of your type cannot be
+determined, Schema needs a default function to initialize the data properly.</p>
+<p>The caveat for putting no_clone on your type is that it cannot be cloned in the form of a
+SchemaBox.</p>
+<p>This is critical in the case of bones’ networking which will panic if your type is in the world
+and does not implement clone during the network rollback.</p>
+<h3 id="type_data-attribute"><a href="#type_data-attribute">type_data attribute</a></h3>
+<p>This attribute takes an expression and stores that value in what is basically
+a type keyed map accessible from your type’s Schema.</p>
+<h3 id="derive_type_data-attribute"><a href="#derive_type_data-attribute">derive_type_data attribute</a></h3>
+<p>This attribute is simply a shortcut equivalent to using the type_data attribute
+with any type’s <code>FromType&lt;YourHasSchemaType&gt;</code> implementation like so:</p>
 
-<span class="doccomment">/// It is also possible to add type data that may or may not implement [`FromType`] by passing in an
-/// expression for the type data into a `type_data` attribute.
-</span><span class="attr">#[derive(HasSchema, Clone, Default, Debug)]
-#[type_data(TypeName(<span class="string">"CustomName"</span>.into()))]
-#[repr(C)]
-</span><span class="kw">struct </span>MyOtherStruct;</code></pre></div>
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(HasSchema, Clone, Default)]
+#[type_data(&lt;OtherType <span class="kw">as </span>FromType&lt;Data&gt;&gt;::from_type())]
+</span><span class="kw">struct </span>Data;</code></pre></div>
+<p>Simply specify a type instead of an expression:</p>
+
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(HasSchema, Clone, Default)]
+#[derive_type_data(OtherType)] </span><span class="comment">// OtherType implements FromType&lt;Data&gt;
+</span><span class="kw">struct </span>Data;</code></pre></div>
 <h3 id="known-limitations"><a href="#known-limitations">Known Limitations</a></h3>
 <p>Currently it isn’t possible to construct a struct that contains itself. For example, this will
 not work:</p>

@@ -131,9 +131,8 @@ protocol.</p>
 <p>When a client connects to the matchmaking server, the very first thing it will do is send a
 [<code>RequestMatch</code>][crate::external::bones_matchmaker_proto::MatchmakerRequest::RequestMatch] message
 to the server over a reliable channel.</p>
-<p>This message contains the [<code>MatchInfo</code>][crate::external::bones_matchmaker_proto::MatchInfo] that
-tells the server how many players the client wants to connect to for the match, along with an
-arbitrary byte sequence for the <code>match_data</code>.</p>
+<p>This message contains the [<code>MatchInfo</code>] that tells the server how many players the client wants to
+connect to for the match, along with an arbitrary byte sequence for the <code>match_data</code>.</p>
 <p>In order for players to end up in the same match as each-other, they must specify the <em>exact</em> same
 <code>MatchInfo</code>, including the <code>match_data</code>. We use the <code>match_data</code> as a way to specify which game mode
 and parameters, etc. that the player wants to connect to, so that all the players that are connected

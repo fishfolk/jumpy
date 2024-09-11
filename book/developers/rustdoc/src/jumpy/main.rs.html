@@ -362,6 +362,9 @@
 <a href="#266" id="266">266</a>
 <a href="#267" id="267">267</a>
 <a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
 </pre></div><pre class="rust"><code><span class="attr">#![doc(html_logo_url = <span class="string">"https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4"</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
 </span><span class="attr">#![cfg_attr(doc, allow(unknown_lints))]
@@ -500,6 +503,9 @@
 }
 
 <span class="kw">fn </span>main() {
+    <span class="comment">// Init logging
+    </span><span class="macro">setup_logs!</span>(<span class="string">"org"</span>, <span class="string">"fishfolk"</span>, <span class="string">"jumpy"</span>);
+
     <span class="comment">// Initialize the Bevy task pool manually so that we can use it during startup.
     </span>bevy_tasks::IoTaskPool::init(bevy_tasks::TaskPool::new);
 

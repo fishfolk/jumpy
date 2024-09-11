@@ -126,7 +126,7 @@ jobs:
 
     steps:
       - name: ⬇️ Download Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
 
       - name: 🔒 Generate Checksums
         run: for file in jumpy-*/jumpy-*; do openssl dgst -sha256 -r "$file" | awk '{print $1}' > "${file}.sha256"; done

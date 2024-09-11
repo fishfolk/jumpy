@@ -5,7 +5,7 @@ description = "A tactical 2D shooter"
 edition     = "2021"
 license     = "MIT OR Apache-2.0"
 name        = "jumpy"
-version     = "0.12.1"
+version     = "0.12.2"
 
 [features]
 default = []
@@ -25,27 +25,30 @@ puffin              = { version = "0.17.0", features = ["web"] }
 puffin_egui         = "0.23.0"
 petgraph            = "0.6.4"
 # Use rapier w/ parry2d 0.13.7 for qbvh crash fix: https://github.com/dimforge/parry/pull/185
-rapier2d            = { git = "https://github.com/MaxCWhitehead/rapier.git", rev= "29c72c6c282e7c40987c0d0d0ce3089ea019a532",  features = ["debug-render", "enhanced-determinism"] }
-indexmap            = "2.0.0"
-serde               = { version = "1.0.188", features = ["derive"] }
-shiftnanigans       = "0.3.3"
-humantime-serde     = "1.1.1"
-ordered-float       = "3.9.1"
-nalgebra            = { version = "0.32", features = ["glam024"] }
-once_cell           = "1.18.0"
-async-channel       = "1.9.0"
-serde_yaml          = "0.9.25"
-thiserror           = "1.0.48"
-peg                 = "0.8.1"
-egui_extras         = { version = "0.23.0", default-features = false }
-shadow-rs           = { version = "0.25.0", default-features = false }
-postcard               = { version = "1.0", default-features = false, features = ["alloc"] }
+rapier2d = { git = "https://github.com/MaxCWhitehead/rapier.git", rev = "29c72c6c282e7c40987c0d0d0ce3089ea019a532", features = [
+    "debug-render",
+    "enhanced-determinism",
+] }
+indexmap = "2.0.0"
+serde = { version = "1.0.188", features = ["derive"] }
+shiftnanigans = "0.3.3"
+humantime-serde = "1.1.1"
+ordered-float = "3.9.1"
+nalgebra = { version = "0.32", features = ["glam024"] }
+once_cell = "1.18.0"
+async-channel = "1.9.0"
+serde_yaml = "0.9.25"
+thiserror = "1.0.48"
+peg = "0.8.1"
+egui_extras = { version = "0.23.0", default-features = false }
+shadow-rs = { version = "0.25.0", default-features = false }
+postcard = { version = "1.0", default-features = false, features = ["alloc"] }
 strum = { version = "0.25.0", features = ["derive"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-bevy_dylib             = "0.11"
-bitfield               = "0.14"
-bytemuck               = "1.12"
+bevy_dylib = "0.11"
+bitfield   = "0.14"
+bytemuck   = "1.12"
 
 # anyhow              = "1.0"
 # async-channel       = "1.7"
@@ -146,8 +149,8 @@ shadow-rs = "0.25.0"
 
 [package.metadata.cargo-machete]
 ignored = [
-  "tracing",   # Needed to add `release_max_level_debug` feature
-  "getrandom", # Needed to add `js` feature
+    "tracing",   # Needed to add `release_max_level_debug` feature
+    "getrandom", # Needed to add `js` feature
 ]
 
 # # Uncomment for testing during bones development, if you clone bones adjacent to the jumpy

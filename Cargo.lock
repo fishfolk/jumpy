@@ -4018,7 +4018,7 @@ dependencies = [
 
 [[package]]
 name = "jumpy"
-version = "0.12.1"
+version = "0.12.2"
 dependencies = [
  "async-channel 1.9.0",
  "bevy_dylib",

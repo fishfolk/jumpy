@@ -196,8 +196,6 @@ pub fn widget(
     ui.ctx().set_state(state);
 }
 
-// }
-
 #[cfg(not(target_arch = "wasm32"))]
 fn handle_match_setup_messages(
     network_socket: &NetworkMatchSocket,
@@ -312,9 +310,9 @@ fn player_select_panel(
             slot_allows_new_player &&
             // And this control source is not bound to a player slot already
             !state
-            .slots
-            .iter()
-            .any(|s| s.control_source == Some(*source))
+                .slots
+                .iter()
+                .any(|s| s.control_source == Some(*source))
         )
         // Return this source
         .then_some(*source)

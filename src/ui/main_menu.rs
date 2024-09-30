@@ -82,6 +82,7 @@ pub enum MenuPage {
     NetworkGame,
 }
 
+#[allow(clippy::const_is_empty)]
 static VERSION_STRING: Lazy<String> = Lazy::new(|| {
     format!(
         "{}{}",

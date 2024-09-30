@@ -353,11 +353,9 @@ fn player_select_panel(
         slot.control_source = Some(control_source);
     }
 
-    let player_control = slot
-        .control_source
-        .as_ref()
-        .map(|s| *controls.get(s).unwrap())
-        .unwrap_or_default();
+    let Some(player_control) = controls.get(&slot.control_source.unwrap_or_default()) else {
+        return;
+    };
 
     if new_player_join.is_none() {
         if player_control.menu_confirm_just_pressed {

@@ -35,7 +35,7 @@ pub fn widget(
         select_action = MapSelectAction::SelectMap(map_meta);
     }
 
-    // If the `JUMPY_MAP` debug env var is present start the game with the map
+    // If the `TEST_MAP` debug env var is present start the game with the map
     // matching the provided name.
     #[cfg(debug_assertions)]
     'test: {
@@ -46,11 +46,11 @@ pub fn widget(
             .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
             .is_ok()
         {
-            let test_map = match var("JUMPY_MAP") {
+            let test_map = match var("TEST_MAP") {
                 Ok(name) => name,
                 Err(VarError::NotPresent) => break 'test,
                 Err(VarError::NotUnicode(err)) => {
-                    warn!("Invalid JUMPY_MAP, not unicode: {err:?}");
+                    warn!("Invalid TEST_MAP, not unicode: {err:?}");
                     break 'test;
                 }
             };
@@ -72,7 +72,7 @@ pub fn widget(
                 .into_iter()
                 .find(|h| asset_server.get(*h).name == test_map)
             else {
-                warn!("JUMPY_MAP not found: {test_map}");
+                warn!("TEST_MAP not found: {test_map}");
                 let available_names = super::handle_names_to_string(get_map_handles(), |h| {
                     asset_server.get(h).name.as_str()
                 });

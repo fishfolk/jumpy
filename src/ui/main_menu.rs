@@ -107,7 +107,7 @@ fn main_menu_system(world: &World) {
     let ctx = (*world.resource::<EguiCtx>()).clone();
     let mut close_settings_menu = false;
 
-    // Go to player select menu if either of the `JUMPY_PLAYER` or `JUMPY_MAP`
+    // Go to player select menu if either of the `TEST_PLAYER` or `TEST_MAP`
     // debug env vars are present.
     #[cfg(debug_assertions)]
     {
@@ -119,10 +119,10 @@ fn main_menu_system(world: &World) {
             .is_ok()
         {
             let test_vars = [
-                var_os("JUMPY_MAP"),
-                var_os("JUMPY_PLAYER"),
-                var_os("JUMPY_HAT"),
-                var_os("JUMPY_CONTROLLER"),
+                var_os("TEST_MAP"),
+                var_os("TEST_PLAYER"),
+                var_os("TEST_HAT"),
+                var_os("TEST_CONTROLLER"),
             ];
             if test_vars.iter().any(Option::is_some) {
                 ctx.set_state(MenuPage::PlayerSelect);

@@ -34,10 +34,10 @@ impl PlayerSlot {
 
     #[cfg(debug_assertions)]
     pub fn set_test_hat(&mut self, asset_server: &AssetServer, hat_handles: &[Handle<HatMeta>]) {
-        match std::env::var("JUMPY_HAT") {
+        match std::env::var("TEST_HAT") {
             Err(std::env::VarError::NotPresent) => {}
             Err(std::env::VarError::NotUnicode(err)) => {
-                warn!("Invalid JUMPY_HAT, not unicode: {err:?}");
+                warn!("Invalid TEST_HAT, not unicode: {err:?}");
             }
             Ok(test_hat) => match hat_handles
                 .iter()
@@ -46,7 +46,7 @@ impl PlayerSlot {
             {
                 hat_handle @ Some(_) => self.selected_hat = hat_handle,
                 None => {
-                    warn!("JUMPY_HAT not found: {test_hat}");
+                    warn!("TEST_HAT not found: {test_hat}");
                     let available_names =
                         handle_names_to_string(hat_handles.iter().copied(), |h| {
                             asset_server.get(h).name.as_str()
@@ -98,17 +98,17 @@ pub fn widget(
             .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
             .is_ok()
         {
-            let test_player = match var("JUMPY_PLAYER") {
+            let test_player = match var("TEST_PLAYER") {
                 Ok(name) => name,
                 Err(VarError::NotUnicode(err)) => {
-                    warn!("Invalid JUMPY_PLAYER, not unicode: {err:?}");
+                    warn!("Invalid TEST_PLAYER, not unicode: {err:?}");
                     "Fishy".to_string()
                 }
                 Err(VarError::NotPresent) => {
                     let test_vars = [
-                        var_os("JUMPY_MAP"),
-                        var_os("JUMPY_HAT"),
-                        var_os("JUMPY_CONTROLLER"),
+                        var_os("TEST_MAP"),
+                        var_os("TEST_HAT"),
+                        var_os("TEST_CONTROLLER"),
                     ];
                     if test_vars.iter().any(Option::is_some) {
                         "Fishy".to_string()
@@ -118,20 +118,20 @@ pub fn widget(
                 }
             };
 
-            let test_controller = match var("JUMPY_CONTROLLER") {
+            let test_controller = match var("TEST_CONTROLLER") {
                 Ok(name) => match &*name {
                     "Keyboard1" => ControlSource::Keyboard1,
                     "Keyboard2" => ControlSource::Keyboard2,
                     "Gamepad" => ControlSource::Gamepad(0),
                     _ => {
-                        warn!("Invalid JUMPY_CONTROLLER: {name}");
+                        warn!("Invalid TEST_CONTROLLER: {name}");
                         warn!(r#"Available controllers: "Keyboard1", "Keyboard2", "Gamepad""#);
                         ControlSource::Keyboard1
                     }
                 },
                 Err(VarError::NotPresent) => ControlSource::Keyboard1,
                 Err(VarError::NotUnicode(err)) => {
-                    warn!("Invalid JUMPY_CONTROLLER, not unicode: {err:?}");
+                    warn!("Invalid TEST_CONTROLLER, not unicode: {err:?}");
                     ControlSource::Keyboard1
                 }
             };
@@ -147,7 +147,7 @@ pub fn widget(
                 .find(|h| asset_server.get(*h).name == test_player)
             {
                 None => {
-                    warn!("JUMPY_PLAYER not found: {test_player}");
+                    warn!("TEST_PLAYER not found: {test_player}");
                     let available_names =
                         handle_names_to_string(core_player_handles.iter().copied(), |h| {
                             asset_server.get(h).name.as_str()

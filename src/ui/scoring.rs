@@ -286,7 +286,7 @@ fn scoring_menu(
 
                 world.run_system(
                     player_score_panel,
-                    (ui, &player_input, player_score_info, ready, player_won),
+                    (ui, player_input, player_score_info, ready, player_won),
                 );
                 ui.add_space(spacing);
             }

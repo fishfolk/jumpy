@@ -39,7 +39,6 @@ impl SessionExt for Sessions {
     }
 
     #[track_caller]
-    ///
     fn restart_game(&mut self, map_pool: Option<MapPool>, reset_score: bool) {
         if let Some((existing_map_pool, player_info, plugins, mut session_runner, score)) =
             self.get_mut(SessionNames::GAME).map(|session| {

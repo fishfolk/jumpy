@@ -1,5 +1,6 @@
 #[cfg(not(target_arch = "wasm32"))]
 use bones_framework::networking::{NetworkMatchSocket, SocketTarget};
+use smallvec::SmallVec;
 
 use crate::{ui::player_image::player_image, PackMeta};
 

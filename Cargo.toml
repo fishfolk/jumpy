@@ -44,6 +44,7 @@ egui_extras = { version = "0.23.0", default-features = false }
 shadow-rs = { version = "0.25.0", default-features = false }
 postcard = { version = "1.0", default-features = false, features = ["alloc"] }
 strum = { version = "0.25.0", features = ["derive"] }
+smallvec = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 bevy_dylib = "0.11"

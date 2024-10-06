@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["CString","FromVecWithNulError","IntoStringError","NulError"]};
+window.SIDEBAR_ITEMS = {"mod":["c_str"],"struct":["CString","FromVecWithNulError","IntoStringError","NulError"]};

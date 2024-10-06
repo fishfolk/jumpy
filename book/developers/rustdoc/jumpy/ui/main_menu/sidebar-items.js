@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["MenuPage"],"fn":["home_menu","main_menu_system","session_plugin","setup_menu"],"mod":["build_info","credits","map_select","network_game","player_select","settings"],"static":["VERSION_STRING"],"struct":["MainMenuMeta"]};
+window.SIDEBAR_ITEMS = {"enum":["MenuPage"],"fn":["handle_names_to_string","home_menu","main_menu_system","session_plugin","setup_menu"],"mod":["build_info","credits","map_select","network_game","player_select","settings"],"static":["VERSION_STRING"],"struct":["MainMenuMeta"]};

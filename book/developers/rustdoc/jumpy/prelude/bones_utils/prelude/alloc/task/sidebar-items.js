@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":["Wake"]};
+window.SIDEBAR_ITEMS = {"trait":["LocalWake","Wake"]};

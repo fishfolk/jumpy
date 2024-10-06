@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/main_menu/player_select.rs`."><title>player_select.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/main_menu/player_select.rs`."><title>player_select.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-c5d6553a23f1e5a6.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0 (eeb90cda1 2024-09-04)" data-channel="1.81.0" data-search-js="search-d234aafac6c221dd.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-d2fab2bf619172d3.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
 <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
     mermaid.initialize({
@@ -93,8 +93,7 @@
     }
 </style>
 
-</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
-    <main><nav class="sub"><a class="sub-logo-container" href="../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="jumpy"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+</head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -732,6 +731,109 @@
 <a href="#636" id="636">636</a>
 <a href="#637" id="637">637</a>
 <a href="#638" id="638">638</a>
+<a href="#639" id="639">639</a>
+<a href="#640" id="640">640</a>
+<a href="#641" id="641">641</a>
+<a href="#642" id="642">642</a>
+<a href="#643" id="643">643</a>
+<a href="#644" id="644">644</a>
+<a href="#645" id="645">645</a>
+<a href="#646" id="646">646</a>
+<a href="#647" id="647">647</a>
+<a href="#648" id="648">648</a>
+<a href="#649" id="649">649</a>
+<a href="#650" id="650">650</a>
+<a href="#651" id="651">651</a>
+<a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
+<a href="#655" id="655">655</a>
+<a href="#656" id="656">656</a>
+<a href="#657" id="657">657</a>
+<a href="#658" id="658">658</a>
+<a href="#659" id="659">659</a>
+<a href="#660" id="660">660</a>
+<a href="#661" id="661">661</a>
+<a href="#662" id="662">662</a>
+<a href="#663" id="663">663</a>
+<a href="#664" id="664">664</a>
+<a href="#665" id="665">665</a>
+<a href="#666" id="666">666</a>
+<a href="#667" id="667">667</a>
+<a href="#668" id="668">668</a>
+<a href="#669" id="669">669</a>
+<a href="#670" id="670">670</a>
+<a href="#671" id="671">671</a>
+<a href="#672" id="672">672</a>
+<a href="#673" id="673">673</a>
+<a href="#674" id="674">674</a>
+<a href="#675" id="675">675</a>
+<a href="#676" id="676">676</a>
+<a href="#677" id="677">677</a>
+<a href="#678" id="678">678</a>
+<a href="#679" id="679">679</a>
+<a href="#680" id="680">680</a>
+<a href="#681" id="681">681</a>
+<a href="#682" id="682">682</a>
+<a href="#683" id="683">683</a>
+<a href="#684" id="684">684</a>
+<a href="#685" id="685">685</a>
+<a href="#686" id="686">686</a>
+<a href="#687" id="687">687</a>
+<a href="#688" id="688">688</a>
+<a href="#689" id="689">689</a>
+<a href="#690" id="690">690</a>
+<a href="#691" id="691">691</a>
+<a href="#692" id="692">692</a>
+<a href="#693" id="693">693</a>
+<a href="#694" id="694">694</a>
+<a href="#695" id="695">695</a>
+<a href="#696" id="696">696</a>
+<a href="#697" id="697">697</a>
+<a href="#698" id="698">698</a>
+<a href="#699" id="699">699</a>
+<a href="#700" id="700">700</a>
+<a href="#701" id="701">701</a>
+<a href="#702" id="702">702</a>
+<a href="#703" id="703">703</a>
+<a href="#704" id="704">704</a>
+<a href="#705" id="705">705</a>
+<a href="#706" id="706">706</a>
+<a href="#707" id="707">707</a>
+<a href="#708" id="708">708</a>
+<a href="#709" id="709">709</a>
+<a href="#710" id="710">710</a>
+<a href="#711" id="711">711</a>
+<a href="#712" id="712">712</a>
+<a href="#713" id="713">713</a>
+<a href="#714" id="714">714</a>
+<a href="#715" id="715">715</a>
+<a href="#716" id="716">716</a>
+<a href="#717" id="717">717</a>
+<a href="#718" id="718">718</a>
+<a href="#719" id="719">719</a>
+<a href="#720" id="720">720</a>
+<a href="#721" id="721">721</a>
+<a href="#722" id="722">722</a>
+<a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
+<a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
+<a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
 </pre></div><pre class="rust"><code><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
 </span><span class="kw">use </span>bones_framework::networking::{NetworkMatchSocket, SocketTarget};
 
@@ -765,6 +867,31 @@
     <span class="kw">pub fn </span>is_ai(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.is_ai
     }
+
+    <span class="attr">#[cfg(debug_assertions)]
+    </span><span class="kw">pub fn </span>set_test_hat(<span class="kw-2">&amp;mut </span><span class="self">self</span>, asset_server: <span class="kw-2">&amp;</span>AssetServer, hat_handles: <span class="kw-2">&amp;</span>[Handle&lt;HatMeta&gt;]) {
+        <span class="kw">match </span>std::env::var(<span class="string">"TEST_HAT"</span>) {
+            <span class="prelude-val">Err</span>(std::env::VarError::NotPresent) =&gt; {}
+            <span class="prelude-val">Err</span>(std::env::VarError::NotUnicode(err)) =&gt; {
+                <span class="macro">warn!</span>(<span class="string">"Invalid TEST_HAT, not unicode: {err:?}"</span>);
+            }
+            <span class="prelude-val">Ok</span>(test_hat) =&gt; <span class="kw">match </span>hat_handles
+                .iter()
+                .copied()
+                .find(|h| asset_server.get(<span class="kw-2">*</span>h).name == test_hat)
+            {
+                hat_handle @ <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="self">self</span>.selected_hat = hat_handle,
+                <span class="prelude-val">None </span>=&gt; {
+                    <span class="macro">warn!</span>(<span class="string">"TEST_HAT not found: {test_hat}"</span>);
+                    <span class="kw">let </span>available_names =
+                        handle_names_to_string(hat_handles.iter().copied(), |h| {
+                            asset_server.get(h).name.as_str()
+                        });
+                    <span class="macro">warn!</span>(<span class="string">"Available hat names: {available_names}"</span>);
+                }
+            },
+        }
+    }
 }
 
 <span class="doccomment">/// Network message that may be sent during player selection.
@@ -794,6 +921,88 @@
     <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
         handle_match_setup_messages(socket, <span class="kw-2">&amp;mut </span>state, <span class="kw-2">&amp;</span>asset_server);
+    }
+
+    <span class="comment">// Set player slot 0 using the debug env vars and go to the map select menu.
+    // Default the player to Jumpy if none is provided.
+    </span><span class="attr">#[cfg(debug_assertions)]
+    </span><span class="lifetime">'test_player</span>: {
+        <span class="kw">use </span>std::env::{var, var_os, VarError};
+        <span class="kw">use </span>std::sync::atomic::{AtomicBool, Ordering};
+        <span class="kw">static </span>DEBUG_DID_CHECK_ENV_VARS: AtomicBool = AtomicBool::new(<span class="bool-val">false</span>);
+        <span class="kw">if </span>DEBUG_DID_CHECK_ENV_VARS
+            .compare_exchange(<span class="bool-val">false</span>, <span class="bool-val">true</span>, Ordering::Acquire, Ordering::Relaxed)
+            .is_ok()
+        {
+            <span class="kw">let </span>test_player = <span class="kw">match </span>var(<span class="string">"TEST_PLAYER"</span>) {
+                <span class="prelude-val">Ok</span>(name) =&gt; name,
+                <span class="prelude-val">Err</span>(VarError::NotUnicode(err)) =&gt; {
+                    <span class="macro">warn!</span>(<span class="string">"Invalid TEST_PLAYER, not unicode: {err:?}"</span>);
+                    <span class="string">"Fishy"</span>.to_string()
+                }
+                <span class="prelude-val">Err</span>(VarError::NotPresent) =&gt; {
+                    <span class="kw">let </span>test_vars = [
+                        var_os(<span class="string">"TEST_MAP"</span>),
+                        var_os(<span class="string">"TEST_HAT"</span>),
+                        var_os(<span class="string">"TEST_CONTROLLER"</span>),
+                    ];
+                    <span class="kw">if </span>test_vars.iter().any(Option::is_some) {
+                        <span class="string">"Fishy"</span>.to_string()
+                    } <span class="kw">else </span>{
+                        <span class="kw">break </span><span class="lifetime">'test_player</span>;
+                    }
+                }
+            };
+
+            <span class="kw">let </span>test_controller = <span class="kw">match </span>var(<span class="string">"TEST_CONTROLLER"</span>) {
+                <span class="prelude-val">Ok</span>(name) =&gt; <span class="kw">match </span><span class="kw-2">&amp;*</span>name {
+                    <span class="string">"Keyboard1" </span>=&gt; ControlSource::Keyboard1,
+                    <span class="string">"Keyboard2" </span>=&gt; ControlSource::Keyboard2,
+                    <span class="string">"Gamepad" </span>=&gt; ControlSource::Gamepad(<span class="number">0</span>),
+                    <span class="kw">_ </span>=&gt; {
+                        <span class="macro">warn!</span>(<span class="string">"Invalid TEST_CONTROLLER: {name}"</span>);
+                        <span class="macro">warn!</span>(<span class="string">r#"Available controllers: "Keyboard1", "Keyboard2", "Gamepad""#</span>);
+                        ControlSource::Keyboard1
+                    }
+                },
+                <span class="prelude-val">Err</span>(VarError::NotPresent) =&gt; ControlSource::Keyboard1,
+                <span class="prelude-val">Err</span>(VarError::NotUnicode(err)) =&gt; {
+                    <span class="macro">warn!</span>(<span class="string">"Invalid TEST_CONTROLLER, not unicode: {err:?}"</span>);
+                    ControlSource::Keyboard1
+                }
+            };
+
+            <span class="kw">let </span>asset_server = world.resource::&lt;AssetServer&gt;();
+            <span class="kw">let </span>game_meta = asset_server.root::&lt;GameMeta&gt;();
+            <span class="kw">let </span>core_player_handles = <span class="kw-2">&amp;*</span>game_meta.core.players;
+            <span class="kw">let </span>core_hat_handles = <span class="kw-2">&amp;*</span>game_meta.core.player_hats;
+
+            <span class="kw">match </span>core_player_handles
+                .iter()
+                .copied()
+                .find(|h| asset_server.get(<span class="kw-2">*</span>h).name == test_player)
+            {
+                <span class="prelude-val">None </span>=&gt; {
+                    <span class="macro">warn!</span>(<span class="string">"TEST_PLAYER not found: {test_player}"</span>);
+                    <span class="kw">let </span>available_names =
+                        handle_names_to_string(core_player_handles.iter().copied(), |h| {
+                            asset_server.get(h).name.as_str()
+                        });
+                    <span class="macro">warn!</span>(<span class="string">"Available player names: {available_names}"</span>);
+                }
+                <span class="prelude-val">Some</span>(player_handle) =&gt; {
+                    <span class="kw">let </span>slot = <span class="kw-2">&amp;mut </span>state.slots[<span class="number">0</span>];
+                    slot.active = <span class="bool-val">true</span>;
+                    slot.control_source = <span class="prelude-val">Some</span>(test_controller);
+                    slot.selected_player = player_handle;
+                    slot.set_test_hat(<span class="kw-2">&amp;</span>asset_server, core_hat_handles);
+                    slot.confirmed = <span class="bool-val">true</span>;
+
+                    ui.ctx()
+                        .set_state(MenuPage::MapSelect { is_waiting: <span class="bool-val">false </span>});
+                }
+            }
+        }
     }
 
     <span class="comment">// Whether or not the continue button should be enabled
@@ -930,9 +1139,7 @@
     ui.ctx().set_state(state);
 }
 
-<span class="comment">// }
-
-</span><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
+<span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
 </span><span class="kw">fn </span>handle_match_setup_messages(
     network_socket: <span class="kw-2">&amp;</span>NetworkMatchSocket,
     player_select_state: <span class="kw-2">&amp;mut </span>PlayerSelectState,
@@ -1046,9 +1253,9 @@
             slot_allows_new_player &amp;&amp;
             <span class="comment">// And this control source is not bound to a player slot already
             </span>!state
-            .slots
-            .iter()
-            .any(|s| s.control_source == <span class="prelude-val">Some</span>(<span class="kw-2">*</span>source))
+                .slots
+                .iter()
+                .any(|s| s.control_source == <span class="prelude-val">Some</span>(<span class="kw-2">*</span>source))
         )
         <span class="comment">// Return this source
         </span>.then_some(<span class="kw-2">*</span>source)
@@ -1089,11 +1296,9 @@
         slot.control_source = <span class="prelude-val">Some</span>(control_source);
     }
 
-    <span class="kw">let </span>player_control = slot
-        .control_source
-        .as_ref()
-        .map(|s| <span class="kw-2">*</span>controls.get(s).unwrap())
-        .unwrap_or_default();
+    <span class="kw">let </span><span class="prelude-val">Some</span>(player_control) = controls.get(<span class="kw-2">&amp;</span>slot.control_source.unwrap_or_default()) <span class="kw">else </span>{
+        <span class="kw">return</span>;
+    };
 
     <span class="kw">if </span>new_player_join.is_none() {
         <span class="kw">if </span>player_control.menu_confirm_just_pressed {
@@ -1258,7 +1463,7 @@
                         <span class="kw">if </span>network_local_player_slot.is_some_and(|s| s == <span class="kw-2">*</span>slot_id) || !is_network {
                             ui.label(normal_font.rich(localization.get_with(
                                 <span class="string">"press-button-to-lock-in"</span>,
-                                <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
+                                <span class="kw-2">&amp;</span><span class="macro">fluent_args!</span> {
                                     <span class="string">"button" </span>=&gt; confirm_binding.as_str()
                                 },
                             )));
@@ -1267,7 +1472,7 @@
                         <span class="kw">if </span>!is_network {
                             ui.label(normal_font.rich(localization.get_with(
                                 <span class="string">"press-button-to-remove"</span>,
-                                <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
+                                <span class="kw-2">&amp;</span><span class="macro">fluent_args!</span> {
                                     <span class="string">"button" </span>=&gt; back_binding.as_str()
                                 },
                             )));
@@ -1288,7 +1493,7 @@
                             ui.add_space(normal_font.size / <span class="number">2.0</span>);
                             ui.label(normal_font.rich(localization.get_with(
                                 <span class="string">"player-select-unready"</span>,
-                                <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
+                                <span class="kw-2">&amp;</span><span class="macro">fluent_args!</span> {
                                     <span class="string">"button" </span>=&gt; back_binding.as_str()
                                 },
                             )));
@@ -1344,7 +1549,7 @@
                 ui.vertical_centered(|ui| {
                     ui.label(normal_font.rich(localization.get_with(
                         <span class="string">"press-button-to-join"</span>,
-                        <span class="kw-2">&amp;</span><span class="macro">fluent_args! </span>{
+                        <span class="kw-2">&amp;</span><span class="macro">fluent_args!</span> {
                             <span class="string">"button" </span>=&gt; bindings
                         },
                     )));

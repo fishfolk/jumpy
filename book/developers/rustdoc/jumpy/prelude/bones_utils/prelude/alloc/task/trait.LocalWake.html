@@ -1,0 +1,187 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="An analogous trait to `Wake` but used to construct a `LocalWaker`. This API works in exactly the same way as `Wake`, except that it uses an `Rc` instead of an `Arc`, and the result is a `LocalWaker` instead of a `Waker`."><title>LocalWake in jumpy::prelude::bones_utils::prelude::alloc::task - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../../static.files/rustdoc-c5d6553a23f1e5a6.css"><meta name="rustdoc-vars" data-root-path="../../../../../../" data-static-root-path="../../../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0 (eeb90cda1 2024-09-04)" data-channel="1.81.0" data-search-js="search-d234aafac6c221dd.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../../../static.files/main-d2fab2bf619172d3.js"></script><noscript><link rel="stylesheet" href="../../../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function (e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move;
+        position: relative;
+    }
+
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
+    .code .nodeLabel {
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><h2><a href="../../../../../../jumpy/index.html">jumpy</a><span class="version">0.12.2</span></h2></div><h2 class="location"><a href="#">LocalWake</a></h2><div class="sidebar-elems"><section><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.wake">wake</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.wake_by_ref">wake_by_ref</a></li></ul><h3><a href="#object-safety">Object Safety</a></h3><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In jumpy::prelude::bones_utils::prelude::alloc::task</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="../../../../../index.html">jumpy</a>::<wbr><a href="../../../../index.html">prelude</a>::<wbr><a href="../../../index.html">bones_utils</a>::<wbr><a href="../../index.html">prelude</a>::<wbr><a href="../index.html">alloc</a>::<wbr><a href="index.html">task</a>::<wbr><a class="trait" href="#">LocalWake</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="https://doc.rust-lang.org/1.81.0/src/alloc/task.rs.html#268">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait LocalWake {
+    // Required method
+    fn <a href="#tymethod.wake" class="fn">wake</a>(self: <a class="struct" href="../rc/struct.Rc.html" title="struct jumpy::prelude::bones_utils::prelude::alloc::rc::Rc">Rc</a>&lt;Self&gt;);
+
+    // Provided method
+    fn <a href="#method.wake_by_ref" class="fn">wake_by_ref</a>(self: &amp;<a class="struct" href="../rc/struct.Rc.html" title="struct jumpy::prelude::bones_utils::prelude::alloc::rc::Rc">Rc</a>&lt;Self&gt;) { ... }
+}</code></pre><span class="item-info"><div class="stab unstable"><span class="emoji">🔬</span><span>This is a nightly-only experimental API. (<code>local_waker</code>)</span></div></span><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>An analogous trait to <code>Wake</code> but used to construct a <code>LocalWaker</code>. This API
+works in exactly the same way as <code>Wake</code>, except that it uses an <code>Rc</code> instead
+of an <code>Arc</code>, and the result is a <code>LocalWaker</code> instead of a <code>Waker</code>.</p>
+<p>The benefits of using <code>LocalWaker</code> over <code>Waker</code> are that it allows the local waker
+to hold data that does not implement <code>Send</code> and <code>Sync</code>. Additionally, it saves calls
+to <code>Arc::clone</code>, which requires atomic synchronization.</p>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2>
+<p>This is a simplified example of a <code>spawn</code> and a <code>block_on</code> function. The <code>spawn</code> function
+is used to push new tasks onto the run queue, while the block on function will remove them
+and poll them. When a task is woken, it will put itself back on the run queue to be polled
+by the executor.</p>
+<p><strong>Note:</strong> This example trades correctness for simplicity. A real world example would interleave
+poll calls with calls to an io reactor to wait for events instead of spinning on a loop.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#![feature(local_waker)]
+#![feature(noop_waker)]
+</span><span class="kw">use </span>std::task::{LocalWake, ContextBuilder, LocalWaker, Waker};
+<span class="kw">use </span>std::future::Future;
+<span class="kw">use </span>std::pin::Pin;
+<span class="kw">use </span>std::rc::Rc;
+<span class="kw">use </span>std::cell::RefCell;
+<span class="kw">use </span>std::collections::VecDeque;
+
+
+<span class="macro">thread_local!</span> {
+    <span class="comment">// A queue containing all tasks ready to do progress
+    </span><span class="kw">static </span>RUN_QUEUE: RefCell&lt;VecDeque&lt;Rc&lt;Task&gt;&gt;&gt; = RefCell::default();
+}
+
+<span class="kw">type </span>BoxedFuture = Pin&lt;Box&lt;<span class="kw">dyn </span>Future&lt;Output = ()&gt;&gt;&gt;;
+
+<span class="kw">struct </span>Task(RefCell&lt;BoxedFuture&gt;);
+
+<span class="kw">impl </span>LocalWake <span class="kw">for </span>Task {
+    <span class="kw">fn </span>wake(<span class="self">self</span>: Rc&lt;<span class="self">Self</span>&gt;) {
+        RUN_QUEUE.with_borrow_mut(|queue| {
+            queue.push_back(<span class="self">self</span>)
+        })
+    }
+}
+
+<span class="kw">fn </span>spawn&lt;F&gt;(future: F)
+<span class="kw">where
+    </span>F: Future&lt;Output=()&gt; + <span class="lifetime">'static </span>+ Send + Sync
+{
+    <span class="kw">let </span>task = RefCell::new(Box::pin(future));
+    RUN_QUEUE.with_borrow_mut(|queue| {
+        queue.push_back(Rc::new(Task(task)));
+    });
+}
+
+<span class="kw">fn </span>block_on&lt;F&gt;(future: F)
+<span class="kw">where
+    </span>F: Future&lt;Output=()&gt; + <span class="lifetime">'static </span>+ Sync + Send
+{
+    spawn(future);
+    <span class="kw">loop </span>{
+        <span class="kw">let </span><span class="prelude-val">Some</span>(task) = RUN_QUEUE.with_borrow_mut(|queue| queue.pop_front()) <span class="kw">else </span>{
+            <span class="comment">// we exit, since there are no more tasks remaining on the queue
+            </span><span class="kw">return</span>;
+        };
+
+        <span class="comment">// cast the Rc&lt;Task&gt; into a `LocalWaker`
+        </span><span class="kw">let </span>local_waker: LocalWaker = task.clone().into();
+        <span class="comment">// Build the context using `ContextBuilder`
+        </span><span class="kw">let </span><span class="kw-2">mut </span>cx = ContextBuilder::from_waker(Waker::noop())
+            .local_waker(<span class="kw-2">&amp;</span>local_waker)
+            .build();
+
+        <span class="comment">// Poll the task
+        </span><span class="kw">let _ </span>= task.<span class="number">0
+            </span>.borrow_mut()
+            .as_mut()
+            .poll(<span class="kw-2">&amp;mut </span>cx);
+    }
+}
+
+block_on(<span class="kw">async </span>{
+    <span class="macro">println!</span>(<span class="string">"hello world"</span>);
+});</code></pre></div>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="tymethod.wake" class="method"><a class="src rightside" href="https://doc.rust-lang.org/1.81.0/src/alloc/task.rs.html#271">source</a><h4 class="code-header">fn <a href="#tymethod.wake" class="fn">wake</a>(self: <a class="struct" href="../rc/struct.Rc.html" title="struct jumpy::prelude::bones_utils::prelude::alloc::rc::Rc">Rc</a>&lt;Self&gt;)</h4></section><span class="item-info"><div class="stab unstable"><span class="emoji">🔬</span><span>This is a nightly-only experimental API. (<code>local_waker</code>)</span></div></span></summary><div class="docblock"><p>Wake this task.</p>
+</div></details></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.wake_by_ref" class="method"><a class="src rightside" href="https://doc.rust-lang.org/1.81.0/src/alloc/task.rs.html#281">source</a><h4 class="code-header">fn <a href="#method.wake_by_ref" class="fn">wake_by_ref</a>(self: &amp;<a class="struct" href="../rc/struct.Rc.html" title="struct jumpy::prelude::bones_utils::prelude::alloc::rc::Rc">Rc</a>&lt;Self&gt;)</h4></section><span class="item-info"><div class="stab unstable"><span class="emoji">🔬</span><span>This is a nightly-only experimental API. (<code>local_waker</code>)</span></div></span></summary><div class="docblock"><p>Wake this task without consuming the local waker.</p>
+<p>If an executor supports a cheaper way to wake without consuming the
+waker, it should override this method. By default, it clones the
+<a href="../rc/struct.Rc.html" title="struct jumpy::prelude::bones_utils::prelude::alloc::rc::Rc"><code>Rc</code></a> and calls <a href="https://doc.rust-lang.org/1.81.0/core/task/wake/struct.LocalWaker.html#method.wake" title="method core::task::wake::LocalWaker::wake"><code>wake</code></a> on the clone.</p>
+</div></details></div><h2 id="object-safety" class="section-header">Object Safety<a href="#object-safety" class="anchor">§</a></h2><div class="object-safety-info">This trait is <b>not</b> <a href="https://doc.rust-lang.org/1.81.0/reference/items/traits.html#object-safety">object safe</a>.</div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"></div><script src="../../../../../../trait.impl/alloc/task/trait.LocalWake.js" async></script></section></div></main></body></html>

@@ -82,6 +82,7 @@ pub enum MenuPage {
     NetworkGame,
 }
 
+#[allow(clippy::const_is_empty)]
 static VERSION_STRING: Lazy<String> = Lazy::new(|| {
     format!(
         "{}{}",
@@ -105,6 +106,29 @@ static VERSION_STRING: Lazy<String> = Lazy::new(|| {
 fn main_menu_system(world: &World) {
     let ctx = (*world.resource::<EguiCtx>()).clone();
     let mut close_settings_menu = false;
+
+    // Go to player select menu if either of the `TEST_PLAYER` or `TEST_MAP`
+    // debug env vars are present.
+    #[cfg(debug_assertions)]
+    {
+        use std::env::var_os;
+        use std::sync::atomic::{AtomicBool, Ordering};
+        static DEBUG_DID_CHECK_ENV_VARS: AtomicBool = AtomicBool::new(false);
+        if DEBUG_DID_CHECK_ENV_VARS
+            .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
+            .is_ok()
+        {
+            let test_vars = [
+                var_os("TEST_MAP"),
+                var_os("TEST_PLAYER"),
+                var_os("TEST_HAT"),
+                var_os("TEST_CONTROLLER"),
+            ];
+            if test_vars.iter().any(Option::is_some) {
+                ctx.set_state(MenuPage::PlayerSelect);
+            }
+        }
+    }
 
     egui::CentralPanel::default()
         .frame(egui::Frame::none())
@@ -224,4 +248,26 @@ fn home_menu(
                 }
             });
     });
+}
+
+#[cfg(debug_assertions)]
+fn handle_names_to_string<'handles, T, It, F>(it: It, get_name: F) -> String
+where
+    T: 'handles,
+    It: IntoIterator<Item = Handle<T>>,
+    F: Fn(Handle<T>) -> &'static str,
+{
+    let mut names = String::new();
+    let mut is_first = true;
+    for h in it.into_iter() {
+        if is_first {
+            is_first = false;
+        } else {
+            names.push_str(", ");
+        }
+        names.push('"');
+        names.push_str(get_name(h));
+        names.push('"');
+    }
+    names
 }

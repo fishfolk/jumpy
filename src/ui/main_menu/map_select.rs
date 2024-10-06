@@ -35,6 +35,55 @@ pub fn widget(
         select_action = MapSelectAction::SelectMap(map_meta);
     }
 
+    // If the `TEST_MAP` debug env var is present start the game with the map
+    // matching the provided name.
+    #[cfg(debug_assertions)]
+    'test: {
+        use std::env::{var, VarError};
+        use std::sync::atomic::{AtomicBool, Ordering};
+        static DEBUG_DID_CHECK_ENV_VARS: AtomicBool = AtomicBool::new(false);
+        if DEBUG_DID_CHECK_ENV_VARS
+            .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
+            .is_ok()
+        {
+            let test_map = match var("TEST_MAP") {
+                Ok(name) => name,
+                Err(VarError::NotPresent) => break 'test,
+                Err(VarError::NotUnicode(err)) => {
+                    warn!("Invalid TEST_MAP, not unicode: {err:?}");
+                    break 'test;
+                }
+            };
+
+            let asset_server = world.resource::<AssetServer>();
+            let game_meta = asset_server.root::<GameMeta>();
+
+            let get_map_handles = || {
+                let mut map_handles = Vec::new();
+                map_handles.extend(game_meta.core.stable_maps.iter().copied());
+                for pack in asset_server.packs() {
+                    let pack_meta = asset_server.get(pack.root.typed::<crate::PackMeta>());
+                    map_handles.extend(pack_meta.maps.iter().copied());
+                }
+                map_handles
+            };
+
+            let Some(test_map) = get_map_handles()
+                .into_iter()
+                .find(|h| asset_server.get(*h).name == test_map)
+            else {
+                warn!("TEST_MAP not found: {test_map}");
+                let available_names = super::handle_names_to_string(get_map_handles(), |h| {
+                    asset_server.get(h).name.as_str()
+                });
+                warn!("Available map names: {available_names}");
+                break 'test;
+            };
+
+            select_action = MapSelectAction::SelectMap(MapPool::from_single_map(test_map));
+        }
+    }
+
     // If no network action - update action from UI
     if matches!(select_action, MapSelectAction::None) {
         select_action = world.run_system(map_select_menu, ());

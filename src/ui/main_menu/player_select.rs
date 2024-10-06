@@ -31,6 +31,31 @@ impl PlayerSlot {
     pub fn is_ai(&self) -> bool {
         self.is_ai
     }
+
+    #[cfg(debug_assertions)]
+    pub fn set_test_hat(&mut self, asset_server: &AssetServer, hat_handles: &[Handle<HatMeta>]) {
+        match std::env::var("TEST_HAT") {
+            Err(std::env::VarError::NotPresent) => {}
+            Err(std::env::VarError::NotUnicode(err)) => {
+                warn!("Invalid TEST_HAT, not unicode: {err:?}");
+            }
+            Ok(test_hat) => match hat_handles
+                .iter()
+                .copied()
+                .find(|h| asset_server.get(*h).name == test_hat)
+            {
+                hat_handle @ Some(_) => self.selected_hat = hat_handle,
+                None => {
+                    warn!("TEST_HAT not found: {test_hat}");
+                    let available_names =
+                        handle_names_to_string(hat_handles.iter().copied(), |h| {
+                            asset_server.get(h).name.as_str()
+                        });
+                    warn!("Available hat names: {available_names}");
+                }
+            },
+        }
+    }
 }
 
 /// Network message that may be sent during player selection.
@@ -60,6 +85,88 @@ pub fn widget(
     #[cfg(not(target_arch = "wasm32"))]
     if let Some(socket) = network_socket.as_ref() {
         handle_match_setup_messages(socket, &mut state, &asset_server);
+    }
+
+    // Set player slot 0 using the debug env vars and go to the map select menu.
+    // Default the player to Jumpy if none is provided.
+    #[cfg(debug_assertions)]
+    'test_player: {
+        use std::env::{var, var_os, VarError};
+        use std::sync::atomic::{AtomicBool, Ordering};
+        static DEBUG_DID_CHECK_ENV_VARS: AtomicBool = AtomicBool::new(false);
+        if DEBUG_DID_CHECK_ENV_VARS
+            .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
+            .is_ok()
+        {
+            let test_player = match var("TEST_PLAYER") {
+                Ok(name) => name,
+                Err(VarError::NotUnicode(err)) => {
+                    warn!("Invalid TEST_PLAYER, not unicode: {err:?}");
+                    "Fishy".to_string()
+                }
+                Err(VarError::NotPresent) => {
+                    let test_vars = [
+                        var_os("TEST_MAP"),
+                        var_os("TEST_HAT"),
+                        var_os("TEST_CONTROLLER"),
+                    ];
+                    if test_vars.iter().any(Option::is_some) {
+                        "Fishy".to_string()
+                    } else {
+                        break 'test_player;
+                    }
+                }
+            };
+
+            let test_controller = match var("TEST_CONTROLLER") {
+                Ok(name) => match &*name {
+                    "Keyboard1" => ControlSource::Keyboard1,
+                    "Keyboard2" => ControlSource::Keyboard2,
+                    "Gamepad" => ControlSource::Gamepad(0),
+                    _ => {
+                        warn!("Invalid TEST_CONTROLLER: {name}");
+                        warn!(r#"Available controllers: "Keyboard1", "Keyboard2", "Gamepad""#);
+                        ControlSource::Keyboard1
+                    }
+                },
+                Err(VarError::NotPresent) => ControlSource::Keyboard1,
+                Err(VarError::NotUnicode(err)) => {
+                    warn!("Invalid TEST_CONTROLLER, not unicode: {err:?}");
+                    ControlSource::Keyboard1
+                }
+            };
+
+            let asset_server = world.resource::<AssetServer>();
+            let game_meta = asset_server.root::<GameMeta>();
+            let core_player_handles = &*game_meta.core.players;
+            let core_hat_handles = &*game_meta.core.player_hats;
+
+            match core_player_handles
+                .iter()
+                .copied()
+                .find(|h| asset_server.get(*h).name == test_player)
+            {
+                None => {
+                    warn!("TEST_PLAYER not found: {test_player}");
+                    let available_names =
+                        handle_names_to_string(core_player_handles.iter().copied(), |h| {
+                            asset_server.get(h).name.as_str()
+                        });
+                    warn!("Available player names: {available_names}");
+                }
+                Some(player_handle) => {
+                    let slot = &mut state.slots[0];
+                    slot.active = true;
+                    slot.control_source = Some(test_controller);
+                    slot.selected_player = player_handle;
+                    slot.set_test_hat(&asset_server, core_hat_handles);
+                    slot.confirmed = true;
+
+                    ui.ctx()
+                        .set_state(MenuPage::MapSelect { is_waiting: false });
+                }
+            }
+        }
     }
 
     // Whether or not the continue button should be enabled
@@ -196,8 +303,6 @@ pub fn widget(
     ui.ctx().set_state(state);
 }
 
-// }
-
 #[cfg(not(target_arch = "wasm32"))]
 fn handle_match_setup_messages(
     network_socket: &NetworkMatchSocket,
@@ -312,9 +417,9 @@ fn player_select_panel(
             slot_allows_new_player &&
             // And this control source is not bound to a player slot already
             !state
-            .slots
-            .iter()
-            .any(|s| s.control_source == Some(*source))
+                .slots
+                .iter()
+                .any(|s| s.control_source == Some(*source))
         )
         // Return this source
         .then_some(*source)
@@ -355,11 +460,9 @@ fn player_select_panel(
         slot.control_source = Some(control_source);
     }
 
-    let player_control = slot
-        .control_source
-        .as_ref()
-        .map(|s| *controls.get(s).unwrap())
-        .unwrap_or_default();
+    let Some(player_control) = controls.get(&slot.control_source.unwrap_or_default()) else {
+        return;
+    };
 
     if new_player_join.is_none() {
         if player_control.menu_confirm_just_pressed {

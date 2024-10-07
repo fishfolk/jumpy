@@ -1,8 +1,13 @@
-use bones_framework::networking::online::SearchState;
+use bones_framework::networking::online::{
+    OnlineMatchmaker, OnlineMatchmakerResponse, PlayerIdxAssignment,
+};
 
 use crate::prelude::*;
 
 use super::main_menu::MenuPage;
+
+/// Game id for matchmaking
+const GAME_ID: &str = "jumpy";
 
 #[derive(Clone, Debug, Default)]
 pub enum NetworkGameAction {
@@ -25,7 +30,6 @@ pub enum LanMode {
 pub struct OnlineState {
     player_count: u32,
     matchmaking_server: String,
-    search_state: SearchState,
 }
 
 impl Default for OnlineState {
@@ -33,7 +37,6 @@ impl Default for OnlineState {
         Self {
             player_count: 2,
             matchmaking_server: String::new(),
-            search_state: default(),
         }
     }
 }
@@ -50,13 +53,27 @@ impl Default for MatchKind {
     }
 }
 
-#[derive(Default, PartialEq, Eq, Clone, Copy)]
+#[derive(Default, PartialEq, Clone, Copy)]
 pub enum NetworkGameStatus {
     #[default]
     Idle,
+    /// Joining a lobby
     Joining,
+    /// Hosting a lobby,
     Hosting,
-    Searching,
+    /// Searching with matchmaker
+    Matchmaking(MatchmakingStatus),
+}
+
+/// States for
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub enum MatchmakingStatus {
+    /// Sent request to matchmaker but have not yet received a response
+    Connecting,
+    /// Got response from matchmaker but not enough players in game yet
+    WaitingForPlayers,
+    /// Starting match
+    MatchStarting,
 }
 
 #[derive(Clone)]
@@ -141,6 +158,16 @@ pub fn network_game_menu(
                             .focus_by_default(ui)
                             .clicked()
                         {
+
+                            // If currently searching for online match and switched to lan tab - cancel it.
+                            if let NetworkGameStatus::Matchmaking(_) = state.status {
+                                if let MatchKind::Online(OnlineState { matchmaking_server, .. }) = &state.match_kind {
+                                    if let Ok(matchmaking_server) = matchmaking_server.parse() {
+                                        info!("Swithed to LAN mode during online matchmaking - stopping search.");
+                                        let _ = OnlineMatchmaker::stop_search_for_match(matchmaking_server);
+                                    }
+                                }
+                            }
                             state.match_kind = MatchKind::Lan(default());
                         }
 
@@ -406,7 +433,6 @@ pub fn network_game_menu(
                         MatchKind::Online(OnlineState {
                             player_count,
                             matchmaking_server,
-                            mut search_state,
                         }) => {
                             // Get the matchmaking server from the settings.
                             if matchmaking_server.is_empty() {
@@ -450,60 +476,93 @@ pub fn network_game_menu(
 
                             ui.add_space(normal_text_style.size);
 
-                            if *status == NetworkGameStatus::Idle {
-                                if BorderedButton::themed(
-                                    small_button_style,
-                                    localization.get("search"),
-                                )
-                                .show(ui)
-                                .clicked()
-                                {
-                                    *status = NetworkGameStatus::Searching;
-                                    let server = matchmaking_server.parse().expect("invalid server id");
-                                    online::start_search_for_game(server, *player_count);
-                                }
-                            } else if *status == NetworkGameStatus::Searching {
-                                if let Some(online_socket) = online::update_search_for_game(&mut search_state) {
-                                    world.resources.insert(online_socket);
-
-                                    if search_state == SearchState::Connecting {
-                                        *status = NetworkGameStatus::default();
-                                        ui.ctx().set_state(MenuPage::PlayerSelect);
-                                    }
-                                }
-
-                                ui.horizontal(|ui| {
+                            match *status {
+                                NetworkGameStatus::Idle => {
                                     if BorderedButton::themed(
                                         small_button_style,
-                                        localization.get("cancel"),
+                                        localization.get("search"),
                                     )
                                     .show(ui)
                                     .clicked()
                                     {
-                                        if let Err(err) = online::stop_search_for_game() {
-                                            error!("Failed to stop searching for online game: {err}");
-                                        }
-                                        search_state = default();
-                                        *status = NetworkGameStatus::Idle;
+                                        *status = NetworkGameStatus::Matchmaking(MatchmakingStatus::Connecting);
+                                        let server = matchmaking_server.parse().expect("invalid server id");
+                                        let custom_match_data = vec![];
+                                        OnlineMatchmaker::start_search_for_match(server, GAME_ID.to_string(), *player_count, custom_match_data, PlayerIdxAssignment::Random).unwrap();
+                                        info!("Connecting to matchmaker to search for match...");
                                     }
+                                },
+                                NetworkGameStatus::Matchmaking(matchmaking_status) => {
+                                    if let Some(response) = OnlineMatchmaker::read_matchmaker_response() {
+                                        match response {
+                                            OnlineMatchmakerResponse::MatchmakingUpdate { player_count } => {
+                                                *joined_players = player_count as usize;
+                                                *status = NetworkGameStatus::Matchmaking(MatchmakingStatus::WaitingForPlayers);
+                                            },
+                                            OnlineMatchmakerResponse::GameStarting {
+                                                                socket,
+                                                                // Player idx is on socket - don't need it here atm
+                                                                player_idx: _,
+                                                                player_count: _,
+                                                                // random seed currently unused - currently GlobalRng has a fixed seed
+                                                                random_seed,
+                                            } => {
+                                                world.resources.insert(socket);
+                                                *status = NetworkGameStatus::default();
+                                                ui.ctx().set_state(MenuPage::PlayerSelect);
+                                                info!("Matchmaking complete, going to player select.");
+                                            },
+                                            OnlineMatchmakerResponse::Error(err) => {
+                                                warn!("Error from matchmaker: {err}");
+                                            }
+                                            _ => ()
+                                        }
+                                    }
+
+                                    ui.horizontal(|ui| {
+                                        if BorderedButton::themed(
+                                            small_button_style,
+                                            localization.get("cancel"),
+                                        )
+                                        .show(ui)
+                                        .clicked()
+                                        {
+                                            let server = matchmaking_server.parse().expect("invalid server id");
+                                            if let Err(err) = OnlineMatchmaker::stop_search_for_match(server) {
+                                                error!("Failed to stop searching for online game: {err}");
+                                            }
+                                            // search_state = default();
+                                            *status = NetworkGameStatus::Idle;
+                                        }
+                                    });
 
                                     ui.label(
                                         smaller_text_style.rich(
-                                        match search_state {
-                                            SearchState::Connecting => {
-                                                localization.get("connecting").to_string()
+                                            match matchmaking_status {
+                                                MatchmakingStatus::Connecting=> {
+                                                    localization.get("connecting").to_string()
+                                                }
+                                                MatchmakingStatus::WaitingForPlayers => {
+                                                    localization.get_with("waiting-for-players",
+                                                        &fluent_args! {
+                                                            "current" => *joined_players,
+                                                            "total" => *player_count
+                                                        }).to_string()
+                                                },
+                                                _ => {
+                                                    localization.get("match-ready").to_string()
+                                                }
                                             }
-                                            SearchState::Searching => {
-                                                localization.get("searching").to_string()
-                                            }
-                                            SearchState::WaitingForPlayers(current) => {
-                                                localization.get(&format!(
-                                                    "waiting-for-players?current={current}&total={player_count}",
-                                                )).to_string()
-                                            }
-                                        }),
+                                        )
                                     );
-                                });
+                                },
+                                NetworkGameStatus::Joining => (),
+                                    // Joining is not currently implemented in the context of online play - though will likely be used
+                                    // for joining online lobbies later.
+                                NetworkGameStatus::Hosting => (),
+                                    // Hosting is not currently implemented in the context of online play - though will likely be used
+                                    // for hosting online lobbies later.
+
                             }
                         }
                     }
@@ -514,19 +573,25 @@ pub fn network_game_menu(
                         .clicked()
                         || player_controls.values().any(|x| x.menu_back_just_pressed)
                     {
-                        match status {
+                        match *status {
                             NetworkGameStatus::Idle => (),
-                            NetworkGameStatus::Searching => {
-                                if let Err(err) = online::stop_search_for_game() {
-                                    error!("Error stopping search: {:?}", err);
-                                }
+                            NetworkGameStatus::Matchmaking(_)=> {
+                                if let  MatchKind::Online(OnlineState {
+                                    matchmaking_server,
+                                    ..
+                                    }) = match_kind {
+                                        let server = matchmaking_server.parse().expect("invalid server id");
+                                        if let Err(err) = OnlineMatchmaker::stop_search_for_match(server) {
+                                            error!("Error stopping search: {:?}", err);
+                                        }
+                                    }
 
                                 *status = NetworkGameStatus::Idle;
-                            }
+                            },
                             NetworkGameStatus::Joining => {
                                 lan::leave_server();
                                 *status = NetworkGameStatus::Idle;
-                            }
+                            },
                             NetworkGameStatus::Hosting => {
                                 *status = NetworkGameStatus::Idle;
                                 if let Some(service_info) = host_info.take() {
@@ -536,14 +601,14 @@ pub fn network_game_menu(
                         }
 
                         ui.ctx().set_state(MenuPage::Home);
-
                     }
-             });
+                });
+            });
 
 
-            // Update state after modifications
-            ui.ctx().set_state(state);
 
-        });
+        // Update state after modifications
+        ui.ctx().set_state(state);
+
     });
 }

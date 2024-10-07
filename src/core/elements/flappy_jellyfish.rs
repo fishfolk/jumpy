@@ -1,3 +1,5 @@
+use smallvec::SmallVec;
+
 use crate::prelude::*;
 
 #[derive(HasSchema, Default, Debug, Clone)]

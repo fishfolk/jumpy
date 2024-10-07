@@ -85,6 +85,7 @@ pub struct NetworkGameState {
     joined_players: usize,
     lan_servers: Vec<lan::ServerInfo>,
     ping_update_timer: Timer,
+    random_seed: u64,
 }
 
 impl Default for NetworkGameState {
@@ -97,7 +98,14 @@ impl Default for NetworkGameState {
             lan_servers: default(),
             joined_players: default(),
             ping_update_timer: Timer::new(Duration::from_secs(1), TimerMode::Repeating),
+            random_seed: DEFAULT_RANDOM_SEED as u64,
         }
+    }
+}
+
+impl NetworkGameState {
+    pub fn random_seed(&self) -> u64 {
+        self.random_seed
     }
 }
 
@@ -247,6 +255,7 @@ pub fn network_game_menu(
                         status,
                         ping_update_timer,
                         joined_players,
+                        random_seed
                     } = &mut state;
 
                     ui.separator();
@@ -504,11 +513,11 @@ pub fn network_game_menu(
                                                                 // Player idx is on socket - don't need it here atm
                                                                 player_idx: _,
                                                                 player_count: _,
-                                                                // random seed currently unused - currently GlobalRng has a fixed seed
-                                                                random_seed,
+                                                                random_seed: new_random_seed,
                                             } => {
                                                 world.resources.insert(socket);
                                                 *status = NetworkGameStatus::default();
+                                                *random_seed = new_random_seed;
                                                 ui.ctx().set_state(MenuPage::PlayerSelect);
                                                 info!("Matchmaking complete, going to player select.");
                                             },

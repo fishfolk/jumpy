@@ -3,6 +3,9 @@ use crate::prelude::*;
 
 use crate::ui::map_select::{map_select_menu, MapSelectAction};
 
+#[cfg(not(target_arch = "wasm32"))]
+use crate::ui::network_game::NetworkGameState;
+
 use super::player_select::PlayerSelectState;
 use super::MenuPage;
 
@@ -101,14 +104,19 @@ pub fn widget(
 
             #[cfg(not(target_arch = "wasm32"))]
             let session_runner: Box<dyn SessionRunner> = match network_socket {
-                Some(socket) => Box::new(GgrsSessionRunner::<NetworkInputConfig>::new(
-                    FPS,
-                    GgrsSessionRunnerInfo::new(
-                        socket.ggrs_socket(),
-                        Some(meta.network.max_prediction_window),
-                        Some(meta.network.local_input_delay),
-                    ),
-                )),
+                Some(socket) => {
+                    let random_seed = ui.ctx().get_state::<NetworkGameState>().random_seed();
+
+                    Box::new(GgrsSessionRunner::<NetworkInputConfig>::new(
+                        Some(FPS),
+                        GgrsSessionRunnerInfo::new(
+                            socket.ggrs_socket(),
+                            Some(meta.network.max_prediction_window),
+                            Some(meta.network.local_input_delay),
+                            random_seed,
+                        ),
+                    ))
+                }
                 None => Box::<JumpyDefaultMatchRunner>::default(),
             };
             #[cfg(target_arch = "wasm32")]

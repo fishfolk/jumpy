@@ -22,9 +22,11 @@ pub fn plugin(session: &mut Session) {
 #[type_data(SchemaLuaEcsRefMetatable(lua_metatable))]
 pub struct GlobalRng(AtomicRng);
 
+pub const DEFAULT_RANDOM_SEED: u32 = 7;
+
 impl Default for GlobalRng {
     fn default() -> Self {
-        Self(AtomicRng::with_seed(7))
+        Self(AtomicRng::with_seed(DEFAULT_RANDOM_SEED as u64))
     }
 }
 

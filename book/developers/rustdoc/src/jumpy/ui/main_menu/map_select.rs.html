@@ -289,10 +289,21 @@
 <a href="#194" id="194">194</a>
 <a href="#195" id="195">195</a>
 <a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::{JumpyDefaultMatchRunner, MatchPlugin};
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">use </span><span class="kw">crate</span>::ui::map_select::{map_select_menu, MapSelectAction};
+
+<span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
+</span><span class="kw">use </span><span class="kw">crate</span>::ui::network_game::NetworkGameState;
 
 <span class="kw">use </span><span class="kw">super</span>::player_select::PlayerSelectState;
 <span class="kw">use </span><span class="kw">super</span>::MenuPage;
@@ -392,14 +403,19 @@
 
             <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
             </span><span class="kw">let </span>session_runner: Box&lt;<span class="kw">dyn </span>SessionRunner&gt; = <span class="kw">match </span>network_socket {
-                <span class="prelude-val">Some</span>(socket) =&gt; Box::new(GgrsSessionRunner::&lt;NetworkInputConfig&gt;::new(
-                    FPS,
-                    GgrsSessionRunnerInfo::new(
-                        socket.ggrs_socket(),
-                        <span class="prelude-val">Some</span>(meta.network.max_prediction_window),
-                        <span class="prelude-val">Some</span>(meta.network.local_input_delay),
-                    ),
-                )),
+                <span class="prelude-val">Some</span>(socket) =&gt; {
+                    <span class="kw">let </span>random_seed = ui.ctx().get_state::&lt;NetworkGameState&gt;().random_seed();
+
+                    Box::new(GgrsSessionRunner::&lt;NetworkInputConfig&gt;::new(
+                        <span class="prelude-val">Some</span>(FPS),
+                        GgrsSessionRunnerInfo::new(
+                            socket.ggrs_socket(),
+                            <span class="prelude-val">Some</span>(meta.network.max_prediction_window),
+                            <span class="prelude-val">Some</span>(meta.network.local_input_delay),
+                            random_seed,
+                        ),
+                    ))
+                }
                 <span class="prelude-val">None </span>=&gt; Box::&lt;JumpyDefaultMatchRunner&gt;::default(),
             };
             <span class="attr">#[cfg(target_arch = <span class="string">"wasm32"</span>)]

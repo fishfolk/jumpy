@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["pin","ready"],"mod":["future","io","prelude","stream"],"trait":["AsyncBufRead","AsyncBufReadExt","AsyncRead","AsyncReadExt","AsyncSeek","AsyncSeekExt","AsyncWrite","AsyncWriteExt","Future","FutureExt","Stream","StreamExt"]};

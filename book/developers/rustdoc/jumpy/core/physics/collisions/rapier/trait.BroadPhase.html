@@ -101,7 +101,7 @@
         colliders: &amp;mut <a class="struct" href="../../rapier/struct.ColliderSet.html" title="struct jumpy::core::physics::rapier::ColliderSet">ColliderSet</a>,
         modified_colliders: &amp;[<a class="struct" href="../../rapier/struct.ColliderHandle.html" title="struct jumpy::core::physics::rapier::ColliderHandle">ColliderHandle</a>],
         removed_colliders: &amp;[<a class="struct" href="../../rapier/struct.ColliderHandle.html" title="struct jumpy::core::physics::rapier::ColliderHandle">ColliderHandle</a>],
-        events: &amp;mut <a class="struct" href="../../../../prelude/bones_utils/prelude/alloc/vec/struct.Vec.html" title="struct jumpy::prelude::bones_utils::prelude::alloc::vec::Vec">Vec</a>&lt;<a class="enum" href="../../rapier/enum.BroadPhasePairEvent.html" title="enum jumpy::core::physics::rapier::BroadPhasePairEvent">BroadPhasePairEvent</a>&gt;,
+        events: &amp;mut <a class="struct" href="https://doc.rust-lang.org/1.81.0/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="enum" href="../../rapier/enum.BroadPhasePairEvent.html" title="enum jumpy::core::physics::rapier::BroadPhasePairEvent">BroadPhasePairEvent</a>&gt;,
     );
 }</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Trait implemented by broad-phase algorithms supported by Rapier.</p>
 <p>The task of a broad-phase algorithm is to detect potential collision pairs, usually based on
@@ -115,7 +115,7 @@ some computational overhead on the narrow-phase), but cannot have false-negative
     colliders: &amp;mut <a class="struct" href="../../rapier/struct.ColliderSet.html" title="struct jumpy::core::physics::rapier::ColliderSet">ColliderSet</a>,
     modified_colliders: &amp;[<a class="struct" href="../../rapier/struct.ColliderHandle.html" title="struct jumpy::core::physics::rapier::ColliderHandle">ColliderHandle</a>],
     removed_colliders: &amp;[<a class="struct" href="../../rapier/struct.ColliderHandle.html" title="struct jumpy::core::physics::rapier::ColliderHandle">ColliderHandle</a>],
-    events: &amp;mut <a class="struct" href="../../../../prelude/bones_utils/prelude/alloc/vec/struct.Vec.html" title="struct jumpy::prelude::bones_utils::prelude::alloc::vec::Vec">Vec</a>&lt;<a class="enum" href="../../rapier/enum.BroadPhasePairEvent.html" title="enum jumpy::core::physics::rapier::BroadPhasePairEvent">BroadPhasePairEvent</a>&gt;,
+    events: &amp;mut <a class="struct" href="https://doc.rust-lang.org/1.81.0/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="enum" href="../../rapier/enum.BroadPhasePairEvent.html" title="enum jumpy::core::physics::rapier::BroadPhasePairEvent">BroadPhasePairEvent</a>&gt;,
 )</h4></section></summary><div class="docblock"><p>Updates the broad-phase.</p>
 <p>The results must be output through the <code>events</code> struct. The broad-phase algorithm is only
 required to generate new events (i.e. no need to re-send an <code>AddPair</code> event if it was already

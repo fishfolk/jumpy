@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["TurboKind"],"fn":["lua_metatable","plugin"],"struct":["AtomicRng","GlobalRng","Rng"],"trait":["ForkableCore","GenCore","SecureCore","SeededCore","TurboCore","TurboRand"]};
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_RANDOM_SEED"],"enum":["TurboKind"],"fn":["lua_metatable","plugin"],"struct":["AtomicRng","GlobalRng","Rng"],"trait":["ForkableCore","GenCore","SecureCore","SeededCore","TurboCore","TurboRand"]};

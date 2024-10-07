@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["OnlineMatchmakerRequest","OnlineMatchmakerResponse","SearchState"],"fn":["start_search_for_game","stop_search_for_game","update_search_for_game"],"static":["ONLINE_MATCHMAKER"],"struct":["OnlineMatchmaker"]};
+window.SIDEBAR_ITEMS = {"constant":["MATCH_ALPN","READ_TO_END_BYTE_COUNT"],"enum":["OnlineMatchmakerRequest","OnlineMatchmakerResponse","PlayerIdxAssignment"],"static":["ONLINE_MATCHMAKER"],"struct":["LobbyId","LobbyInfo","LobbyListItem","MatchInfo","MatchmakerConnectionState","OnlineMatchmaker"],"type":["GameID"]};

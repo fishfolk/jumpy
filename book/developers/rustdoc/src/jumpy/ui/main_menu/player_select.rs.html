@@ -834,8 +834,10 @@
 <a href="#739" id="739">739</a>
 <a href="#740" id="740">740</a>
 <a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
 </pre></div><pre class="rust"><code><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
 </span><span class="kw">use </span>bones_framework::networking::{NetworkMatchSocket, SocketTarget};
+<span class="kw">use </span>smallvec::SmallVec;
 
 <span class="kw">use crate</span>::{ui::player_image::player_image, PackMeta};
 

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["LanMode","MatchKind","NetworkGameAction","NetworkGameStatus"],"fn":["network_game_menu"],"struct":["NetworkGameState","OnlineState"]};
+window.SIDEBAR_ITEMS = {"constant":["GAME_ID"],"enum":["LanMode","MatchKind","MatchmakingStatus","NetworkGameAction","NetworkGameStatus"],"fn":["network_game_menu"],"struct":["NetworkGameState","OnlineState"]};

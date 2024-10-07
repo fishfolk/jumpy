@@ -110,7 +110,7 @@
 
 <span class="kw">struct </span>PngLoader;
 <span class="kw">impl </span>AssetLoader <span class="kw">for </span>PngLoader {
-    <span class="kw">fn </span>load(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: AssetLoadCtx, data: <span class="kw-2">&amp;</span>[u8]) -&gt; futures::future::Boxed&lt;anyhow::Result&lt;SchemaBox&gt;&gt; {
+    <span class="kw">fn </span>load(<span class="kw-2">&amp;</span><span class="self">self</span>, ctx: AssetLoadCtx, data: <span class="kw-2">&amp;</span>[u8]) -&gt; BoxedFuture&lt;anyhow::Result&lt;SchemaBox&gt;&gt; {
         Box::pin(<span class="kw">async move </span>{
             <span class="macro">todo!</span>(<span class="string">"Load PNG from data"</span>);
         })

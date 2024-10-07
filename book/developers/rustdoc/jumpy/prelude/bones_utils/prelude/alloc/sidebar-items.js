@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["format","vec"],"mod":["alloc","borrow","boxed","collections","ffi","fmt","rc","slice","str","string","sync","task","vec"]};

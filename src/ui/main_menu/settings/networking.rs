@@ -7,11 +7,6 @@ pub(super) fn widget(
 ) {
     let (ui, state, should_reset) = &mut *args;
 
-    ui.ctx().set_state(EguiInputSettings {
-        disable_gamepad_input: true,
-        disable_keyboard_input: false,
-    });
-
     let bigger_font = meta
         .theme
         .font_styles

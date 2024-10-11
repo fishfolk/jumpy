@@ -1,6 +1,6 @@
 use crate::{
     prelude::*,
-    settings::{InputKind, PlayerControlMapping, PlayerControlSetting, Settings},
+    settings::{InputKind, PlayerControlMapping, Settings},
 };
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -284,7 +284,7 @@ impl<'a>
     /// input events.
     fn apply_inputs(
         &mut self,
-        mapping: &crate::settings::PlayerControlMapping,
+        mapping: &PlayerControlMapping,
         keyboard: &KeyboardInputs,
         gamepad: &GamepadInputs,
     ) {
@@ -294,63 +294,63 @@ impl<'a>
             control_source,
         ) {
             (InputKind::Button(mapped_button), ControlSource::Gamepad(idx)) => {
-                let mut out = None;
                 for input in &gamepad.gamepad_events {
                     if let GamepadEvent::Button(e) = input {
                         if &e.button == mapped_button && e.gamepad == *idx {
                             let value = if e.value < 0.1 { 0.0 } else { e.value };
-                            out = Some(value);
+                            return Some(value);
                         }
                     }
                 }
-                out
+                None
             }
             (InputKind::AxisPositive(mapped_axis), ControlSource::Gamepad(idx)) => {
-                let mut out = None;
                 for input in &gamepad.gamepad_events {
                     if let GamepadEvent::Axis(e) = input {
                         if &e.axis == mapped_axis && e.gamepad == *idx {
                             let value = if e.value < 0.1 { 0.0 } else { e.value };
-                            out = Some(value);
+                            return Some(value);
                         }
                     }
                 }
-                out
+                None
             }
             (InputKind::AxisNegative(mapped_axis), ControlSource::Gamepad(idx)) => {
-                let mut out = None;
                 for input in &gamepad.gamepad_events {
                     if let GamepadEvent::Axis(e) = input {
                         if &e.axis == mapped_axis && e.gamepad == *idx {
                             let value = if e.value > -0.1 { 0.0 } else { e.value };
-                            out = Some(value);
+                            return Some(value);
                         }
                     }
                 }
-                out
+                None
             }
             (
                 InputKind::Keyboard(mapped_key),
                 ControlSource::Keyboard1 | ControlSource::Keyboard2,
             ) => {
-                let mut out = None;
                 for input in &keyboard.key_events {
                     if input.key_code.option() == Some(*mapped_key) {
-                        out = Some(if input.button_state.pressed() {
+                        return Some(if input.button_state.pressed() {
                             1.0
                         } else {
                             0.0
                         });
                     }
                 }
-                out
+                None
             }
             _ => None,
         };
 
-        let apply_controls = |control: &mut PlayerControl,
-                              source: &ControlSource,
-                              mapping: &PlayerControlSetting| {
+        for (source, control) in self.current_controls.iter_mut() {
+            let mapping = match source {
+                ControlSource::Keyboard1 => &mapping.keyboard1,
+                ControlSource::Keyboard2 => &mapping.keyboard2,
+                ControlSource::Gamepad(_) => &mapping.gamepad,
+            };
+
             for (button_pressed, button_map) in [
                 (&mut control.pause_pressed, &mapping.pause),
                 (&mut control.jump_pressed, &mapping.jump),
@@ -370,53 +370,25 @@ impl<'a>
             // helper for merging two inputs (like dpad + joystick for example) allowing multiple bindings
             // for same control
             let merge_inputs = |input1: &InputKind, input2: &InputKind| -> Option<f32> {
-                let mut out: Option<f32> = None;
-                if let Some(value1) = get_input_value(input1, source) {
-                    out = Some(value1.abs());
-                }
-                if let Some(value2) = get_input_value(input2, source) {
-                    match out {
-                        Some(prev) if prev == 0.0 => {
-                            // If first input is 0.0, override with second input
-                            out = Some(value2.abs());
-                        }
-                        None => {
-                            // No input from first, use second
-                            out = Some(value2.abs());
-                        }
-                        // If first input is non-zero input, use it and ignore second.
-                        Some(_) => {}
-                    }
-                }
-
-                out
+                get_input_value(input1, source)
+                    .filter(|v| *v != 0.0)
+                    .or_else(|| get_input_value(input2, source))
+                    .map(f32::abs)
             };
 
             if let Some(left) = merge_inputs(&mapping.movement.left, &mapping.movement_alt.left) {
-                control.left = left.abs();
+                control.left = left;
             }
             if let Some(right) = merge_inputs(&mapping.movement.right, &mapping.movement_alt.right)
             {
-                control.right = right.abs();
+                control.right = right;
             }
             if let Some(up) = merge_inputs(&mapping.movement.up, &mapping.movement_alt.up) {
-                control.up = up.abs();
+                control.up = up;
             }
             if let Some(down) = merge_inputs(&mapping.movement.down, &mapping.movement_alt.down) {
-                control.down = down.abs();
+                control.down = down;
             }
-        };
-
-        for (source, control) in self.current_controls.iter_mut() {
-            apply_controls(
-                control,
-                source,
-                match source {
-                    ControlSource::Keyboard1 => &mapping.keyboard1,
-                    ControlSource::Keyboard2 => &mapping.keyboard2,
-                    ControlSource::Gamepad(_) => &mapping.gamepad,
-                },
-            );
         }
     }
 

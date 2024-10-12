@@ -74,10 +74,6 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
 
     // Forward gamepad events to egui if not disabled.
     if !settings.disable_gamepad_input {
-        let mapping = &game
-            .shared_resource::<PlayerControlMapping>()
-            .unwrap()
-            .gamepad;
         let input_collector = game.shared_resource::<PlayerInputCollector>().unwrap();
         let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
 
@@ -129,33 +125,39 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
                 _ => false,
             };
 
-            // TODO: remove `clone()` when this type implements `Copy`
-            if mapping_is_active(mapping.menu_confirm.clone()) {
-                push_key(events, egui::Key::Enter);
-            }
-            // TODO: remove `clone()` when this type implements `Copy`
-            if mapping_is_active(mapping.menu_back.clone()) {
-                push_key(events, egui::Key::Escape);
-            }
-
-            // helper for merging two inputs (like dpad + joystick for example) allowing multiple bindings
-            // for same control
-            let merge_inputs = |input1: &InputKind, input2: &InputKind| {
+            if let Some(mapping) = &game
+                .shared_resource::<PlayerControlMapping>()
+                .as_ref()
+                .map(|m| &m.gamepad)
+            {
                 // TODO: remove `clone()` when this type implements `Copy`
-                mapping_is_active(input1.clone()) || mapping_is_active(input2.clone())
-            };
+                if mapping_is_active(mapping.menu_confirm.clone()) {
+                    push_key(events, egui::Key::Enter);
+                }
+                // TODO: remove `clone()` when this type implements `Copy`
+                if mapping_is_active(mapping.menu_back.clone()) {
+                    push_key(events, egui::Key::Escape);
+                }
 
-            if merge_inputs(&mapping.movement.left, &mapping.movement_alt.left) {
-                push_key(events, egui::Key::ArrowLeft);
-            }
-            if merge_inputs(&mapping.movement.right, &mapping.movement_alt.right) {
-                push_key(events, egui::Key::ArrowRight);
-            }
-            if merge_inputs(&mapping.movement.up, &mapping.movement_alt.up) {
-                push_key(events, egui::Key::ArrowUp);
-            }
-            if merge_inputs(&mapping.movement.down, &mapping.movement_alt.down) {
-                push_key(events, egui::Key::ArrowDown);
+                // helper for merging two inputs (like dpad + joystick for example) allowing multiple bindings
+                // for same control
+                let merge_inputs = |input1: &InputKind, input2: &InputKind| {
+                    // TODO: remove `clone()` when this type implements `Copy`
+                    mapping_is_active(input1.clone()) || mapping_is_active(input2.clone())
+                };
+
+                if merge_inputs(&mapping.movement.left, &mapping.movement_alt.left) {
+                    push_key(events, egui::Key::ArrowLeft);
+                }
+                if merge_inputs(&mapping.movement.right, &mapping.movement_alt.right) {
+                    push_key(events, egui::Key::ArrowRight);
+                }
+                if merge_inputs(&mapping.movement.up, &mapping.movement_alt.up) {
+                    push_key(events, egui::Key::ArrowUp);
+                }
+                if merge_inputs(&mapping.movement.down, &mapping.movement_alt.down) {
+                    push_key(events, egui::Key::ArrowDown);
+                }
             }
         }
     }

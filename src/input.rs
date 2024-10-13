@@ -426,10 +426,18 @@ impl<'a>
             // helper for merging two inputs (like dpad + joystick for example) allowing multiple bindings
             // for same control
             let merge_inputs = |input1: &InputKind, input2: &InputKind| -> Option<f32> {
-                get_input_value(input1, source)
-                    .filter(|v| *v != 0.0)
-                    .or_else(|| get_input_value(input2, source))
-                    .map(f32::abs)
+                match (
+                    get_input_value(input1, source),
+                    get_input_value(input2, source),
+                ) {
+                    // Both inputs have a value and the first is zero -- use the second value
+                    (Some(0.0), Some(value2)) => Some(value2),
+                    // First input has a non-zero value -- use the first value
+                    (Some(value1), _) => Some(value1),
+                    // First input has no value -- use the second
+                    (None, value2) => value2,
+                }
+                .map(f32::abs)
             };
 
             if let Some(left) = merge_inputs(&mapping.movement.left, &mapping.movement_alt.left) {

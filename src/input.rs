@@ -93,7 +93,7 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
 
             let mapping_is_active = |input_map: InputKind| match input_map {
                 InputKind::Button(mapped_button) => {
-                    for input in &gamepad.gamepad_events {
+                    for input in gamepad.gamepad_events.iter().rev() {
                         if let GamepadEvent::Button(e) = input {
                             if e.button == mapped_button && e.gamepad == gamepad_idx {
                                 return e.value >= 0.1;
@@ -103,7 +103,7 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
                     false
                 }
                 InputKind::AxisPositive(mapped_axis) => {
-                    for input in &gamepad.gamepad_events {
+                    for input in gamepad.gamepad_events.iter().rev() {
                         if let GamepadEvent::Axis(e) = input {
                             if e.axis == mapped_axis && e.gamepad == gamepad_idx {
                                 return e.value >= 0.1;
@@ -113,7 +113,7 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
                     false
                 }
                 InputKind::AxisNegative(mapped_axis) => {
-                    for input in &gamepad.gamepad_events {
+                    for input in gamepad.gamepad_events.iter().rev() {
                         if let GamepadEvent::Axis(e) = input {
                             if e.axis == mapped_axis && e.gamepad == gamepad_idx {
                                 return e.value <= -0.1;
@@ -350,7 +350,7 @@ impl<'a>
             control_source,
         ) {
             (InputKind::Button(mapped_button), ControlSource::Gamepad(idx)) => {
-                for input in &gamepad.gamepad_events {
+                for input in gamepad.gamepad_events.iter().rev() {
                     if let GamepadEvent::Button(e) = input {
                         if &e.button == mapped_button && e.gamepad == *idx {
                             let value = if e.value < 0.1 { 0.0 } else { e.value };
@@ -361,7 +361,7 @@ impl<'a>
                 None
             }
             (InputKind::AxisPositive(mapped_axis), ControlSource::Gamepad(idx)) => {
-                for input in &gamepad.gamepad_events {
+                for input in gamepad.gamepad_events.iter().rev() {
                     if let GamepadEvent::Axis(e) = input {
                         if &e.axis == mapped_axis && e.gamepad == *idx {
                             let value = if e.value < 0.1 { 0.0 } else { e.value };
@@ -372,7 +372,7 @@ impl<'a>
                 None
             }
             (InputKind::AxisNegative(mapped_axis), ControlSource::Gamepad(idx)) => {
-                for input in &gamepad.gamepad_events {
+                for input in gamepad.gamepad_events.iter().rev() {
                     if let GamepadEvent::Axis(e) = input {
                         if &e.axis == mapped_axis && e.gamepad == *idx {
                             let value = if e.value > -0.1 { 0.0 } else { e.value };
@@ -386,7 +386,7 @@ impl<'a>
                 InputKind::Keyboard(mapped_key),
                 ControlSource::Keyboard1 | ControlSource::Keyboard2,
             ) => {
-                for input in &keyboard.key_events {
+                for input in keyboard.key_events.iter().rev() {
                     if input.key_code.option() == Some(*mapped_key) {
                         return Some(if input.button_state.pressed() {
                             1.0

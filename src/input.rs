@@ -1,6 +1,6 @@
 use crate::{
     prelude::*,
-    settings::{InputKind, PlayerControlMapping, PlayerControlSetting, Settings},
+    settings::{InputKind, PlayerControlMapping, Settings},
 };
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -64,8 +64,6 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
     collect_player_controls(game);
 
     let ctx = game.shared_resource::<EguiCtx>().unwrap();
-    let controls = game.shared_resource::<GlobalPlayerControls>().unwrap();
-
     let settings = ctx.get_state::<EguiInputSettings>();
     let events = &mut egui_input.events;
 
@@ -76,6 +74,9 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
 
     // Forward gamepad events to egui if not disabled.
     if !settings.disable_gamepad_input {
+        let input_collector = game.shared_resource::<PlayerInputCollector>().unwrap();
+        let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
+
         let push_key = |events: &mut Vec<egui::Event>, key| {
             events.push(egui::Event::Key {
                 key,
@@ -85,23 +86,78 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
             });
         };
 
-        for player_control in controls.values() {
-            if player_control.just_moved {
-                if player_control.move_direction.y > 0.1 {
-                    push_key(events, egui::Key::ArrowUp);
-                } else if player_control.move_direction.y < -0.1 {
-                    push_key(events, egui::Key::ArrowDown);
-                } else if player_control.move_direction.x < -0.1 {
+        for source in input_collector.get_current_controls().keys() {
+            let ControlSource::Gamepad(gamepad_idx) = *source else {
+                continue;
+            };
+
+            let mapping_is_active = |input_map: InputKind| match input_map {
+                InputKind::Button(mapped_button) => {
+                    for input in gamepad.gamepad_events.iter().rev() {
+                        if let GamepadEvent::Button(e) = input {
+                            if e.button == mapped_button && e.gamepad == gamepad_idx {
+                                return e.value >= 0.1;
+                            }
+                        }
+                    }
+                    false
+                }
+                InputKind::AxisPositive(mapped_axis) => {
+                    for input in gamepad.gamepad_events.iter().rev() {
+                        if let GamepadEvent::Axis(e) = input {
+                            if e.axis == mapped_axis && e.gamepad == gamepad_idx {
+                                return e.value >= 0.1;
+                            }
+                        }
+                    }
+                    false
+                }
+                InputKind::AxisNegative(mapped_axis) => {
+                    for input in gamepad.gamepad_events.iter().rev() {
+                        if let GamepadEvent::Axis(e) = input {
+                            if e.axis == mapped_axis && e.gamepad == gamepad_idx {
+                                return e.value <= -0.1;
+                            }
+                        }
+                    }
+                    false
+                }
+                _ => false,
+            };
+
+            if let Some(mapping) = &game
+                .shared_resource::<PlayerControlMapping>()
+                .as_ref()
+                .map(|m| &m.gamepad)
+            {
+                // TODO: remove `clone()` when this type implements `Copy`
+                if mapping_is_active(mapping.menu_confirm.clone()) {
+                    push_key(events, egui::Key::Enter);
+                }
+                // TODO: remove `clone()` when this type implements `Copy`
+                if mapping_is_active(mapping.menu_back.clone()) {
+                    push_key(events, egui::Key::Escape);
+                }
+
+                // helper for merging two inputs (like dpad + joystick for example) allowing multiple bindings
+                // for same control
+                let merge_inputs = |input1: &InputKind, input2: &InputKind| {
+                    // TODO: remove `clone()` when this type implements `Copy`
+                    mapping_is_active(input1.clone()) || mapping_is_active(input2.clone())
+                };
+
+                if merge_inputs(&mapping.movement.left, &mapping.movement_alt.left) {
                     push_key(events, egui::Key::ArrowLeft);
-                } else if player_control.move_direction.x > 0.1 {
+                }
+                if merge_inputs(&mapping.movement.right, &mapping.movement_alt.right) {
                     push_key(events, egui::Key::ArrowRight);
                 }
-            }
-            if player_control.menu_confirm_just_pressed {
-                push_key(events, egui::Key::Enter);
-            }
-            if player_control.menu_back_just_pressed {
-                push_key(events, egui::Key::Escape);
+                if merge_inputs(&mapping.movement.up, &mapping.movement_alt.up) {
+                    push_key(events, egui::Key::ArrowUp);
+                }
+                if merge_inputs(&mapping.movement.down, &mapping.movement_alt.down) {
+                    push_key(events, egui::Key::ArrowDown);
+                }
             }
         }
     }
@@ -284,7 +340,7 @@ impl<'a>
     /// input events.
     fn apply_inputs(
         &mut self,
-        mapping: &crate::settings::PlayerControlMapping,
+        mapping: &PlayerControlMapping,
         keyboard: &KeyboardInputs,
         gamepad: &GamepadInputs,
     ) {
@@ -294,63 +350,63 @@ impl<'a>
             control_source,
         ) {
             (InputKind::Button(mapped_button), ControlSource::Gamepad(idx)) => {
-                let mut out = None;
-                for input in &gamepad.gamepad_events {
+                for input in gamepad.gamepad_events.iter().rev() {
                     if let GamepadEvent::Button(e) = input {
                         if &e.button == mapped_button && e.gamepad == *idx {
                             let value = if e.value < 0.1 { 0.0 } else { e.value };
-                            out = Some(value);
+                            return Some(value);
                         }
                     }
                 }
-                out
+                None
             }
             (InputKind::AxisPositive(mapped_axis), ControlSource::Gamepad(idx)) => {
-                let mut out = None;
-                for input in &gamepad.gamepad_events {
+                for input in gamepad.gamepad_events.iter().rev() {
                     if let GamepadEvent::Axis(e) = input {
                         if &e.axis == mapped_axis && e.gamepad == *idx {
                             let value = if e.value < 0.1 { 0.0 } else { e.value };
-                            out = Some(value);
+                            return Some(value);
                         }
                     }
                 }
-                out
+                None
             }
             (InputKind::AxisNegative(mapped_axis), ControlSource::Gamepad(idx)) => {
-                let mut out = None;
-                for input in &gamepad.gamepad_events {
+                for input in gamepad.gamepad_events.iter().rev() {
                     if let GamepadEvent::Axis(e) = input {
                         if &e.axis == mapped_axis && e.gamepad == *idx {
                             let value = if e.value > -0.1 { 0.0 } else { e.value };
-                            out = Some(value);
+                            return Some(value);
                         }
                     }
                 }
-                out
+                None
             }
             (
                 InputKind::Keyboard(mapped_key),
                 ControlSource::Keyboard1 | ControlSource::Keyboard2,
             ) => {
-                let mut out = None;
-                for input in &keyboard.key_events {
+                for input in keyboard.key_events.iter().rev() {
                     if input.key_code.option() == Some(*mapped_key) {
-                        out = Some(if input.button_state.pressed() {
+                        return Some(if input.button_state.pressed() {
                             1.0
                         } else {
                             0.0
                         });
                     }
                 }
-                out
+                None
             }
             _ => None,
         };
 
-        let apply_controls = |control: &mut PlayerControl,
-                              source: &ControlSource,
-                              mapping: &PlayerControlSetting| {
+        for (source, control) in self.current_controls.iter_mut() {
+            let mapping = match source {
+                ControlSource::Keyboard1 => &mapping.keyboard1,
+                ControlSource::Keyboard2 => &mapping.keyboard2,
+                ControlSource::Gamepad(_) => &mapping.gamepad,
+            };
+
             for (button_pressed, button_map) in [
                 (&mut control.pause_pressed, &mapping.pause),
                 (&mut control.jump_pressed, &mapping.jump),
@@ -370,53 +426,33 @@ impl<'a>
             // helper for merging two inputs (like dpad + joystick for example) allowing multiple bindings
             // for same control
             let merge_inputs = |input1: &InputKind, input2: &InputKind| -> Option<f32> {
-                let mut out: Option<f32> = None;
-                if let Some(value1) = get_input_value(input1, source) {
-                    out = Some(value1.abs());
+                match (
+                    get_input_value(input1, source),
+                    get_input_value(input2, source),
+                ) {
+                    // Both inputs have a value and the first is zero -- use the second value
+                    (Some(0.0), Some(value2)) => Some(value2),
+                    // First input has a non-zero value -- use the first value
+                    (Some(value1), _) => Some(value1),
+                    // First input has no value -- use the second
+                    (None, value2) => value2,
                 }
-                if let Some(value2) = get_input_value(input2, source) {
-                    match out {
-                        Some(prev) if prev == 0.0 => {
-                            // If first input is 0.0, override with second input
-                            out = Some(value2.abs());
-                        }
-                        None => {
-                            // No input from first, use second
-                            out = Some(value2.abs());
-                        }
-                        // If first input is non-zero input, use it and ignore second.
-                        Some(_) => {}
-                    }
-                }
-
-                out
+                .map(f32::abs)
             };
 
             if let Some(left) = merge_inputs(&mapping.movement.left, &mapping.movement_alt.left) {
-                control.left = left.abs();
+                control.left = left;
             }
             if let Some(right) = merge_inputs(&mapping.movement.right, &mapping.movement_alt.right)
             {
-                control.right = right.abs();
+                control.right = right;
             }
             if let Some(up) = merge_inputs(&mapping.movement.up, &mapping.movement_alt.up) {
-                control.up = up.abs();
+                control.up = up;
             }
             if let Some(down) = merge_inputs(&mapping.movement.down, &mapping.movement_alt.down) {
-                control.down = down.abs();
+                control.down = down;
             }
-        };
-
-        for (source, control) in self.current_controls.iter_mut() {
-            apply_controls(
-                control,
-                source,
-                match source {
-                    ControlSource::Keyboard1 => &mapping.keyboard1,
-                    ControlSource::Keyboard2 => &mapping.keyboard2,
-                    ControlSource::Gamepad(_) => &mapping.gamepad,
-                },
-            );
         }
     }
 

@@ -1,5 +1,3 @@
-use std::sync::RwLock;
-
 use crate::{
     prelude::*,
     settings::{InputKind, PlayerControlMapping, Settings},
@@ -9,36 +7,11 @@ use crate::{
 use bones_framework::networking::{input::NetworkPlayerControl, proto::DenseMoveDirection};
 use strum::EnumIter;
 
-fn _gamepad_axis_lefty(event: &GamepadEvent) -> Option<f32> {
-    match event {
-        GamepadEvent::Axis(GamepadAxisEvent {
-            axis: GamepadAxis::LeftStickY,
-            gamepad: 0,
-            value,
-            ..
-        }) => Some(*value),
-        _ => None,
-    }
-}
-
-fn _gamepad_button_south(event: &GamepadEvent) -> Option<f32> {
-    match event {
-        GamepadEvent::Axis(GamepadAxisEvent {
-            axis: GamepadAxis::LeftStickY,
-            gamepad: 0,
-            value,
-            ..
-        }) => Some(*value),
-        _ => None,
-    }
-}
-
 pub fn game_plugin(game: &mut Game) {
     game.systems.add_startup_system(load_controler_mapping);
     game.insert_shared_resource(EguiInputHook::new(handle_egui_input));
     game.init_shared_resource::<GlobalPlayerControls>();
     game.init_shared_resource::<PlayerInputCollector>();
-    game.init_shared_resource::<PreviousGamepadInputs>();
 }
 
 // Startup system to load game control mapping resource from the storage and insert the player input
@@ -83,26 +56,6 @@ pub struct EguiInputSettings {
     pub disable_gamepad_input: bool,
 }
 
-#[derive(Clone, Deref, DerefMut, HasSchema)]
-struct PreviousGamepadInputs(Arc<RwLock<[GamepadControl; MAX_PLAYERS as usize]>>);
-
-impl Default for PreviousGamepadInputs {
-    fn default() -> Self {
-        Self(Arc::new(RwLock::new([default(); MAX_PLAYERS as usize])))
-    }
-}
-
-#[derive(Clone, Copy, Debug, Default, HasSchema)]
-struct GamepadControl {
-    pub menu_confirm: bool,
-    pub menu_back: bool,
-    pub left: f32,
-    pub right: f32,
-    pub up: f32,
-    pub down: f32,
-    pub moving: bool,
-}
-
 /// Game system that takes the raw input events and converts it to player controls based on the
 /// player input map.
 pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
@@ -120,20 +73,8 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
     }
 
     // Forward gamepad events to egui if not disabled.
-    'forward_gamepad_inputs: {
-        if settings.disable_gamepad_input {
-            break 'forward_gamepad_inputs;
-        }
-
-        let Some(mapping) = &game.shared_resource::<PlayerControlMapping>() else {
-            break 'forward_gamepad_inputs;
-        };
-        let mapping = &mapping.gamepad;
-
-        let previous_gamepad_controls =
-            Arc::clone(&game.shared_resource::<PreviousGamepadInputs>().unwrap());
-        let mut previous_gamepad_controls = previous_gamepad_controls.write().unwrap();
-        let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
+    if !settings.disable_gamepad_input {
+        let controls = game.shared_resource::<GlobalPlayerControls>().unwrap();
 
         let push_key = |events: &mut Vec<egui::Event>, key| {
             events.push(egui::Event::Key {
@@ -144,167 +85,29 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
             });
         };
 
-        for (gamepad_idx, previous_control) in previous_gamepad_controls.iter_mut().enumerate() {
-            let gamepad_idx = gamepad_idx as u32;
-
-            // let ControlSource::Gamepad(gamepad_idx) = source else {
-            //     continue;
-            // };
-
-            let mut current_control = *previous_control;
-
-            let mapping_is_active = |input_map: InputKind| match input_map {
-                InputKind::Button(mapped_button) => {
-                    if gamepad_idx == 0 && mapped_button == GamepadButton::South {
-                        for value in gamepad
-                            .gamepad_events
-                            .iter()
-                            .filter_map(_gamepad_button_south)
-                        {
-                            info!(?value, "SOUTH");
-                        }
-                    }
-                    for input in gamepad.gamepad_events.iter().rev() {
-                        if let GamepadEvent::Button(e) = input {
-                            if e.button == mapped_button && e.gamepad == gamepad_idx {
-                                let value = if e.value < 0.1 { 0.0 } else { e.value };
-                                return Some(value);
-                            }
-                        }
-                    }
-                    None
-                }
-                InputKind::AxisPositive(mapped_axis) => {
-                    for input in gamepad.gamepad_events.iter().rev() {
-                        if let GamepadEvent::Axis(e) = input {
-                            if e.axis == mapped_axis && e.gamepad == gamepad_idx {
-                                let value = if e.value < 0.1 { 0.0 } else { e.value };
-                                return Some(value);
-                            }
-                        }
-                    }
-                    None
-                }
-                InputKind::AxisNegative(mapped_axis) => {
-                    // if gamepad_idx == 0 && mapped_axis == GamepadAxis::LeftStickY {
-                    //     for value in gamepad
-                    //         .gamepad_events
-                    //         .iter()
-                    //         .filter_map(_gamepad_leftstick_y_value)
-                    //         .map(|value| if value > -0.1 { 0.0 } else { value })
-                    //     {
-                    //         info!(?value, "down event");
-                    //     }
-                    // }
-                    for input in gamepad.gamepad_events.iter().rev() {
-                        if let GamepadEvent::Axis(e) = input {
-                            if e.axis == mapped_axis && e.gamepad == gamepad_idx {
-                                let value = if e.value > -0.1 { 0.0 } else { e.value };
-                                return Some(value);
-                            }
-                        }
-                    }
-                    None
-                }
-                _ => None,
+        for (source, player_control) in controls.iter() {
+            if !matches!(source, ControlSource::Gamepad(_)) {
+                continue;
             };
 
-            //
-            // Collect button press inputs
-            //
-
-            for (button_pressed, button_map) in [
-                (&mut current_control.menu_confirm, &mapping.menu_confirm),
-                // (&mut current_control.menu_back, &mapping.menu_back),
-            ] {
-                // TODO: remove `clone()` when this type implements `Copy`
-                if let Some(value) = mapping_is_active(button_map.clone()) {
-                    info!(value = ?Some(value), "confirm mapping");
-                    *button_pressed = value.abs() > 0.0;
-                }
+            if player_control.menu_confirm_just_pressed {
+                push_key(events, egui::Key::Enter);
             }
-
-            // if gamepad_idx == 0 {
-            //     info!(
-            //         previous = previous_control.menu_confirm,
-            //         current = current_control.menu_confirm
-            //     );
-            // }
-
-            //
-            // Collect joystick inputs
-            //
-
-            // helper for merging two inputs (like dpad + joystick for example) allowing multiple bindings
-            // for same control
-            let merge_inputs = |input1: &InputKind, input2: &InputKind| {
-                // TODO: remove `clone()` when this type implements `Copy`
-                match (
-                    mapping_is_active(input1.clone()),
-                    mapping_is_active(input2.clone()),
-                ) {
-                    // Both inputs have a value and the first is zero -- use the second value
-                    (Some(0.0), Some(value2)) => Some(value2),
-                    // First input has a non-zero value -- use the first value
-                    (Some(value1), _) => Some(value1),
-                    // First input has no value -- use the second
-                    (None, value2) => value2,
-                }
-                .map(f32::abs)
-            };
-
-            if let Some(left) = merge_inputs(&mapping.movement.left, &mapping.movement_alt.left) {
-                current_control.left = left;
-            }
-            if let Some(right) = merge_inputs(&mapping.movement.right, &mapping.movement_alt.right)
-            {
-                current_control.right = right;
-            }
-            if let Some(up) = merge_inputs(&mapping.movement.up, &mapping.movement_alt.up) {
-                current_control.up = up;
-            }
-            if let Some(down) = merge_inputs(&mapping.movement.down, &mapping.movement_alt.down) {
-                current_control.down = down;
-            }
-            let move_direction = vec2(
-                current_control.right - current_control.left,
-                current_control.up - current_control.down,
-            );
-            current_control.moving = move_direction.length_squared() > 0.01;
-
-            //
-            // Forward collected inputs to egui
-            //
-
-            // info!(
-            //     prev = previous_control.menu_confirm,
-            //     curr = current_control.menu_confirm,
-            //     "menu confirm"
-            // );
-            if current_control.menu_confirm && !previous_control.menu_confirm {
-                // push_key(events, egui::Key::Enter);
-                info!("ENTER <<<<<<<<<<<<<<<<<<<<<<<");
-            }
-            if current_control.menu_back && !previous_control.menu_back {
+            if player_control.menu_back_just_pressed {
                 push_key(events, egui::Key::Escape);
             }
 
-            if current_control.moving && !previous_control.moving {
-                if move_direction.x < -0.1 {
+            if player_control.just_moved {
+                if player_control.move_direction.y > 0.1 {
+                    push_key(events, egui::Key::ArrowUp);
+                } else if player_control.move_direction.y < -0.1 {
+                    push_key(events, egui::Key::ArrowDown);
+                } else if player_control.move_direction.x < -0.1 {
                     push_key(events, egui::Key::ArrowLeft);
-                }
-                if move_direction.x > 0.1 {
+                } else if player_control.move_direction.x > 0.1 {
                     push_key(events, egui::Key::ArrowRight);
                 }
-                if move_direction.y > 0.1 {
-                    push_key(events, egui::Key::ArrowUp);
-                }
-                if move_direction.y < -0.1 {
-                    push_key(events, egui::Key::ArrowDown);
-                }
             }
-
-            *previous_control = current_control;
         }
     }
 }

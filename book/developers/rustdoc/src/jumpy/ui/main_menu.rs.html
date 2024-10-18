@@ -365,7 +365,6 @@
 <a href="#270" id="270">270</a>
 <a href="#271" id="271">271</a>
 <a href="#272" id="272">272</a>
-<a href="#273" id="273">273</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">use </span><span class="kw">super</span>::ImageMeta;
@@ -540,6 +539,7 @@
     <span class="kw-2">mut </span>ui: In&lt;<span class="kw-2">&amp;mut </span>egui::Ui&gt;,
     meta: Root&lt;GameMeta&gt;,
     localization: Localization&lt;GameMeta&gt;,
+    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))] </span>exit_game: <span class="prelude-ty">Option</span>&lt;ResMut&lt;ExitBones&gt;&gt;,
 ) {
     <span class="kw">let </span>ui = <span class="kw-2">&amp;mut *</span>ui;
     ui.vertical_centered(|ui| {
@@ -608,11 +608,9 @@
                     .show(ui)
                     .clicked()
                 {
-                    <span class="comment">// TODO: Gracefully exit game on quit.
-                    // Right now we don't have a way for bones to trigger a Bevy graceful shutdown.
-                    // We need to have a way for bones games to communicate that they want to exit,
-                    // and then the Bones Bevy Renderer can gracefully shutdown.
-                    </span>std::process::exit(<span class="number">0</span>);
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>exit) = exit_game {
+                        <span class="kw-2">**</span>exit = <span class="bool-val">true</span>;
+                    }
                 }
             });
     });

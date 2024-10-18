@@ -172,6 +172,7 @@ fn home_menu(
     mut ui: In<&mut egui::Ui>,
     meta: Root<GameMeta>,
     localization: Localization<GameMeta>,
+    #[cfg(not(target_arch = "wasm32"))] exit_game: Option<ResMut<ExitBones>>,
 ) {
     let ui = &mut *ui;
     ui.vertical_centered(|ui| {
@@ -240,11 +241,9 @@ fn home_menu(
                     .show(ui)
                     .clicked()
                 {
-                    // TODO: Gracefully exit game on quit.
-                    // Right now we don't have a way for bones to trigger a Bevy graceful shutdown.
-                    // We need to have a way for bones games to communicate that they want to exit,
-                    // and then the Bones Bevy Renderer can gracefully shutdown.
-                    std::process::exit(0);
+                    if let Some(mut exit) = exit_game {
+                        **exit = true;
+                    }
                 }
             });
     });

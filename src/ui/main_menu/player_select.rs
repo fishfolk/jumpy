@@ -773,16 +773,13 @@ fn player_select_panel(
 
             // Marker for current player in online matches
             #[cfg(not(target_arch = "wasm32"))]
-            if let Some(socket) = network_socket {
-                if socket.player_idx() == slot_id {
+            match network_socket {
+                Some(socket) if socket.player_idx() == slot_id => {
                     ui.vertical_centered(|ui| {
                         ui.label(normal_font.rich(localization.get("you-marker")));
                     });
-                } else {
-                    ui.add_space(normal_font.size);
                 }
-            } else {
-                ui.add_space(normal_font.size);
+                _ => ui.add_space(normal_font.size),
             }
 
             ui.add_space(normal_font.size);

@@ -6,9 +6,6 @@ use crate::{ui::player_image::player_image, PackMeta};
 
 use super::*;
 
-// const GAMEPAD_ACTION_IDX: usize = 0;
-// const KEYPAD_ACTION_IDX: usize = 1;
-
 #[derive(Default, Clone, Debug, HasSchema)]
 pub struct PlayerSelectState {
     pub slots: [PlayerSlot; MAX_PLAYERS as usize],
@@ -32,20 +29,68 @@ impl PlayerSlot {
     pub fn is_ai(&self) -> bool {
         self.is_ai
     }
+}
 
-    #[cfg(debug_assertions)]
-    pub fn set_test_hat(&mut self, asset_server: &AssetServer, hat_handles: &[Handle<HatMeta>]) {
+#[cfg(debug_assertions)]
+impl PlayerSlot {
+    pub fn test_player() -> Option<String> {
+        match std::env::var("TEST_PLAYER") {
+            Ok(name) => Some(name),
+            Err(std::env::VarError::NotUnicode(err)) => {
+                warn!("Invalid TEST_PLAYER, not unicode: {err:?}");
+                Some("Fishy".to_string())
+            }
+            Err(std::env::VarError::NotPresent) => {
+                let test_vars = [
+                    std::env::var_os("TEST_MAP"),
+                    std::env::var_os("TEST_HAT"),
+                    std::env::var_os("TEST_CONTROLLER"),
+                ];
+                if test_vars.iter().any(Option::is_some) {
+                    Some("Fishy".to_string())
+                } else {
+                    None
+                }
+            }
+        }
+    }
+
+    pub fn test_control_source() -> ControlSource {
+        match std::env::var("TEST_CONTROLLER") {
+            Ok(name) => match &*name {
+                "Keyboard1" => ControlSource::Keyboard1,
+                "Keyboard2" => ControlSource::Keyboard2,
+                "Gamepad" => ControlSource::Gamepad(0),
+                _ => {
+                    warn!("Invalid TEST_CONTROLLER: {name}");
+                    warn!(r#"Available controllers: "Keyboard1", "Keyboard2", "Gamepad""#);
+                    ControlSource::Keyboard1
+                }
+            },
+            Err(std::env::VarError::NotPresent) => ControlSource::Keyboard1,
+            Err(std::env::VarError::NotUnicode(err)) => {
+                warn!("Invalid TEST_CONTROLLER, not unicode: {err:?}");
+                ControlSource::Keyboard1
+            }
+        }
+    }
+
+    pub fn test_hat(
+        asset_server: &AssetServer,
+        hat_handles: &[Handle<HatMeta>],
+    ) -> Option<Handle<HatMeta>> {
         match std::env::var("TEST_HAT") {
-            Err(std::env::VarError::NotPresent) => {}
+            Err(std::env::VarError::NotPresent) => None,
             Err(std::env::VarError::NotUnicode(err)) => {
                 warn!("Invalid TEST_HAT, not unicode: {err:?}");
+                None
             }
             Ok(test_hat) => match hat_handles
                 .iter()
                 .copied()
                 .find(|h| asset_server.get(*h).name == test_hat)
             {
-                hat_handle @ Some(_) => self.selected_hat = hat_handle,
+                Some(hat_handle) => Some(hat_handle),
                 None => {
                     warn!("TEST_HAT not found: {test_hat}");
                     let available_names =
@@ -53,6 +98,7 @@ impl PlayerSlot {
                             asset_server.get(h).name.as_str()
                         });
                     warn!("Available hat names: {available_names}");
+                    None
                 }
             },
         }
@@ -92,50 +138,17 @@ pub fn widget(
     // Default the player to Jumpy if none is provided.
     #[cfg(debug_assertions)]
     'test_player: {
-        use std::env::{var, var_os, VarError};
         use std::sync::atomic::{AtomicBool, Ordering};
         static DEBUG_DID_CHECK_ENV_VARS: AtomicBool = AtomicBool::new(false);
         if DEBUG_DID_CHECK_ENV_VARS
             .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
             .is_ok()
         {
-            let test_player = match var("TEST_PLAYER") {
-                Ok(name) => name,
-                Err(VarError::NotUnicode(err)) => {
-                    warn!("Invalid TEST_PLAYER, not unicode: {err:?}");
-                    "Fishy".to_string()
-                }
-                Err(VarError::NotPresent) => {
-                    let test_vars = [
-                        var_os("TEST_MAP"),
-                        var_os("TEST_HAT"),
-                        var_os("TEST_CONTROLLER"),
-                    ];
-                    if test_vars.iter().any(Option::is_some) {
-                        "Fishy".to_string()
-                    } else {
-                        break 'test_player;
-                    }
-                }
+            let Some(test_player) = PlayerSlot::test_player() else {
+                break 'test_player;
             };
 
-            let test_controller = match var("TEST_CONTROLLER") {
-                Ok(name) => match &*name {
-                    "Keyboard1" => ControlSource::Keyboard1,
-                    "Keyboard2" => ControlSource::Keyboard2,
-                    "Gamepad" => ControlSource::Gamepad(0),
-                    _ => {
-                        warn!("Invalid TEST_CONTROLLER: {name}");
-                        warn!(r#"Available controllers: "Keyboard1", "Keyboard2", "Gamepad""#);
-                        ControlSource::Keyboard1
-                    }
-                },
-                Err(VarError::NotPresent) => ControlSource::Keyboard1,
-                Err(VarError::NotUnicode(err)) => {
-                    warn!("Invalid TEST_CONTROLLER, not unicode: {err:?}");
-                    ControlSource::Keyboard1
-                }
-            };
+            let test_controller = PlayerSlot::test_control_source();
 
             let asset_server = world.resource::<AssetServer>();
             let game_meta = asset_server.root::<GameMeta>();
@@ -160,7 +173,7 @@ pub fn widget(
                     slot.active = true;
                     slot.control_source = Some(test_controller);
                     slot.selected_player = player_handle;
-                    slot.set_test_hat(&asset_server, core_hat_handles);
+                    slot.selected_hat = PlayerSlot::test_hat(&asset_server, core_hat_handles);
                     slot.confirmed = true;
 
                     ui.ctx()

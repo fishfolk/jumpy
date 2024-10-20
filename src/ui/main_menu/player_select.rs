@@ -570,25 +570,6 @@ fn player_select_panel(
         None => (None, is_next_open_slot),
     };
 
-    // Input sources that may be used to join a new player
-    let available_input_sources = {
-        let mut sources = SmallVec::<[_; 3]>::from_slice(&[
-            ControlSource::Keyboard1,
-            ControlSource::Keyboard2,
-            ControlSource::Gamepad(0),
-        ]);
-
-        for slot in &state.slots {
-            if matches!(
-                slot.user_control_source(),
-                Some(ControlSource::Keyboard1 | ControlSource::Keyboard2)
-            ) {
-                sources.retain(|&mut x| x != slot.user_control_source().unwrap());
-            }
-        }
-        sources
-    };
-
     //
     // React to user inputs
     //
@@ -759,6 +740,25 @@ fn player_select_panel(
     //
     // Render panel
     //
+
+    // Input sources that may be used to join a new player
+    let available_input_sources = {
+        let mut sources = SmallVec::<[_; 3]>::from_slice(&[
+            ControlSource::Keyboard1,
+            ControlSource::Keyboard2,
+            ControlSource::Gamepad(0),
+        ]);
+
+        for slot in &state.slots {
+            if matches!(
+                slot.user_control_source(),
+                Some(ControlSource::Keyboard1 | ControlSource::Keyboard2)
+            ) {
+                sources.retain(|&mut x| Some(x) != slot.user_control_source());
+            }
+        }
+        sources
+    };
 
     let panel = &meta.theme.panel;
     BorderedFrame::new(&panel.border)

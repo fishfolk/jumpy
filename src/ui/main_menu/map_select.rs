@@ -129,13 +129,15 @@ pub fn widget(
                     let slot = player_select_state.slots[i];
 
                     PlayerInput {
-                        active: slot.active,
-                        selected_player: slot.selected_player,
-                        selected_hat: slot.selected_hat,
-                        control_source: slot.control_source,
+                        active: !slot.is_empty(),
+                        selected_player: slot
+                            .selected_player()
+                            .unwrap_or(player_select_state.players[0]),
+                        selected_hat: slot.selected_hat(),
+                        control_source: slot.user_control_source(),
                         editor_input: default(),
                         control: default(),
-                        is_ai: slot.is_ai,
+                        is_ai: slot.is_ai(),
                     }
                 }),
                 plugins: meta.get_plugins(&assets),

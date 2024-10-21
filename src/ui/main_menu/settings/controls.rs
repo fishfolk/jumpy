@@ -356,13 +356,13 @@ fn get_input(
                 .next()
                 .and_then(|event| match event {
                     GamepadEvent::Button(e) => {
-                        (e.value.abs() > 0.1).then(|| InputKind::Button(e.button.clone()))
+                        (e.value.abs() > 0.1).then_some(InputKind::Button(e.button))
                     }
                     GamepadEvent::Axis(e) => {
                         if e.value > 0.1 {
-                            Some(InputKind::AxisPositive(e.axis.clone()))
+                            Some(InputKind::AxisPositive(e.axis))
                         } else if e.value < -0.1 {
-                            Some(InputKind::AxisNegative(e.axis.clone()))
+                            Some(InputKind::AxisNegative(e.axis))
                         } else {
                             None
                         }

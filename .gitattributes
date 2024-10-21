@@ -21,5 +21,7 @@ web/* linguist-vendored
 assets/** binary
 old_assets/** binary
 
+*.ftl diff
+
 # If you have other directories with mostly binary files, add them like this:
 # other_binary_directory/** binary

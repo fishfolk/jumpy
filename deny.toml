@@ -37,3 +37,9 @@ allow-git = [
 
 [sources.allow-org]
 github = ["fishfolk"]
+
+[advisories]
+ignore = [
+    # proc-macro-error is unmaintained - https://github.com/fishfolk/bones/issues/479
+    "RUSTSEC-2024-0370",
+]

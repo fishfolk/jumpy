@@ -297,6 +297,8 @@
 <a href="#202" id="202">202</a>
 <a href="#203" id="203">203</a>
 <a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::core::{JumpyDefaultMatchRunner, MatchPlugin};
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
@@ -428,13 +430,15 @@
                     <span class="kw">let </span>slot = player_select_state.slots[i];
 
                     PlayerInput {
-                        active: slot.active,
-                        selected_player: slot.selected_player,
-                        selected_hat: slot.selected_hat,
-                        control_source: slot.control_source,
+                        active: !slot.is_empty(),
+                        selected_player: slot
+                            .selected_player()
+                            .unwrap_or(player_select_state.players[<span class="number">0</span>]),
+                        selected_hat: slot.selected_hat(),
+                        control_source: slot.user_control_source(),
                         editor_input: default(),
                         control: default(),
-                        is_ai: slot.is_ai,
+                        is_ai: slot.is_ai(),
                     }
                 }),
                 plugins: meta.get_plugins(<span class="kw-2">&amp;</span>assets),

@@ -825,13 +825,13 @@
                 .next()
                 .and_then(|event| <span class="kw">match </span>event {
                     GamepadEvent::Button(e) =&gt; {
-                        (e.value.abs() &gt; <span class="number">0.1</span>).then(|| InputKind::Button(e.button.clone()))
+                        (e.value.abs() &gt; <span class="number">0.1</span>).then_some(InputKind::Button(e.button))
                     }
                     GamepadEvent::Axis(e) =&gt; {
                         <span class="kw">if </span>e.value &gt; <span class="number">0.1 </span>{
-                            <span class="prelude-val">Some</span>(InputKind::AxisPositive(e.axis.clone()))
+                            <span class="prelude-val">Some</span>(InputKind::AxisPositive(e.axis))
                         } <span class="kw">else if </span>e.value &lt; -<span class="number">0.1 </span>{
-                            <span class="prelude-val">Some</span>(InputKind::AxisNegative(e.axis.clone()))
+                            <span class="prelude-val">Some</span>(InputKind::AxisNegative(e.axis))
                         } <span class="kw">else </span>{
                             <span class="prelude-val">None
                         </span>}

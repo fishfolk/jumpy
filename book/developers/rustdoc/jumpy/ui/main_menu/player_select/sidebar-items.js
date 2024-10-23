@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["PlayerSelectMessage"],"fn":["handle_match_setup_messages","player_select_panel","widget"],"struct":["PlayerSelectState","PlayerSlot"]};
+window.SIDEBAR_ITEMS = {"enum":["PlayerSelectMessage","PlayerSlot","PlayerSlotControlSource"],"fn":["handle_match_setup_messages","player_select_panel","widget"],"struct":["PlayerSelectState"]};

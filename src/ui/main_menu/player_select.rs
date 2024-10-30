@@ -21,12 +21,49 @@ impl PlayerSelectState {
             .iter()
             .any(|slot| slot.user_control_source() == Some(source))
     }
+
+    /// Cache the hats and player assets in PlayerSelectState
+    pub fn cache_player_and_hat_assets(
+        &mut self,
+        meta: &Root<GameMeta>,
+        asset_server: Res<AssetServer>,
+    ) {
+        // Cache the player list
+        if self.players.is_empty() {
+            for player in meta.core.players.iter() {
+                self.players.push(*player);
+            }
+            for pack in asset_server.packs() {
+                let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
+                for player in pack_meta.players.iter() {
+                    self.players.push(*player)
+                }
+            }
+        }
+
+        // Cache the hat list
+        if self.hats.is_empty() {
+            self.hats.push(None); // No hat selected
+            for hat in meta.core.player_hats.iter() {
+                self.hats.push(Some(*hat));
+            }
+            for pack in asset_server.packs() {
+                let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
+                for hat in pack_meta.player_hats.iter() {
+                    self.hats.push(Some(*hat));
+                }
+            }
+        }
+    }
 }
 
 #[derive(Default, Clone, Copy, Debug)]
 pub enum PlayerSlot {
     #[default]
     Empty,
+    /// This is used instead of Empty for a required player slot that has not yet selected control source.
+    /// (Could be 1st player in local, or the local player in online.)
+    SelectingLocalControlSource,
     SelectingPlayer {
         control_source: PlayerSlotControlSource,
         current_player: Handle<PlayerMeta>,
@@ -63,6 +100,7 @@ impl PlayerSlot {
     pub fn is_user(&self) -> bool {
         match self {
             Self::Empty => false,
+            Self::SelectingLocalControlSource => true,
             Self::SelectingPlayer { control_source, .. }
             | Self::SelectingHat { control_source, .. }
             | Self::Ready { control_source, .. } => control_source.is_user(),
@@ -72,6 +110,7 @@ impl PlayerSlot {
     pub fn is_ai(&self) -> bool {
         match self {
             Self::Empty => false,
+            Self::SelectingLocalControlSource => false,
             Self::SelectingPlayer { control_source, .. }
             | Self::SelectingHat { control_source, .. }
             | Self::Ready { control_source, .. } => control_source.is_ai(),
@@ -81,6 +120,7 @@ impl PlayerSlot {
     pub fn control_source(&self) -> Option<PlayerSlotControlSource> {
         match self {
             Self::Empty => None,
+            Self::SelectingLocalControlSource => None,
             Self::SelectingPlayer { control_source, .. }
             | Self::SelectingHat { control_source, .. }
             | Self::Ready { control_source, .. } => Some(*control_source),
@@ -90,6 +130,7 @@ impl PlayerSlot {
     pub fn user_control_source(&self) -> Option<ControlSource> {
         match self {
             Self::Empty => None,
+            Self::SelectingLocalControlSource => None,
             Self::SelectingPlayer { control_source, .. }
             | Self::SelectingHat { control_source, .. }
             | Self::Ready { control_source, .. } => control_source.user_source(),
@@ -98,7 +139,7 @@ impl PlayerSlot {
 
     pub fn selected_player(&self) -> Option<Handle<PlayerMeta>> {
         match self {
-            Self::Empty => None,
+            Self::Empty | Self::SelectingLocalControlSource => None,
             Self::SelectingPlayer { current_player, .. } => Some(*current_player),
             Self::SelectingHat {
                 selected_player, ..
@@ -111,7 +152,7 @@ impl PlayerSlot {
 
     pub fn selected_hat(&self) -> Option<Handle<HatMeta>> {
         match self {
-            Self::Empty | Self::SelectingPlayer { .. } => None,
+            Self::Empty | Self::SelectingLocalControlSource | Self::SelectingPlayer { .. } => None,
             Self::SelectingHat { current_hat, .. } => *current_hat,
             Self::Ready { selected_hat, .. } => *selected_hat,
         }
@@ -289,6 +330,42 @@ pub fn widget(
                     ui.ctx()
                         .set_state(MenuPage::MapSelect { is_waiting: false });
                 }
+            }
+        }
+    }
+
+    state.cache_player_and_hat_assets(&meta, asset_server);
+
+    // Initialize state of player slots - we wait on all non-empty slots being ready before allowing
+    // transition to map select. Transition slots of required players from empty to initial state.
+    //
+    // In Offline, we have one required player. Other slots are optional.
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let first_slot = &mut state.slots[0];
+        if first_slot.is_empty() {
+            *first_slot = PlayerSlot::SelectingLocalControlSource;
+        }
+    }
+
+    // In Online, we have one local player, and some number of remotes that must be initialized.
+    #[cfg(not(target_arch = "wasm32"))]
+    if let Some(socket) = network_socket.as_ref() {
+        for (slot_id, slot) in state.slots.iter_mut().enumerate() {
+            let is_local_player_slot = slot_id == socket.player_idx() as usize;
+            let is_empty = slot.is_empty();
+
+            if slot_id >= socket.player_count() as usize {
+                // unused slots in online don't need to be initialized
+                break;
+            } else if is_local_player_slot && is_empty {
+                *slot = PlayerSlot::SelectingLocalControlSource
+            } else if !is_local_player_slot && is_empty {
+                *slot = PlayerSlot::SelectingPlayer {
+                    control_source: PlayerSlotControlSource::Remote,
+                    // Use default player until we get a message from them on change in selection
+                    current_player: state.players[0],
+                };
             }
         }
     }
@@ -510,33 +587,6 @@ fn player_select_panel(
     let (ui, slot_id, state) = &mut *params;
     let slot_id = *slot_id;
 
-    // Cache the player list
-    if state.players.is_empty() {
-        for player in meta.core.players.iter() {
-            state.players.push(*player);
-        }
-        for pack in asset_server.packs() {
-            let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
-            for player in pack_meta.players.iter() {
-                state.players.push(*player)
-            }
-        }
-    }
-
-    // Cache the hat list
-    if state.hats.is_empty() {
-        state.hats.push(None); // No hat selected
-        for hat in meta.core.player_hats.iter() {
-            state.hats.push(Some(*hat));
-        }
-        for pack in asset_server.packs() {
-            let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
-            for hat in pack_meta.player_hats.iter() {
-                state.hats.push(Some(*hat));
-            }
-        }
-    }
-
     #[cfg(not(target_arch = "wasm32"))]
     let network_socket = network_socket.as_deref();
 
@@ -557,7 +607,7 @@ fn player_select_panel(
         .slots
         .iter()
         .enumerate()
-        .any(|(i, slot)| (slot.is_empty() && i == slot_id as usize));
+        .any(|(i, slot)| (slot.control_source().is_none() && i == slot_id as usize));
 
     #[cfg(target_arch = "wasm32")]
     let (network_local_player_slot, slot_allows_new_player) = (None::<u32>, is_next_open_slot);
@@ -603,7 +653,7 @@ fn player_select_panel(
     let mut next_state = None::<PlayerSlot>;
 
     match state.slots[slot_id as usize] {
-        PlayerSlot::Empty => {
+        PlayerSlot::Empty | PlayerSlot::SelectingLocalControlSource => {
             if slot_allows_new_player {
                 // Check if a new player is trying to join
                 let new_player_join = controls.iter().find_map(|(source, control)| {
@@ -892,7 +942,9 @@ fn player_select_panel(
                         });
 
                         let hat_label = match slot {
-                            PlayerSlot::Empty | PlayerSlot::SelectingPlayer { .. } => String::new(),
+                            PlayerSlot::Empty
+                            | PlayerSlot::SelectingLocalControlSource
+                            | PlayerSlot::SelectingPlayer { .. } => String::new(),
                             PlayerSlot::SelectingHat { .. } => match hat_meta.as_ref() {
                                 Some(hat) => format!("< {} >", hat.name),
                                 None => format!("< {} >", localization.get("no-hat")),

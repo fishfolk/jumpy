@@ -622,8 +622,6 @@ fn player_select_panel(
         None => (None, is_next_open_slot),
     };
 
-    let slot_is_network_local_player = Some(slot_id) == network_local_player_slot;
-
     //
     // React to user inputs
     //
@@ -829,8 +827,10 @@ fn player_select_panel(
             let smaller_font = &meta.theme.font_styles.smaller.with_color(panel.font_color);
             let heading_font = &meta.theme.font_styles.heading.with_color(panel.font_color);
 
+            let slot = state.slots[slot_id as usize];
+
             // Marker for current player in online matches
-            if slot_is_network_local_player {
+            if is_network && slot.is_local_player() {
                 ui.vertical_centered(|ui| {
                     ui.label(normal_font.rich(localization.get("you-marker")));
                 });
@@ -839,8 +839,6 @@ fn player_select_panel(
             }
 
             ui.add_space(normal_font.size);
-
-            let slot = state.slots[slot_id as usize];
 
             let display_fish =
                 |ui: &mut egui::Ui,
@@ -982,7 +980,7 @@ fn player_select_panel(
                     .join("/");
 
                 ui.vertical_centered(|ui| {
-                    if !is_network || slot_is_network_local_player {
+                    if !is_network || slot.is_local_player() {
                         ui.label(normal_font.rich(localization.get_with(
                             "press-button-to-join",
                             &fluent_args! {

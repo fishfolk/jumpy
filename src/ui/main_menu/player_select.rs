@@ -341,7 +341,7 @@ pub fn widget(
     // transition to map select. Transition slots of required players from empty to initial state.
     //
     // In Offline, we have one required player. Other slots are optional.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(target_arch = "wasm32")]
     {
         let first_slot = &mut state.slots[0];
         if first_slot.is_empty() {
@@ -360,7 +360,7 @@ pub fn widget(
                 // unused slots in online don't need to be initialized
                 break;
             } else if is_local_player_slot && is_empty {
-                *slot = PlayerSlot::SelectingLocalControlSource
+                *slot = PlayerSlot::SelectingLocalControlSource;
             } else if !is_local_player_slot && is_empty {
                 *slot = PlayerSlot::SelectingPlayer {
                     control_source: PlayerSlotControlSource::Remote,

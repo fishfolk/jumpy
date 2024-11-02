@@ -623,6 +623,8 @@ fn player_select_panel(
         None => (None, is_next_open_slot),
     };
 
+    let slot_is_network_local_player = Some(slot_id) == network_local_player_slot;
+
     //
     // React to user inputs
     //
@@ -829,19 +831,50 @@ fn player_select_panel(
             let heading_font = &meta.theme.font_styles.heading.with_color(panel.font_color);
 
             // Marker for current player in online matches
-            #[cfg(not(target_arch = "wasm32"))]
-            match network_socket {
-                Some(socket) if socket.player_idx() == slot_id => {
-                    ui.vertical_centered(|ui| {
-                        ui.label(normal_font.rich(localization.get("you-marker")));
-                    });
-                }
-                _ => ui.add_space(normal_font.size),
+            if slot_is_network_local_player {
+                ui.vertical_centered(|ui| {
+                    ui.label(normal_font.rich(localization.get("you-marker")));
+                });
+            } else {
+                ui.add_space(normal_font.size);
             }
 
             ui.add_space(normal_font.size);
 
             let slot = state.slots[slot_id as usize];
+
+            let display_fish =
+                |ui: &mut egui::Ui,
+                 player_meta_handle: Handle<PlayerMeta>,
+                 hat_meta_handle: Option<Handle<HatMeta>>| {
+                    let player_meta = asset_server.get(player_meta_handle);
+                    let hat_meta = hat_meta_handle.map(|h| asset_server.get(h));
+
+                    ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
+                        ui.label(if slot.is_selecting_player() {
+                            normal_font.rich(format!("<  {}  >", player_meta.name))
+                        } else {
+                            normal_font.rich(player_meta.name.as_str())
+                        });
+
+                        let hat_label = match slot {
+                            PlayerSlot::Empty
+                            | PlayerSlot::SelectingLocalControlSource
+                            | PlayerSlot::SelectingPlayer { .. } => String::new(),
+                            PlayerSlot::SelectingHat { .. } => match hat_meta.as_ref() {
+                                Some(hat) => format!("< {} >", hat.name),
+                                None => format!("< {} >", localization.get("no-hat")),
+                            },
+                            PlayerSlot::Ready { .. } => match hat_meta.as_ref() {
+                                Some(hat) => hat.name.to_string(),
+                                None => localization.get("no-hat").to_string(),
+                            },
+                        };
+                        ui.label(smaller_font.rich(hat_label));
+
+                        world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref()));
+                    });
+                };
 
             if let Some(selected_player) = slot.selected_player() {
                 let confirm_binding = match slot.user_control_source() {
@@ -862,9 +895,6 @@ fn player_select_panel(
                         .join("/"),
                 };
                 ui.vertical_centered(|ui| {
-                    let player_meta = asset_server.get(selected_player);
-                    let hat_meta = slot.selected_hat().map(|h| asset_server.get(h));
-
                     if !slot.is_ready() {
                         if slot.is_user() {
                             if slot.is_selecting_hat() {
@@ -941,33 +971,10 @@ fn player_select_panel(
                         }
                     });
 
-                    ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                        ui.label(if slot.is_selecting_player() {
-                            normal_font.rich(format!("<  {}  >", player_meta.name))
-                        } else {
-                            normal_font.rich(player_meta.name.as_str())
-                        });
-
-                        let hat_label = match slot {
-                            PlayerSlot::Empty
-                            | PlayerSlot::SelectingLocalControlSource
-                            | PlayerSlot::SelectingPlayer { .. } => String::new(),
-                            PlayerSlot::SelectingHat { .. } => match hat_meta.as_ref() {
-                                Some(hat) => format!("< {} >", hat.name),
-                                None => format!("< {} >", localization.get("no-hat")),
-                            },
-                            PlayerSlot::Ready { .. } => match hat_meta.as_ref() {
-                                Some(hat) => hat.name.to_string(),
-                                None => localization.get("no-hat").to_string(),
-                            },
-                        };
-                        ui.label(smaller_font.rich(hat_label));
-
-                        world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref()));
-                    });
+                    display_fish(ui, selected_player, slot.selected_hat());
                 });
 
-            // If this slot is empty
+            // If this slot has not selected player
             } else {
                 let bindings = available_input_sources
                     .iter()
@@ -976,12 +983,14 @@ fn player_select_panel(
                     .join("/");
 
                 ui.vertical_centered(|ui| {
-                    ui.label(normal_font.rich(localization.get_with(
-                        "press-button-to-join",
-                        &fluent_args! {
-                            "button" => bindings
-                        },
-                    )));
+                    if !is_network || slot_is_network_local_player {
+                        ui.label(normal_font.rich(localization.get_with(
+                            "press-button-to-join",
+                            &fluent_args! {
+                                "button" => bindings
+                            },
+                        )));
+                    }
 
                     if !is_network {
                         ui.add_space(meta.theme.font_styles.bigger.size);
@@ -1001,6 +1010,10 @@ fn player_select_panel(
                                 selected_hat: None,
                             });
                         }
+                    } else {
+                        // In network play, display default fish/hat for player if not yet selected.
+                        let default_player_meta_handle = state.players[0];
+                        display_fish(ui, default_player_meta_handle, None);
                     }
                 });
             }

@@ -928,26 +928,27 @@ fn player_select_panel(
                                 },
                             )));
                         }
-                    } else {
-                        ui.label(normal_font.rich(localization.get("waiting")));
                     }
 
                     ui.vertical_centered(|ui| {
                         ui.set_height(heading_font.size * 1.5);
 
-                        if slot.is_ready() && !slot.is_ai() && slot.is_local_player() {
+                        if slot.is_ready() && !slot.is_ai() {
                             ui.label(
                                 heading_font
                                     .with_color(meta.theme.colors.positive)
                                     .rich(localization.get("player-select-ready")),
                             );
                             ui.add_space(normal_font.size / 2.0);
-                            ui.label(normal_font.rich(localization.get_with(
-                                "player-select-unready",
-                                &fluent_args! {
-                                    "button" => back_binding.as_str()
-                                },
-                            )));
+
+                            if slot.is_local_player() {
+                                ui.label(normal_font.rich(localization.get_with(
+                                    "player-select-unready",
+                                    &fluent_args! {
+                                        "button" => back_binding.as_str()
+                                    },
+                                )));
+                            }
                         }
                         if !is_network && slot_id != 0 && slot.is_ai() {
                             ui.label(

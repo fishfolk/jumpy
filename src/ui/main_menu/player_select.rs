@@ -273,8 +273,7 @@ pub fn widget(
     localization: Localization<GameMeta>,
     controls: Res<GlobalPlayerControls>,
     world: &World,
-
-    #[cfg(not(target_arch = "wasm32"))] asset_server: Res<AssetServer>,
+    asset_server: Res<AssetServer>,
     #[cfg(not(target_arch = "wasm32"))] network_socket: Option<Res<NetworkMatchSocket>>,
 ) {
     let mut state = ui.ctx().get_state::<PlayerSelectState>();

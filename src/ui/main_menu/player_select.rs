@@ -67,6 +67,7 @@ pub enum PlayerSlot {
     SelectingPlayer {
         control_source: PlayerSlotControlSource,
         current_player: Handle<PlayerMeta>,
+        current_hat: Option<Handle<HatMeta>>,
     },
     SelectingHat {
         control_source: PlayerSlotControlSource,
@@ -152,7 +153,8 @@ impl PlayerSlot {
 
     pub fn selected_hat(&self) -> Option<Handle<HatMeta>> {
         match self {
-            Self::Empty | Self::SelectingLocalControlSource | Self::SelectingPlayer { .. } => None,
+            Self::Empty | Self::SelectingLocalControlSource => None,
+            Self::SelectingPlayer { current_hat, .. } => *current_hat,
             Self::SelectingHat { current_hat, .. } => *current_hat,
             Self::Ready { selected_hat, .. } => *selected_hat,
         }
@@ -365,6 +367,7 @@ pub fn widget(
                     control_source: PlayerSlotControlSource::Remote,
                     // Use default player until we get a message from them on change in selection
                     current_player: state.players[0],
+                    current_hat: None,
                 };
             }
         }
@@ -669,6 +672,7 @@ fn player_select_panel(
                 next_state = new_player_join.map(|control_source| PlayerSlot::SelectingPlayer {
                     control_source: PlayerSlotControlSource::User(control_source),
                     current_player: state.players[0],
+                    current_hat: None,
                 });
             }
         }
@@ -676,6 +680,7 @@ fn player_select_panel(
         PlayerSlot::SelectingPlayer {
             control_source: control_source @ PlayerSlotControlSource::User(src),
             current_player,
+            current_hat,
         } => {
             let Some(player_control) = controls.get(&src) else {
                 return;
@@ -684,7 +689,7 @@ fn player_select_panel(
                 next_state = Some(PlayerSlot::SelectingHat {
                     control_source,
                     selected_player: current_player,
-                    current_hat: None,
+                    current_hat,
                 });
             } else if player_control.menu_back_just_pressed && !is_network {
                 next_state = Some(PlayerSlot::Empty);
@@ -709,6 +714,7 @@ fn player_select_panel(
                 next_state = Some(PlayerSlot::SelectingPlayer {
                     control_source,
                     current_player: next_player,
+                    current_hat,
                 });
             }
         }
@@ -733,6 +739,7 @@ fn player_select_panel(
                 next_state = Some(PlayerSlot::SelectingPlayer {
                     control_source,
                     current_player: selected_player,
+                    current_hat,
                 });
             } else if player_control.just_moved {
                 let current_hat_handle_idx = state

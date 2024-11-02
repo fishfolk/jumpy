@@ -98,7 +98,7 @@ impl PlayerSlot {
         matches!(self, Self::Ready { .. })
     }
 
-    pub fn is_user(&self) -> bool {
+    pub fn is_local_player(&self) -> bool {
         match self {
             Self::Empty => false,
             Self::SelectingLocalControlSource => true,
@@ -895,7 +895,7 @@ fn player_select_panel(
                 };
                 ui.vertical_centered(|ui| {
                     if !slot.is_ready() {
-                        if slot.is_user() {
+                        if slot.is_local_player() {
                             if slot.is_selecting_hat() {
                                 ui.label(normal_font.rich(localization.get("pick-a-hat")));
                             } else {
@@ -937,7 +937,7 @@ fn player_select_panel(
                     ui.vertical_centered(|ui| {
                         ui.set_height(heading_font.size * 1.5);
 
-                        if slot.is_ready() && !slot.is_ai() && slot.is_user() {
+                        if slot.is_ready() && !slot.is_ai() && slot.is_local_player() {
                             ui.label(
                                 heading_font
                                     .with_color(meta.theme.colors.positive)

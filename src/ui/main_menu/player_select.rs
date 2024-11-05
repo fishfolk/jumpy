@@ -21,15 +21,53 @@ impl PlayerSelectState {
             .iter()
             .any(|slot| slot.user_control_source() == Some(source))
     }
+
+    /// Cache the hats and player assets in PlayerSelectState
+    pub fn cache_player_and_hat_assets(
+        &mut self,
+        meta: &Root<GameMeta>,
+        asset_server: Res<AssetServer>,
+    ) {
+        // Cache the player list
+        if self.players.is_empty() {
+            for player in meta.core.players.iter() {
+                self.players.push(*player);
+            }
+            for pack in asset_server.packs() {
+                let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
+                for player in pack_meta.players.iter() {
+                    self.players.push(*player)
+                }
+            }
+        }
+
+        // Cache the hat list
+        if self.hats.is_empty() {
+            self.hats.push(None); // No hat selected
+            for hat in meta.core.player_hats.iter() {
+                self.hats.push(Some(*hat));
+            }
+            for pack in asset_server.packs() {
+                let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
+                for hat in pack_meta.player_hats.iter() {
+                    self.hats.push(Some(*hat));
+                }
+            }
+        }
+    }
 }
 
 #[derive(Default, Clone, Copy, Debug)]
 pub enum PlayerSlot {
     #[default]
     Empty,
+    /// This is used instead of Empty for a required player slot that has not yet selected control source.
+    /// (Could be 1st player in local, or the local player in online.)
+    SelectingLocalControlSource,
     SelectingPlayer {
         control_source: PlayerSlotControlSource,
         current_player: Handle<PlayerMeta>,
+        current_hat: Option<Handle<HatMeta>>,
     },
     SelectingHat {
         control_source: PlayerSlotControlSource,
@@ -60,9 +98,10 @@ impl PlayerSlot {
         matches!(self, Self::Ready { .. })
     }
 
-    pub fn is_user(&self) -> bool {
+    pub fn is_local_player(&self) -> bool {
         match self {
             Self::Empty => false,
+            Self::SelectingLocalControlSource => true,
             Self::SelectingPlayer { control_source, .. }
             | Self::SelectingHat { control_source, .. }
             | Self::Ready { control_source, .. } => control_source.is_user(),
@@ -72,6 +111,7 @@ impl PlayerSlot {
     pub fn is_ai(&self) -> bool {
         match self {
             Self::Empty => false,
+            Self::SelectingLocalControlSource => false,
             Self::SelectingPlayer { control_source, .. }
             | Self::SelectingHat { control_source, .. }
             | Self::Ready { control_source, .. } => control_source.is_ai(),
@@ -81,6 +121,7 @@ impl PlayerSlot {
     pub fn control_source(&self) -> Option<PlayerSlotControlSource> {
         match self {
             Self::Empty => None,
+            Self::SelectingLocalControlSource => None,
             Self::SelectingPlayer { control_source, .. }
             | Self::SelectingHat { control_source, .. }
             | Self::Ready { control_source, .. } => Some(*control_source),
@@ -90,6 +131,7 @@ impl PlayerSlot {
     pub fn user_control_source(&self) -> Option<ControlSource> {
         match self {
             Self::Empty => None,
+            Self::SelectingLocalControlSource => None,
             Self::SelectingPlayer { control_source, .. }
             | Self::SelectingHat { control_source, .. }
             | Self::Ready { control_source, .. } => control_source.user_source(),
@@ -98,7 +140,7 @@ impl PlayerSlot {
 
     pub fn selected_player(&self) -> Option<Handle<PlayerMeta>> {
         match self {
-            Self::Empty => None,
+            Self::Empty | Self::SelectingLocalControlSource => None,
             Self::SelectingPlayer { current_player, .. } => Some(*current_player),
             Self::SelectingHat {
                 selected_player, ..
@@ -111,7 +153,8 @@ impl PlayerSlot {
 
     pub fn selected_hat(&self) -> Option<Handle<HatMeta>> {
         match self {
-            Self::Empty | Self::SelectingPlayer { .. } => None,
+            Self::Empty | Self::SelectingLocalControlSource => None,
+            Self::SelectingPlayer { current_hat, .. } => *current_hat,
             Self::SelectingHat { current_hat, .. } => *current_hat,
             Self::Ready { selected_hat, .. } => *selected_hat,
         }
@@ -230,8 +273,7 @@ pub fn widget(
     localization: Localization<GameMeta>,
     controls: Res<GlobalPlayerControls>,
     world: &World,
-
-    #[cfg(not(target_arch = "wasm32"))] asset_server: Res<AssetServer>,
+    asset_server: Res<AssetServer>,
     #[cfg(not(target_arch = "wasm32"))] network_socket: Option<Res<NetworkMatchSocket>>,
 ) {
     let mut state = ui.ctx().get_state::<PlayerSelectState>();
@@ -289,6 +331,43 @@ pub fn widget(
                     ui.ctx()
                         .set_state(MenuPage::MapSelect { is_waiting: false });
                 }
+            }
+        }
+    }
+
+    state.cache_player_and_hat_assets(&meta, asset_server);
+
+    // Initialize state of player slots - we wait on all non-empty slots being ready before allowing
+    // transition to map select. Transition slots of required players from empty to initial state.
+    //
+    // In Offline, we have one required player. Other slots are optional.
+    #[cfg(target_arch = "wasm32")]
+    {
+        let first_slot = &mut state.slots[0];
+        if first_slot.is_empty() {
+            *first_slot = PlayerSlot::SelectingLocalControlSource;
+        }
+    }
+
+    // In Online, we have one local player, and some number of remotes that must be initialized.
+    #[cfg(not(target_arch = "wasm32"))]
+    if let Some(socket) = network_socket.as_ref() {
+        for (slot_id, slot) in state.slots.iter_mut().enumerate() {
+            let is_local_player_slot = slot_id == socket.player_idx() as usize;
+            let is_empty = slot.is_empty();
+
+            if slot_id >= socket.player_count() as usize {
+                // unused slots in online don't need to be initialized
+                break;
+            } else if is_local_player_slot && is_empty {
+                *slot = PlayerSlot::SelectingLocalControlSource;
+            } else if !is_local_player_slot && is_empty {
+                *slot = PlayerSlot::SelectingPlayer {
+                    control_source: PlayerSlotControlSource::Remote,
+                    // Use default player until we get a message from them on change in selection
+                    current_player: state.players[0],
+                    current_hat: None,
+                };
             }
         }
     }
@@ -510,33 +589,6 @@ fn player_select_panel(
     let (ui, slot_id, state) = &mut *params;
     let slot_id = *slot_id;
 
-    // Cache the player list
-    if state.players.is_empty() {
-        for player in meta.core.players.iter() {
-            state.players.push(*player);
-        }
-        for pack in asset_server.packs() {
-            let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
-            for player in pack_meta.players.iter() {
-                state.players.push(*player)
-            }
-        }
-    }
-
-    // Cache the hat list
-    if state.hats.is_empty() {
-        state.hats.push(None); // No hat selected
-        for hat in meta.core.player_hats.iter() {
-            state.hats.push(Some(*hat));
-        }
-        for pack in asset_server.packs() {
-            let pack_meta = asset_server.get(pack.root.typed::<PackMeta>());
-            for hat in pack_meta.player_hats.iter() {
-                state.hats.push(Some(*hat));
-            }
-        }
-    }
-
     #[cfg(not(target_arch = "wasm32"))]
     let network_socket = network_socket.as_deref();
 
@@ -557,7 +609,7 @@ fn player_select_panel(
         .slots
         .iter()
         .enumerate()
-        .any(|(i, slot)| (slot.is_empty() && i == slot_id as usize));
+        .any(|(i, slot)| (slot.control_source().is_none() && i == slot_id as usize));
 
     #[cfg(target_arch = "wasm32")]
     let (network_local_player_slot, slot_allows_new_player) = (None::<u32>, is_next_open_slot);
@@ -603,7 +655,7 @@ fn player_select_panel(
     let mut next_state = None::<PlayerSlot>;
 
     match state.slots[slot_id as usize] {
-        PlayerSlot::Empty => {
+        PlayerSlot::Empty | PlayerSlot::SelectingLocalControlSource => {
             if slot_allows_new_player {
                 // Check if a new player is trying to join
                 let new_player_join = controls.iter().find_map(|(source, control)| {
@@ -619,6 +671,7 @@ fn player_select_panel(
                 next_state = new_player_join.map(|control_source| PlayerSlot::SelectingPlayer {
                     control_source: PlayerSlotControlSource::User(control_source),
                     current_player: state.players[0],
+                    current_hat: None,
                 });
             }
         }
@@ -626,6 +679,7 @@ fn player_select_panel(
         PlayerSlot::SelectingPlayer {
             control_source: control_source @ PlayerSlotControlSource::User(src),
             current_player,
+            current_hat,
         } => {
             let Some(player_control) = controls.get(&src) else {
                 return;
@@ -634,7 +688,7 @@ fn player_select_panel(
                 next_state = Some(PlayerSlot::SelectingHat {
                     control_source,
                     selected_player: current_player,
-                    current_hat: None,
+                    current_hat,
                 });
             } else if player_control.menu_back_just_pressed && !is_network {
                 next_state = Some(PlayerSlot::Empty);
@@ -659,6 +713,7 @@ fn player_select_panel(
                 next_state = Some(PlayerSlot::SelectingPlayer {
                     control_source,
                     current_player: next_player,
+                    current_hat,
                 });
             }
         }
@@ -683,6 +738,7 @@ fn player_select_panel(
                 next_state = Some(PlayerSlot::SelectingPlayer {
                     control_source,
                     current_player: selected_player,
+                    current_hat,
                 });
             } else if player_control.just_moved {
                 let current_hat_handle_idx = state
@@ -771,20 +827,51 @@ fn player_select_panel(
             let smaller_font = &meta.theme.font_styles.smaller.with_color(panel.font_color);
             let heading_font = &meta.theme.font_styles.heading.with_color(panel.font_color);
 
+            let slot = state.slots[slot_id as usize];
+
             // Marker for current player in online matches
-            #[cfg(not(target_arch = "wasm32"))]
-            match network_socket {
-                Some(socket) if socket.player_idx() == slot_id => {
-                    ui.vertical_centered(|ui| {
-                        ui.label(normal_font.rich(localization.get("you-marker")));
-                    });
-                }
-                _ => ui.add_space(normal_font.size),
+            if is_network && slot.is_local_player() {
+                ui.vertical_centered(|ui| {
+                    ui.label(normal_font.rich(localization.get("you-marker")));
+                });
+            } else {
+                ui.add_space(normal_font.size);
             }
 
             ui.add_space(normal_font.size);
 
-            let slot = state.slots[slot_id as usize];
+            let display_fish =
+                |ui: &mut egui::Ui,
+                 player_meta_handle: Handle<PlayerMeta>,
+                 hat_meta_handle: Option<Handle<HatMeta>>| {
+                    let player_meta = asset_server.get(player_meta_handle);
+                    let hat_meta = hat_meta_handle.map(|h| asset_server.get(h));
+
+                    ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
+                        ui.label(if slot.is_selecting_player() {
+                            normal_font.rich(format!("<  {}  >", player_meta.name))
+                        } else {
+                            normal_font.rich(player_meta.name.as_str())
+                        });
+
+                        let hat_label = match slot {
+                            PlayerSlot::Empty
+                            | PlayerSlot::SelectingLocalControlSource
+                            | PlayerSlot::SelectingPlayer { .. } => String::new(),
+                            PlayerSlot::SelectingHat { .. } => match hat_meta.as_ref() {
+                                Some(hat) => format!("< {} >", hat.name),
+                                None => format!("< {} >", localization.get("no-hat")),
+                            },
+                            PlayerSlot::Ready { .. } => match hat_meta.as_ref() {
+                                Some(hat) => hat.name.to_string(),
+                                None => localization.get("no-hat").to_string(),
+                            },
+                        };
+                        ui.label(smaller_font.rich(hat_label));
+
+                        world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref()));
+                    });
+                };
 
             if let Some(selected_player) = slot.selected_player() {
                 let confirm_binding = match slot.user_control_source() {
@@ -805,11 +892,8 @@ fn player_select_panel(
                         .join("/"),
                 };
                 ui.vertical_centered(|ui| {
-                    let player_meta = asset_server.get(selected_player);
-                    let hat_meta = slot.selected_hat().map(|h| asset_server.get(h));
-
                     if !slot.is_ready() {
-                        if slot.is_user() {
+                        if slot.is_local_player() {
                             if slot.is_selecting_hat() {
                                 ui.label(normal_font.rich(localization.get("pick-a-hat")));
                             } else {
@@ -844,26 +928,27 @@ fn player_select_panel(
                                 },
                             )));
                         }
-                    } else {
-                        ui.label(normal_font.rich(localization.get("waiting")));
                     }
 
                     ui.vertical_centered(|ui| {
                         ui.set_height(heading_font.size * 1.5);
 
-                        if slot.is_ready() && !slot.is_ai() && slot.is_user() {
+                        if slot.is_ready() && !slot.is_ai() {
                             ui.label(
                                 heading_font
                                     .with_color(meta.theme.colors.positive)
                                     .rich(localization.get("player-select-ready")),
                             );
                             ui.add_space(normal_font.size / 2.0);
-                            ui.label(normal_font.rich(localization.get_with(
-                                "player-select-unready",
-                                &fluent_args! {
-                                    "button" => back_binding.as_str()
-                                },
-                            )));
+
+                            if slot.is_local_player() {
+                                ui.label(normal_font.rich(localization.get_with(
+                                    "player-select-unready",
+                                    &fluent_args! {
+                                        "button" => back_binding.as_str()
+                                    },
+                                )));
+                            }
                         }
                         if !is_network && slot_id != 0 && slot.is_ai() {
                             ui.label(
@@ -884,31 +969,10 @@ fn player_select_panel(
                         }
                     });
 
-                    ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                        ui.label(if slot.is_selecting_player() {
-                            normal_font.rich(format!("<  {}  >", player_meta.name))
-                        } else {
-                            normal_font.rich(player_meta.name.as_str())
-                        });
-
-                        let hat_label = match slot {
-                            PlayerSlot::Empty | PlayerSlot::SelectingPlayer { .. } => String::new(),
-                            PlayerSlot::SelectingHat { .. } => match hat_meta.as_ref() {
-                                Some(hat) => format!("< {} >", hat.name),
-                                None => format!("< {} >", localization.get("no-hat")),
-                            },
-                            PlayerSlot::Ready { .. } => match hat_meta.as_ref() {
-                                Some(hat) => hat.name.to_string(),
-                                None => localization.get("no-hat").to_string(),
-                            },
-                        };
-                        ui.label(smaller_font.rich(hat_label));
-
-                        world.run_system(player_image, (ui, &player_meta, hat_meta.as_deref()));
-                    });
+                    display_fish(ui, selected_player, slot.selected_hat());
                 });
 
-            // If this slot is empty
+            // If this slot has not selected player
             } else {
                 let bindings = available_input_sources
                     .iter()
@@ -917,12 +981,14 @@ fn player_select_panel(
                     .join("/");
 
                 ui.vertical_centered(|ui| {
-                    ui.label(normal_font.rich(localization.get_with(
-                        "press-button-to-join",
-                        &fluent_args! {
-                            "button" => bindings
-                        },
-                    )));
+                    if !is_network || slot.is_local_player() {
+                        ui.label(normal_font.rich(localization.get_with(
+                            "press-button-to-join",
+                            &fluent_args! {
+                                "button" => bindings
+                            },
+                        )));
+                    }
 
                     if !is_network {
                         ui.add_space(meta.theme.font_styles.bigger.size);
@@ -942,6 +1008,10 @@ fn player_select_panel(
                                 selected_hat: None,
                             });
                         }
+                    } else {
+                        // In network play, display default fish/hat for player if not yet selected.
+                        let default_player_meta_handle = state.players[0];
+                        display_fish(ui, default_player_meta_handle, None);
                     }
                 });
             }

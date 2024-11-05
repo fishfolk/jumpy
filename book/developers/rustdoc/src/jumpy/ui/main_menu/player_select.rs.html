@@ -1046,6 +1046,76 @@
 <a href="#951" id="951">951</a>
 <a href="#952" id="952">952</a>
 <a href="#953" id="953">953</a>
+<a href="#954" id="954">954</a>
+<a href="#955" id="955">955</a>
+<a href="#956" id="956">956</a>
+<a href="#957" id="957">957</a>
+<a href="#958" id="958">958</a>
+<a href="#959" id="959">959</a>
+<a href="#960" id="960">960</a>
+<a href="#961" id="961">961</a>
+<a href="#962" id="962">962</a>
+<a href="#963" id="963">963</a>
+<a href="#964" id="964">964</a>
+<a href="#965" id="965">965</a>
+<a href="#966" id="966">966</a>
+<a href="#967" id="967">967</a>
+<a href="#968" id="968">968</a>
+<a href="#969" id="969">969</a>
+<a href="#970" id="970">970</a>
+<a href="#971" id="971">971</a>
+<a href="#972" id="972">972</a>
+<a href="#973" id="973">973</a>
+<a href="#974" id="974">974</a>
+<a href="#975" id="975">975</a>
+<a href="#976" id="976">976</a>
+<a href="#977" id="977">977</a>
+<a href="#978" id="978">978</a>
+<a href="#979" id="979">979</a>
+<a href="#980" id="980">980</a>
+<a href="#981" id="981">981</a>
+<a href="#982" id="982">982</a>
+<a href="#983" id="983">983</a>
+<a href="#984" id="984">984</a>
+<a href="#985" id="985">985</a>
+<a href="#986" id="986">986</a>
+<a href="#987" id="987">987</a>
+<a href="#988" id="988">988</a>
+<a href="#989" id="989">989</a>
+<a href="#990" id="990">990</a>
+<a href="#991" id="991">991</a>
+<a href="#992" id="992">992</a>
+<a href="#993" id="993">993</a>
+<a href="#994" id="994">994</a>
+<a href="#995" id="995">995</a>
+<a href="#996" id="996">996</a>
+<a href="#997" id="997">997</a>
+<a href="#998" id="998">998</a>
+<a href="#999" id="999">999</a>
+<a href="#1000" id="1000">1000</a>
+<a href="#1001" id="1001">1001</a>
+<a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
+<a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
+<a href="#1007" id="1007">1007</a>
+<a href="#1008" id="1008">1008</a>
+<a href="#1009" id="1009">1009</a>
+<a href="#1010" id="1010">1010</a>
+<a href="#1011" id="1011">1011</a>
+<a href="#1012" id="1012">1012</a>
+<a href="#1013" id="1013">1013</a>
+<a href="#1014" id="1014">1014</a>
+<a href="#1015" id="1015">1015</a>
+<a href="#1016" id="1016">1016</a>
+<a href="#1017" id="1017">1017</a>
+<a href="#1018" id="1018">1018</a>
+<a href="#1019" id="1019">1019</a>
+<a href="#1020" id="1020">1020</a>
+<a href="#1021" id="1021">1021</a>
+<a href="#1022" id="1022">1022</a>
+<a href="#1023" id="1023">1023</a>
 </pre></div><pre class="rust"><code><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
 </span><span class="kw">use </span>bones_framework::networking::{NetworkMatchSocket, SocketTarget};
 <span class="kw">use </span>smallvec::SmallVec;
@@ -1069,15 +1139,53 @@
             .iter()
             .any(|slot| slot.user_control_source() == <span class="prelude-val">Some</span>(source))
     }
+
+    <span class="doccomment">/// Cache the hats and player assets in PlayerSelectState
+    </span><span class="kw">pub fn </span>cache_player_and_hat_assets(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        meta: <span class="kw-2">&amp;</span>Root&lt;GameMeta&gt;,
+        asset_server: Res&lt;AssetServer&gt;,
+    ) {
+        <span class="comment">// Cache the player list
+        </span><span class="kw">if </span><span class="self">self</span>.players.is_empty() {
+            <span class="kw">for </span>player <span class="kw">in </span>meta.core.players.iter() {
+                <span class="self">self</span>.players.push(<span class="kw-2">*</span>player);
+            }
+            <span class="kw">for </span>pack <span class="kw">in </span>asset_server.packs() {
+                <span class="kw">let </span>pack_meta = asset_server.get(pack.root.typed::&lt;PackMeta&gt;());
+                <span class="kw">for </span>player <span class="kw">in </span>pack_meta.players.iter() {
+                    <span class="self">self</span>.players.push(<span class="kw-2">*</span>player)
+                }
+            }
+        }
+
+        <span class="comment">// Cache the hat list
+        </span><span class="kw">if </span><span class="self">self</span>.hats.is_empty() {
+            <span class="self">self</span>.hats.push(<span class="prelude-val">None</span>); <span class="comment">// No hat selected
+            </span><span class="kw">for </span>hat <span class="kw">in </span>meta.core.player_hats.iter() {
+                <span class="self">self</span>.hats.push(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>hat));
+            }
+            <span class="kw">for </span>pack <span class="kw">in </span>asset_server.packs() {
+                <span class="kw">let </span>pack_meta = asset_server.get(pack.root.typed::&lt;PackMeta&gt;());
+                <span class="kw">for </span>hat <span class="kw">in </span>pack_meta.player_hats.iter() {
+                    <span class="self">self</span>.hats.push(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>hat));
+                }
+            }
+        }
+    }
 }
 
 <span class="attr">#[derive(Default, Clone, Copy, Debug)]
 </span><span class="kw">pub enum </span>PlayerSlot {
     <span class="attr">#[default]
     </span>Empty,
+    <span class="doccomment">/// This is used instead of Empty for a required player slot that has not yet selected control source.
+    /// (Could be 1st player in local, or the local player in online.)
+    </span>SelectingLocalControlSource,
     SelectingPlayer {
         control_source: PlayerSlotControlSource,
         current_player: Handle&lt;PlayerMeta&gt;,
+        current_hat: <span class="prelude-ty">Option</span>&lt;Handle&lt;HatMeta&gt;&gt;,
     },
     SelectingHat {
         control_source: PlayerSlotControlSource,
@@ -1108,9 +1216,10 @@
         <span class="macro">matches!</span>(<span class="self">self</span>, <span class="self">Self</span>::Ready { .. })
     }
 
-    <span class="kw">pub fn </span>is_user(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+    <span class="kw">pub fn </span>is_local_player(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Empty =&gt; <span class="bool-val">false</span>,
+            <span class="self">Self</span>::SelectingLocalControlSource =&gt; <span class="bool-val">true</span>,
             <span class="self">Self</span>::SelectingPlayer { control_source, .. }
             | <span class="self">Self</span>::SelectingHat { control_source, .. }
             | <span class="self">Self</span>::Ready { control_source, .. } =&gt; control_source.is_user(),
@@ -1120,6 +1229,7 @@
     <span class="kw">pub fn </span>is_ai(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Empty =&gt; <span class="bool-val">false</span>,
+            <span class="self">Self</span>::SelectingLocalControlSource =&gt; <span class="bool-val">false</span>,
             <span class="self">Self</span>::SelectingPlayer { control_source, .. }
             | <span class="self">Self</span>::SelectingHat { control_source, .. }
             | <span class="self">Self</span>::Ready { control_source, .. } =&gt; control_source.is_ai(),
@@ -1129,6 +1239,7 @@
     <span class="kw">pub fn </span>control_source(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;PlayerSlotControlSource&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Empty =&gt; <span class="prelude-val">None</span>,
+            <span class="self">Self</span>::SelectingLocalControlSource =&gt; <span class="prelude-val">None</span>,
             <span class="self">Self</span>::SelectingPlayer { control_source, .. }
             | <span class="self">Self</span>::SelectingHat { control_source, .. }
             | <span class="self">Self</span>::Ready { control_source, .. } =&gt; <span class="prelude-val">Some</span>(<span class="kw-2">*</span>control_source),
@@ -1138,6 +1249,7 @@
     <span class="kw">pub fn </span>user_control_source(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;ControlSource&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Empty =&gt; <span class="prelude-val">None</span>,
+            <span class="self">Self</span>::SelectingLocalControlSource =&gt; <span class="prelude-val">None</span>,
             <span class="self">Self</span>::SelectingPlayer { control_source, .. }
             | <span class="self">Self</span>::SelectingHat { control_source, .. }
             | <span class="self">Self</span>::Ready { control_source, .. } =&gt; control_source.user_source(),
@@ -1146,7 +1258,7 @@
 
     <span class="kw">pub fn </span>selected_player(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Handle&lt;PlayerMeta&gt;&gt; {
         <span class="kw">match </span><span class="self">self </span>{
-            <span class="self">Self</span>::Empty =&gt; <span class="prelude-val">None</span>,
+            <span class="self">Self</span>::Empty | <span class="self">Self</span>::SelectingLocalControlSource =&gt; <span class="prelude-val">None</span>,
             <span class="self">Self</span>::SelectingPlayer { current_player, .. } =&gt; <span class="prelude-val">Some</span>(<span class="kw-2">*</span>current_player),
             <span class="self">Self</span>::SelectingHat {
                 selected_player, ..
@@ -1159,7 +1271,8 @@
 
     <span class="kw">pub fn </span>selected_hat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Handle&lt;HatMeta&gt;&gt; {
         <span class="kw">match </span><span class="self">self </span>{
-            <span class="self">Self</span>::Empty | <span class="self">Self</span>::SelectingPlayer { .. } =&gt; <span class="prelude-val">None</span>,
+            <span class="self">Self</span>::Empty | <span class="self">Self</span>::SelectingLocalControlSource =&gt; <span class="prelude-val">None</span>,
+            <span class="self">Self</span>::SelectingPlayer { current_hat, .. } =&gt; <span class="kw-2">*</span>current_hat,
             <span class="self">Self</span>::SelectingHat { current_hat, .. } =&gt; <span class="kw-2">*</span>current_hat,
             <span class="self">Self</span>::Ready { selected_hat, .. } =&gt; <span class="kw-2">*</span>selected_hat,
         }
@@ -1278,8 +1391,7 @@
     localization: Localization&lt;GameMeta&gt;,
     controls: Res&lt;GlobalPlayerControls&gt;,
     world: <span class="kw-2">&amp;</span>World,
-
-    <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))] </span>asset_server: Res&lt;AssetServer&gt;,
+    asset_server: Res&lt;AssetServer&gt;,
     <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))] </span>network_socket: <span class="prelude-ty">Option</span>&lt;Res&lt;NetworkMatchSocket&gt;&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>state = ui.ctx().get_state::&lt;PlayerSelectState&gt;();
@@ -1337,6 +1449,43 @@
                     ui.ctx()
                         .set_state(MenuPage::MapSelect { is_waiting: <span class="bool-val">false </span>});
                 }
+            }
+        }
+    }
+
+    state.cache_player_and_hat_assets(<span class="kw-2">&amp;</span>meta, asset_server);
+
+    <span class="comment">// Initialize state of player slots - we wait on all non-empty slots being ready before allowing
+    // transition to map select. Transition slots of required players from empty to initial state.
+    //
+    // In Offline, we have one required player. Other slots are optional.
+    </span><span class="attr">#[cfg(target_arch = <span class="string">"wasm32"</span>)]
+    </span>{
+        <span class="kw">let </span>first_slot = <span class="kw-2">&amp;mut </span>state.slots[<span class="number">0</span>];
+        <span class="kw">if </span>first_slot.is_empty() {
+            <span class="kw-2">*</span>first_slot = PlayerSlot::SelectingLocalControlSource;
+        }
+    }
+
+    <span class="comment">// In Online, we have one local player, and some number of remotes that must be initialized.
+    </span><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(socket) = network_socket.as_ref() {
+        <span class="kw">for </span>(slot_id, slot) <span class="kw">in </span>state.slots.iter_mut().enumerate() {
+            <span class="kw">let </span>is_local_player_slot = slot_id == socket.player_idx() <span class="kw">as </span>usize;
+            <span class="kw">let </span>is_empty = slot.is_empty();
+
+            <span class="kw">if </span>slot_id &gt;= socket.player_count() <span class="kw">as </span>usize {
+                <span class="comment">// unused slots in online don't need to be initialized
+                </span><span class="kw">break</span>;
+            } <span class="kw">else if </span>is_local_player_slot &amp;&amp; is_empty {
+                <span class="kw-2">*</span>slot = PlayerSlot::SelectingLocalControlSource;
+            } <span class="kw">else if </span>!is_local_player_slot &amp;&amp; is_empty {
+                <span class="kw-2">*</span>slot = PlayerSlot::SelectingPlayer {
+                    control_source: PlayerSlotControlSource::Remote,
+                    <span class="comment">// Use default player until we get a message from them on change in selection
+                    </span>current_player: state.players[<span class="number">0</span>],
+                    current_hat: <span class="prelude-val">None</span>,
+                };
             }
         }
     }
@@ -1558,33 +1707,6 @@
     <span class="kw">let </span>(ui, slot_id, state) = <span class="kw-2">&amp;mut *</span>params;
     <span class="kw">let </span>slot_id = <span class="kw-2">*</span>slot_id;
 
-    <span class="comment">// Cache the player list
-    </span><span class="kw">if </span>state.players.is_empty() {
-        <span class="kw">for </span>player <span class="kw">in </span>meta.core.players.iter() {
-            state.players.push(<span class="kw-2">*</span>player);
-        }
-        <span class="kw">for </span>pack <span class="kw">in </span>asset_server.packs() {
-            <span class="kw">let </span>pack_meta = asset_server.get(pack.root.typed::&lt;PackMeta&gt;());
-            <span class="kw">for </span>player <span class="kw">in </span>pack_meta.players.iter() {
-                state.players.push(<span class="kw-2">*</span>player)
-            }
-        }
-    }
-
-    <span class="comment">// Cache the hat list
-    </span><span class="kw">if </span>state.hats.is_empty() {
-        state.hats.push(<span class="prelude-val">None</span>); <span class="comment">// No hat selected
-        </span><span class="kw">for </span>hat <span class="kw">in </span>meta.core.player_hats.iter() {
-            state.hats.push(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>hat));
-        }
-        <span class="kw">for </span>pack <span class="kw">in </span>asset_server.packs() {
-            <span class="kw">let </span>pack_meta = asset_server.get(pack.root.typed::&lt;PackMeta&gt;());
-            <span class="kw">for </span>hat <span class="kw">in </span>pack_meta.player_hats.iter() {
-                state.hats.push(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>hat));
-            }
-        }
-    }
-
     <span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
     </span><span class="kw">let </span>network_socket = network_socket.as_deref();
 
@@ -1605,7 +1727,7 @@
         .slots
         .iter()
         .enumerate()
-        .any(|(i, slot)| (slot.is_empty() &amp;&amp; i == slot_id <span class="kw">as </span>usize));
+        .any(|(i, slot)| (slot.control_source().is_none() &amp;&amp; i == slot_id <span class="kw">as </span>usize));
 
     <span class="attr">#[cfg(target_arch = <span class="string">"wasm32"</span>)]
     </span><span class="kw">let </span>(network_local_player_slot, slot_allows_new_player) = (<span class="prelude-val">None</span>::&lt;u32&gt;, is_next_open_slot);
@@ -1651,7 +1773,7 @@
     <span class="kw">let </span><span class="kw-2">mut </span>next_state = <span class="prelude-val">None</span>::&lt;PlayerSlot&gt;;
 
     <span class="kw">match </span>state.slots[slot_id <span class="kw">as </span>usize] {
-        PlayerSlot::Empty =&gt; {
+        PlayerSlot::Empty | PlayerSlot::SelectingLocalControlSource =&gt; {
             <span class="kw">if </span>slot_allows_new_player {
                 <span class="comment">// Check if a new player is trying to join
                 </span><span class="kw">let </span>new_player_join = controls.iter().find_map(|(source, control)| {
@@ -1667,6 +1789,7 @@
                 next_state = new_player_join.map(|control_source| PlayerSlot::SelectingPlayer {
                     control_source: PlayerSlotControlSource::User(control_source),
                     current_player: state.players[<span class="number">0</span>],
+                    current_hat: <span class="prelude-val">None</span>,
                 });
             }
         }
@@ -1674,6 +1797,7 @@
         PlayerSlot::SelectingPlayer {
             control_source: control_source @ PlayerSlotControlSource::User(src),
             current_player,
+            current_hat,
         } =&gt; {
             <span class="kw">let </span><span class="prelude-val">Some</span>(player_control) = controls.get(<span class="kw-2">&amp;</span>src) <span class="kw">else </span>{
                 <span class="kw">return</span>;
@@ -1682,7 +1806,7 @@
                 next_state = <span class="prelude-val">Some</span>(PlayerSlot::SelectingHat {
                     control_source,
                     selected_player: current_player,
-                    current_hat: <span class="prelude-val">None</span>,
+                    current_hat,
                 });
             } <span class="kw">else if </span>player_control.menu_back_just_pressed &amp;&amp; !is_network {
                 next_state = <span class="prelude-val">Some</span>(PlayerSlot::Empty);
@@ -1707,6 +1831,7 @@
                 next_state = <span class="prelude-val">Some</span>(PlayerSlot::SelectingPlayer {
                     control_source,
                     current_player: next_player,
+                    current_hat,
                 });
             }
         }
@@ -1731,6 +1856,7 @@
                 next_state = <span class="prelude-val">Some</span>(PlayerSlot::SelectingPlayer {
                     control_source,
                     current_player: selected_player,
+                    current_hat,
                 });
             } <span class="kw">else if </span>player_control.just_moved {
                 <span class="kw">let </span>current_hat_handle_idx = state
@@ -1819,20 +1945,51 @@
             <span class="kw">let </span>smaller_font = <span class="kw-2">&amp;</span>meta.theme.font_styles.smaller.with_color(panel.font_color);
             <span class="kw">let </span>heading_font = <span class="kw-2">&amp;</span>meta.theme.font_styles.heading.with_color(panel.font_color);
 
+            <span class="kw">let </span>slot = state.slots[slot_id <span class="kw">as </span>usize];
+
             <span class="comment">// Marker for current player in online matches
-            </span><span class="attr">#[cfg(not(target_arch = <span class="string">"wasm32"</span>))]
-            </span><span class="kw">match </span>network_socket {
-                <span class="prelude-val">Some</span>(socket) <span class="kw">if </span>socket.player_idx() == slot_id =&gt; {
-                    ui.vertical_centered(|ui| {
-                        ui.label(normal_font.rich(localization.get(<span class="string">"you-marker"</span>)));
-                    });
-                }
-                <span class="kw">_ </span>=&gt; ui.add_space(normal_font.size),
+            </span><span class="kw">if </span>is_network &amp;&amp; slot.is_local_player() {
+                ui.vertical_centered(|ui| {
+                    ui.label(normal_font.rich(localization.get(<span class="string">"you-marker"</span>)));
+                });
+            } <span class="kw">else </span>{
+                ui.add_space(normal_font.size);
             }
 
             ui.add_space(normal_font.size);
 
-            <span class="kw">let </span>slot = state.slots[slot_id <span class="kw">as </span>usize];
+            <span class="kw">let </span>display_fish =
+                |ui: <span class="kw-2">&amp;mut </span>egui::Ui,
+                 player_meta_handle: Handle&lt;PlayerMeta&gt;,
+                 hat_meta_handle: <span class="prelude-ty">Option</span>&lt;Handle&lt;HatMeta&gt;&gt;| {
+                    <span class="kw">let </span>player_meta = asset_server.get(player_meta_handle);
+                    <span class="kw">let </span>hat_meta = hat_meta_handle.map(|h| asset_server.get(h));
+
+                    ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
+                        ui.label(<span class="kw">if </span>slot.is_selecting_player() {
+                            normal_font.rich(<span class="macro">format!</span>(<span class="string">"&lt;  {}  &gt;"</span>, player_meta.name))
+                        } <span class="kw">else </span>{
+                            normal_font.rich(player_meta.name.as_str())
+                        });
+
+                        <span class="kw">let </span>hat_label = <span class="kw">match </span>slot {
+                            PlayerSlot::Empty
+                            | PlayerSlot::SelectingLocalControlSource
+                            | PlayerSlot::SelectingPlayer { .. } =&gt; String::new(),
+                            PlayerSlot::SelectingHat { .. } =&gt; <span class="kw">match </span>hat_meta.as_ref() {
+                                <span class="prelude-val">Some</span>(hat) =&gt; <span class="macro">format!</span>(<span class="string">"&lt; {} &gt;"</span>, hat.name),
+                                <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">"&lt; {} &gt;"</span>, localization.get(<span class="string">"no-hat"</span>)),
+                            },
+                            PlayerSlot::Ready { .. } =&gt; <span class="kw">match </span>hat_meta.as_ref() {
+                                <span class="prelude-val">Some</span>(hat) =&gt; hat.name.to_string(),
+                                <span class="prelude-val">None </span>=&gt; localization.get(<span class="string">"no-hat"</span>).to_string(),
+                            },
+                        };
+                        ui.label(smaller_font.rich(hat_label));
+
+                        world.run_system(player_image, (ui, <span class="kw-2">&amp;</span>player_meta, hat_meta.as_deref()));
+                    });
+                };
 
             <span class="kw">if let </span><span class="prelude-val">Some</span>(selected_player) = slot.selected_player() {
                 <span class="kw">let </span>confirm_binding = <span class="kw">match </span>slot.user_control_source() {
@@ -1853,11 +2010,8 @@
                         .join(<span class="string">"/"</span>),
                 };
                 ui.vertical_centered(|ui| {
-                    <span class="kw">let </span>player_meta = asset_server.get(selected_player);
-                    <span class="kw">let </span>hat_meta = slot.selected_hat().map(|h| asset_server.get(h));
-
                     <span class="kw">if </span>!slot.is_ready() {
-                        <span class="kw">if </span>slot.is_user() {
+                        <span class="kw">if </span>slot.is_local_player() {
                             <span class="kw">if </span>slot.is_selecting_hat() {
                                 ui.label(normal_font.rich(localization.get(<span class="string">"pick-a-hat"</span>)));
                             } <span class="kw">else </span>{
@@ -1892,26 +2046,27 @@
                                 },
                             )));
                         }
-                    } <span class="kw">else </span>{
-                        ui.label(normal_font.rich(localization.get(<span class="string">"waiting"</span>)));
                     }
 
                     ui.vertical_centered(|ui| {
                         ui.set_height(heading_font.size * <span class="number">1.5</span>);
 
-                        <span class="kw">if </span>slot.is_ready() &amp;&amp; !slot.is_ai() &amp;&amp; slot.is_user() {
+                        <span class="kw">if </span>slot.is_ready() &amp;&amp; !slot.is_ai() {
                             ui.label(
                                 heading_font
                                     .with_color(meta.theme.colors.positive)
                                     .rich(localization.get(<span class="string">"player-select-ready"</span>)),
                             );
                             ui.add_space(normal_font.size / <span class="number">2.0</span>);
-                            ui.label(normal_font.rich(localization.get_with(
-                                <span class="string">"player-select-unready"</span>,
-                                <span class="kw-2">&amp;</span><span class="macro">fluent_args!</span> {
-                                    <span class="string">"button" </span>=&gt; back_binding.as_str()
-                                },
-                            )));
+
+                            <span class="kw">if </span>slot.is_local_player() {
+                                ui.label(normal_font.rich(localization.get_with(
+                                    <span class="string">"player-select-unready"</span>,
+                                    <span class="kw-2">&amp;</span><span class="macro">fluent_args!</span> {
+                                        <span class="string">"button" </span>=&gt; back_binding.as_str()
+                                    },
+                                )));
+                            }
                         }
                         <span class="kw">if </span>!is_network &amp;&amp; slot_id != <span class="number">0 </span>&amp;&amp; slot.is_ai() {
                             ui.label(
@@ -1932,31 +2087,10 @@
                         }
                     });
 
-                    ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                        ui.label(<span class="kw">if </span>slot.is_selecting_player() {
-                            normal_font.rich(<span class="macro">format!</span>(<span class="string">"&lt;  {}  &gt;"</span>, player_meta.name))
-                        } <span class="kw">else </span>{
-                            normal_font.rich(player_meta.name.as_str())
-                        });
-
-                        <span class="kw">let </span>hat_label = <span class="kw">match </span>slot {
-                            PlayerSlot::Empty | PlayerSlot::SelectingPlayer { .. } =&gt; String::new(),
-                            PlayerSlot::SelectingHat { .. } =&gt; <span class="kw">match </span>hat_meta.as_ref() {
-                                <span class="prelude-val">Some</span>(hat) =&gt; <span class="macro">format!</span>(<span class="string">"&lt; {} &gt;"</span>, hat.name),
-                                <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">"&lt; {} &gt;"</span>, localization.get(<span class="string">"no-hat"</span>)),
-                            },
-                            PlayerSlot::Ready { .. } =&gt; <span class="kw">match </span>hat_meta.as_ref() {
-                                <span class="prelude-val">Some</span>(hat) =&gt; hat.name.to_string(),
-                                <span class="prelude-val">None </span>=&gt; localization.get(<span class="string">"no-hat"</span>).to_string(),
-                            },
-                        };
-                        ui.label(smaller_font.rich(hat_label));
-
-                        world.run_system(player_image, (ui, <span class="kw-2">&amp;</span>player_meta, hat_meta.as_deref()));
-                    });
+                    display_fish(ui, selected_player, slot.selected_hat());
                 });
 
-            <span class="comment">// If this slot is empty
+            <span class="comment">// If this slot has not selected player
             </span>} <span class="kw">else </span>{
                 <span class="kw">let </span>bindings = available_input_sources
                     .iter()
@@ -1965,12 +2099,14 @@
                     .join(<span class="string">"/"</span>);
 
                 ui.vertical_centered(|ui| {
-                    ui.label(normal_font.rich(localization.get_with(
-                        <span class="string">"press-button-to-join"</span>,
-                        <span class="kw-2">&amp;</span><span class="macro">fluent_args!</span> {
-                            <span class="string">"button" </span>=&gt; bindings
-                        },
-                    )));
+                    <span class="kw">if </span>!is_network || slot.is_local_player() {
+                        ui.label(normal_font.rich(localization.get_with(
+                            <span class="string">"press-button-to-join"</span>,
+                            <span class="kw-2">&amp;</span><span class="macro">fluent_args!</span> {
+                                <span class="string">"button" </span>=&gt; bindings
+                            },
+                        )));
+                    }
 
                     <span class="kw">if </span>!is_network {
                         ui.add_space(meta.theme.font_styles.bigger.size);
@@ -1990,6 +2126,10 @@
                                 selected_hat: <span class="prelude-val">None</span>,
                             });
                         }
+                    } <span class="kw">else </span>{
+                        <span class="comment">// In network play, display default fish/hat for player if not yet selected.
+                        </span><span class="kw">let </span>default_player_meta_handle = state.players[<span class="number">0</span>];
+                        display_fish(ui, default_player_meta_handle, <span class="prelude-val">None</span>);
                     }
                 });
             }

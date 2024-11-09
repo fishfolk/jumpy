@@ -1411,11 +1411,7 @@ layers:
   tiles: []
   elements:
   - pos:
-    - 280.0
-    - 280.0
-    element: /elements/environment/player_spawner/player_spawner.element.yaml
-  - pos:
-    - 1160.0
+    - 328.0
     - 280.0
     element: /elements/environment/player_spawner/player_spawner.element.yaml
   - pos:
@@ -1423,7 +1419,11 @@ layers:
     - 280.0
     element: /elements/environment/player_spawner/player_spawner.element.yaml
   - pos:
-    - 328.0
+    - 280.0
+    - 280.0
+    element: /elements/environment/player_spawner/player_spawner.element.yaml
+  - pos:
+    - 1160.0
     - 280.0
     element: /elements/environment/player_spawner/player_spawner.element.yaml
 - id: foreground

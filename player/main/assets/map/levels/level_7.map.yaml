@@ -808,12 +808,12 @@ layers:
   - pos:
     - 15
     - 3
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 10
     - 4
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 12
@@ -823,17 +823,17 @@ layers:
   - pos:
     - 15
     - 4
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 10
     - 5
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 11
     - 5
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 12
@@ -843,22 +843,22 @@ layers:
   - pos:
     - 14
     - 5
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 15
     - 5
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 10
     - 6
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 11
     - 6
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 12
@@ -868,12 +868,12 @@ layers:
   - pos:
     - 14
     - 6
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 15
     - 6
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 12

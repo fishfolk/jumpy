@@ -1171,67 +1171,67 @@ layers:
   - pos:
     - 7
     - 9
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 8
     - 9
-    idx: 13
+    idx: 3
     collision: Empty
   - pos:
     - 9
     - 9
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 17
     - 9
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 18
     - 9
-    idx: 13
+    idx: 3
     collision: Empty
   - pos:
     - 19
     - 9
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 7
     - 10
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 8
     - 10
-    idx: 13
+    idx: 3
     collision: Empty
   - pos:
     - 17
     - 10
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 19
     - 10
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 7
     - 11
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 8
     - 11
-    idx: 13
+    idx: 3
     collision: Empty
   - pos:
     - 9
     - 11
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 12
@@ -1251,67 +1251,67 @@ layers:
   - pos:
     - 17
     - 11
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 18
     - 11
-    idx: 13
+    idx: 3
     collision: Empty
   - pos:
     - 19
     - 11
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 7
     - 12
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 8
     - 12
-    idx: 13
+    idx: 3
     collision: Empty
   - pos:
     - 9
     - 12
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 18
     - 12
-    idx: 13
+    idx: 3
     collision: Empty
   - pos:
     - 19
     - 12
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 8
     - 13
-    idx: 13
+    idx: 3
     collision: Empty
   - pos:
     - 9
     - 13
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 17
     - 13
-    idx: 12
+    idx: 2
     collision: Empty
   - pos:
     - 18
     - 13
-    idx: 13
+    idx: 3
     collision: Empty
   - pos:
     - 19
     - 13
-    idx: 14
+    idx: 4
     collision: Empty
   - pos:
     - 12

@@ -81,6 +81,10 @@ pub fn map_select_menu(
                                     .show(ui)
                                     .focus_by_default(ui);
 
+                                    if all_maps_button.has_focus() {
+                                        all_maps_button.scroll_to_me(None);
+                                    }
+
                                     if all_maps_button.clicked() {
                                         // TODO: Currently does not include packs, only stable maps.
                                         let mut map_pool =
@@ -97,6 +101,10 @@ pub fn map_select_menu(
                                             map_meta.name.to_string(),
                                         )
                                         .show(ui);
+
+                                        if button.has_focus() {
+                                            button.scroll_to_me(None);
+                                        }
 
                                         if button.clicked() {
                                             return MapSelectAction::SelectMap(
@@ -115,6 +123,10 @@ pub fn map_select_menu(
                                                 map_meta.name.to_string(),
                                             )
                                             .show(ui);
+
+                                            if button.has_focus() {
+                                                button.scroll_to_me(None);
+                                            }
 
                                             if button.clicked() {
                                                 return MapSelectAction::SelectMap(

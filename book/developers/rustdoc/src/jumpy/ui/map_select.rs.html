@@ -230,6 +230,18 @@
 <a href="#135" id="135">135</a>
 <a href="#136" id="136">136</a>
 <a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, PackMeta};
 
 <span class="kw">use </span><span class="kw">super</span>::main_menu::MenuPage;
@@ -313,6 +325,10 @@
                                     .show(ui)
                                     .focus_by_default(ui);
 
+                                    <span class="kw">if </span>all_maps_button.has_focus() {
+                                        all_maps_button.scroll_to_me(<span class="prelude-val">None</span>);
+                                    }
+
                                     <span class="kw">if </span>all_maps_button.clicked() {
                                         <span class="comment">// TODO: Currently does not include packs, only stable maps.
                                         </span><span class="kw">let </span><span class="kw-2">mut </span>map_pool =
@@ -329,6 +345,10 @@
                                             map_meta.name.to_string(),
                                         )
                                         .show(ui);
+
+                                        <span class="kw">if </span>button.has_focus() {
+                                            button.scroll_to_me(<span class="prelude-val">None</span>);
+                                        }
 
                                         <span class="kw">if </span>button.clicked() {
                                             <span class="kw">return </span>MapSelectAction::SelectMap(
@@ -347,6 +367,10 @@
                                                 map_meta.name.to_string(),
                                             )
                                             .show(ui);
+
+                                            <span class="kw">if </span>button.has_focus() {
+                                                button.scroll_to_me(<span class="prelude-val">None</span>);
+                                            }
 
                                             <span class="kw">if </span>button.clicked() {
                                                 <span class="kw">return </span>MapSelectAction::SelectMap(

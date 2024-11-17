@@ -329,7 +329,7 @@ layers:
   - { pos: [1, 10], idx: 53, collision: JumpThrough }
   - { pos: [2, 10], idx: 53, collision: JumpThrough }
   - { pos: [3, 10], idx: 54, collision: JumpThrough }
-  - { pos: [13, 10], idx: 54, collision: JumpThrough }
+  - { pos: [13, 10], idx: 10, collision: JumpThrough }
   - { pos: [23, 10], idx: 52, collision: JumpThrough }
   - { pos: [24, 10], idx: 53, collision: JumpThrough }
   - { pos: [25, 10], idx: 53, collision: JumpThrough }
@@ -345,5 +345,5 @@ layers:
   - { pos: [19, 13], idx: 53, collision: JumpThrough }
   - { pos: [20, 13], idx: 54, collision: JumpThrough }
   - { pos: [25, 13], idx: 52, collision: JumpThrough }
-  - { pos: [13, 14], idx: 54, collision: JumpThrough }
+  - { pos: [13, 14], idx: 10, collision: JumpThrough }
   elements: []

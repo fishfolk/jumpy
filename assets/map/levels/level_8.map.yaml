@@ -317,10 +317,10 @@ layers:
   - { pos: [11, 12], idx: 2, collision: Empty }
   - { pos: [12, 12], idx: 3, collision: Empty }
   - { pos: [14, 12], idx: 3, collision: Empty }
-  - { pos: [8, 13], idx: 54, collision: Empty }
+  - { pos: [8, 13], idx: 10, collision: Empty }
   - { pos: [13, 13], idx: 3, collision: Empty }
   - { pos: [14, 13], idx: 4, collision: Empty }
-  - { pos: [18, 13], idx: 54, collision: Empty }
+  - { pos: [18, 13], idx: 10, collision: Empty }
   - { pos: [7, 14], idx: 30, collision: Empty }
   - { pos: [8, 14], idx: 31, collision: Empty }
   - { pos: [9, 14], idx: 32, collision: Empty }

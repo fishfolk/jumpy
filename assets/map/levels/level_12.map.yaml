@@ -427,12 +427,12 @@ layers:
   - pos:
     - 14
     - 8
-    idx: 20
+    idx: 9
     collision: Empty
   - pos:
     - 17
     - 8
-    idx: 20
+    idx: 9
     collision: Empty
   - pos:
     - 26
@@ -512,12 +512,12 @@ layers:
   - pos:
     - 12
     - 14
-    idx: 20
+    idx: 9
     collision: Empty
   - pos:
     - 19
     - 14
-    idx: 20
+    idx: 9
     collision: Empty
   elements: []
 - id: platforms

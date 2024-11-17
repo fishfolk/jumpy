@@ -1430,21 +1430,21 @@ layers:
   - pos:
     - 7
     - 6
-    idx: 20
+    idx: 9
     collision: Empty
   - pos:
     - 9
     - 6
-    idx: 20
+    idx: 9
     collision: Empty
   - pos:
     - 17
     - 6
-    idx: 20
+    idx: 9
     collision: Empty
   - pos:
     - 19
     - 6
-    idx: 20
+    idx: 9
     collision: Empty
   elements: []

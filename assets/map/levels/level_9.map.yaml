@@ -1051,12 +1051,12 @@ layers:
   - pos:
     - 10
     - 7
-    idx: 20
+    idx: 9
     collision: Empty
   - pos:
     - 12
     - 7
-    idx: 20
+    idx: 9
     collision: Empty
   - pos:
     - 10

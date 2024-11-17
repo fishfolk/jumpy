@@ -977,32 +977,32 @@ layers:
   - pos:
     - 11
     - 17
-    idx: 26
+    idx: 16
     collision: Empty
   - pos:
     - 12
     - 17
-    idx: 27
+    idx: 17
     collision: Empty
   - pos:
     - 13
     - 17
-    idx: 28
+    idx: 18
     collision: Empty
   - pos:
     - 11
     - 18
-    idx: 15
+    idx: 5
     collision: Empty
   - pos:
     - 12
     - 18
-    idx: 16
+    idx: 6
     collision: Empty
   - pos:
     - 13
     - 18
-    idx: 17
+    idx: 7
     collision: Empty
   elements: []
 - id: decorations

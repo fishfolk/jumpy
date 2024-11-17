@@ -1335,37 +1335,37 @@ layers:
   - pos:
     - 10
     - 6
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 11
     - 6
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 15
     - 6
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 16
     - 6
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 1
     - 10
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 2
     - 10
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 3
     - 10
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 13
@@ -1375,77 +1375,77 @@ layers:
   - pos:
     - 23
     - 10
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 24
     - 10
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 25
     - 10
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 1
     - 13
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 6
     - 13
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 7
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 8
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 9
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 10
     - 13
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 16
     - 13
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 17
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 18
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 19
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 20
     - 13
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 25
     - 13
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 13

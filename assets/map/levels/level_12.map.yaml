@@ -526,32 +526,32 @@ layers:
   - pos:
     - 4
     - 12
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 5
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 6
     - 12
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 25
     - 12
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 26
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 27
     - 12
-    idx: 43
+    idx: 54
     collision: JumpThrough
   elements: []
 - id: critters

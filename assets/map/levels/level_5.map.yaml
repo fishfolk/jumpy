@@ -862,67 +862,67 @@ layers:
   - pos:
     - 1
     - 6
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 2
     - 6
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 1
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 2
     - 9
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 1
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 2
     - 12
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 1
     - 15
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 2
     - 15
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 24
     - 15
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 25
     - 15
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 8
     - 18
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 9
     - 18
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 10
     - 18
-    idx: 43
+    idx: 54
     collision: JumpThrough
   elements: []
 - id: decorations

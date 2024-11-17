@@ -1126,132 +1126,132 @@ layers:
   - pos:
     - 19
     - 9
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 20
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 21
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 22
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 23
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 24
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 25
     - 9
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 9
     - 12
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 10
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 11
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 12
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 13
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 14
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 15
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 20
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 21
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 22
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 23
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 24
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 29
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 30
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 31
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 32
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 33
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 34
     - 12
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 35
     - 12
-    idx: 43
+    idx: 54
     collision: JumpThrough
   elements: []
 - id: decorations

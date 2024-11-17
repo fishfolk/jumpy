@@ -3991,122 +3991,122 @@ layers:
   - pos:
     - 10
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 11
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 12
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 13
     - 9
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 21
     - 9
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 22
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 23
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 24
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 7
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 8
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 9
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 10
     - 13
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 24
     - 13
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 25
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 26
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 27
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 6
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 7
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 8
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 9
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 25
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 26
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 27
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 28
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   elements: []
 - id: decorations

@@ -1139,62 +1139,62 @@ layers:
   - pos:
     - 11
     - 4
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 12
     - 4
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 13
     - 4
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 14
     - 4
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 15
     - 4
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 10
     - 16
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 11
     - 16
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 12
     - 16
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 13
     - 16
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 14
     - 16
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 15
     - 16
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 16
     - 16
-    idx: 42
+    idx: 53
     collision: JumpThrough
   elements: []
 - id: items

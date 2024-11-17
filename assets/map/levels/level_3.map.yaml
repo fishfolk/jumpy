@@ -877,32 +877,32 @@ layers:
   - pos:
     - 7
     - 9
-    idx: 23
+    idx: 24
     collision: Empty
   - pos:
     - 8
     - 9
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 9
     - 9
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 10
     - 9
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 11
     - 9
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 12
     - 9
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 13
@@ -912,32 +912,32 @@ layers:
   - pos:
     - 14
     - 9
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 15
     - 9
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 16
     - 9
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 17
     - 9
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 18
     - 9
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 19
     - 9
-    idx: 25
+    idx: 26
     collision: Empty
   - pos:
     - 13

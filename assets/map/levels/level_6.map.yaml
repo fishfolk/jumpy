@@ -1057,67 +1057,67 @@ layers:
   - pos:
     - 16
     - 13
-    idx: 23
+    idx: 24
     collision: Empty
   - pos:
     - 17
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 18
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 19
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 20
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 21
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 22
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 23
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 24
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 25
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 26
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 27
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 28
     - 13
-    idx: 25
+    idx: 26
     collision: Empty
   elements: []
 - id: platforms

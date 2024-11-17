@@ -1033,52 +1033,52 @@ layers:
   - pos:
     - 6
     - 14
-    idx: 23
+    idx: 24
     collision: Empty
   - pos:
     - 7
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 8
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 9
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 10
     - 14
-    idx: 25
+    idx: 26
     collision: Empty
   - pos:
     - 16
     - 14
-    idx: 23
+    idx: 24
     collision: Empty
   - pos:
     - 17
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 18
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 19
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 20
     - 14
-    idx: 25
+    idx: 26
     collision: Empty
   elements: []
 - id: platforms

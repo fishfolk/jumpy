@@ -482,32 +482,32 @@ layers:
   - pos:
     - 4
     - 13
-    idx: 23
+    idx: 24
     collision: Empty
   - pos:
     - 5
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 6
     - 13
-    idx: 25
+    idx: 26
     collision: Empty
   - pos:
     - 25
     - 13
-    idx: 23
+    idx: 24
     collision: Empty
   - pos:
     - 26
     - 13
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 27
     - 13
-    idx: 25
+    idx: 26
     collision: Empty
   - pos:
     - 12

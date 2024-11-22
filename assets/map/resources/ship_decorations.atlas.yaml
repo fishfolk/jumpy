@@ -3,21 +3,21 @@ tile_size: [32, 32]
 columns: 11
 rows: 5
 tile_collision:
-  41:
+  52:
     min:
     - 0.2
     - 0.75
     max:
     - 1.0
     - 1.0
-  42:
+  53:
     min:
     - 0.0
     - 0.75
     max:
     - 1.0
     - 1.0
-  43:
+  54:
     min:
     - 0.0
     - 0.75

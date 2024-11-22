@@ -1033,52 +1033,52 @@ layers:
   - pos:
     - 6
     - 14
-    idx: 23
+    idx: 24
     collision: Empty
   - pos:
     - 7
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 8
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 9
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 10
     - 14
-    idx: 25
+    idx: 26
     collision: Empty
   - pos:
     - 16
     - 14
-    idx: 23
+    idx: 24
     collision: Empty
   - pos:
     - 17
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 18
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 19
     - 14
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 20
     - 14
-    idx: 25
+    idx: 26
     collision: Empty
   elements: []
 - id: platforms
@@ -1087,197 +1087,197 @@ layers:
   - pos:
     - 1
     - 11
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 2
     - 11
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 24
     - 11
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 25
     - 11
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 6
     - 12
-    idx: 41
+    idx: 52
     collision: Empty
   - pos:
     - 7
     - 12
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 8
     - 12
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 9
     - 12
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 10
     - 12
-    idx: 43
+    idx: 54
     collision: Empty
   - pos:
     - 16
     - 12
-    idx: 41
+    idx: 52
     collision: Empty
   - pos:
     - 17
     - 12
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 18
     - 12
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 19
     - 12
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 20
     - 12
-    idx: 43
+    idx: 54
     collision: Empty
   - pos:
     - 1
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 2
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 3
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 4
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 5
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 6
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 7
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 8
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 9
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 10
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 11
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 12
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 13
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 14
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 15
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 16
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 17
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 18
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 19
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 20
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 21
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 22
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 23
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 24
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   - pos:
     - 25
     - 19
-    idx: 42
+    idx: 53
     collision: Empty
   elements: []
 - id: critters
@@ -1430,21 +1430,21 @@ layers:
   - pos:
     - 7
     - 6
-    idx: 20
+    idx: 9
     collision: Empty
   - pos:
     - 9
     - 6
-    idx: 20
+    idx: 9
     collision: Empty
   - pos:
     - 17
     - 6
-    idx: 20
+    idx: 9
     collision: Empty
   - pos:
     - 19
     - 6
-    idx: 20
+    idx: 9
     collision: Empty
   elements: []

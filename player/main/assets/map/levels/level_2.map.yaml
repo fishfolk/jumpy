@@ -563,32 +563,32 @@ layers:
   - pos:
     - 20
     - 8
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 21
     - 8
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 22
     - 8
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 7
     - 9
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 8
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 9
     - 9
-    idx: 43
+    idx: 54
     collision: JumpThrough
   elements: []
 - id: background

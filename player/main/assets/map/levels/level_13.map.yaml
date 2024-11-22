@@ -3912,7 +3912,7 @@ layers:
   - pos:
     - 13
     - 19
-    idx: 23
+    idx: 24
     collision: Empty
   - pos:
     - 16
@@ -3932,12 +3932,12 @@ layers:
   - pos:
     - 21
     - 19
-    idx: 25
+    idx: 26
     collision: Empty
   - pos:
     - 14
     - 20
-    idx: 23
+    idx: 24
     collision: Empty
   - pos:
     - 16
@@ -3957,32 +3957,32 @@ layers:
   - pos:
     - 20
     - 20
-    idx: 25
+    idx: 26
     collision: Empty
   - pos:
     - 15
     - 21
-    idx: 23
+    idx: 24
     collision: Empty
   - pos:
     - 16
     - 21
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 17
     - 21
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 18
     - 21
-    idx: 24
+    idx: 25
     collision: Empty
   - pos:
     - 19
     - 21
-    idx: 25
+    idx: 26
     collision: Empty
   elements: []
 - id: platforms
@@ -3991,122 +3991,122 @@ layers:
   - pos:
     - 10
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 11
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 12
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 13
     - 9
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 21
     - 9
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 22
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 23
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 24
     - 9
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 7
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 8
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 9
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 10
     - 13
-    idx: 43
+    idx: 54
     collision: JumpThrough
   - pos:
     - 24
     - 13
-    idx: 41
+    idx: 52
     collision: JumpThrough
   - pos:
     - 25
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 26
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 27
     - 13
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 6
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 7
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 8
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 9
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 25
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 26
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 27
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   - pos:
     - 28
     - 17
-    idx: 42
+    idx: 53
     collision: JumpThrough
   elements: []
 - id: decorations

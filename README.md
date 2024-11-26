@@ -27,12 +27,6 @@ We recommend using the Chrome browser or other derivatives for best performance,
 - Smart level creation tools
 - Tournaments & matchmaking built in
 
-### Status
-
-The game is currently under re-construction as it is being rewritten to use the [Bevy] game engine. There are now 4 stable maps and 4 items in the new version, and the game is nearly ready for another release.
-
-[Bevy]: https://bevyengine.org
-
 ## Community
 
 ### Contributing

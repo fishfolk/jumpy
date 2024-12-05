@@ -9,6 +9,8 @@ sounds:
   grab_volume: 0.05
   drop: ../../sounds/drop.ogg
   drop_volume: 0.05
+  death: ../../sounds/death.ogg
+  death_volume: 0.3
 
 stats:
   air_speed: 360

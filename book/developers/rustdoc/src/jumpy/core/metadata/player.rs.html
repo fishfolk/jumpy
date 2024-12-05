@@ -294,6 +294,9 @@
 <a href="#199" id="199">199</a>
 <a href="#200" id="200">200</a>
 <a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(HasSchema, Clone, Debug, Default)]
@@ -389,6 +392,9 @@
 
     <span class="kw">pub </span>drop_volume: f64,
     <span class="kw">pub </span>drop: Handle&lt;AudioSource&gt;,
+
+    <span class="kw">pub </span>death_volume: f64,
+    <span class="kw">pub </span>death: Handle&lt;AudioSource&gt;,
 }
 
 <span class="kw">fn </span>deserialize_arc&lt;<span class="lifetime">'de</span>, T: Deserialize&lt;<span class="lifetime">'de</span>&gt;, D: Deserializer&lt;<span class="lifetime">'de</span>&gt;&gt;(

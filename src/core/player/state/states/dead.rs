@@ -32,6 +32,7 @@ pub fn handle_player_state(
     mut animations: CompMut<AnimationBankSprite>,
     game_meta: Root<GameMeta>,
     mut collision_world: CollisionWorld,
+    mut audio_center: ResMut<AudioCenter>,
 ) {
     for (player_ent, (state, animation, _killed_player, player_idx)) in entities.iter_with((
         &player_states,
@@ -78,6 +79,8 @@ pub fn handle_player_state(
             let player_meta_handle = player_inputs.players[player_idx.0 as usize].selected_player;
             let player_meta = &*assets.get(player_meta_handle);
             ragdoll::use_ragdoll_collider(player_ent, player_meta, &mut collision_world);
+
+            audio_center.play_sound(player_meta.sounds.death, player_meta.sounds.death_volume);
 
             // animation.current = match killed_player.hit_from {
             //     Some(hit_from)

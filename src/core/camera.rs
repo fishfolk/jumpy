@@ -3,7 +3,7 @@
 use crate::prelude::*;
 
 /// Install this module.
-pub fn install(session: &mut Session) {
+pub fn install(session: &mut SessionBuilder) {
     session
         .stages
         .add_system_to_stage(CoreStage::Last, camera_controller);

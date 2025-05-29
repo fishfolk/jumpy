@@ -8,7 +8,7 @@ use crate::prelude::*;
 
 use super::player_image::player_image;
 
-pub fn session_plugin(session: &mut Session) {
+pub fn session_plugin(session: &mut SessionBuilder) {
     session.add_system_to_stage(Update, scoring_menu_system);
 }
 

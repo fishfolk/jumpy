@@ -23,8 +23,9 @@ pub trait SessionExt {
 
 impl SessionExt for Sessions {
     fn start_menu(&mut self) {
-        self.create(SessionNames::MAIN_MENU)
-            .install_plugin(crate::ui::main_menu::session_plugin);
+        self.create_with(SessionNames::MAIN_MENU, |builder| {
+            builder.install_plugin(crate::ui::main_menu::session_plugin);
+        });
     }
 
     fn end_game(&mut self) {
@@ -73,21 +74,23 @@ impl SessionExt for Sessions {
                 score
             };
 
-            self.create(SessionNames::GAME)
-                .install_plugin(crate::core::MatchPlugin {
+            self.create_with(SessionNames::GAME, |builder| {
+                builder.install_plugin(crate::core::MatchPlugin {
                     maps: map_pool,
                     player_info,
                     plugins,
                     session_runner,
                     score,
                 });
+            });
         } else {
             panic!("Cannot restart game when game is not running");
         }
     }
 
     fn start_game(&mut self, match_plugin: crate::core::MatchPlugin) {
-        let session = self.create(SessionNames::GAME);
-        session.install_plugin(match_plugin);
+        self.create_with(SessionNames::GAME, |builder| {
+            builder.install_plugin(match_plugin);
+        });
     }
 }

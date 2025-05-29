@@ -72,7 +72,7 @@ pub struct MatchPlayerInfo {
 }
 
 impl SessionPlugin for MatchPlugin {
-    fn install(self, session: &mut Session) {
+    fn install(self, session: &mut SessionBuilder) {
         session
             .install_plugin(DefaultSessionPlugin)
             .install_plugin(LuaPluginLoaderSessionPlugin(self.plugins));
@@ -94,7 +94,7 @@ impl SessionPlugin for MatchPlugin {
         scoring::session_plugin(session);
 
         let current_map = self.maps.current_map;
-        session.world.insert_resource(self.maps);
+        session.insert_resource(self.maps);
 
         // Initialize LoadedMap on startup as we cannot access AssetServer during MatchPlugin install
         // to get map meta.
@@ -105,11 +105,11 @@ impl SessionPlugin for MatchPlugin {
             },
         );
 
-        session.world.insert_resource(MatchInputs {
+        session.insert_resource(MatchInputs {
             players: self.player_info,
         });
-        session.world.insert_resource(self.score);
-        session.runner = self.session_runner;
+        session.insert_resource(self.score);
+        session.set_session_runner(self.session_runner);
     }
 }
 

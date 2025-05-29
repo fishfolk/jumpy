@@ -11,8 +11,8 @@ use bones_framework::{
 };
 pub use turborand::prelude::*;
 
-pub fn plugin(session: &mut Session) {
-    session.world.init_resource::<GlobalRng>();
+pub fn plugin(session: &mut SessionBuilder) {
+    session.init_resource::<GlobalRng>();
 }
 
 /// Resource that can produce deterministic, pseudo-random numbers.

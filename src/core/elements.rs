@@ -284,7 +284,7 @@ impl<'a> SpawnerManager<'a> {
 /// Helper macro to install element game and session plugins
 macro_rules! install_plugins {
     ($($module:ident),* $(,)?) => {
-        pub fn session_plugin(session: &mut Session) {
+        pub fn session_plugin(session: &mut SessionBuilder) {
             ElementHandle::register_schema();
             MapElementHydrated::register_schema();
             DehydrateOutOfBounds::register_schema();

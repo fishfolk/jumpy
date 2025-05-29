@@ -4,11 +4,10 @@ use std::time::Duration;
 
 use crate::{core::FPS, prelude::*};
 
-pub fn install(session: &mut Session) {
+pub fn install(session: &mut SessionBuilder) {
     Lifetime::register_schema();
 
     session
-        .stages
         .add_system_to_stage(CoreStage::PostUpdate, lifetime_system)
         .add_system_to_stage(CoreStage::PostUpdate, invincibility);
 }

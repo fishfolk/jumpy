@@ -22,9 +22,8 @@ pub struct CrabMeta {
     pub atlas: Handle<Atlas>,
 }
 
-pub fn session_plugin(session: &mut Session) {
+pub fn session_plugin(session: &mut SessionBuilder) {
     session
-        .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
         .add_system_to_stage(CoreStage::PostUpdate, update_crabs);
 }

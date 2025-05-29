@@ -8,7 +8,7 @@ use std::{
 use super::physics::collisions::{CollisionWorld, TileCollisionKind, TileDynamicCollider};
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+pub fn install(session: &mut SessionBuilder) {
     session
         .stages
         .add_system_to_stage(CoreStage::First, spawn_map)

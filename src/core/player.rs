@@ -15,7 +15,7 @@ const PLAYER_COLORS: [Color; 4] = [
     Color::rgb(1.0, 0.0, 1.0),
 ];
 
-pub fn plugin(session: &mut Session) {
+pub fn plugin(session: &mut SessionBuilder) {
     session.install_plugin(state::plugin);
 
     // Add other player systems

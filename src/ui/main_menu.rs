@@ -23,7 +23,7 @@ pub struct MainMenuMeta {
     pub menu_width: f32,
 }
 
-pub fn session_plugin(session: &mut Session) {
+pub fn session_plugin(session: &mut SessionBuilder) {
     session
         // Install the default bones_framework plugin for this session
         .install_plugin(DefaultSessionPlugin)

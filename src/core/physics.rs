@@ -35,7 +35,7 @@ impl StageLabel for PhysicsStage {
     }
 }
 
-pub fn install(session: &mut Session) {
+pub fn install(session: &mut SessionBuilder) {
     KinematicBody::register_schema();
     ColliderShape::register_schema();
 

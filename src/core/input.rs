@@ -6,8 +6,8 @@ use bones_framework::input::PlayerControls;
 
 use crate::{prelude::*, MAX_PLAYERS};
 
-pub fn install(session: &mut Session) {
-    session.world.init_resource::<MatchInputs>();
+pub fn install(session: &mut SessionBuilder) {
+    session.init_resource::<MatchInputs>();
 }
 
 /// The inputs for each player in this simulation frame.

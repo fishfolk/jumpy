@@ -4,7 +4,7 @@ use crate::prelude::*;
 use rapier2d::prelude as rapier;
 
 /// Install this module.
-pub fn plugin(session: &mut Session) {
+pub fn plugin(session: &mut SessionBuilder) {
     session
         .stages
         .add_system_to_stage(CoreStage::Last, debug_render_colliders)

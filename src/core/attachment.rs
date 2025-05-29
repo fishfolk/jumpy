@@ -7,9 +7,8 @@
 //! sure that, for example, a held item will bob up and down with the player.
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+pub fn install(session: &mut SessionBuilder) {
     session
-        .stages
         .add_system_to_stage(CoreStage::Last, update_player_body_attachments)
         .add_system_to_stage(CoreStage::Last, remove_player_body_attachments)
         .add_system_to_stage(CoreStage::Last, update_attachments);

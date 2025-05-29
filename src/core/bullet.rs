@@ -10,7 +10,7 @@ pub fn game_plugin(game: &mut Game) {
 }
 
 /// Install this module.
-pub fn session_plugin(session: &mut Session) {
+pub fn session_plugin(session: &mut SessionBuilder) {
     Bullet::register_schema();
     BulletHandle::register_schema();
 

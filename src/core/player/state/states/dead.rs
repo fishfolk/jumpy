@@ -2,7 +2,7 @@ use super::*;
 
 pub static ID: Lazy<Ustr> = Lazy::new(|| ustr("core::dead"));
 
-pub fn install(session: &mut Session) {
+pub fn install(session: &mut SessionBuilder) {
     PlayerState::add_player_state_transition_system(session, player_state_transition);
     PlayerState::add_player_state_update_system(session, handle_player_state);
 }

@@ -12,7 +12,7 @@ enum PauseMenuPage {
     Settings,
 }
 
-pub fn session_plugin(session: &mut Session) {
+pub fn session_plugin(session: &mut SessionBuilder) {
     session.add_system_to_stage(Update, pause_menu_system);
 }
 
@@ -137,16 +137,18 @@ fn pause_menu_system(
             .deref()
             .clone();
         sessions.end_game();
-        sessions.start_game(crate::core::MatchPlugin {
-            maps,
-            player_info: std::array::from_fn(|i| PlayerInput {
-                control: default(),
-                editor_input: default(),
-                ..match_info.players[i]
-            }),
-            plugins: meta.get_plugins(&assets),
-            session_runner: Box::<JumpyDefaultMatchRunner>::default(),
-            score: default(),
+        sessions.create_with(SessionNames::GAME, |builder| {
+            builder.install_plugin(crate::core::MatchPlugin {
+                maps,
+                player_info: std::array::from_fn(|i| PlayerInput {
+                    control: default(),
+                    editor_input: default(),
+                    ..match_info.players[i]
+                }),
+                plugins: meta.get_plugins(&assets),
+                session_runner: Box::<JumpyDefaultMatchRunner>::default(),
+                score: default(),
+            });
         });
         pause_menu.menu_open = false;
     }

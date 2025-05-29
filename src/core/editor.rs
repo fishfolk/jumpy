@@ -6,7 +6,7 @@ use crate::core::map_constructor::{shiftnanigans::ShiftnanigansMapConstructor, M
 use crate::prelude::*;
 
 /// Install this module.
-pub fn install(session: &mut Session) {
+pub fn install(session: &mut SessionBuilder) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, handle_editor_input);

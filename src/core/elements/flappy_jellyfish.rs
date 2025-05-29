@@ -42,9 +42,8 @@ impl FlappyJellyfishMetaSchemaExts for SchemaBox {
     }
 }
 
-pub fn session_plugin(session: &mut Session) {
+pub fn session_plugin(session: &mut SessionBuilder) {
     session
-        .stages
         .add_system_to_stage(CoreStage::PostUpdate, control_flappy_jellyfish)
         .add_system_to_stage(CoreStage::PostUpdate, explode_flappy_jellyfish);
 }

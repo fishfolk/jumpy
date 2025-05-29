@@ -33,9 +33,8 @@ pub fn game_plugin(game: &mut Game) {
     game.init_shared_resource::<AssetServer>();
 }
 
-pub fn session_plugin(session: &mut Session) {
+pub fn session_plugin(session: &mut SessionBuilder) {
     session
-        .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
         .add_system_to_stage(CoreStage::PostUpdate, update_lit_grenades)
         .add_system_to_stage(CoreStage::PostUpdate, update_idle_grenades);

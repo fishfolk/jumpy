@@ -2,7 +2,7 @@ use super::*;
 
 pub static ID: Lazy<Ustr> = Lazy::new(|| ustr("core::drive_jellyfish"));
 
-pub fn install(session: &mut Session) {
+pub fn install(session: &mut SessionBuilder) {
     PlayerState::add_player_state_transition_system(session, player_state_transition);
 }
 

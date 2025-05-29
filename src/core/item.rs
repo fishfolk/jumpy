@@ -4,7 +4,7 @@
 
 use crate::prelude::*;
 
-pub fn install(session: &mut Session) {
+pub fn install(session: &mut SessionBuilder) {
     Item::register_schema();
     ItemThrow::register_schema();
     ItemGrab::register_schema();

@@ -19,7 +19,7 @@ pub struct PlayerState {
 impl PlayerState {
     /// Adds a system to the appropriate stage in a [`Session`] for a player state transition.
     pub fn add_player_state_transition_system<Args>(
-        session: &mut Session,
+        session: &mut SessionBuilder,
         system: impl IntoSystem<Args, (), (), Sys = StaticSystem<(), ()>>,
     ) {
         session.stages.add_system_to_stage(PlayerStateStage, system);
@@ -27,7 +27,7 @@ impl PlayerState {
 
     /// Adds a system to the appropriate stage in a [`Session`] for a player state update.
     pub fn add_player_state_update_system<Args>(
-        session: &mut Session,
+        session: &mut SessionBuilder,
         system: impl IntoSystem<Args, (), (), Sys = StaticSystem<(), ()>>,
     ) {
         session
@@ -36,7 +36,7 @@ impl PlayerState {
     }
 }
 
-pub fn plugin(session: &mut Session) {
+pub fn plugin(session: &mut SessionBuilder) {
     // Add the player state stage
     session
         .stages

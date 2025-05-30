@@ -11,8 +11,7 @@ pub fn install(session: &mut SessionBuilder) {
     DamageRegion::register_schema();
     DamageRegionOwner::register_schema();
 
-    session
-        .add_system_to_stage(CoreStage::PostUpdate, kill_players_in_damage_region);
+    session.add_system_to_stage(CoreStage::PostUpdate, kill_players_in_damage_region);
 }
 
 /// A rectangular damage region.

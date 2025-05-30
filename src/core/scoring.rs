@@ -76,8 +76,7 @@ impl MatchScore {
 }
 
 pub fn session_plugin(session: &mut SessionBuilder) {
-    session
-        .add_system_to_stage(CoreStage::PostUpdate, round_end);
+    session.add_system_to_stage(CoreStage::PostUpdate, round_end);
 }
 
 pub fn round_end(

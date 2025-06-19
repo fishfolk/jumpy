@@ -448,7 +448,7 @@
     game.init_shared_resource::&lt;AssetServer&gt;();
 }
 
-<span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>Session) {
+<span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>SessionBuilder) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)

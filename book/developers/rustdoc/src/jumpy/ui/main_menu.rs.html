@@ -390,7 +390,7 @@
     <span class="kw">pub </span>menu_width: f32,
 }
 
-<span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>Session) {
+<span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>SessionBuilder) {
     session
         <span class="comment">// Install the default bones_framework plugin for this session
         </span>.install_plugin(DefaultSessionPlugin)

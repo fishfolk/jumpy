@@ -732,7 +732,7 @@
 <span class="doccomment">/// Helper macro to install element game and session plugins
 </span><span class="macro">macro_rules!</span> install_plugins {
     ($(<span class="macro-nonterminal">$module</span>:ident),* $(,)<span class="question-mark">?</span>) =&gt; {
-        <span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>Session) {
+        <span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>SessionBuilder) {
             ElementHandle::register_schema();
             MapElementHydrated::register_schema();
             DehydrateOutOfBounds::register_schema();

@@ -186,6 +186,9 @@
 <a href="#91" id="91">91</a>
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>, ui::scoring::ScoringMenuState};
 
 <span class="kw">pub struct </span>SessionNames;
@@ -211,8 +214,9 @@
 
 <span class="kw">impl </span>SessionExt <span class="kw">for </span>Sessions {
     <span class="kw">fn </span>start_menu(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="self">self</span>.create(SessionNames::MAIN_MENU)
-            .install_plugin(<span class="kw">crate</span>::ui::main_menu::session_plugin);
+        <span class="self">self</span>.create_with(SessionNames::MAIN_MENU, |builder| {
+            builder.install_plugin(<span class="kw">crate</span>::ui::main_menu::session_plugin);
+        });
     }
 
     <span class="kw">fn </span>end_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
@@ -261,22 +265,24 @@
                 score
             };
 
-            <span class="self">self</span>.create(SessionNames::GAME)
-                .install_plugin(<span class="kw">crate</span>::core::MatchPlugin {
+            <span class="self">self</span>.create_with(SessionNames::GAME, |builder| {
+                builder.install_plugin(<span class="kw">crate</span>::core::MatchPlugin {
                     maps: map_pool,
                     player_info,
                     plugins,
                     session_runner,
                     score,
                 });
+            });
         } <span class="kw">else </span>{
             <span class="macro">panic!</span>(<span class="string">"Cannot restart game when game is not running"</span>);
         }
     }
 
     <span class="kw">fn </span>start_game(<span class="kw-2">&amp;mut </span><span class="self">self</span>, match_plugin: <span class="kw">crate</span>::core::MatchPlugin) {
-        <span class="kw">let </span>session = <span class="self">self</span>.create(SessionNames::GAME);
-        session.install_plugin(match_plugin);
+        <span class="self">self</span>.create_with(SessionNames::GAME, |builder| {
+            builder.install_plugin(match_plugin);
+        });
     }
 }
 </code></pre></div></section></main></body></html>

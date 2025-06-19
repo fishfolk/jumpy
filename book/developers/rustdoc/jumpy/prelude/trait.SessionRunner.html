@@ -112,6 +112,11 @@ implemented by [<code>DefaultSessionRunner</code>] is as follows:</p>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>step(<span class="kw-2">&amp;mut </span><span class="self">self</span>, now: Instant, world: <span class="kw-2">&amp;mut </span>World, stages: <span class="kw-2">&amp;mut </span>SystemStages) {
     world.resource_mut::&lt;Time&gt;().update_with_instant(now);
     stages.run(world);
+
+    <span class="comment">// Not required for runner - but calling this allows [`ResetWorld`] resource to
+    // reset world state from gameplay.
+    </span>world.handle_world_reset(stages);
+
 }
 <span class="kw">fn </span>restart_session(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {}
 <span class="kw">fn </span>disable_local_input(<span class="kw-2">&amp;mut </span><span class="self">self</span>, disable_input: bool) {}</code></pre></div>

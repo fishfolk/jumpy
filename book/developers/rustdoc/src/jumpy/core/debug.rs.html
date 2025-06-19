@@ -320,7 +320,7 @@
 <span class="kw">use </span>rapier2d::prelude <span class="kw">as </span>rapier;
 
 <span class="doccomment">/// Install this module.
-</span><span class="kw">pub fn </span>plugin(session: <span class="kw-2">&amp;mut </span>Session) {
+</span><span class="kw">pub fn </span>plugin(session: <span class="kw-2">&amp;mut </span>SessionBuilder) {
     session
         .stages
         .add_system_to_stage(CoreStage::Last, debug_render_colliders)

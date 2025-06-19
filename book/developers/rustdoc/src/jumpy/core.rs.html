@@ -372,7 +372,7 @@
 }
 
 <span class="kw">impl </span>SessionPlugin <span class="kw">for </span>MatchPlugin {
-    <span class="kw">fn </span>install(<span class="self">self</span>, session: <span class="kw-2">&amp;mut </span>Session) {
+    <span class="kw">fn </span>install(<span class="self">self</span>, session: <span class="kw-2">&amp;mut </span>SessionBuilder) {
         session
             .install_plugin(DefaultSessionPlugin)
             .install_plugin(LuaPluginLoaderSessionPlugin(<span class="self">self</span>.plugins));
@@ -394,7 +394,7 @@
         scoring::session_plugin(session);
 
         <span class="kw">let </span>current_map = <span class="self">self</span>.maps.current_map;
-        session.world.insert_resource(<span class="self">self</span>.maps);
+        session.insert_resource(<span class="self">self</span>.maps);
 
         <span class="comment">// Initialize LoadedMap on startup as we cannot access AssetServer during MatchPlugin install
         // to get map meta.
@@ -405,11 +405,11 @@
             },
         );
 
-        session.world.insert_resource(MatchInputs {
+        session.insert_resource(MatchInputs {
             players: <span class="self">self</span>.player_info,
         });
-        session.world.insert_resource(<span class="self">self</span>.score);
-        session.runner = <span class="self">self</span>.session_runner;
+        session.insert_resource(<span class="self">self</span>.score);
+        session.set_session_runner(<span class="self">self</span>.session_runner);
     }
 }
 

@@ -364,6 +364,8 @@
 <a href="#269" id="269">269</a>
 <a href="#270" id="270">270</a>
 <a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
 </pre></div><pre class="rust"><code><span class="attr">#![doc(html_logo_url = <span class="string">"https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4"</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
 </span><span class="attr">#![cfg_attr(doc, allow(unknown_lints))]
@@ -540,8 +542,9 @@
     <span class="comment">// Create a new session for the pause menu, which sits in the background by default and only
     // does anything while the game is running.
     </span>game.sessions
-        .create(SessionNames::PAUSE_MENU)
-        .install_plugin(ui::pause_menu::session_plugin);
+        .create_with(SessionNames::PAUSE_MENU, |builder| {
+            builder.install_plugin(ui::pause_menu::session_plugin);
+        });
 
     <span class="comment">// Set priority to ensure pause menu comes before scoring menu (drawn on top)
     </span>game.sessions
@@ -550,14 +553,15 @@
         .priority = <span class="number">1</span>;
 
     <span class="comment">// Scoring menu plugin, activated by game between round tarnsitions when appropriate
-    </span>game.sessions
-        .create(SessionNames::SCORING)
-        .install_plugin(ui::scoring::session_plugin);
+    </span>game.sessions.create_with(SessionNames::SCORING, |builder| {
+        builder.install_plugin(ui::scoring::session_plugin);
+    });
 
     <span class="comment">// session for pop-ups / nofication UI
     </span>game.sessions
-        .create(SessionNames::NOTIFICATION)
-        .install_plugin(ui::notification::session_plugin);
+        .create_with(SessionNames::NOTIFICATION, |builder| {
+            builder.install_plugin(ui::notification::session_plugin);
+        });
 
     <span class="comment">// Create a bevy renderer for the bones game and run it.
     </span>BonesBevyRenderer {

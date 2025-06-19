@@ -317,8 +317,6 @@
 <a href="#222" id="222">222</a>
 <a href="#223" id="223">223</a>
 <a href="#224" id="224">224</a>
-<a href="#225" id="225">225</a>
-<a href="#226" id="226">226</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Track scoring of rounds / tournament
 
 </span><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, ui::scoring::ScoringMenuState};
@@ -396,10 +394,8 @@
     }
 }
 
-<span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>Session) {
-    session
-        .stages
-        .add_system_to_stage(CoreStage::PostUpdate, round_end);
+<span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>SessionBuilder) {
+    session.add_system_to_stage(CoreStage::PostUpdate, round_end);
 }
 
 <span class="kw">pub fn </span>round_end(

@@ -388,6 +388,8 @@
 <a href="#293" id="293">293</a>
 <a href="#294" id="294">294</a>
 <a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
 
 <span class="kw">use crate</span>::{core::JumpyDefaultMatchRunner, prelude::<span class="kw-2">*</span>};
@@ -402,7 +404,7 @@
     Settings,
 }
 
-<span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>Session) {
+<span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>SessionBuilder) {
     session.add_system_to_stage(Update, pause_menu_system);
 }
 
@@ -527,16 +529,18 @@
             .deref()
             .clone();
         sessions.end_game();
-        sessions.start_game(<span class="kw">crate</span>::core::MatchPlugin {
-            maps,
-            player_info: std::array::from_fn(|i| PlayerInput {
-                control: default(),
-                editor_input: default(),
-                ..match_info.players[i]
-            }),
-            plugins: meta.get_plugins(<span class="kw-2">&amp;</span>assets),
-            session_runner: Box::&lt;JumpyDefaultMatchRunner&gt;::default(),
-            score: default(),
+        sessions.create_with(SessionNames::GAME, |builder| {
+            builder.install_plugin(<span class="kw">crate</span>::core::MatchPlugin {
+                maps,
+                player_info: std::array::from_fn(|i| PlayerInput {
+                    control: default(),
+                    editor_input: default(),
+                    ..match_info.players[i]
+                }),
+                plugins: meta.get_plugins(<span class="kw-2">&amp;</span>assets),
+                session_runner: Box::&lt;JumpyDefaultMatchRunner&gt;::default(),
+                score: default(),
+            });
         });
         pause_menu.menu_open = <span class="bool-val">false</span>;
     }

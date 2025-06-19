@@ -248,7 +248,7 @@
 <span class="kw">impl </span>PlayerState {
     <span class="doccomment">/// Adds a system to the appropriate stage in a [`Session`] for a player state transition.
     </span><span class="kw">pub fn </span>add_player_state_transition_system&lt;Args&gt;(
-        session: <span class="kw-2">&amp;mut </span>Session,
+        session: <span class="kw-2">&amp;mut </span>SessionBuilder,
         system: <span class="kw">impl </span>IntoSystem&lt;Args, (), (), Sys = StaticSystem&lt;(), ()&gt;&gt;,
     ) {
         session.stages.add_system_to_stage(PlayerStateStage, system);
@@ -256,7 +256,7 @@
 
     <span class="doccomment">/// Adds a system to the appropriate stage in a [`Session`] for a player state update.
     </span><span class="kw">pub fn </span>add_player_state_update_system&lt;Args&gt;(
-        session: <span class="kw-2">&amp;mut </span>Session,
+        session: <span class="kw-2">&amp;mut </span>SessionBuilder,
         system: <span class="kw">impl </span>IntoSystem&lt;Args, (), (), Sys = StaticSystem&lt;(), ()&gt;&gt;,
     ) {
         session
@@ -265,7 +265,7 @@
     }
 }
 
-<span class="kw">pub fn </span>plugin(session: <span class="kw-2">&amp;mut </span>Session) {
+<span class="kw">pub fn </span>plugin(session: <span class="kw-2">&amp;mut </span>SessionBuilder) {
     <span class="comment">// Add the player state stage
     </span>session
         .stages

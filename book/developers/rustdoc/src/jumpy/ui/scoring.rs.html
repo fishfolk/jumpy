@@ -540,7 +540,7 @@
 
 <span class="kw">use </span><span class="kw">super</span>::player_image::player_image;
 
-<span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>Session) {
+<span class="kw">pub fn </span>session_plugin(session: <span class="kw-2">&amp;mut </span>SessionBuilder) {
     session.add_system_to_stage(Update, scoring_menu_system);
 }
 

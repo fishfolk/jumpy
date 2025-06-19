@@ -173,8 +173,8 @@
 };
 <span class="kw">pub use </span>turborand::prelude::<span class="kw-2">*</span>;
 
-<span class="kw">pub fn </span>plugin(session: <span class="kw-2">&amp;mut </span>Session) {
-    session.world.init_resource::&lt;GlobalRng&gt;();
+<span class="kw">pub fn </span>plugin(session: <span class="kw-2">&amp;mut </span>SessionBuilder) {
+    session.init_resource::&lt;GlobalRng&gt;();
 }
 
 <span class="doccomment">/// Resource that can produce deterministic, pseudo-random numbers.

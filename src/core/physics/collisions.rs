@@ -6,6 +6,7 @@ use indexmap::IndexMap;
 
 use rapier::Vector;
 use rapier2d::geometry::InteractionGroups;
+use rapier2d::parry::query::ShapeCastOptions;
 pub use rapier2d::prelude as rapier;
 pub use shape::*;
 
@@ -1118,8 +1119,7 @@ impl<'a> CollisionWorld<'a> {
                 &position,
                 &velocity,
                 &**shape,
-                1.0,
-                true,
+                ShapeCastOptions::with_max_time_of_impact(1.0),
                 rapier::QueryFilter::new().predicate(&|_handle, rapier_collider| {
                     let ent = RapierUserData::entity(rapier_collider.user_data);
 
@@ -1142,7 +1142,7 @@ impl<'a> CollisionWorld<'a> {
                 let ent = RapierUserData::entity(collider_set.get(handle).unwrap().user_data);
 
                 // Move up to the point of collision
-                let diff = dy * toi.toi;
+                let diff = dy * toi.time_of_impact;
                 movement += diff;
                 position.translation.y += diff;
 
@@ -1258,8 +1258,7 @@ impl<'a> CollisionWorld<'a> {
                     &position,
                     &velocity,
                     &**shape,
-                    1.0,
-                    true,
+                    ShapeCastOptions::with_max_time_of_impact(1.0),
                     rapier::QueryFilter::new().predicate(&|_handle, rapier_collider| {
                         let ent = RapierUserData::entity(rapier_collider.user_data);
 
@@ -1283,7 +1282,7 @@ impl<'a> CollisionWorld<'a> {
                 let ent = RapierUserData::entity(collider_set.get(handle).unwrap().user_data);
 
                 // Move up to the point of collision
-                let diff = dx * toi.toi;
+                let diff = dx * toi.time_of_impact;
                 movement += diff;
                 position.translation.x += diff;
 

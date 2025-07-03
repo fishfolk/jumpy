@@ -1553,7 +1553,6 @@
 <a href="#1458" id="1458">1458</a>
 <a href="#1459" id="1459">1459</a>
 <a href="#1460" id="1460">1460</a>
-<a href="#1461" id="1461">1461</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Collision detection implementation.
 
 </span><span class="kw">use </span>std::hash::BuildHasherDefault;
@@ -1562,6 +1561,7 @@
 
 <span class="kw">use </span>rapier::Vector;
 <span class="kw">use </span>rapier2d::geometry::InteractionGroups;
+<span class="kw">use </span>rapier2d::parry::query::ShapeCastOptions;
 <span class="kw">pub use </span>rapier2d::prelude <span class="kw">as </span>rapier;
 <span class="kw">pub use </span>shape::<span class="kw-2">*</span>;
 
@@ -2674,8 +2674,7 @@
                 <span class="kw-2">&amp;</span>position,
                 <span class="kw-2">&amp;</span>velocity,
                 <span class="kw-2">&amp;**</span>shape,
-                <span class="number">1.0</span>,
-                <span class="bool-val">true</span>,
+                ShapeCastOptions::with_max_time_of_impact(<span class="number">1.0</span>),
                 rapier::QueryFilter::new().predicate(<span class="kw-2">&amp;</span>|_handle, rapier_collider| {
                     <span class="kw">let </span>ent = RapierUserData::entity(rapier_collider.user_data);
 
@@ -2698,7 +2697,7 @@
                 <span class="kw">let </span>ent = RapierUserData::entity(collider_set.get(handle).unwrap().user_data);
 
                 <span class="comment">// Move up to the point of collision
-                </span><span class="kw">let </span>diff = dy * toi.toi;
+                </span><span class="kw">let </span>diff = dy * toi.time_of_impact;
                 movement += diff;
                 position.translation.y += diff;
 
@@ -2814,8 +2813,7 @@
                     <span class="kw-2">&amp;</span>position,
                     <span class="kw-2">&amp;</span>velocity,
                     <span class="kw-2">&amp;**</span>shape,
-                    <span class="number">1.0</span>,
-                    <span class="bool-val">true</span>,
+                    ShapeCastOptions::with_max_time_of_impact(<span class="number">1.0</span>),
                     rapier::QueryFilter::new().predicate(<span class="kw-2">&amp;</span>|_handle, rapier_collider| {
                         <span class="kw">let </span>ent = RapierUserData::entity(rapier_collider.user_data);
 
@@ -2839,7 +2837,7 @@
                 <span class="kw">let </span>ent = RapierUserData::entity(collider_set.get(handle).unwrap().user_data);
 
                 <span class="comment">// Move up to the point of collision
-                </span><span class="kw">let </span>diff = dx * toi.toi;
+                </span><span class="kw">let </span>diff = dx * toi.time_of_impact;
                 movement += diff;
                 position.translation.x += diff;
 

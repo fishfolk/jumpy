@@ -139,7 +139,7 @@ suffer form the ABA problem.</p>
     colliders: &amp;mut <a class="struct" href="../../rapier/struct.ColliderSet.html" title="struct jumpy::core::physics::rapier::ColliderSet">ColliderSet</a>,
 )</h4></section></summary><div class="docblock"><p>Update colliders positions after rigid-bodies moved.</p>
 <p>When a rigid-body moves, the positions of the colliders attached to it need to be updated.
-This update is generally automatically done at the beggining and the end of each simulation
+This update is generally automatically done at the beginning and the end of each simulation
 step with <code>PhysicsPipeline::step</code>. If the positions need to be updated without running a
 simulation step (for example when using the <code>QueryPipeline</code> alone), this method can be called
 manually.</p>

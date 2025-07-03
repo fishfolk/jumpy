@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The type of impulse applied for friction constraints."><title>TangentImpulse in jumpy::core::physics::collisions::rapier - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-c5d6553a23f1e5a6.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0 (eeb90cda1 2024-09-04)" data-channel="1.81.0" data-search-js="search-d234aafac6c221dd.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../../static.files/main-d2fab2bf619172d3.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"><script src='https://unpkg.com/panzoom@9.4.0/dist/panzoom.min.js'></script>
+<script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.2.2/dist/mermaid.esm.min.mjs"
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'dark',
+        themeVariables: {
+            fontSize: '16px',
+            lineColor: '#F8B229',
+            clusterBkg: '#0000',
+            edgeLabelBackground: '#1A1A1A'
+        }
+    });
+    mermaid.run({
+        querySelector: '.mermaid',
+        postRenderCallback: id => {
+            let el = document.getElementById(id);
+            const pz = panzoom(el, {
+                smoothScroll: false,
+                zoomDoubleClickSpeed: 1,
+                beforeWheel: function (e) {
+                    // allow wheel-zoom only if ctrl is down. Otherwise - ignore
+                    var shouldIgnore = !e.ctrlKey;
+                    return shouldIgnore;
+                }
+            })
+
+            const plusDiv = document.createElement('div');
+            plusDiv.style = "width: 25px; height: 25px; position: absolute; right: 0.8em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            plusDiv.innerText = "+"
+            plusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 1.2)
+            }
+            el.parentNode.appendChild(plusDiv);
+
+            const minusDiv = document.createElement('div');
+            minusDiv.style = "width: 25px; height: 25px; position: absolute; right: 2.4em; bottom: 0.8em; border: 2px solid #BBB; text-align: center; padding: auto; font-size: 18px; background-color: #222; cursor: pointer"
+            minusDiv.innerText = "-"
+            minusDiv.onclick = () => {
+                pz.smoothZoom(0, 0, 0.8)
+            }
+            el.parentNode.appendChild(minusDiv);
+        }
+    })
+
+    // Callback for use in mermaid diagrams that will open a relative doc link when clicking.
+    //
+    // Example doc link for `arg` would be: jumpy/session/struct.SessionManager.html
+    window.docLink = (arg) => {
+        let pathElems = new URL(window.location.href).pathname.split('/').filter(x => x != '');
+        for (let i = pathElems.length - 1; i > -1; i--) {
+            if (pathElems[i] != 'jumpy' && pathElems[i] != 'jumpy_core') {
+                pathElems = pathElems.slice(0, i - 1);
+                break;
+            }
+        }
+        window.location.href = '/' + pathElems.join('/') + '/' + arg;
+    }
+</script>
+<style>
+    /*
+        Hide the lock icons shown for private items. It isn't helpful
+        in this context.
+    */
+    [title="Restricted Visibility"] {
+        display: none;
+    }
+
+    .mermaid {
+        overflow: hidden !important;
+        border: 1px solid #BBB;
+        border-radius: 1em;
+        cursor: move;
+        position: relative;
+    }
+
+    .dotted rect {
+        stroke-dasharray: 5;
+    }
+
+    .code .nodeLabel {
+        color: #2dbfb8 !important;
+    }
+
+    .code rect {
+        transition: 0.2s;
+        stroke: #2dbfb8 !important;
+    }
+
+    .code:hover rect {
+        transform: scale(1.05)
+    }
+</style>
+
+</head><body class="rustdoc type"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../../../../jumpy/index.html"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><h2><a href="../../../../../jumpy/index.html">jumpy</a><span class="version">0.12.2</span></h2></div><h2 class="location"><a href="#">TangentImpulse</a></h2><div class="sidebar-elems"><section><h3><a href="#aliased-type">Aliased type</a></h3><h3><a href="#fields">Fields</a></h3><ul class="block field"><li><a href="#structfield.data">data</a></li></ul></section><h2><a href="index.html">In jumpy::core::physics::collisions::rapier</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Type Alias <a href="../../../../index.html">jumpy</a>::<wbr><a href="../../../index.html">core</a>::<wbr><a href="../../index.html">physics</a>::<wbr><a href="../index.html">collisions</a>::<wbr><a href="index.html">rapier</a>::<wbr><a class="type" href="#">TangentImpulse</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub type TangentImpulse&lt;N&gt; = <a class="struct" href="../../rapier/nalgebra/struct.Matrix.html" title="struct jumpy::core::physics::rapier::nalgebra::Matrix">Matrix</a>&lt;N, <a class="struct" href="../../rapier/nalgebra/struct.Const.html" title="struct jumpy::core::physics::rapier::nalgebra::Const">Const</a>&lt;1&gt;, <a class="struct" href="../../rapier/nalgebra/struct.Const.html" title="struct jumpy::core::physics::rapier::nalgebra::Const">Const</a>&lt;1&gt;, <a class="struct" href="../../rapier/nalgebra/struct.ArrayStorage.html" title="struct jumpy::core::physics::rapier::nalgebra::ArrayStorage">ArrayStorage</a>&lt;N, 1, 1&gt;&gt;;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The type of impulse applied for friction constraints.</p>
+</div></details><h2 id="aliased-type" class="section-header">Aliased Type<a href="#aliased-type" class="anchor">§</a></h2><pre class="rust item-decl"><code>struct TangentImpulse&lt;N&gt; {
+    pub data: <a class="struct" href="../../rapier/nalgebra/struct.ArrayStorage.html" title="struct jumpy::core::physics::rapier::nalgebra::ArrayStorage">ArrayStorage</a>&lt;N, 1, 1&gt;,
+    <span class="comment">/* private fields */</span>
+}</code></pre><h2 id="fields" class="fields section-header">Fields<a href="#fields" class="anchor">§</a></h2><span id="structfield.data" class="structfield section-header"><a href="#structfield.data" class="anchor field">§</a><code>data: <a class="struct" href="../../rapier/nalgebra/struct.ArrayStorage.html" title="struct jumpy::core::physics::rapier::nalgebra::ArrayStorage">ArrayStorage</a>&lt;N, 1, 1&gt;</code></span><div class="docblock"><p>The data storage that contains all the matrix components. Disappointed?</p>
+<p>Well, if you came here to see how you can access the matrix components,
+you may be in luck: you can access the individual components of all vectors with compile-time
+dimensions &lt;= 6 using field notation like this:
+<code>vec.x</code>, <code>vec.y</code>, <code>vec.z</code>, <code>vec.w</code>, <code>vec.a</code>, <code>vec.b</code>. Reference and assignation work too:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span><span class="kw-2">mut </span>vec = Vector3::new(<span class="number">1.0</span>, <span class="number">2.0</span>, <span class="number">3.0</span>);
+vec.x = <span class="number">10.0</span>;
+vec.y += <span class="number">30.0</span>;
+<span class="macro">assert_eq!</span>(vec.x, <span class="number">10.0</span>);
+<span class="macro">assert_eq!</span>(vec.y + <span class="number">100.0</span>, <span class="number">132.0</span>);</code></pre></div>
+<p>Similarly, for matrices with compile-time dimensions &lt;= 6, you can use field notation
+like this: <code>mat.m11</code>, <code>mat.m42</code>, etc. The first digit identifies the row to address
+and the second digit identifies the column to address. So <code>mat.m13</code> identifies the component
+at the first row and third column (note that the count of rows and columns start at 1 instead
+of 0 here. This is so we match the mathematical notation).</p>
+<p>For all matrices and vectors, independently from their size, individual components can
+be accessed and modified using indexing: <code>vec[20]</code>, <code>mat[(20, 19)]</code>. Here the indexing
+starts at 0 as you would expect.</p>
+</div><script src="../../../../../type.impl/jumpy/core/physics/rapier/nalgebra/struct.Matrix.js" data-self-path="jumpy::core::physics::rapier::TangentImpulse" async></script></section></div></main></body></html>

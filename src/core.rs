@@ -28,7 +28,7 @@ pub const MAX_PLAYERS: u32 = 4;
 
 use std::time::Duration;
 
-use crate::{prelude::*, settings::PlayerControlMapping};
+use crate::prelude::*;
 
 pub mod prelude {
     pub use super::{

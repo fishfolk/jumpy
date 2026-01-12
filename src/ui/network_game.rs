@@ -9,6 +9,9 @@ use super::main_menu::MenuPage;
 /// Game id for matchmaking
 const GAME_ID: &str = "jumpy";
 
+/// The jumpy mdns service type for lan games.
+const JUMPY_LAN_SERVICE_TYPE: &str = "_jumpy._udp.local.";
+
 #[derive(Clone, Debug, Default)]
 pub enum NetworkGameAction {
     #[default]
@@ -270,7 +273,7 @@ pub fn network_game_menu(
                                     lan::stop_server(&service_info);
                                     *status = NetworkGameStatus::Idle;
                                 }
-                                lan::prepare_to_join(lan_servers, lan_service_discovery_recv, ping_update_timer);
+                                lan::prepare_to_join(JUMPY_LAN_SERVICE_TYPE, lan_servers, lan_service_discovery_recv, ping_update_timer);
 
                                 if *status != NetworkGameStatus::Joining {
                                     ui.label(
@@ -384,7 +387,7 @@ pub fn network_game_menu(
                                 });
 
                                 let (is_recreated, service_info) = RUNTIME.block_on(async {
-                                    lan::prepare_to_host(host_info, service_name).await
+                                    lan::prepare_to_host(host_info, JUMPY_LAN_SERVICE_TYPE, service_name).await
                                 });
                                 if is_recreated {
                                     *status = NetworkGameStatus::Idle;

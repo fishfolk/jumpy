@@ -32,7 +32,7 @@ fn collect_player_controls(game: &mut Game) {
         };
         let keyboard = game.shared_resource::<KeyboardInputs>().unwrap();
         let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
-        collector.apply_inputs(&mapping, &keyboard, &gamepad);
+        collector.apply_inputs_inner(&mapping, &keyboard, &gamepad);
         collector.update_just_pressed();
         collector.advance_frame();
         GlobalPlayerControls(
@@ -287,7 +287,21 @@ impl<'a>
 
     /// Update the internal state with new inputs. This must be called every render frame with the
     /// input events.
-    fn apply_inputs(
+    fn apply_inputs(&mut self, world: &World) {
+        let keyboard = world.resource::<KeyboardInputs>();
+        let gamepad = world.resource::<GamepadInputs>();
+        let mapping = world.resource::<PlayerControlMapping>();
+        self.apply_inputs_inner(&mapping, &keyboard, &gamepad);
+    }
+
+    // TODO: Fix bones Trait definition, player_idx not relevant
+    fn get_control(&self, _player_idx: usize, control_source: ControlSource) -> &PlayerControl {
+        self.current_controls.get(&control_source).unwrap()
+    }
+}
+
+impl PlayerInputCollector {
+    fn apply_inputs_inner(
         &mut self,
         mapping: &PlayerControlMapping,
         keyboard: &KeyboardInputs,
@@ -403,11 +417,6 @@ impl<'a>
                 control.down = down;
             }
         }
-    }
-
-    // TODO: Fix bones Trait definition, player_idx not relevant
-    fn get_control(&self, _player_idx: usize, control_source: ControlSource) -> &PlayerControl {
-        self.current_controls.get(&control_source).unwrap()
     }
 }
 

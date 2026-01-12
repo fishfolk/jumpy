@@ -130,15 +130,7 @@ impl SessionRunner for JumpyDefaultMatchRunner {
         let last_run = self.last_run.unwrap_or(frame_start);
         let delta = (frame_start - last_run).as_secs_f64();
 
-        {
-            let keyboard = world.resource::<KeyboardInputs>();
-            let gamepad = world.resource::<GamepadInputs>();
-            self.input_collector.apply_inputs(
-                &world.resource::<PlayerControlMapping>(),
-                &keyboard,
-                &gamepad,
-            );
-        }
+        self.input_collector.apply_inputs(world);
 
         let mut run = || {
             // Advance the world time

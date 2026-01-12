@@ -137,7 +137,7 @@ fn pause_menu_system(
             .deref()
             .clone();
         sessions.end_game();
-        sessions.create_with(SessionNames::GAME, |builder| {
+        sessions.create_with(SessionNames::GAME, |builder: &mut SessionBuilder| {
             builder.install_plugin(crate::core::MatchPlugin {
                 maps,
                 player_info: std::array::from_fn(|i| PlayerInput {

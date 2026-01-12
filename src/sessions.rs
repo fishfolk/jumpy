@@ -23,7 +23,7 @@ pub trait SessionExt {
 
 impl SessionExt for Sessions {
     fn start_menu(&mut self) {
-        self.create_with(SessionNames::MAIN_MENU, |builder| {
+        self.create_with(SessionNames::MAIN_MENU, |builder: &mut SessionBuilder| {
             builder.install_plugin(crate::ui::main_menu::session_plugin);
         });
     }
@@ -74,7 +74,7 @@ impl SessionExt for Sessions {
                 score
             };
 
-            self.create_with(SessionNames::GAME, |builder| {
+            self.create_with(SessionNames::GAME, |builder: &mut SessionBuilder| {
                 builder.install_plugin(crate::core::MatchPlugin {
                     maps: map_pool,
                     player_info,
@@ -89,7 +89,7 @@ impl SessionExt for Sessions {
     }
 
     fn start_game(&mut self, match_plugin: crate::core::MatchPlugin) {
-        self.create_with(SessionNames::GAME, |builder| {
+        self.create_with(SessionNames::GAME, |builder: &mut SessionBuilder| {
             builder.install_plugin(match_plugin);
         });
     }

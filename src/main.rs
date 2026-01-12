@@ -174,7 +174,7 @@ fn main() {
     // Create a new session for the pause menu, which sits in the background by default and only
     // does anything while the game is running.
     game.sessions
-        .create_with(SessionNames::PAUSE_MENU, |builder| {
+        .create_with(SessionNames::PAUSE_MENU, |builder: &mut SessionBuilder| {
             builder.install_plugin(ui::pause_menu::session_plugin);
         });
 
@@ -185,15 +185,18 @@ fn main() {
         .priority = 1;
 
     // Scoring menu plugin, activated by game between round tarnsitions when appropriate
-    game.sessions.create_with(SessionNames::SCORING, |builder| {
-        builder.install_plugin(ui::scoring::session_plugin);
-    });
+    game.sessions
+        .create_with(SessionNames::SCORING, |builder: &mut SessionBuilder| {
+            builder.install_plugin(ui::scoring::session_plugin);
+        });
 
     // session for pop-ups / nofication UI
-    game.sessions
-        .create_with(SessionNames::NOTIFICATION, |builder| {
+    game.sessions.create_with(
+        SessionNames::NOTIFICATION,
+        |builder: &mut SessionBuilder| {
             builder.install_plugin(ui::notification::session_plugin);
-        });
+        },
+    );
 
     // Create a bevy renderer for the bones game and run it.
     BonesBevyRenderer {

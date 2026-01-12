@@ -6,7 +6,7 @@ use crate::prelude::*;
 pub fn game_plugin(game: &mut Game) {
     game.systems.add_before_system(mark_new_frame);
     game.sessions
-        .create_with(SessionNames::PROFILER, |builder| {
+        .create_with(SessionNames::PROFILER, |builder: &mut SessionBuilder| {
             builder.install_plugin(session_plugin);
         });
 }

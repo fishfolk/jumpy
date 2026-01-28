@@ -18,7 +18,7 @@ pub fn game_plugin(game: &mut Game) {
 // collector.
 fn load_controler_mapping(game: &mut Game) {
     let control_mapping = {
-        let storage = game.shared_resource::<Storage>().unwrap();
+        let storage = game.shared_resource::<Storage>();
         storage.get::<Settings>().unwrap().player_controls.clone()
     };
     game.insert_shared_resource(control_mapping);
@@ -26,12 +26,12 @@ fn load_controler_mapping(game: &mut Game) {
 
 fn collect_player_controls(game: &mut Game) {
     let controls = 'controls: {
-        let mut collector = game.shared_resource_mut::<PlayerInputCollector>().unwrap();
-        let Some(mapping) = game.shared_resource::<PlayerControlMapping>() else {
+        let mut collector = game.shared_resource_mut::<PlayerInputCollector>();
+        let Some(mapping) = game.get_shared_resource::<PlayerControlMapping>() else {
             break 'controls default();
         };
-        let keyboard = game.shared_resource::<KeyboardInputs>().unwrap();
-        let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
+        let keyboard = game.shared_resource::<KeyboardInputs>();
+        let gamepad = game.shared_resource::<GamepadInputs>();
         collector.apply_inputs_inner(&mapping, &keyboard, &gamepad);
         collector.update_just_pressed();
         collector.advance_frame();
@@ -63,7 +63,7 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
     // available immediately to egui, and then available to the rest of the systems that run after.
     collect_player_controls(game);
 
-    let ctx = game.shared_resource::<EguiCtx>().unwrap();
+    let ctx = game.shared_resource::<EguiCtx>();
     let settings = ctx.get_state::<EguiInputSettings>();
     let events = &mut egui_input.events;
 
@@ -74,7 +74,7 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
 
     // Forward gamepad events to egui if not disabled.
     if !settings.disable_gamepad_input {
-        let controls = game.shared_resource::<GlobalPlayerControls>().unwrap();
+        let controls = game.shared_resource::<GlobalPlayerControls>();
 
         let push_key = |events: &mut Vec<egui::Event>, key| {
             events.push(egui::Event::Key {

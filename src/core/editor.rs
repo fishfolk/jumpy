@@ -19,7 +19,7 @@ impl_system_param! {
     /// running. This can be used both for manual map editing, and by algorithms for generating or
     /// randomizing maps.
     ///
-    /// Map generators implement the [`MapConstructor`][crate::core::map_constructor::MapConstructor]
+    /// Map generators implement the [`MapConstructor`]
     /// trait, which is given a [`MapManager`] to make its changes with.
     pub struct MapManager<'a> {
         commands: Commands<'a>,

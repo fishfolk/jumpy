@@ -183,6 +183,8 @@ pub struct PlayerControl {
 
 #[derive(HasSchema, Clone)]
 pub struct PlayerInputCollector {
+    /// The local player's [`ControlSource`] in an online / lan game.
+    control_source: ControlSource,
     current_controls: HashMap<ControlSource, PlayerControl>,
     last_controls: HashMap<ControlSource, PlayerControl>,
 }
@@ -206,6 +208,7 @@ impl Default for PlayerInputCollector {
             m
         };
         Self {
+            control_source: ControlSource::Keyboard1,
             current_controls: def_controls(),
             last_controls: def_controls(),
         }
@@ -287,11 +290,30 @@ impl<'a> bones_framework::input::InputCollector<'a, PlayerControl> for PlayerInp
         let gamepad = world.resource::<GamepadInputs>();
         let mapping = world.resource::<PlayerControlMapping>();
         self.apply_inputs_inner(&mapping, &keyboard, &gamepad);
+
+        #[cfg(not(target_arch = "wasm32"))]
+        // Get the first local player control source which should be the only
+        // local player in an online game.
+        if let Some(user_control_source) = world
+            .resource::<MatchInputs>()
+            .players
+            .iter()
+            .find_map(|player| player.control_source)
+        {
+            // `self.control_source` is only used in online / lan games to
+            // tell the `GgrsSessionRunner` which controls to grab for the
+            // one local player via `InputCollecter::get_control`.
+            self.control_source = user_control_source;
+
+            // `apply_inputs` is called before `get_control` so this will
+            // always update the source in time.
+        } else {
+            panic!("no local player control source")
+        }
     }
 
-    // TODO: Fix bones Trait definition, player_idx not relevant
-    fn get_control(&self, _player_idx: usize, control_source: ControlSource) -> &PlayerControl {
-        self.current_controls.get(&control_source).unwrap()
+    fn get_control(&self) -> &PlayerControl {
+        self.current_controls.get(&self.control_source).unwrap()
     }
 }
 

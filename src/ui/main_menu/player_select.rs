@@ -609,7 +609,7 @@ fn player_select_panel(
         .slots
         .iter()
         .enumerate()
-        .any(|(i, slot)| (slot.control_source().is_none() && i == slot_id as usize));
+        .any(|(i, slot)| slot.control_source().is_none() && i == slot_id as usize);
 
     #[cfg(target_arch = "wasm32")]
     let (network_local_player_slot, slot_allows_new_player) = (None::<u32>, is_next_open_slot);

@@ -194,7 +194,10 @@ pub fn round_end(
         }
 
         if round_transition_synchronized {
-            if score.rounds_completed % meta.core.config.rounds_between_intermission == 0 {
+            if score
+                .rounds_completed
+                .is_multiple_of(meta.core.config.rounds_between_intermission)
+            {
                 scoring_menu.active = true;
                 scoring_menu.match_score = score.clone();
                 scoring_menu.next_maps = state.next_maps.clone();

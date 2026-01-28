@@ -2,7 +2,7 @@
 
 use std::array;
 
-use bones_framework::input::PlayerControls;
+use bones_framework::input::Controls;
 
 use crate::{prelude::*, MAX_PLAYERS};
 
@@ -23,8 +23,7 @@ impl Default for MatchInputs {
         }
     }
 }
-
-impl PlayerControls<'_, PlayerControl> for MatchInputs {
+impl Controls<'_, PlayerControl> for MatchInputs {
     type ControlSource = ControlSource;
     type ControlMapping = PlayerControlMapping;
     type InputCollector = PlayerInputCollector;

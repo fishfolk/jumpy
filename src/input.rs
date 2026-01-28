@@ -3,8 +3,6 @@ use crate::{
     settings::{InputKind, PlayerControlMapping, Settings},
 };
 
-#[cfg(not(target_arch = "wasm32"))]
-use bones_framework::networking::{input::NetworkPlayerControl, proto::DenseMoveDirection};
 use strum::EnumIter;
 
 pub fn game_plugin(game: &mut Game) {
@@ -214,10 +212,7 @@ impl Default for PlayerInputCollector {
     }
 }
 
-impl<'a>
-    bones_framework::input::InputCollector<'a, PlayerControlMapping, ControlSource, PlayerControl>
-    for PlayerInputCollector
-{
+impl<'a> bones_framework::input::InputCollector<'a, PlayerControl> for PlayerInputCollector {
     fn update_just_pressed(&mut self) {
         self.current_controls
             .iter_mut()
@@ -421,7 +416,7 @@ impl PlayerInputCollector {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-impl NetworkPlayerControl<DensePlayerControl> for PlayerControl {
+impl DenseControl<DensePlayerControl> for PlayerControl {
     fn get_dense_input(&self) -> DensePlayerControl {
         let mut dense_control = DensePlayerControl::default();
         dense_control.set_jump_pressed(self.jump_pressed);
@@ -471,7 +466,7 @@ bitfield::bitfield! {
     pub grab_pressed, set_grab_pressed: 2;
     pub slide_pressed, set_slide_pressed: 3;
     pub ragdoll_pressed, set_ragdoll_pressed: 4;
-    pub from into DenseMoveDirection, move_direction, set_move_direction: 16, 5;
+    pub from into proto::DenseMoveDirection, move_direction, set_move_direction: 16, 5;
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -488,9 +483,9 @@ impl Default for DensePlayerControl {
 pub struct NetworkInputConfig;
 
 #[cfg(not(target_arch = "wasm32"))]
-impl<'a> bones_framework::networking::input::NetworkInputConfig<'a> for NetworkInputConfig {
+impl<'a> DenseInputConfig<'a> for NetworkInputConfig {
     type Dense = DensePlayerControl;
     type Control = PlayerControl;
-    type PlayerControls = MatchInputs;
+    type Controls = MatchInputs;
     type InputCollector = PlayerInputCollector;
 }

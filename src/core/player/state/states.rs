@@ -9,3 +9,4 @@ pub mod incapacitated;
 pub mod midair;
 pub mod ragdoll;
 pub mod walk;
+pub mod gurgle;

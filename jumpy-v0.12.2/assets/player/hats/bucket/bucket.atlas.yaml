@@ -1,0 +1,4 @@
+image: ./bucket.png
+tile_size: [34, 33]
+columns: 1
+rows: 1

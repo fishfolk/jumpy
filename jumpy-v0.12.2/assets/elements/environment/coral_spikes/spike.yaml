@@ -1,0 +1,5 @@
+atlas: ./coral_spikes.atlas.yaml
+body_size: [45, 25]
+start_frame: 0
+end_frame: 5
+fps: 12

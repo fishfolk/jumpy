@@ -1,0 +1,5 @@
+name: Chest Hat
+atlas: ./chest.atlas.yaml
+
+offset: [-3, 40]
+body_size: [36, 31]

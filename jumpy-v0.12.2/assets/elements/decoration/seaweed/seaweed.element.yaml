@@ -1,0 +1,6 @@
+name: Seaweed
+category: Decorations
+editor:
+  grab_size: [40, 51]
+  show_name: false
+data: animated_decoration.yaml

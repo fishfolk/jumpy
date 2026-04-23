@@ -1,0 +1,4 @@
+image: ./musket_bullet.png
+tile_size: [15, 15]
+rows: 1
+columns: 1

@@ -1,0 +1,26 @@
+atlas: ./buss.atlas.yaml
+
+max_ammo: 2
+cooldown: 1000ms
+bullet_meta: ./bullet/buss.bullet.yaml
+bullet_count: 10
+bullet_spread: 0.3
+bullet_spawn_offset: [28, 6]
+
+shoot_fps: 15
+shoot_frames: 3
+shoot_lifetime: 0.3
+shoot_sound_volume: 0.2
+shoot_sound: ./shoot/shoot.ogg
+empty_shoot_sound_volume: 0.1
+empty_shoot_sound: ./shoot/gun_empty.ogg
+shoot_atlas: ./shoot/buss_shoot.atlas.yaml
+
+bounciness: 0.3
+can_rotate: true
+body_size: [32, 8]
+fin_anim: grab_2
+angular_velocity: 0.1
+throw_velocity: 180
+grab_offset: [7, 0]
+kickback: 300

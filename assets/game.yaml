@@ -9,9 +9,11 @@ music:
     - music/07 jolly roger.ogg
     - music/08 krill or be krilled.ogg
     - music/09 landlubber.ogg
+    - music/10 fish bucket.ogg
   character_screen: music/10 fish bucket.ogg
   results_screen: music/11 thar she blows!.ogg
   credits: music/12 all hands hoay!.ogg
+  gurgle: player/sounds/gurgle.ogg
 
 main_menu:
   title_font:
@@ -55,6 +57,7 @@ default_settings:
       slide: !Button North
       pause: !Button Start
       ragdoll: !Button RightTrigger
+      gurgle: !Button LeftTrigger
       menu_back: !Button East
       menu_start: !Button Start
       menu_confirm: !Button South
@@ -71,6 +74,7 @@ default_settings:
       shoot: !Keyboard C
       slide: !Keyboard B
       ragdoll: !Keyboard F
+      gurgle: !Keyboard X
       pause: !Keyboard Escape
       menu_back: !Keyboard Escape
       menu_start: !Keyboard Return
@@ -88,6 +92,7 @@ default_settings:
       shoot: !Keyboard Period
       slide: !Keyboard Slash
       ragdoll: !Keyboard M
+      gurgle: !Keyboard N
       menu_confirm: !Keyboard Comma
       menu_back: !Keyboard ShiftRight
 

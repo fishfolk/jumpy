@@ -179,6 +179,9 @@ pub struct PlayerControl {
 
     pub ragdoll_pressed: bool,
     pub ragdoll_just_pressed: bool,
+
+    pub gurgle_pressed: bool,
+    pub gurgle_just_pressed: bool,
 }
 
 #[derive(HasSchema, Clone)]
@@ -256,6 +259,11 @@ impl<'a> bones_framework::input::InputCollector<'a, PlayerControl> for PlayerInp
                         &mut current.ragdoll_just_pressed,
                         current.ragdoll_pressed,
                         last.ragdoll_pressed,
+                    ),
+                    (
+                        &mut current.gurgle_just_pressed,
+                        current.gurgle_pressed,
+                        last.gurgle_pressed,
                     ),
                     (
                         &mut current.menu_back_just_pressed,
@@ -394,6 +402,7 @@ impl PlayerInputCollector {
                 (&mut control.shoot_pressed, &mapping.shoot),
                 (&mut control.slide_pressed, &mapping.slide),
                 (&mut control.ragdoll_pressed, &mapping.ragdoll),
+                (&mut control.gurgle_pressed, &mapping.gurgle),
                 (&mut control.menu_back_pressed, &mapping.menu_back),
                 (&mut control.menu_confirm_pressed, &mapping.menu_confirm),
                 (&mut control.menu_start_pressed, &mapping.menu_start),
@@ -446,6 +455,7 @@ impl DenseControl<DensePlayerControl> for PlayerControl {
         dense_control.set_slide_pressed(self.slide_pressed);
         dense_control.set_shoot_pressed(self.shoot_pressed);
         dense_control.set_ragdoll_pressed(self.ragdoll_pressed);
+        dense_control.set_gurgle_pressed(self.gurgle_pressed);
         dense_control.set_move_direction(proto::DenseMoveDirection(self.move_direction));
         dense_control
     }
@@ -466,6 +476,10 @@ impl DenseControl<DensePlayerControl> for PlayerControl {
         let ragdoll_pressed = new_control.ragdoll_pressed();
         self.ragdoll_just_pressed = ragdoll_pressed && !self.ragdoll_pressed;
         self.ragdoll_pressed = ragdoll_pressed;
+
+        let gurgle_pressed = new_control.gurgle_pressed();
+        self.gurgle_just_pressed = gurgle_pressed && !self.gurgle_pressed;
+        self.gurgle_pressed = gurgle_pressed;
 
         let was_moving = self.move_direction.length_squared() > f32::MIN_POSITIVE;
         self.move_direction = new_control.move_direction().0;
@@ -488,6 +502,7 @@ bitfield::bitfield! {
     pub grab_pressed, set_grab_pressed: 2;
     pub slide_pressed, set_slide_pressed: 3;
     pub ragdoll_pressed, set_ragdoll_pressed: 4;
+    pub gurgle_pressed, set_gurgle_pressed: 6;
     pub from into proto::DenseMoveDirection, move_direction, set_move_direction: 16, 5;
 }
 

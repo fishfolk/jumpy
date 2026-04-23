@@ -133,6 +133,7 @@ pub struct GameMusic {
     pub character_screen: Handle<AudioSource>,
     pub results_screen: Handle<AudioSource>,
     pub credits: Handle<AudioSource>,
+    pub gurgle: Handle<AudioSource>,
 }
 
 fn main() {

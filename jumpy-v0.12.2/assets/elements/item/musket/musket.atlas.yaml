@@ -1,0 +1,4 @@
+image: ./musket.png
+tile_size: [92, 32]
+rows: 1
+columns: 1

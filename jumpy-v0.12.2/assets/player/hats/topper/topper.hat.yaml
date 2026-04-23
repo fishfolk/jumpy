@@ -1,0 +1,5 @@
+name: Topper Hat
+atlas: ./topper.atlas.yaml
+
+offset: [0, 42]
+body_size: [31, 34]

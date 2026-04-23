@@ -1,0 +1,5 @@
+atlas: ./anchor.atlas.yaml
+grab_offset: [5, -2]
+body_size: [28, 34]
+fin_anim: grab_2
+fall_speed: 8

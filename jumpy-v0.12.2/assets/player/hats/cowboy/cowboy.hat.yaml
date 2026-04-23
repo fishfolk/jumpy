@@ -1,0 +1,5 @@
+name: Cowboy Hat
+atlas: ./cowboy.atlas.yaml
+
+offset: [-5, 27]
+body_size: [49, 25]

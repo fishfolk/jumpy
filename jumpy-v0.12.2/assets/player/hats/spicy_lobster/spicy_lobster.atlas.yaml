@@ -1,0 +1,4 @@
+image: ./spicy_lobster.png
+tile_size: [50, 34]
+columns: 1
+rows: 1

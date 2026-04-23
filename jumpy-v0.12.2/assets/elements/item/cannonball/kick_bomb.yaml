@@ -1,0 +1,31 @@
+fuse_time: 2s
+kick_velocity: [0.0, 0.0]
+kickable: false
+throw_velocity: 800
+damage_region_size: [70, 70]
+damage_region_lifetime: 0.5
+
+atlas: ./cannonball.atlas.yaml
+
+explosion_atlas: ./explosion.atlas.yaml
+explosion_lifetime: 1.0
+explosion_frames: 12
+explosion_fps: 8
+explosion_sound: ./explosion.ogg
+explosion_volume: 0.1
+explode_on_contact: true
+
+lit_frames_start: 0
+lit_frames_end: 1
+lit_fps: 1.0
+
+fuse_sound: ./fuse.ogg
+fuse_sound_volume: 0.1
+
+body_diameter: 16
+grab_offset: [0, -2]
+fin_anim: grab_2
+can_rotate: true
+bounciness: 0.5
+angular_velocity: 0.2
+arm_delay: 500ms

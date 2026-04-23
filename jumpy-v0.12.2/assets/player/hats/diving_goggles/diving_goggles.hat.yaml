@@ -1,0 +1,5 @@
+name: Diving Goggles Hat
+atlas: ./diving_goggles.atlas.yaml
+
+offset: [-1, 28]
+body_size: [36, 23]

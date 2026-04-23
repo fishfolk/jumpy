@@ -1,0 +1,4 @@
+image: ./straw.png
+tile_size: [46, 29]
+columns: 1
+rows: 1

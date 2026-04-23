@@ -1,0 +1,5 @@
+name: Crab
+category: Critters
+editor:
+  grab_size: [20, 15]
+data: crab.yaml

@@ -1,0 +1,5 @@
+name: Unicorn Hat
+atlas: ./unicorn.atlas.yaml
+
+offset: [-4, 26]
+body_size: [30, 37]

@@ -1,0 +1,5 @@
+name: Water Lily Hat
+atlas: ./water_lily.atlas.yaml
+
+offset: [-1, 29]
+body_size: [50, 23]

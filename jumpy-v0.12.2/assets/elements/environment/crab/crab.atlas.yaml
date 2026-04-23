@@ -1,0 +1,4 @@
+image: ./crab.png
+tile_size: [19, 14]
+rows: 2
+columns: 4

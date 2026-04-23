@@ -1,0 +1,4 @@
+image: ./musket_fire.png
+tile_size: [25, 30]
+rows: 1
+columns: 4

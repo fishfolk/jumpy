@@ -1,0 +1,4 @@
+image: ./cannon.png
+tile_size: [60, 42]
+rows: 1
+columns: 4

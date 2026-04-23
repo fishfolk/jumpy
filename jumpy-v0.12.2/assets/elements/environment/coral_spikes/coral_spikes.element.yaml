@@ -1,0 +1,7 @@
+name: Coral Spikes
+category: Gameplay
+editor:
+  grab_size: [70, 50]
+  grab_offset: [0, 0]
+  show_name: false
+data: spike.yaml

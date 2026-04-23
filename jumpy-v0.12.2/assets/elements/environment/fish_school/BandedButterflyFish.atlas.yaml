@@ -1,0 +1,4 @@
+image: ./BandedButterflyFish.png
+tile_size: [19, 11]
+rows: 1
+columns: 4

@@ -1,0 +1,3 @@
+attachment: ./win_indicator.attachment.yaml
+sound: ./win_indicator.ogg
+volume: 0.5

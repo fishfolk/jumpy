@@ -1,0 +1,5 @@
+name: Bonnet Hat
+atlas: ./bonnet.atlas.yaml
+
+offset: [-11, 28]
+body_size: [35, 25]

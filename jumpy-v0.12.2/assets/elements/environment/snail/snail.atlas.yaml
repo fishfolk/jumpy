@@ -1,0 +1,4 @@
+image: ./snail.png
+tile_size: [20, 12]
+rows: 1
+columns: 6

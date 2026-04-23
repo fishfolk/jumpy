@@ -1,0 +1,5 @@
+name: Spicy Lobster Hat
+atlas: ./spicy_lobster.atlas.yaml
+
+offset: [-3, 30]
+body_size: [50, 34]

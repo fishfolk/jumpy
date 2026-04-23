@@ -1,0 +1,4 @@
+image: ./sniper.png
+tile_size: [81, 25]
+rows: 1
+columns: 1

@@ -1,0 +1,4 @@
+image: ./ground_rock.png
+tile_size: [32, 32]
+columns: 17
+rows: 5

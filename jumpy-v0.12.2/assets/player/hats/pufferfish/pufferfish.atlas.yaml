@@ -1,0 +1,4 @@
+image: ./pufferfish.png
+tile_size: [41, 39]
+columns: 1
+rows: 1

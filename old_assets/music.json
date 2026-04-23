@@ -38,5 +38,9 @@
   {
     "id": "thanks_for_all_the_fished",
     "path": "music/thanks_for_all_the_fished.ogg"
+  },
+  {
+    "id": "gurgle",
+    "path": "music/gurgle.ogg"
   }
 ]

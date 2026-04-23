@@ -1,0 +1,14 @@
+locales: [en-US]
+resources:
+  - branding.ftl
+  - menu.ftl
+  - debug-tools.ftl
+
+  - network-game.ftl
+  - scoring.ftl
+  - settings.ftl
+  - editor.ftl
+  - player-select.ftl
+  - map-select.ftl
+
+  - controls.ftl

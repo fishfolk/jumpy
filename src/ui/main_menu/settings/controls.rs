@@ -144,6 +144,14 @@ pub(super) fn widget(
             ],
         ),
         (
+            localization.get("gurgle"),
+            [
+                &mut mapping.keyboard1.gurgle,
+                &mut mapping.keyboard2.gurgle,
+                &mut mapping.gamepad.gurgle,
+            ],
+        ),
+        (
             localization.get("pause"),
             [
                 &mut mapping.keyboard1.pause,

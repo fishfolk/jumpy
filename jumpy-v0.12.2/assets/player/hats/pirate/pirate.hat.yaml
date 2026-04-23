@@ -1,0 +1,5 @@
+name: Pirate Hat
+atlas: ./pirate.atlas.yaml
+
+offset: [-2, 33]
+body_size: [50, 29]

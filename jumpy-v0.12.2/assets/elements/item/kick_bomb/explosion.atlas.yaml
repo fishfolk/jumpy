@@ -1,0 +1,4 @@
+image: ./explosion.png
+tile_size: [144, 112]
+rows: 1
+columns: 11

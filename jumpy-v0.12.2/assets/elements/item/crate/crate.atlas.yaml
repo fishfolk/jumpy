@@ -1,0 +1,4 @@
+image: ./crate.png
+tile_size: [36, 31]
+rows: 1
+columns: 1

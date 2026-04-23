@@ -1,0 +1,5 @@
+name: Bow Hat
+atlas: ./bow.atlas.yaml
+
+offset: [-10, 28]
+body_size: [23, 19]

@@ -1,0 +1,4 @@
+image: ./machine_gun_bullet.png
+tile_size: [30, 4]
+rows: 1
+columns: 1

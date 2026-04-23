@@ -1,0 +1,4 @@
+image: ./topper.png
+tile_size: [31, 34]
+columns: 1
+rows: 1

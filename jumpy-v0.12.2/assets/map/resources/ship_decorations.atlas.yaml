@@ -1,0 +1,26 @@
+image: ./ship_decorations.png
+tile_size: [32, 32]
+columns: 11
+rows: 5
+tile_collision:
+  41:
+    min:
+    - 0.2
+    - 0.75
+    max:
+    - 1.0
+    - 1.0
+  42:
+    min:
+    - 0.0
+    - 0.75
+    max:
+    - 1.0
+    - 1.0
+  43:
+    min:
+    - 0.0
+    - 0.75
+    max:
+    - 0.8
+    - 1.0

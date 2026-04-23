@@ -1,0 +1,5 @@
+name: Grenade
+category: Weapons
+editor:
+  grab_size: [30, 30]
+data: grenade.yaml

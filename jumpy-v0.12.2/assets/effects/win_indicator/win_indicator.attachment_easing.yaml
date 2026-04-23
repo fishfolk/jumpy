@@ -1,0 +1,6 @@
+delta_offset: [0,60]
+offset_ease_duration: 3s
+ease:
+  ease_in: true
+  ease_out: false
+  function: Quadratic

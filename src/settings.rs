@@ -93,6 +93,7 @@ pub struct PlayerControlSetting {
     pub menu_back: InputKind,
     pub menu_start: InputKind,
     pub menu_confirm: InputKind,
+    pub gurgle: InputKind,
 }
 
 #[derive(HasSchema, Clone, Debug, Default)]

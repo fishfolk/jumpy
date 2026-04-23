@@ -1,0 +1,4 @@
+image: ./water_lily.png
+tile_size: [50, 23]
+columns: 1
+rows: 1

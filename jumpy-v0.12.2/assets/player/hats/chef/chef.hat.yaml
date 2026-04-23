@@ -1,0 +1,5 @@
+name: Chef Hat
+atlas: ./chef.atlas.yaml
+
+offset: [-6, 36]
+body_size: [35, 28]

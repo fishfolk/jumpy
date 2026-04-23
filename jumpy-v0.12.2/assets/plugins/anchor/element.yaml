@@ -1,0 +1,4 @@
+name: Anchor
+category: Weapons
+data: anchor.yaml
+plugin: plugin.lua

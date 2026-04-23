@@ -1,0 +1,5 @@
+name: Viking Hat
+atlas: ./viking.atlas.yaml
+
+offset: [-11, 30]
+body_size: [37, 28]

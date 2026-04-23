@@ -1,0 +1,4 @@
+image: ./slippery.png
+tile_size: [33, 12]
+rows: 1
+columns: 1

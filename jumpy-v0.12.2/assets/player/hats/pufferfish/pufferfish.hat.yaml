@@ -1,0 +1,5 @@
+name: Pufferfish Hat
+atlas: ./pufferfish.atlas.yaml
+
+offset: [-2, 32]
+body_size: [41, 39]

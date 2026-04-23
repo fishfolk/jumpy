@@ -55,6 +55,7 @@ pub fn plugin(session: &mut SessionBuilder) {
     ragdoll::install(session);
     midair::install(session);
     walk::install(session);
+    gurgle::install(session);
 }
 
 fn update_player_state_age(entities: Res<Entities>, mut player_states: CompMut<PlayerState>) {

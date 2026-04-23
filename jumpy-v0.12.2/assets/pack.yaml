@@ -1,0 +1,5 @@
+root: game.yaml
+schemas:
+  - plugins/anchor/AnchorMeta.schema.yaml
+  - plugins/anchor/IdleAnchor.schema.yaml
+  - plugins/anchor/FallingAnchor.schema.yaml

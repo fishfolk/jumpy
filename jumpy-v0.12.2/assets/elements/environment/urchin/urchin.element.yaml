@@ -1,0 +1,5 @@
+name: Urchin
+category: Decorations
+editor:
+  grab_size: [20, 15]
+data: urchin.yaml

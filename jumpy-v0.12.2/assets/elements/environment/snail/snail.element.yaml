@@ -1,0 +1,5 @@
+name: Snail
+category: Critters
+editor:
+  grab_size: [12, 10]
+data: snail.yaml

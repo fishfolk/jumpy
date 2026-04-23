@@ -1,0 +1,6 @@
+name: Slippery
+category: Gameplay
+editor:
+  grab_size: [33, 10]
+  show_name: false
+data: slippery.yaml

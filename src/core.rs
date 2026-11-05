@@ -74,6 +74,9 @@ pub struct MatchPlayerInfo {
 impl SessionPlugin for MatchPlugin {
     fn install(self, session: &mut SessionBuilder) {
         session
+            .world
+            .insert_resource(LuaPlugins(self.plugins.clone()));
+        session
             .install_plugin(DefaultSessionPlugin)
             .install_plugin(LuaPluginLoaderSessionPlugin(self.plugins));
 

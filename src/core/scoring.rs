@@ -95,6 +95,10 @@ pub fn round_end(
     player_indices: Comp<PlayerIdx>,
     #[cfg(not(target_arch = "wasm32"))] syncing_info: Option<Res<SyncingInfo>>,
 ) {
+    if !session_options.active {
+        return;
+    }
+
     // Count players so we can avoid ending round if it's a one player match
     let mut player_count = 0;
 
@@ -208,6 +212,7 @@ pub fn round_end(
 
                 // Use maps originally determined on synchronized transition frame
                 let next_maps = state.next_maps.clone().unwrap();
+                session_options.active = false;
                 sessions.add_command(Box::new(|sessions: &mut Sessions| {
                     sessions.restart_game(Some(next_maps), false);
                 }));

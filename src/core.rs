@@ -133,8 +133,10 @@ impl SessionRunner for JumpyDefaultMatchRunner {
         {
             let keyboard = world.resource::<KeyboardInputs>();
             let gamepad = world.resource::<GamepadInputs>();
+            let mouse = world.resource::<MouseInputs>();
             self.input_collector.apply_inputs(
                 &world.resource::<PlayerControlMapping>(),
+                &mouse,
                 &keyboard,
                 &gamepad,
             );

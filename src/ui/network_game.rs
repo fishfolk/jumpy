@@ -8,6 +8,7 @@ use super::main_menu::MenuPage;
 
 /// Game id for matchmaking
 const GAME_ID: &str = "jumpy";
+const LAN_SERVICE_TYPE: &str = "_jumpy._udp.local.";
 
 #[derive(Clone, Debug, Default)]
 pub enum NetworkGameAction {
@@ -132,7 +133,7 @@ pub fn network_game_menu(
 
     // TODO CentralPanel ok?
     egui::CentralPanel::default()
-        .frame(egui::Frame::none())
+        .frame(egui::Frame::NONE)
         .show(&ctx, |ui| {
             ui.vertical_centered(|ui| {
                 ui.add_space(heading_text_style.size / 4.0);
@@ -147,7 +148,7 @@ pub fn network_game_menu(
 
             let available_size = ui.available_size();
             let x_margin = available_size.x / 4.0;
-            let outer_margin = egui::style::Margin::symmetric(x_margin, 0.0);
+            let outer_margin = egui::epaint::Marginf::symmetric(x_margin, 0.0);
 
             BorderedFrame::new(&meta.theme.panel.border)
                 .margin(outer_margin)
@@ -270,7 +271,12 @@ pub fn network_game_menu(
                                     lan::stop_server(&service_info);
                                     *status = NetworkGameStatus::Idle;
                                 }
-                                lan::prepare_to_join(lan_servers, lan_service_discovery_recv, ping_update_timer);
+                                lan::prepare_to_join(
+                                    LAN_SERVICE_TYPE,
+                                    lan_servers,
+                                    lan_service_discovery_recv,
+                                    ping_update_timer,
+                                );
 
                                 if *status != NetworkGameStatus::Joining {
                                     ui.label(
@@ -384,7 +390,8 @@ pub fn network_game_menu(
                                 });
 
                                 let (is_recreated, service_info) = RUNTIME.block_on(async {
-                                    lan::prepare_to_host(host_info, service_name).await
+                                    lan::prepare_to_host(host_info, LAN_SERVICE_TYPE, service_name)
+                                        .await
                                 });
                                 if is_recreated {
                                     *status = NetworkGameStatus::Idle;

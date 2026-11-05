@@ -131,7 +131,7 @@ fn main_menu_system(world: &World) {
     }
 
     egui::CentralPanel::default()
-        .frame(egui::Frame::none())
+        .frame(egui::Frame::NONE)
         .show(&ctx, |ui| match ctx.get_state::<MenuPage>() {
             MenuPage::Home => world.run_system(home_menu, ui),
             MenuPage::Settings => {
@@ -152,7 +152,7 @@ fn main_menu_system(world: &World) {
     }
 
     egui::CentralPanel::default()
-        .frame(egui::Frame::none())
+        .frame(egui::Frame::NONE)
         .show(&ctx, |ui| {
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Max), |ui| {
                 ui.add_space(5.0);

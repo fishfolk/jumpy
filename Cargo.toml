@@ -15,14 +15,16 @@ default = []
 # profiling-full = ["bevy/trace", "dep:tracing-tracy"]
 
 [dependencies]
-bones_framework     = { git = "https://github.com/fishfolk/bones", features = ["net-debug"] }
-bones_bevy_renderer = { git = "https://github.com/fishfolk/bones" }
+bones_framework     = { path = "../bones/framework_crates/bones_framework", features = ["net-debug"] }
+# bones_bevy_renderer = { git = "https://github.com/fishfolk/bones" }
+bones_wgpu_renderer = { path = "../bones/framework_crates/bones_wgpu_renderer" }
 bevy_tasks          = "0.11"
 bitflags            = "2.4"
 turborand           = { version = "0.10.0", features = ["atomic"] }
 tracing             = "0.1.37"
 puffin              = { version = "0.17.0", features = ["web"] }
-puffin_egui         = "0.23.0"
+# Latest puffin-egui that uses egui 0.31
+puffin_egui         = { git = "https://github.com/EmbarkStudios/puffin", rev = "b2e556eb6079b9e58d9600f72eefdebeb64e943b" }
 petgraph            = "0.6.4"
 rapier2d = { version = "0.19.0", features = [
     "debug-render",
@@ -39,7 +41,7 @@ async-channel = "1.9.0"
 serde_yaml = "0.9.25"
 thiserror = "1.0.48"
 peg = "0.8.1"
-egui_extras = { version = "0.23.0", default-features = false }
+egui_extras = { version = "0.31", default-features = false }
 shadow-rs = { version = "0.25.0", default-features = false }
 postcard = { version = "1.0", default-features = false, features = ["alloc"] }
 strum = { version = "0.25.0", features = ["derive"] }

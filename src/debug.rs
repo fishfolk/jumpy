@@ -7,11 +7,12 @@ use bones_framework::debug::frame_time_diagnostics_plugin;
 use bones_framework::networking::debug::network_debug_window;
 
 pub fn game_plugin(game: &mut Game) {
-    game.sessions.create_with(SessionNames::DEBUG, |builder| {
-        builder
-            .install_plugin(session_plugin)
-            .install_plugin(frame_time_diagnostics_plugin);
-    });
+    game.sessions
+        .create_with(SessionNames::DEBUG, |builder: &mut SessionBuilder| {
+            builder
+                .install_plugin(session_plugin)
+                .install_plugin(frame_time_diagnostics_plugin);
+        });
 }
 
 fn session_plugin(session: &mut SessionBuilder) {

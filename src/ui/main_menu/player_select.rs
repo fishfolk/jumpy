@@ -444,8 +444,7 @@ pub fn widget(
                 let back_button =
                     BorderedButton::themed(normal_button_style, localization.get("back"))
                         .min_size(button_min_size)
-                        .show(ui)
-                        .focus_by_default(ui);
+                        .show(ui);
 
                 if back_button.clicked()
                     || (ready_players == 0
@@ -477,7 +476,10 @@ pub fn widget(
 
                 if !controls.values().any(|x| x.menu_back_just_pressed)
                     && (continue_button.clicked()
-                        || (controls.values().any(|x| x.menu_start_just_pressed) && may_continue))
+                        || (controls
+                            .values()
+                            .any(|x| x.menu_start_just_pressed || x.menu_confirm_just_pressed)
+                            && may_continue))
                 {
                     ui.ctx()
                         .set_state(MenuPage::MapSelect { is_waiting: false });

@@ -30,9 +30,10 @@ fn collect_player_controls(game: &mut Game) {
         let Some(mapping) = game.shared_resource::<PlayerControlMapping>() else {
             break 'controls default();
         };
+        let mouse = game.shared_resource::<MouseInputs>().unwrap();
         let keyboard = game.shared_resource::<KeyboardInputs>().unwrap();
         let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
-        collector.apply_inputs(&mapping, &keyboard, &gamepad);
+        collector.apply_inputs(&mapping, &mouse, &keyboard, &gamepad);
         collector.update_just_pressed();
         collector.advance_frame();
         GlobalPlayerControls(
@@ -82,6 +83,7 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
                 pressed: true,
                 repeat: false,
                 modifiers: default(),
+                physical_key: None,
             });
         };
 
@@ -290,6 +292,7 @@ impl<'a>
     fn apply_inputs(
         &mut self,
         mapping: &PlayerControlMapping,
+        _mouse: &MouseInputs,
         keyboard: &KeyboardInputs,
         gamepad: &GamepadInputs,
     ) {

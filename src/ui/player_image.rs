@@ -47,8 +47,9 @@ pub fn player_image(
             max: egui::pos2(uv_max.x, uv_max.y),
         };
 
+        let texture_id = egui_textures.0.get(&atlas.image).unwrap().id();
         let mut mesh = egui::Mesh {
-            texture_id: *egui_textures.0.get(&atlas.image).unwrap(),
+            texture_id,
             ..default()
         };
 
@@ -78,8 +79,9 @@ pub fn player_image(
             max: egui::pos2(uv_max.x, uv_max.y),
         };
 
+        let texture_id = egui_textures.0.get(&atlas.image).unwrap().id();
         let mut mesh = egui::Mesh {
-            texture_id: *egui_textures.0.get(&atlas.image).unwrap(),
+            texture_id,
             ..default()
         };
 
@@ -107,8 +109,9 @@ pub fn player_image(
             max: egui::pos2(uv_max.x, uv_max.y),
         };
 
+        let texture_id = egui_textures.0.get(&atlas.image).unwrap().id();
         let mut mesh = egui::Mesh {
-            texture_id: *egui_textures.0.get(&atlas.image).unwrap(),
+            texture_id,
             ..default()
         };
 

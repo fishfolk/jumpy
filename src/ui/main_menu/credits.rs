@@ -69,7 +69,7 @@ pub fn widget(
     localization: Localization<GameMeta>,
     input: Res<GlobalPlayerControls>,
 ) {
-    let outer_margin = egui::style::Margin::symmetric(
+    let outer_margin = egui::epaint::Marginf::symmetric(
         ui.available_width() * 0.1,
         meta.theme.font_styles.bigger.size,
     );

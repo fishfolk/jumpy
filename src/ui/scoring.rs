@@ -182,7 +182,7 @@ fn scoring_menu_system(
         }
 
         egui::CentralPanel::default()
-            .frame(egui::Frame::none())
+            .frame(egui::Frame::NONE)
             .show(&ctx, |ui| {
                 let screen_rect = ui.max_rect();
 
@@ -195,7 +195,7 @@ fn scoring_menu_system(
 
                 // x margin is dynamic, y margin percentage of screen
                 let outer_margin =
-                    egui::style::Margin::symmetric(x_margin, screen_rect.height() * 0.2);
+                    egui::epaint::Marginf::symmetric(x_margin, screen_rect.height() * 0.2);
 
                 ui.vertical_centered(|ui| {
                     BorderedFrame::new(&meta.theme.panel.border)

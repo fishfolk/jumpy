@@ -57,7 +57,7 @@ pub fn widget(
 
     // Calculate a margin
     let outer_margin = screen_rect.size() * 0.10;
-    let outer_margin = egui::Margin {
+    let outer_margin = egui::epaint::Marginf {
         left: outer_margin.x,
         right: outer_margin.x,
         // Make top and bottom margins smaller

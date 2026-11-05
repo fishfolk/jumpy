@@ -472,13 +472,15 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
                     node,
                     above3l2,
                     NavGraphEdge {
-                        inputs: std::iter::repeat(PlayerControl {
-                            move_direction: vec2(-1.0, 0.0),
-                            jump_just_pressed: true,
-                            jump_pressed: true,
-                            ..default()
-                        })
-                        .take(20)
+                        inputs: std::iter::repeat_n(
+                            PlayerControl {
+                                move_direction: vec2(-1.0, 0.0),
+                                jump_just_pressed: true,
+                                jump_pressed: true,
+                                ..default()
+                            },
+                            20,
+                        )
                         .collect(),
                         distance: node.distance(&above3l2),
                     },
@@ -496,13 +498,15 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
                     node,
                     above3l3,
                     NavGraphEdge {
-                        inputs: std::iter::repeat(PlayerControl {
-                            move_direction: vec2(-1.0, 0.0),
-                            jump_just_pressed: true,
-                            jump_pressed: true,
-                            ..default()
-                        })
-                        .take(20)
+                        inputs: std::iter::repeat_n(
+                            PlayerControl {
+                                move_direction: vec2(-1.0, 0.0),
+                                jump_just_pressed: true,
+                                jump_pressed: true,
+                                ..default()
+                            },
+                            20,
+                        )
                         .collect(),
                         distance: node.distance(&above3l3),
                     },
@@ -519,13 +523,15 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
                     node,
                     above3r2,
                     NavGraphEdge {
-                        inputs: std::iter::repeat(PlayerControl {
-                            move_direction: vec2(1.0, 0.0),
-                            jump_just_pressed: true,
-                            jump_pressed: true,
-                            ..default()
-                        })
-                        .take(20)
+                        inputs: std::iter::repeat_n(
+                            PlayerControl {
+                                move_direction: vec2(1.0, 0.0),
+                                jump_just_pressed: true,
+                                jump_pressed: true,
+                                ..default()
+                            },
+                            20,
+                        )
                         .collect(),
                         distance: node.distance(&above3r2),
                     },
@@ -543,13 +549,15 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
                     node,
                     above3r3,
                     NavGraphEdge {
-                        inputs: std::iter::repeat(PlayerControl {
-                            move_direction: vec2(1.0, 0.0),
-                            jump_just_pressed: true,
-                            jump_pressed: true,
-                            ..default()
-                        })
-                        .take(20)
+                        inputs: std::iter::repeat_n(
+                            PlayerControl {
+                                move_direction: vec2(1.0, 0.0),
+                                jump_just_pressed: true,
+                                jump_pressed: true,
+                                ..default()
+                            },
+                            20,
+                        )
                         .collect(),
                         distance: node.distance(&above3r3),
                     },
@@ -708,12 +716,14 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
                 node,
                 far_right_below,
                 NavGraphEdge {
-                    inputs: std::iter::repeat(PlayerControl {
-                        move_direction: vec2(1.0, 0.0),
-                        jump_pressed: true,
-                        ..default()
-                    })
-                    .take(20)
+                    inputs: std::iter::repeat_n(
+                        PlayerControl {
+                            move_direction: vec2(1.0, 0.0),
+                            jump_pressed: true,
+                            ..default()
+                        },
+                        20,
+                    )
                     .collect(),
                     // Bias against using this move because it doesn't always work, by adding an
                     // extra distance.
@@ -735,12 +745,14 @@ fn create_nav_graph(meta: &MapMeta) -> Arc<NavGraphInner> {
                 node,
                 far_left_below,
                 NavGraphEdge {
-                    inputs: std::iter::repeat(PlayerControl {
-                        move_direction: vec2(-1.0, 0.0),
-                        jump_pressed: true,
-                        ..default()
-                    })
-                    .take(20)
+                    inputs: std::iter::repeat_n(
+                        PlayerControl {
+                            move_direction: vec2(-1.0, 0.0),
+                            jump_pressed: true,
+                            ..default()
+                        },
+                        20,
+                    )
                     .collect(),
                     // Bias against using this move because it doesn't always work, by adding an
                     // extra distance.

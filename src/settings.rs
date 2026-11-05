@@ -10,11 +10,11 @@ pub fn game_plugin(game: &mut Game) {
 /// Startup system to load the game settings or use the default settings specified in the game meta.
 fn load_settings(game: &mut Game) {
     let default_settings = {
-        let assets = game.shared_resource::<AssetServer>().unwrap();
+        let assets = game.shared_resource::<AssetServer>();
         let settings = &assets.root::<GameMeta>().default_settings;
         settings.clone()
     };
-    let mut storage = game.shared_resource_mut::<Storage>().unwrap();
+    let mut storage = game.shared_resource_mut::<Storage>();
     if storage.get::<Settings>().is_none() {
         storage.insert(default_settings);
     }

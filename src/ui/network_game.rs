@@ -10,6 +10,9 @@ use super::main_menu::MenuPage;
 const GAME_ID: &str = "jumpy";
 const LAN_SERVICE_TYPE: &str = "_jumpy._udp.local.";
 
+/// The jumpy mdns service type for lan games.
+const JUMPY_LAN_SERVICE_TYPE: &str = "_jumpy._udp.local.";
+
 #[derive(Clone, Debug, Default)]
 pub enum NetworkGameAction {
     #[default]

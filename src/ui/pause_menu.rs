@@ -42,7 +42,7 @@ fn pause_menu_system(
         let is_online = session
             .world
             .get_resource::<SyncingInfo>()
-            .map_or(false, |x| x.is_online());
+            .is_some_and(|x| x.is_online());
 
         #[cfg(target_arch = "wasm32")]
         let is_online = false;

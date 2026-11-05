@@ -3,8 +3,6 @@ use crate::{
     settings::{InputKind, PlayerControlMapping, Settings},
 };
 
-#[cfg(not(target_arch = "wasm32"))]
-use bones_framework::networking::{input::NetworkPlayerControl, proto::DenseMoveDirection};
 use strum::EnumIter;
 
 pub fn game_plugin(game: &mut Game) {
@@ -18,7 +16,7 @@ pub fn game_plugin(game: &mut Game) {
 // collector.
 fn load_controler_mapping(game: &mut Game) {
     let control_mapping = {
-        let storage = game.shared_resource::<Storage>().unwrap();
+        let storage = game.shared_resource::<Storage>();
         storage.get::<Settings>().unwrap().player_controls.clone()
     };
     game.insert_shared_resource(control_mapping);
@@ -26,8 +24,8 @@ fn load_controler_mapping(game: &mut Game) {
 
 fn collect_player_controls(game: &mut Game) {
     let controls = 'controls: {
-        let mut collector = game.shared_resource_mut::<PlayerInputCollector>().unwrap();
-        let Some(mapping) = game.shared_resource::<PlayerControlMapping>() else {
+        let mut collector = game.shared_resource_mut::<PlayerInputCollector>();
+        let Some(mapping) = game.get_shared_resource::<PlayerControlMapping>() else {
             break 'controls default();
         };
         let mouse = game.shared_resource::<MouseInputs>().unwrap();
@@ -64,7 +62,7 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
     // available immediately to egui, and then available to the rest of the systems that run after.
     collect_player_controls(game);
 
-    let ctx = game.shared_resource::<EguiCtx>().unwrap();
+    let ctx = game.shared_resource::<EguiCtx>();
     let settings = ctx.get_state::<EguiInputSettings>();
     let events = &mut egui_input.events;
 
@@ -75,7 +73,7 @@ pub fn handle_egui_input(game: &mut Game, egui_input: &mut egui::RawInput) {
 
     // Forward gamepad events to egui if not disabled.
     if !settings.disable_gamepad_input {
-        let controls = game.shared_resource::<GlobalPlayerControls>().unwrap();
+        let controls = game.shared_resource::<GlobalPlayerControls>();
 
         let push_key = |events: &mut Vec<egui::Event>, key| {
             events.push(egui::Event::Key {
@@ -187,6 +185,8 @@ pub struct PlayerControl {
 
 #[derive(HasSchema, Clone)]
 pub struct PlayerInputCollector {
+    /// The local player's [`ControlSource`] in an online / lan game.
+    control_source: ControlSource,
     current_controls: HashMap<ControlSource, PlayerControl>,
     last_controls: HashMap<ControlSource, PlayerControl>,
 }
@@ -210,16 +210,14 @@ impl Default for PlayerInputCollector {
             m
         };
         Self {
+            control_source: ControlSource::Keyboard1,
             current_controls: def_controls(),
             last_controls: def_controls(),
         }
     }
 }
 
-impl<'a>
-    bones_framework::input::InputCollector<'a, PlayerControlMapping, ControlSource, PlayerControl>
-    for PlayerInputCollector
-{
+impl<'a> bones_framework::input::InputCollector<'a, PlayerControl> for PlayerInputCollector {
     fn update_just_pressed(&mut self) {
         self.current_controls
             .iter_mut()
@@ -289,7 +287,40 @@ impl<'a>
 
     /// Update the internal state with new inputs. This must be called every render frame with the
     /// input events.
-    fn apply_inputs(
+    fn apply_inputs(&mut self, world: &World) {
+        let keyboard = world.resource::<KeyboardInputs>();
+        let gamepad = world.resource::<GamepadInputs>();
+        let mapping = world.resource::<PlayerControlMapping>();
+        self.apply_inputs_inner(&mapping, &keyboard, &gamepad);
+
+        #[cfg(not(target_arch = "wasm32"))]
+        // Get the first local player control source which should be the only
+        // local player in an online game.
+        if let Some(user_control_source) = world
+            .resource::<MatchInputs>()
+            .players
+            .iter()
+            .find_map(|player| player.control_source)
+        {
+            // `self.control_source` is only used in online / lan games to
+            // tell the `GgrsSessionRunner` which controls to grab for the
+            // one local player via `InputCollecter::get_control`.
+            self.control_source = user_control_source;
+
+            // `apply_inputs` is called before `get_control` so this will
+            // always update the source in time.
+        } else {
+            panic!("no local player control source")
+        }
+    }
+
+    fn get_control(&self) -> &PlayerControl {
+        self.current_controls.get(&self.control_source).unwrap()
+    }
+}
+
+impl PlayerInputCollector {
+    fn apply_inputs_inner(
         &mut self,
         mapping: &PlayerControlMapping,
         _mouse: &MouseInputs,
@@ -407,15 +438,10 @@ impl<'a>
             }
         }
     }
-
-    // TODO: Fix bones Trait definition, player_idx not relevant
-    fn get_control(&self, _player_idx: usize, control_source: ControlSource) -> &PlayerControl {
-        self.current_controls.get(&control_source).unwrap()
-    }
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-impl NetworkPlayerControl<DensePlayerControl> for PlayerControl {
+impl DenseControl<DensePlayerControl> for PlayerControl {
     fn get_dense_input(&self) -> DensePlayerControl {
         let mut dense_control = DensePlayerControl::default();
         dense_control.set_jump_pressed(self.jump_pressed);
@@ -465,7 +491,7 @@ bitfield::bitfield! {
     pub grab_pressed, set_grab_pressed: 2;
     pub slide_pressed, set_slide_pressed: 3;
     pub ragdoll_pressed, set_ragdoll_pressed: 4;
-    pub from into DenseMoveDirection, move_direction, set_move_direction: 16, 5;
+    pub from into proto::DenseMoveDirection, move_direction, set_move_direction: 16, 5;
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -482,9 +508,9 @@ impl Default for DensePlayerControl {
 pub struct NetworkInputConfig;
 
 #[cfg(not(target_arch = "wasm32"))]
-impl<'a> bones_framework::networking::input::NetworkInputConfig<'a> for NetworkInputConfig {
+impl<'a> DenseInputConfig<'a> for NetworkInputConfig {
     type Dense = DensePlayerControl;
     type Control = PlayerControl;
-    type PlayerControls = MatchInputs;
+    type Controls = MatchInputs;
     type InputCollector = PlayerInputCollector;
 }

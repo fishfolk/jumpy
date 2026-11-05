@@ -14,7 +14,7 @@ fn update_fullscreen(game: &mut Game) {
         let mut storage = storage.borrow_mut().unwrap();
         let window = game.shared_resource_cell::<Window>().unwrap();
         let mut window = window.borrow_mut().unwrap();
-        let keyboard = game.shared_resource::<KeyboardInputs>().unwrap();
+        let keyboard = game.shared_resource::<KeyboardInputs>();
 
         let f11_pressed = keyboard
             .key_events

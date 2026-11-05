@@ -2,7 +2,7 @@
 
 use std::array;
 
-use bones_framework::input::PlayerControls;
+use bones_framework::input::Controls;
 
 use crate::{prelude::*, MAX_PLAYERS};
 
@@ -15,7 +15,11 @@ pub fn install(session: &mut SessionBuilder) {
 pub struct MatchInputs {
     pub players: [PlayerInput; MAX_PLAYERS as usize],
 }
-
+impl MatchInputs {
+    pub fn get_control_source(&self, player_idx: usize) -> Option<ControlSource> {
+        self.players.get(player_idx).unwrap().control_source
+    }
+}
 impl Default for MatchInputs {
     fn default() -> Self {
         Self {
@@ -23,25 +27,7 @@ impl Default for MatchInputs {
         }
     }
 }
-
-impl PlayerControls<'_, PlayerControl> for MatchInputs {
-    type ControlSource = ControlSource;
-    type ControlMapping = PlayerControlMapping;
-    type InputCollector = PlayerInputCollector;
-
-    fn update_controls(&mut self, collector: &mut PlayerInputCollector) {
-        (0..MAX_PLAYERS as usize).for_each(|i| {
-            let player_input = &mut self.players[i];
-            if let Some(source) = &player_input.control_source {
-                player_input.control = *collector.get_control(i, *source);
-            }
-        });
-    }
-
-    fn get_control_source(&self, player_idx: usize) -> Option<ControlSource> {
-        self.players.get(player_idx).unwrap().control_source
-    }
-
+impl Controls<'_, PlayerControl> for MatchInputs {
     fn get_control(&self, player_idx: usize) -> &PlayerControl {
         &self.players.get(player_idx).unwrap().control
     }

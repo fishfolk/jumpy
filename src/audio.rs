@@ -7,16 +7,10 @@ pub use music::*;
 pub fn game_plugin(game: &mut Game) {
     game.init_shared_resource::<AudioCenter>();
 
-    let modified_session = game.sessions.modify_and_replace_existing_session(
-        SessionNames::AUDIO,
-        |session: &mut SessionBuilder| {
-            session.stages().add_system_to_stage(First, music_system);
-        },
-    );
-
-    if modified_session.is_none() {
+    let Some(session) = game.sessions.get_mut(SessionNames::AUDIO) else {
         panic!("Audio plugin failed to find existing bones audio session, make sure jumpy audio plugin is installed after bones default plugins.")
-    }
+    };
+    session.stages.add_system_to_stage(First, music_system);
 }
 
 /// Extension of bones [`AudioCenter`].

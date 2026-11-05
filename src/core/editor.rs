@@ -81,11 +81,7 @@ impl<'a> MapManager<'a> {
         );
         self.tile_layers.insert(
             entity,
-            TileLayer::new(
-                self.spawned_map_meta.grid_size,
-                self.spawned_map_meta.tile_size,
-                default(),
-            ),
+            TileLayer::new(self.spawned_map_meta.grid_size, default()),
         );
         self.transforms.insert(
             entity,

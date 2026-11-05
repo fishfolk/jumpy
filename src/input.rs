@@ -28,10 +28,10 @@ fn collect_player_controls(game: &mut Game) {
         let Some(mapping) = game.get_shared_resource::<PlayerControlMapping>() else {
             break 'controls default();
         };
-        let mouse = game.shared_resource::<MouseInputs>().unwrap();
-        let keyboard = game.shared_resource::<KeyboardInputs>().unwrap();
-        let gamepad = game.shared_resource::<GamepadInputs>().unwrap();
-        collector.apply_inputs(&mapping, &mouse, &keyboard, &gamepad);
+        let mouse = game.shared_resource::<MouseInputs>();
+        let keyboard = game.shared_resource::<KeyboardInputs>();
+        let gamepad = game.shared_resource::<GamepadInputs>();
+        collector.apply_inputs_inner(&mapping, &mouse, &keyboard, &gamepad);
         collector.update_just_pressed();
         collector.advance_frame();
         GlobalPlayerControls(
@@ -217,8 +217,8 @@ impl Default for PlayerInputCollector {
     }
 }
 
-impl<'a> bones_framework::input::InputCollector<'a, PlayerControl> for PlayerInputCollector {
-    fn update_just_pressed(&mut self) {
+impl PlayerInputCollector {
+    pub fn update_just_pressed(&mut self) {
         self.current_controls
             .iter_mut()
             .for_each(|(source, current)| {
@@ -281,17 +281,18 @@ impl<'a> bones_framework::input::InputCollector<'a, PlayerControl> for PlayerInp
             });
     }
 
-    fn advance_frame(&mut self) {
+    pub fn advance_frame(&mut self) {
         self.last_controls = self.current_controls.clone();
     }
 
     /// Update the internal state with new inputs. This must be called every render frame with the
     /// input events.
-    fn apply_inputs(&mut self, world: &World) {
+    pub fn apply_inputs(&mut self, world: &World) {
+        let mouse = world.resource::<MouseInputs>();
         let keyboard = world.resource::<KeyboardInputs>();
         let gamepad = world.resource::<GamepadInputs>();
         let mapping = world.resource::<PlayerControlMapping>();
-        self.apply_inputs_inner(&mapping, &keyboard, &gamepad);
+        self.apply_inputs_inner(&mapping, &mouse, &keyboard, &gamepad);
 
         #[cfg(not(target_arch = "wasm32"))]
         // Get the first local player control source which should be the only
@@ -314,8 +315,23 @@ impl<'a> bones_framework::input::InputCollector<'a, PlayerControl> for PlayerInp
         }
     }
 
-    fn get_control(&self) -> &PlayerControl {
+    pub fn get_control(&self) -> &PlayerControl {
         self.current_controls.get(&self.control_source).unwrap()
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl<'a> bones_framework::input::InputCollector<'a, DensePlayerControl> for PlayerInputCollector {
+    fn apply_inputs(&mut self, world: &World) {
+        PlayerInputCollector::apply_inputs(self, world);
+    }
+
+    fn advance_frame(&mut self) {
+        PlayerInputCollector::advance_frame(self);
+    }
+
+    fn get_state(&self) -> DensePlayerControl {
+        self.get_control().get_dense_input()
     }
 }
 
@@ -436,13 +452,16 @@ impl PlayerInputCollector {
             if let Some(down) = merge_inputs(&mapping.movement.down, &mapping.movement_alt.down) {
                 control.down = down;
             }
+
+            control.move_direction = vec2(control.right - control.left, control.up - control.down);
+            control.moving = control.move_direction.length_squared() > 0.01;
         }
     }
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-impl DenseControl<DensePlayerControl> for PlayerControl {
-    fn get_dense_input(&self) -> DensePlayerControl {
+impl PlayerControl {
+    pub fn get_dense_input(&self) -> DensePlayerControl {
         let mut dense_control = DensePlayerControl::default();
         dense_control.set_jump_pressed(self.jump_pressed);
         dense_control.set_grab_pressed(self.grab_pressed);
@@ -452,7 +471,10 @@ impl DenseControl<DensePlayerControl> for PlayerControl {
         dense_control.set_move_direction(proto::DenseMoveDirection(self.move_direction));
         dense_control
     }
+}
 
+#[cfg(not(target_arch = "wasm32"))]
+impl DenseControl<DensePlayerControl> for PlayerControl {
     fn update_from_dense(&mut self, new_control: &DensePlayerControl) {
         let jump_pressed = new_control.jump_pressed();
         self.jump_just_pressed = jump_pressed && !self.jump_pressed;

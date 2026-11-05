@@ -64,16 +64,18 @@ fn debug_menu(
         .open(show_menu)
         .show(&ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.set_enabled(game_session.is_some());
+                if game_session.is_none() {
+                    ui.disable();
+                }
 
                 if ui.button(localization.get("take-snapshot")).clicked() {
                     if let Some(session) = game_session {
-                        *snapshot = Some(session.snapshot());
+                        *snapshot = Some(session.world.clone());
                     }
                 } else if ui.button(localization.get("restore-snapshot")).clicked() {
                     if let Some(session) = game_session {
                         if let Some(mut snapshot) = snapshot.clone() {
-                            session.restore(&mut snapshot);
+                            std::mem::swap(&mut session.world, &mut snapshot);
                         }
                     }
                 }

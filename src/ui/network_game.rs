@@ -343,8 +343,7 @@ pub fn network_game_menu(
                                 service_name,
                                 player_count,
                             } => {
-                                ui.scope(|ui| {
-                                    ui.set_enabled(*status != NetworkGameStatus::Hosting);
+                                ui.add_enabled_ui(*status != NetworkGameStatus::Hosting, |ui| {
                                     ui.horizontal(|ui| {
                                         ui.label(
                                             normal_text_style.rich(
@@ -362,8 +361,7 @@ pub fn network_game_menu(
                                             normal_text_style.rich(localization.get("player-count"))
                                         );
                                         ui.add_space(normal_text_style.size);
-                                        ui.scope(|ui| {
-                                            ui.set_enabled(*player_count > 2);
+                                        ui.add_enabled_ui(*player_count > 2, |ui| {
                                             if BorderedButton::themed(small_button_style, "-")
                                                 .min_size(vec2(normal_text_style.size * 2.0, 0.0))
                                                 .show(ui)
@@ -375,8 +373,7 @@ pub fn network_game_menu(
                                             }
                                         });
                                         ui.label(normal_text_style.rich(player_count.to_string()));
-                                        ui.scope(|ui| {
-                                            ui.set_enabled(*player_count < MAX_PLAYERS);
+                                        ui.add_enabled_ui(*player_count < MAX_PLAYERS, |ui| {
                                             if BorderedButton::themed(small_button_style, "+")
                                           .min_size(vec2(normal_text_style.size * 2.0, 0.0))
                                                 .show(ui)
@@ -463,13 +460,14 @@ pub fn network_game_menu(
                             }
 
                             ui.horizontal(|ui| {
-                                ui.set_enabled(*status == NetworkGameStatus::Idle);
+                                if *status != NetworkGameStatus::Idle {
+                                    ui.disable();
+                                }
                                 ui.label(
                                     normal_text_style.rich(localization.get("player-count"))
                                 );
 
-                                ui.scope(|ui| {
-                                    ui.set_enabled(*player_count > 2);
+                                ui.add_enabled_ui(*player_count > 2, |ui| {
                                     if BorderedButton::themed(small_button_style, "-")
                                         .min_size(vec2(normal_text_style.size * 2.0, 0.0))
                                         .show(ui)
@@ -480,8 +478,7 @@ pub fn network_game_menu(
                                     }
                                 });
                                 ui.label(normal_text_style.rich(player_count.to_string()));
-                                ui.scope(|ui| {
-                                    ui.set_enabled(*player_count < MAX_PLAYERS);
+                                ui.add_enabled_ui(*player_count < MAX_PLAYERS, |ui| {
                                     if BorderedButton::themed(small_button_style, "+")
                                         .min_size(vec2(normal_text_style.size * 2.0, 0.0))
                                         .show(ui)

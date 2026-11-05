@@ -76,7 +76,9 @@ pub fn widget(
         .padding(meta.theme.panel.padding)
         .show(ui, |ui| {
             // Disable all the buttons if we are currently binding an input
-            ui.set_enabled(state.currently_binding_input_idx.is_none());
+            if state.currently_binding_input_idx.is_some() {
+                ui.disable();
+            }
 
             ui.vertical_centered(|ui| {
                 // Settings Heading

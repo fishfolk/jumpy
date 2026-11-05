@@ -27,6 +27,7 @@ mod prelude {
         audio::*, core::prelude::*, impl_system_param, input::*, sessions::*, settings::*, GameMeta,
     };
     pub use bones_framework::prelude::*;
+    pub type SessionBuilder = Session;
     pub use once_cell::sync::Lazy;
     pub use serde::{Deserialize, Serialize};
     pub use std::{sync::Arc, time::Duration};

@@ -27,7 +27,7 @@ pub fn session_plugin(session: &mut SessionBuilder) {
     session
         // Install the default bones_framework plugin for this session
         .install_plugin(DefaultSessionPlugin)
-        .add_startup_system(setup_menu)
+        .add_system_to_stage(CoreStage::Startup, setup_menu)
         // Add our menu system to the update stage
         .add_system_to_stage(Update, main_menu_system);
 }

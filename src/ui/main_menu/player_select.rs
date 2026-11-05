@@ -465,9 +465,7 @@ pub fn widget(
 
                 // Continue button
                 let continue_button = ui
-                    .scope(|ui| {
-                        ui.set_enabled(may_continue);
-
+                    .add_enabled_ui(may_continue, |ui| {
                         BorderedButton::themed(normal_button_style, localization.get("continue"))
                             .min_size(button_min_size)
                             .show(ui)

@@ -217,6 +217,7 @@ fn main() {
             .into(),
         custom_load_progress: Some(Box::new(load_progress)),
         preload: true,
+        ..Default::default()
     }
     //.app()
     .run();

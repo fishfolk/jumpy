@@ -1383,10 +1383,20 @@ impl<'a> CollisionWorld<'a> {
     #[allow(unused)]
     pub fn tile_collision_point(&self, pos: Vec2) -> TileCollisionKind {
         let tile_size = self.spawned_map_meta.tile_size;
-        for (entity, tile_layer) in self.entities.iter_with(&self.tile_layers) {
-            let x = (pos.x / tile_size.y).floor() as u32;
-            let y = (pos.y / tile_size.x).floor() as u32;
-            let tile_entity = tile_layer.get(UVec2::new(x, y));
+        if !pos.is_finite()
+            || !tile_size.is_finite()
+            || pos.x < 0.0
+            || pos.y < 0.0
+            || tile_size.x <= 0.0
+            || tile_size.y <= 0.0
+        {
+            return TileCollisionKind::Empty;
+        }
+        let x = (pos.x / tile_size.x).floor() as u32;
+        let y = (pos.y / tile_size.y).floor() as u32;
+        let grid_pos = UVec2::new(x, y);
+        for (_entity, tile_layer) in self.entities.iter_with(&self.tile_layers) {
+            let tile_entity = tile_layer.try_get(grid_pos);
             if let Some(tile_entity) = tile_entity {
                 return self
                     .tile_collision_kinds

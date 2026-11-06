@@ -198,7 +198,10 @@ impl<'a> MapManager<'a> {
             .iter_with((&mut self.tile_layers, &self.spawned_map_layer_metas))
             .find(|x| x.1 .1.layer_idx == layer_index)
         {
-            if let Some(entity) = tile_layer.get(position) {
+            if tile_layer.try_index(position).is_none() {
+                return;
+            }
+            if let Some(entity) = tile_layer.try_get(position) {
                 if let Some(idx) = tilemap_tile_index.as_ref() {
                     self.tiles.get_mut(entity).unwrap().idx = *idx;
 

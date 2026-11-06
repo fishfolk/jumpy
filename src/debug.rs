@@ -35,6 +35,8 @@ struct DebugMenuState {
 fn debug_menu(
     mut sessions: ResMut<Sessions>,
     keyboard_inputs: Res<KeyboardInputs>,
+    mouse_world_pos: Res<MouseWorldPosition>,
+    mouse_screen_pos: Res<MouseScreenPosition>,
     mut state: ResMutInit<DebugMenuState>,
     ctx: ResMut<EguiCtx>,
     localization: Localization<GameMeta>,
@@ -63,6 +65,20 @@ fn debug_menu(
         .id(egui::Id::from("debug"))
         .open(show_menu)
         .show(&ctx, |ui| {
+            ui.horizontal(|ui| {
+                if let Some(pos) = mouse_world_pos.0 {
+                    ui.label(format!("Mouse World: ({:.1}, {:.1})", pos.x, pos.y));
+                } else {
+                    ui.label("Mouse World: None");
+                }
+
+                if let Some(pos) = mouse_screen_pos.0 {
+                    ui.label(format!("Mouse Screen: ({:.1}, {:.1})", pos.x, pos.y));
+                } else {
+                    ui.label("Mouse Screen: None");
+                }
+            });
+
             ui.horizontal(|ui| {
                 if game_session.is_none() {
                     ui.disable();

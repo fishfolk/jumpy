@@ -9,8 +9,8 @@
 #![allow(ambiguous_glob_reexports)]
 #![doc = include_str!("./README.md")]
 
-use bones_bevy_renderer::BonesBevyRenderer;
 use bones_framework::prelude::*;
+use bones_wgpu_renderer::BonesWgpuRenderer;
 
 pub mod audio;
 pub mod core;
@@ -27,6 +27,7 @@ mod prelude {
         audio::*, core::prelude::*, impl_system_param, input::*, sessions::*, settings::*, GameMeta,
     };
     pub use bones_framework::prelude::*;
+    pub type SessionBuilder = Session;
     pub use once_cell::sync::Lazy;
     pub use serde::{Deserialize, Serialize};
     pub use std::{sync::Arc, time::Duration};
@@ -199,7 +200,7 @@ fn main() {
     );
 
     // Create a bevy renderer for the bones game and run it.
-    BonesBevyRenderer {
+    BonesWgpuRenderer {
         game,
         pixel_art: true,
         game_version: Version::new(
@@ -216,8 +217,9 @@ fn main() {
             .into(),
         custom_load_progress: Some(Box::new(load_progress)),
         preload: true,
+        ..Default::default()
     }
-    .app()
+    //.app()
     .run();
 }
 

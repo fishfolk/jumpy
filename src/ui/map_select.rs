@@ -29,13 +29,14 @@ pub fn map_select_menu(
     }
 
     egui::CentralPanel::default()
-        .frame(egui::Frame::none())
+        .frame(egui::Frame::NONE)
         .show(&ctx, |ui| {
             let screen_rect = ui.max_rect();
 
             let pause_menu_width = meta.main_menu.menu_width;
             let x_margin = (screen_rect.width() - pause_menu_width) / 2.0;
-            let outer_margin = egui::style::Margin::symmetric(x_margin, screen_rect.height() * 0.1);
+            let outer_margin =
+                egui::epaint::Marginf::symmetric(x_margin, screen_rect.height() * 0.1);
 
             BorderedFrame::new(&meta.theme.panel.border)
                 .margin(outer_margin)

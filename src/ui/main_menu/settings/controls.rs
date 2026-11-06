@@ -246,14 +246,14 @@ pub(super) fn widget(
                                     .auto_sized()
                                     .collapsible(false)
                                     .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
-                                    .frame(egui::Frame::none())
+                                    .frame(egui::Frame::NONE)
                                     .title_bar(false)
                                     .show(ui.ctx(), |ui| {
                                         let m = meta.theme.panel.border.border_size;
                                         let s = meta.theme.panel.border.scale;
                                         BorderedFrame::new(&meta.theme.panel.border)
                                             // Just enough padding to fit the frame's border image
-                                            .padding(egui::Margin {
+                                            .padding(egui::epaint::Marginf {
                                                 left: m.left * s,
                                                 right: m.right * s,
                                                 top: m.top * s,

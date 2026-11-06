@@ -299,6 +299,7 @@ impl_system_param! {
         tile_collision_kinds: Comp<'a, TileCollisionKind>,
         tile_dynamic_colliders: Comp<'a, TileDynamicCollider>,
         spawned_map_layer_metas: Comp<'a, SpawnedMapLayerMeta>,
+        spawned_map_meta: Res<'a, SpawnedMapMeta>,
     }
 }
 
@@ -907,14 +908,13 @@ impl<'a> CollisionWorld<'a> {
             collider_shape_cache,
             ..
         } = &mut *self.ctx;
+        let tile_size = self.spawned_map_meta.tile_size;
         for (_, (layer, meta)) in self
             .entities
             .iter_with((&self.tile_layers, &self.spawned_map_layer_metas))
         {
             let tile_shared_shape = collider_shape_cache
-                .shared_shape(ColliderShape::Rectangle {
-                    size: layer.tile_size,
-                })
+                .shared_shape(ColliderShape::Rectangle { size: tile_size })
                 .clone();
             for x in 0..layer.grid_size.x {
                 for y in 0..layer.grid_size.y {
@@ -926,8 +926,8 @@ impl<'a> CollisionWorld<'a> {
                     let Some(tile_ent) = layer.get(pos) else {
                         continue;
                     };
-                    let collider_x = x as f32 * layer.tile_size.x + layer.tile_size.x / 2.0;
-                    let collider_y = y as f32 * layer.tile_size.y + layer.tile_size.y / 2.0;
+                    let collider_x = x as f32 * tile_size.x + tile_size.x / 2.0;
+                    let collider_y = y as f32 * tile_size.y + tile_size.y / 2.0;
 
                     // Get dynamic collider if we have one
                     let dynamic_collider = self.tile_dynamic_colliders.get(tile_ent);
@@ -1382,12 +1382,21 @@ impl<'a> CollisionWorld<'a> {
     /// > perfectly lined up along the edge of a tile, but `tile_collision_point` won't.
     #[allow(unused)]
     pub fn tile_collision_point(&self, pos: Vec2) -> TileCollisionKind {
-        for (entity, tile_layer) in self.entities.iter_with(&self.tile_layers) {
-            let TileLayer { tile_size, .. } = tile_layer;
-
-            let x = (pos.x / tile_size.y).floor() as u32;
-            let y = (pos.y / tile_size.x).floor() as u32;
-            let tile_entity = tile_layer.get(UVec2::new(x, y));
+        let tile_size = self.spawned_map_meta.tile_size;
+        if !pos.is_finite()
+            || !tile_size.is_finite()
+            || pos.x < 0.0
+            || pos.y < 0.0
+            || tile_size.x <= 0.0
+            || tile_size.y <= 0.0
+        {
+            return TileCollisionKind::Empty;
+        }
+        let x = (pos.x / tile_size.x).floor() as u32;
+        let y = (pos.y / tile_size.y).floor() as u32;
+        let grid_pos = UVec2::new(x, y);
+        for (_entity, tile_layer) in self.entities.iter_with(&self.tile_layers) {
+            let tile_entity = tile_layer.try_get(grid_pos);
             if let Some(tile_entity) = tile_entity {
                 return self
                     .tile_collision_kinds

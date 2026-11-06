@@ -8,6 +8,7 @@ use super::main_menu::MenuPage;
 
 /// Game id for matchmaking
 const GAME_ID: &str = "jumpy";
+const LAN_SERVICE_TYPE: &str = "_jumpy._udp.local.";
 
 /// The jumpy mdns service type for lan games.
 const JUMPY_LAN_SERVICE_TYPE: &str = "_jumpy._udp.local.";
@@ -135,7 +136,7 @@ pub fn network_game_menu(
 
     // TODO CentralPanel ok?
     egui::CentralPanel::default()
-        .frame(egui::Frame::none())
+        .frame(egui::Frame::NONE)
         .show(&ctx, |ui| {
             ui.vertical_centered(|ui| {
                 ui.add_space(heading_text_style.size / 4.0);
@@ -150,7 +151,7 @@ pub fn network_game_menu(
 
             let available_size = ui.available_size();
             let x_margin = available_size.x / 4.0;
-            let outer_margin = egui::style::Margin::symmetric(x_margin, 0.0);
+            let outer_margin = egui::epaint::Marginf::symmetric(x_margin, 0.0);
 
             BorderedFrame::new(&meta.theme.panel.border)
                 .margin(outer_margin)
@@ -273,7 +274,12 @@ pub fn network_game_menu(
                                     lan::stop_server(&service_info);
                                     *status = NetworkGameStatus::Idle;
                                 }
-                                lan::prepare_to_join(JUMPY_LAN_SERVICE_TYPE, lan_servers, lan_service_discovery_recv, ping_update_timer);
+                                lan::prepare_to_join(
+                                    LAN_SERVICE_TYPE,
+                                    lan_servers,
+                                    lan_service_discovery_recv,
+                                    ping_update_timer,
+                                );
 
                                 if *status != NetworkGameStatus::Joining {
                                     ui.label(
@@ -337,8 +343,7 @@ pub fn network_game_menu(
                                 service_name,
                                 player_count,
                             } => {
-                                ui.scope(|ui| {
-                                    ui.set_enabled(*status != NetworkGameStatus::Hosting);
+                                ui.add_enabled_ui(*status != NetworkGameStatus::Hosting, |ui| {
                                     ui.horizontal(|ui| {
                                         ui.label(
                                             normal_text_style.rich(
@@ -356,8 +361,7 @@ pub fn network_game_menu(
                                             normal_text_style.rich(localization.get("player-count"))
                                         );
                                         ui.add_space(normal_text_style.size);
-                                        ui.scope(|ui| {
-                                            ui.set_enabled(*player_count > 2);
+                                        ui.add_enabled_ui(*player_count > 2, |ui| {
                                             if BorderedButton::themed(small_button_style, "-")
                                                 .min_size(vec2(normal_text_style.size * 2.0, 0.0))
                                                 .show(ui)
@@ -369,8 +373,7 @@ pub fn network_game_menu(
                                             }
                                         });
                                         ui.label(normal_text_style.rich(player_count.to_string()));
-                                        ui.scope(|ui| {
-                                            ui.set_enabled(*player_count < MAX_PLAYERS);
+                                        ui.add_enabled_ui(*player_count < MAX_PLAYERS, |ui| {
                                             if BorderedButton::themed(small_button_style, "+")
                                           .min_size(vec2(normal_text_style.size * 2.0, 0.0))
                                                 .show(ui)
@@ -387,7 +390,8 @@ pub fn network_game_menu(
                                 });
 
                                 let (is_recreated, service_info) = RUNTIME.block_on(async {
-                                    lan::prepare_to_host(host_info, JUMPY_LAN_SERVICE_TYPE, service_name).await
+                                    lan::prepare_to_host(host_info, LAN_SERVICE_TYPE, service_name)
+                                        .await
                                 });
                                 if is_recreated {
                                     *status = NetworkGameStatus::Idle;
@@ -456,13 +460,14 @@ pub fn network_game_menu(
                             }
 
                             ui.horizontal(|ui| {
-                                ui.set_enabled(*status == NetworkGameStatus::Idle);
+                                if *status != NetworkGameStatus::Idle {
+                                    ui.disable();
+                                }
                                 ui.label(
                                     normal_text_style.rich(localization.get("player-count"))
                                 );
 
-                                ui.scope(|ui| {
-                                    ui.set_enabled(*player_count > 2);
+                                ui.add_enabled_ui(*player_count > 2, |ui| {
                                     if BorderedButton::themed(small_button_style, "-")
                                         .min_size(vec2(normal_text_style.size * 2.0, 0.0))
                                         .show(ui)
@@ -473,8 +478,7 @@ pub fn network_game_menu(
                                     }
                                 });
                                 ui.label(normal_text_style.rich(player_count.to_string()));
-                                ui.scope(|ui| {
-                                    ui.set_enabled(*player_count < MAX_PLAYERS);
+                                ui.add_enabled_ui(*player_count < MAX_PLAYERS, |ui| {
                                     if BorderedButton::themed(small_button_style, "+")
                                         .min_size(vec2(normal_text_style.size * 2.0, 0.0))
                                         .show(ui)

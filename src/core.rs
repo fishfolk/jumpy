@@ -74,6 +74,9 @@ pub struct MatchPlayerInfo {
 impl SessionPlugin for MatchPlugin {
     fn install(self, session: &mut SessionBuilder) {
         session
+            .world
+            .insert_resource(LuaPlugins(self.plugins.clone()));
+        session
             .install_plugin(DefaultSessionPlugin)
             .install_plugin(LuaPluginLoaderSessionPlugin(self.plugins));
 
@@ -94,22 +97,23 @@ impl SessionPlugin for MatchPlugin {
         scoring::session_plugin(session);
 
         let current_map = self.maps.current_map;
-        session.insert_resource(self.maps);
+        session.world.insert_resource(self.maps);
 
         // Initialize LoadedMap on startup as we cannot access AssetServer during MatchPlugin install
         // to get map meta.
-        session.add_startup_system(
+        session.add_system_to_stage(
+            CoreStage::Startup,
             move |mut loaded_map: ResMutInit<LoadedMap>, assets: Res<AssetServer>| {
                 let map_meta = assets.get(current_map).clone();
                 *loaded_map = LoadedMap(Arc::new(map_meta))
             },
         );
 
-        session.insert_resource(MatchInputs {
+        session.world.insert_resource(MatchInputs {
             players: self.player_info,
         });
-        session.insert_resource(self.score);
-        session.set_session_runner(self.session_runner);
+        session.world.insert_resource(self.score);
+        session.runner = self.session_runner;
     }
 }
 
@@ -135,7 +139,7 @@ impl SessionRunner for JumpyDefaultMatchRunner {
         let mut run = || {
             // Advance the world time
             world
-                .resource_mut::<Time>()
+                .init_resource::<Time>()
                 .advance_exact(Duration::from_secs_f64(STEP));
 
             self.input_collector.update_just_pressed();

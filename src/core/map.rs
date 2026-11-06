@@ -228,7 +228,7 @@ fn spawn_map(
         let layer_z = z_depth_for_map_layer(layer_idx);
 
         if let Set(tilemap) = layer.tilemap {
-            let mut tile_layer = TileLayer::new(map.grid_size, map.tile_size, tilemap);
+            let mut tile_layer = TileLayer::new(map.grid_size, tilemap);
 
             for tile_meta in &layer.tiles {
                 let tile_ent = entities.create();

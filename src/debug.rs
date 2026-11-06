@@ -35,6 +35,8 @@ struct DebugMenuState {
 fn debug_menu(
     mut sessions: ResMut<Sessions>,
     keyboard_inputs: Res<KeyboardInputs>,
+    mouse_world_pos: Res<MouseWorldPosition>,
+    mouse_screen_pos: Res<MouseScreenPosition>,
     mut state: ResMutInit<DebugMenuState>,
     ctx: ResMut<EguiCtx>,
     localization: Localization<GameMeta>,
@@ -64,16 +66,32 @@ fn debug_menu(
         .open(show_menu)
         .show(&ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.set_enabled(game_session.is_some());
+                if let Some(pos) = mouse_world_pos.0 {
+                    ui.label(format!("Mouse World: ({:.1}, {:.1})", pos.x, pos.y));
+                } else {
+                    ui.label("Mouse World: None");
+                }
+
+                if let Some(pos) = mouse_screen_pos.0 {
+                    ui.label(format!("Mouse Screen: ({:.1}, {:.1})", pos.x, pos.y));
+                } else {
+                    ui.label("Mouse Screen: None");
+                }
+            });
+
+            ui.horizontal(|ui| {
+                if game_session.is_none() {
+                    ui.disable();
+                }
 
                 if ui.button(localization.get("take-snapshot")).clicked() {
                     if let Some(session) = game_session {
-                        *snapshot = Some(session.snapshot());
+                        *snapshot = Some(session.world.clone());
                     }
                 } else if ui.button(localization.get("restore-snapshot")).clicked() {
                     if let Some(session) = game_session {
                         if let Some(mut snapshot) = snapshot.clone() {
-                            session.restore(&mut snapshot);
+                            std::mem::swap(&mut session.world, &mut snapshot);
                         }
                     }
                 }

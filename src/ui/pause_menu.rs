@@ -53,13 +53,13 @@ fn pause_menu_system(
             match page {
                 PauseMenuPage::Pause => {
                     egui::CentralPanel::default()
-                        .frame(egui::Frame::none())
+                        .frame(egui::Frame::NONE)
                         .show(&ctx, |ui| {
                             let screen_rect = ui.max_rect();
 
                             let pause_menu_width = meta.main_menu.menu_width;
                             let x_margin = (screen_rect.width() - pause_menu_width) / 2.0;
-                            let outer_margin = egui::style::Margin::symmetric(
+                            let outer_margin = egui::epaint::Marginf::symmetric(
                                 x_margin,
                                 screen_rect.height() * 0.2,
                             );
@@ -100,7 +100,7 @@ fn pause_menu_system(
                 }
                 PauseMenuPage::Settings => {
                     egui::CentralPanel::default()
-                        .frame(egui::Frame::none())
+                        .frame(egui::Frame::NONE)
                         .show(&ctx, |ui| {
                             world.run_system(
                                 super::main_menu::settings::widget,
